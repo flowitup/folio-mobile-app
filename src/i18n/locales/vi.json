@@ -9,7 +9,8 @@
     "save": "Lưu",
     "delete": "Xoá",
     "ok": "OK",
-    "saved": "Đã lưu."
+    "saved": "Đã lưu.",
+    "edit": "Sửa"
   },
   "login": {
     "title": "Đăng nhập Folio",
@@ -118,5 +119,109 @@
     "summary": "Chi phí theo nhãn",
     "untagged": "Không nhãn",
     "summaryLine": "Nhân công {{labor}} ({{entries}} bản ghi) · Chi phí {{expenses}} ({{invoices}} hoá đơn)"
+  },
+  "invoices": {
+    "all": "Tất cả",
+    "none": "Chưa có hoá đơn.",
+    "created": "Đã tạo hoá đơn.",
+    "deleted": "Đã xoá hoá đơn.",
+    "deleteConfirm": "Xoá hoá đơn {{number}}?",
+    "allTags": "Tất cả nhãn",
+    "types": {
+      "released_funds": "Vốn giải ngân",
+      "labor": "Nhân công",
+      "materials_services": "Vật tư & dịch vụ",
+      "others": "Khác",
+      "return": "Trả hàng / avoir"
+    },
+    "serviceMonthShort": "cho",
+    "auto": "tự động",
+    "paidWithAvoir": "Trả bằng avoir",
+    "refundOf": "Hoàn trả cho",
+    "unassignedWorker": "Chưa gán",
+    "paidTotal": "Đã trả: {{amount}}",
+    "total": "Tổng",
+    "totalHt": "Tổng chưa VAT",
+    "totalTva": "VAT",
+    "totalTtc": "Tổng có VAT",
+    "printPdf": "In / chia sẻ PDF",
+    "transferToCompany": "Chuyển thành công ty thanh toán",
+    "markRefunded": "Đánh dấu công ty đã hoàn",
+    "refundStatusUpdated": "Đã cập nhật trạng thái hoàn tiền.",
+    "refund": {
+      "refundable": "Có thể hoàn",
+      "refund_pending": "Đang chờ hoàn",
+      "refunded": "Đã hoàn",
+      "bank": "Ngân hàng hoàn",
+      "by": {
+        "company": "bởi công ty",
+        "bank": "bởi ngân hàng",
+        "both": "bởi công ty và ngân hàng"
+      }
+    },
+    "purse": {
+      "released": "Vốn đã giải ngân",
+      "company": "Công ty",
+      "companySpent": "{{name}} đã chi",
+      "personalSpent": "Chi cá nhân"
+    },
+    "print": {
+      "title": "Hoá đơn"
+    },
+    "export": {
+      "trigger": "Xuất",
+      "title": "Xuất hoá đơn",
+      "format": "Định dạng",
+      "from": "Từ tháng",
+      "to": "Đến tháng",
+      "run": "Tải về"
+    },
+    "attachments": {
+      "title": "Tệp đính kèm ({{count}})",
+      "add": "Thêm",
+      "camera": "Chụp ảnh",
+      "library": "Thư viện ảnh",
+      "document": "Chọn tệp",
+      "uploaded": "Đã thêm tệp.",
+      "deleted": "Đã xoá tệp.",
+      "rename": "Đổi tên",
+      "deleteConfirm": "Xoá {{name}}?",
+      "permissionDenied": "Bị từ chối quyền camera/ảnh. Bật trong Cài đặt."
+    },
+    "form": {
+      "type": "Loại",
+      "issueDate": "Ngày phát hành",
+      "issueDateRequired": "Cần chọn ngày.",
+      "recipient": "Người nhận",
+      "recipientRequired": "Cần nhập người nhận.",
+      "recipientAddress": "Địa chỉ người nhận",
+      "worker": "Nhân công",
+      "workerNone": "Không gán nhân công",
+      "serviceMonth": "Tháng làm việc",
+      "serviceMonthRequired": "Cần chọn tháng làm việc.",
+      "paymentMethod": "Phương thức thanh toán",
+      "paymentMethodNone": "Không",
+      "tag": "Nhãn",
+      "tagNone": "Không nhãn",
+      "refundHint": "Trả hàng được trừ vào chi phí. Liên kết hoá đơn vật tư được hoàn.",
+      "refundsInvoice": "Hoá đơn được hoàn",
+      "refundsInvoiceNone": "Không liên kết",
+      "settledVia": "Hình thức",
+      "settledViaCash": "Tiền mặt / ngân hàng",
+      "settledViaAvoir": "Avoir (phiếu tín dụng)",
+      "appliedTo": "Áp dụng cho hoá đơn",
+      "appliedToNone": "Chưa áp dụng",
+      "items": "Dòng",
+      "itemsRequired": "Thêm ít nhất một dòng có mô tả.",
+      "description": "Mô tả",
+      "quantity": "SL",
+      "unitPrice": "Đơn giá",
+      "vatRate": "VAT %",
+      "lineTotal": "Thành tiền",
+      "addItem": "Thêm dòng",
+      "notes": "Ghi chú",
+      "highlight": "Tô màu",
+      "create": "Tạo hoá đơn"
+    }
   }
 }

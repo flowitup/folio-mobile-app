@@ -9,7 +9,8 @@
     "save": "Enregistrer",
     "delete": "Supprimer",
     "ok": "OK",
-    "saved": "Enregistré."
+    "saved": "Enregistré.",
+    "edit": "Modifier"
   },
   "login": {
     "title": "Connexion à Folio",
@@ -118,5 +119,109 @@
     "summary": "Coût par étiquette",
     "untagged": "Sans étiquette",
     "summaryLine": "Main-d'œuvre {{labor}} ({{entries}} saisies) · Dépenses {{expenses}} ({{invoices}} factures)"
+  },
+  "invoices": {
+    "all": "Tout",
+    "none": "Aucune facture.",
+    "created": "Facture créée.",
+    "deleted": "Facture supprimée.",
+    "deleteConfirm": "Supprimer la facture {{number}} ?",
+    "allTags": "Toutes les étiquettes",
+    "types": {
+      "released_funds": "Fonds débloqués",
+      "labor": "Main-d'œuvre",
+      "materials_services": "Matériaux & services",
+      "others": "Autres",
+      "return": "Retour / avoir"
+    },
+    "serviceMonthShort": "pour",
+    "auto": "auto",
+    "paidWithAvoir": "Payé par avoir",
+    "refundOf": "Remboursement de",
+    "unassignedWorker": "Non attribué",
+    "paidTotal": "Payé : {{amount}}",
+    "total": "Total",
+    "totalHt": "Total HT",
+    "totalTva": "TVA",
+    "totalTtc": "Total TTC",
+    "printPdf": "Imprimer / partager en PDF",
+    "transferToCompany": "Basculer en paiement société",
+    "markRefunded": "Marquer remboursé par la société",
+    "refundStatusUpdated": "Statut de remboursement mis à jour.",
+    "refund": {
+      "refundable": "Remboursable",
+      "refund_pending": "Remboursement en attente",
+      "refunded": "Remboursé",
+      "bank": "Remboursé par la banque",
+      "by": {
+        "company": "par la société",
+        "bank": "par la banque",
+        "both": "par la société et la banque"
+      }
+    },
+    "purse": {
+      "released": "Fonds débloqués",
+      "company": "Société",
+      "companySpent": "Dépensé par {{name}}",
+      "personalSpent": "Dépenses perso"
+    },
+    "print": {
+      "title": "Facture"
+    },
+    "export": {
+      "trigger": "Exporter",
+      "title": "Exporter les factures",
+      "format": "Format",
+      "from": "Du mois",
+      "to": "Au mois",
+      "run": "Télécharger"
+    },
+    "attachments": {
+      "title": "Pièces jointes ({{count}})",
+      "add": "Ajouter",
+      "camera": "Prendre une photo",
+      "library": "Photothèque",
+      "document": "Choisir un fichier",
+      "uploaded": "Pièce jointe ajoutée.",
+      "deleted": "Pièce jointe supprimée.",
+      "rename": "Renommer",
+      "deleteConfirm": "Supprimer {{name}} ?",
+      "permissionDenied": "Accès caméra/photos refusé. Activez-le dans les Réglages."
+    },
+    "form": {
+      "type": "Type",
+      "issueDate": "Date d'émission",
+      "issueDateRequired": "La date est obligatoire.",
+      "recipient": "Destinataire",
+      "recipientRequired": "Le destinataire est obligatoire.",
+      "recipientAddress": "Adresse du destinataire",
+      "worker": "Ouvrier",
+      "workerNone": "Aucun ouvrier lié",
+      "serviceMonth": "Mois de prestation",
+      "serviceMonthRequired": "Le mois de prestation est obligatoire.",
+      "paymentMethod": "Moyen de paiement",
+      "paymentMethodNone": "Aucun",
+      "tag": "Étiquette",
+      "tagNone": "Sans étiquette",
+      "refundHint": "Un retour vient en déduction. Liez la facture matériaux & services remboursée.",
+      "refundsInvoice": "Facture remboursée",
+      "refundsInvoiceNone": "Non liée",
+      "settledVia": "Réglé par",
+      "settledViaCash": "Espèces / virement",
+      "settledViaAvoir": "Avoir",
+      "appliedTo": "Appliqué à la facture",
+      "appliedToNone": "Non appliqué",
+      "items": "Lignes",
+      "itemsRequired": "Ajoutez au moins une ligne avec une description.",
+      "description": "Description",
+      "quantity": "Qté",
+      "unitPrice": "Prix unitaire",
+      "vatRate": "TVA %",
+      "lineTotal": "Total ligne",
+      "addItem": "Ajouter une ligne",
+      "notes": "Notes",
+      "highlight": "Surlignage",
+      "create": "Créer la facture"
+    }
   }
 }
