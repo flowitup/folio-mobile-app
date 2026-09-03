@@ -223,5 +223,111 @@
       "highlight": "Surlignage",
       "create": "Créer la facture"
     }
+  },
+  "labor": {
+    "tabs": {
+      "summary": "Résumé",
+      "attendance": "Présences",
+      "workers": "Ouvriers",
+      "payments": "Paiements"
+    },
+    "calendar": {
+      "weekdays": [
+        "Lu",
+        "Ma",
+        "Me",
+        "Je",
+        "Ve",
+        "Sa",
+        "Di"
+      ]
+    },
+    "shift": {
+      "full": "Journée",
+      "half": "Demi-journée",
+      "overtime": "Heures sup",
+      "none": "Sans poste"
+    },
+    "workers": {
+      "add": "Ajouter un ouvrier",
+      "edit": "Modifier l'ouvrier",
+      "name": "Nom",
+      "nameRequired": "Le nom est obligatoire.",
+      "dailyRate": "Taux journalier (€)",
+      "rateRequired": "Le taux doit être supérieur à 0.",
+      "phone": "Téléphone",
+      "role": "Rôle",
+      "roleNone": "Sans rôle",
+      "none": "Aucun ouvrier.",
+      "created": "Ouvrier ajouté.",
+      "deleted": "Ouvrier retiré.",
+      "deleteConfirm": "Retirer {{name}} ?",
+      "deleteHint": "Son historique de présence reste sur le chantier.",
+      "inactive": "inactif",
+      "day": "jour"
+    },
+    "rates": {
+      "link": "Taux",
+      "title": "Taux — {{name}}",
+      "current": "Taux actuel : {{rate}} / jour",
+      "effectiveDate": "À partir du",
+      "add": "Ajouter un changement"
+    },
+    "log": {
+      "open": "Saisir la journée",
+      "title": "Saisir le {{date}}",
+      "sameAsLastDay": "Comme le dernier jour",
+      "noWorkers": "Tous les ouvriers actifs sont déjà saisis ce jour.",
+      "supplement": "Supplément",
+      "submit": "Saisir {{count}} ouvrier(s)",
+      "saved": "Présences enregistrées.",
+      "entryDeleted": "Saisie supprimée.",
+      "shiftType": "Poste",
+      "amountOverride": "Montant forcé (€)",
+      "amountOverrideHint": "Remplace le coût calculé pour ce jour.",
+      "note": "Note",
+      "effectiveCost": "Coût actuel : {{amount}}",
+      "dayTag": "Étiquette de la journée",
+      "conflictTitle": "Déjà saisi ailleurs",
+      "conflictGeneric": "Certains ouvriers sont saisis sur un autre chantier le même jour.",
+      "conflictConfirm": "Saisir quand même"
+    },
+    "activities": {
+      "title": "Activités",
+      "placeholder": "Nouvelle activité…",
+      "add": "Ajouter l'activité"
+    },
+    "description": {
+      "title": "Description de la journée"
+    },
+    "summary": {
+      "days": "Jours travaillés",
+      "cost": "Coût main-d'œuvre",
+      "bankedHours": "Heures cumulées",
+      "bonus": "Jours bonus · coût",
+      "allTime": "Coût total historique",
+      "none": "Aucune présence ce mois.",
+      "rowLine": "{{days}} j · {{banked}} h cumulées · {{bonus}} j bonus · payé {{paid}}",
+      "monthly": "Par mois"
+    },
+    "payments": {
+      "settled": "Soldé",
+      "due": "À payer",
+      "line": "Dû {{owed}} · payé {{paid}} · solde {{balance}}",
+      "record": "Enregistrer un paiement",
+      "recordTitle": "Paiement — {{name}}",
+      "amount": "Montant (€)",
+      "amountRequired": "Saisissez un montant supérieur à 0.",
+      "itemDescription": "Paiement main-d'œuvre {{month}}",
+      "none": "Rien à payer ce mois.",
+      "unassigned": "Factures main-d'œuvre sans ouvrier",
+      "assignWorker": "Attribuer à un ouvrier…",
+      "openInvoice": "Ouvrir la facture"
+    },
+    "export": {
+      "title": "Exporter la main-d'œuvre",
+      "worker": "Ouvrier",
+      "allWorkers": "Tous les ouvriers"
+    }
   }
 }

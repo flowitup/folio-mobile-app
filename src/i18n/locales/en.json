@@ -223,5 +223,111 @@
       "highlight": "Highlight",
       "create": "Create invoice"
     }
+  },
+  "labor": {
+    "tabs": {
+      "summary": "Summary",
+      "attendance": "Attendance",
+      "workers": "Workers",
+      "payments": "Payments"
+    },
+    "calendar": {
+      "weekdays": [
+        "Mo",
+        "Tu",
+        "We",
+        "Th",
+        "Fr",
+        "Sa",
+        "Su"
+      ]
+    },
+    "shift": {
+      "full": "Full day",
+      "half": "Half day",
+      "overtime": "Overtime",
+      "none": "No shift"
+    },
+    "workers": {
+      "add": "Add worker",
+      "edit": "Edit worker",
+      "name": "Name",
+      "nameRequired": "Name is required.",
+      "dailyRate": "Daily rate (€)",
+      "rateRequired": "Daily rate must be greater than 0.",
+      "phone": "Phone",
+      "role": "Role",
+      "roleNone": "No role",
+      "none": "No workers yet.",
+      "created": "Worker added.",
+      "deleted": "Worker removed.",
+      "deleteConfirm": "Remove {{name}}?",
+      "deleteHint": "Their attendance history stays on the project.",
+      "inactive": "inactive",
+      "day": "day"
+    },
+    "rates": {
+      "link": "Rates",
+      "title": "Rates — {{name}}",
+      "current": "Current rate: {{rate}} / day",
+      "effectiveDate": "Effective from",
+      "add": "Add rate change"
+    },
+    "log": {
+      "open": "Log a day",
+      "title": "Log {{date}}",
+      "sameAsLastDay": "Same as last day",
+      "noWorkers": "Every active worker is already logged for this day.",
+      "supplement": "Supplement",
+      "submit": "Log {{count}} worker(s)",
+      "saved": "Attendance saved.",
+      "entryDeleted": "Entry deleted.",
+      "shiftType": "Shift",
+      "amountOverride": "Amount override (€)",
+      "amountOverrideHint": "Replaces the computed cost for this day.",
+      "note": "Note",
+      "effectiveCost": "Current cost: {{amount}}",
+      "dayTag": "Tag for the whole day",
+      "conflictTitle": "Already logged elsewhere",
+      "conflictGeneric": "Some workers are logged on another project the same day.",
+      "conflictConfirm": "Log anyway"
+    },
+    "activities": {
+      "title": "Activities",
+      "placeholder": "New activity…",
+      "add": "Add activity"
+    },
+    "description": {
+      "title": "Day description"
+    },
+    "summary": {
+      "days": "Days worked",
+      "cost": "Labor cost",
+      "bankedHours": "Banked hours",
+      "bonus": "Bonus days · cost",
+      "allTime": "All-time labor cost",
+      "none": "No attendance this month.",
+      "rowLine": "{{days}} d · {{banked}} h banked · {{bonus}} bonus d · paid {{paid}}",
+      "monthly": "By month"
+    },
+    "payments": {
+      "settled": "Settled",
+      "due": "Due",
+      "line": "Owed {{owed}} · paid {{paid}} · balance {{balance}}",
+      "record": "Record a payment",
+      "recordTitle": "Payment — {{name}}",
+      "amount": "Amount (€)",
+      "amountRequired": "Enter an amount greater than 0.",
+      "itemDescription": "Labor payment {{month}}",
+      "none": "Nothing owed this month.",
+      "unassigned": "Labor invoices without a worker",
+      "assignWorker": "Assign to a worker…",
+      "openInvoice": "Open invoice"
+    },
+    "export": {
+      "title": "Export labor",
+      "worker": "Worker",
+      "allWorkers": "All workers"
+    }
   }
 }
