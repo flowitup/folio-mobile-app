@@ -479,5 +479,183 @@
     "summary": "Tóm tắt",
     "sourceUrl": "Link nguồn",
     "searchPlaceholder": "Tìm phân tích"
+  },
+  "billing": {
+    "title": "Hóa đơn",
+    "devis": "Báo giá",
+    "factures": "Hóa đơn",
+    "kind": {
+      "devis": "Báo giá",
+      "facture": "Hóa đơn"
+    },
+    "accessDenied": "Phần hóa đơn chỉ dành cho quản trị viên công ty.",
+    "status": {
+      "draft": "Nháp",
+      "sent": "Đã gửi",
+      "accepted": "Đã chấp nhận",
+      "rejected": "Bị từ chối",
+      "expired": "Hết hạn",
+      "paid": "Đã thanh toán",
+      "overdue": "Quá hạn",
+      "cancelled": "Đã hủy"
+    },
+    "transitions": {
+      "markAsSent": "Đánh dấu đã gửi",
+      "markAsAccepted": "Đánh dấu chấp nhận",
+      "markAsRejected": "Đánh dấu từ chối",
+      "markAsExpired": "Đánh dấu hết hạn",
+      "revertToSent": "Trở về đã gửi",
+      "reopen": "Mở lại thành nháp",
+      "markAsPaid": "Đánh dấu đã thanh toán",
+      "markAsOverdue": "Đánh dấu quá hạn",
+      "markAsCancelled": "Hủy",
+      "markAsCancelledRefund": "Hủy (hoàn tiền)"
+    },
+    "list": {
+      "searchPlaceholder": "Tìm số hoặc người nhận",
+      "allStatuses": "Mọi trạng thái",
+      "none": "Chưa có tài liệu.",
+      "loadMore": "Tải thêm",
+      "new": "Mới",
+      "templates": "Mẫu",
+      "refundable": "Chi phí hoàn lại",
+      "import": "Nhập"
+    },
+    "form": {
+      "modes": {
+        "blank": "Trống",
+        "fromExisting": "Từ tài liệu có sẵn",
+        "fromTemplate": "Từ mẫu"
+      },
+      "company": "Công ty phát hành",
+      "issuedFrom": "Phát hành bởi {{name}}",
+      "primary": "chính",
+      "noCompanies": "Hãy gắn một công ty trong Cài đặt trước khi tạo tài liệu.",
+      "project": "Công trình",
+      "projectNone": "Không có công trình",
+      "recipient": "Người nhận",
+      "recipientName": "Tên",
+      "recipientAddress": "Địa chỉ",
+      "recipientEmail": "Email",
+      "recipientSiret": "SIRET",
+      "details": "Chi tiết",
+      "issueDate": "Ngày phát hành",
+      "validityUntil": "Hiệu lực đến",
+      "paymentDue": "Hạn thanh toán",
+      "paymentTerms": "Điều khoản thanh toán",
+      "documentNumber": "Số tài liệu",
+      "importStatus": "Trạng thái",
+      "items": "Dòng",
+      "addLine": "Thêm dòng",
+      "removeLine": "Xóa",
+      "category": "Danh mục",
+      "description": "Mô tả",
+      "quantity": "SL",
+      "unitPrice": "Đơn giá HT",
+      "vatRate": "VAT %",
+      "lineHt": "Dòng HT",
+      "suggestions": "Gợi ý",
+      "noSuggestions": "Không có gợi ý.",
+      "totalHt": "Tổng HT",
+      "tva": "VAT {{rate}} %",
+      "totalTtc": "Tổng TTC",
+      "notes": "Ghi chú",
+      "terms": "Điều khoản",
+      "signatureBlock": "Khối chữ ký",
+      "create": "Tạo",
+      "importAction": "Nhập",
+      "errors": {
+        "companyRequired": "Chọn công ty phát hành.",
+        "recipientRequired": "Cần nhập tên người nhận.",
+        "atLeastOneItem": "Thêm ít nhất một dòng.",
+        "itemDescriptionRequired": "Cần nhập mô tả.",
+        "itemQuantityPositive": "Số lượng phải > 0.",
+        "itemUnitPricePositive": "Đơn giá phải ≥ 0.",
+        "itemVatRatePositive": "VAT phải từ 0 đến 100.",
+        "documentNumberRequired": "Cần nhập số tài liệu."
+      }
+    },
+    "actions": {
+      "changeStatus": "Trạng thái",
+      "pdf": "PDF",
+      "xlsx": "XLSX",
+      "clone": "Nhân bản",
+      "cloneAs": "Nhân bản thành {{kind}}",
+      "convert": "Chuyển thành hóa đơn",
+      "convertTitle": "Chuyển thành hóa đơn",
+      "deleteConfirm": "Xóa {{number}}?",
+      "invalidTransition": "Không được phép đổi trạng thái này."
+    },
+    "toast": {
+      "documentCreated": "Đã tạo tài liệu.",
+      "documentSaved": "Đã lưu tài liệu.",
+      "documentDeleted": "Đã xóa tài liệu.",
+      "devisConverted": "Đã chuyển báo giá thành hóa đơn."
+    },
+    "fromExisting": {
+      "title": "Sao chép tài liệu có sẵn",
+      "none": "Không có tài liệu để sao chép.",
+      "hint": "Ngày được đặt lại; phần còn lại được sao chép."
+    },
+    "fromTemplate": {
+      "title": "Tạo từ mẫu",
+      "none": "Không có mẫu cho loại này.",
+      "recipient": "Tên người nhận",
+      "create": "Tạo tài liệu"
+    },
+    "templates": {
+      "title": "Mẫu",
+      "new": "Mẫu mới",
+      "edit": "Sửa mẫu",
+      "none": "Chưa có mẫu.",
+      "devisGroup": "Mẫu báo giá",
+      "factureGroup": "Mẫu hóa đơn",
+      "itemsCount": "{{count}} dòng",
+      "vatRateNone": "không có VAT mặc định",
+      "name": "Tên",
+      "kind": "Loại",
+      "kindImmutable": "Không thể đổi loại sau khi tạo.",
+      "defaultVatRate": "VAT % mặc định",
+      "use": "Dùng",
+      "deleteConfirm": "Xóa mẫu {{name}}?",
+      "deleted": "Đã xóa mẫu.",
+      "nameRequired": "Cần nhập tên."
+    },
+    "refundable": {
+      "title": "Chi phí hoàn lại",
+      "add": "Thêm chi phí",
+      "none": "Chưa theo dõi chi phí hoàn lại nào.",
+      "allCompanies": "Mọi công ty",
+      "summary": {
+        "refundedTotal": "Đã hoàn",
+        "refundedByCompany": "Bởi công ty",
+        "refundedByBank": "Bởi ngân hàng",
+        "toRefund": "Cần hoàn"
+      },
+      "status": {
+        "refundable": "Có thể hoàn",
+        "refund_pending": "Đang chờ hoàn",
+        "refunded": "Đã hoàn"
+      },
+      "refundedBy": {
+        "company": "Công ty",
+        "bank": "Ngân hàng",
+        "both": "Cả hai"
+      },
+      "statusLabel": "Trạng thái",
+      "refundedByTitle": "Ai đã hoàn tiền?",
+      "remove": "Bỏ theo dõi",
+      "removeConfirm": "Bỏ theo dõi {{number}}?",
+      "fundsRelease": "Giải ngân {{number}}",
+      "attachments": "{{count}} tệp",
+      "noAttachments": "Không có tệp",
+      "dialog": {
+        "title": "Thêm chi phí",
+        "search": "Tìm công trình, số, người nhận",
+        "none": "Không có chi phí ứng viên.",
+        "confirm": "Thêm {{count}}",
+        "partial": "Một số chi phí không thể thêm."
+      }
+    }
   }
 }

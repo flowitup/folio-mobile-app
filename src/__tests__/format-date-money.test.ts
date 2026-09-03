@@ -44,3 +44,11 @@ describe("money helpers", () => {
     expect(parseMoneyInput("x")).toBeNull();
   });
 });
+
+describe("parseIsoDate RFC-1123 fallback", () => {
+  it("reads Flask's GMT date form as a calendar day", () => {
+    const date = parseIsoDate("Thu, 03 Sep 2026 00:00:00 GMT");
+    expect(date && toIsoDate(date)).toBe("2026-09-03");
+    expect(parseIsoDate("not a date")).toBeNull();
+  });
+});

@@ -10,12 +10,22 @@ function localeTag(): string {
   return LOCALE_TAG[i18n.language] ?? "en-GB";
 }
 
-/** `YYYY-MM-DD` → local Date at midnight, or null when unparsable. */
+/**
+ * `YYYY-MM-DD` → local Date at midnight, or null when unparsable. Also accepts the RFC-1123
+ * form Flask emits for bare `date` fields (`Thu, 03 Sep 2026 00:00:00 GMT`), read as a UTC day.
+ */
 export function parseIsoDate(iso: string | null | undefined): Date | null {
   if (!iso) return null;
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
-  if (!match) return null;
-  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  if (match)
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Date(
+    parsed.getUTCFullYear(),
+    parsed.getUTCMonth(),
+    parsed.getUTCDate(),
+  );
 }
 
 /** Date → `YYYY-MM-DD` using local calendar fields (never UTC, avoids off-by-one across midnight). */

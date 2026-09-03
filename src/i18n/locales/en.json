@@ -479,5 +479,183 @@
     "summary": "Summary",
     "sourceUrl": "Source URL",
     "searchPlaceholder": "Search analyses"
+  },
+  "billing": {
+    "title": "Billing",
+    "devis": "Quotes",
+    "factures": "Invoices",
+    "kind": {
+      "devis": "Quote",
+      "facture": "Invoice"
+    },
+    "accessDenied": "Billing is reserved to company admins.",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "expired": "Expired",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "transitions": {
+      "markAsSent": "Mark as sent",
+      "markAsAccepted": "Mark as accepted",
+      "markAsRejected": "Mark as rejected",
+      "markAsExpired": "Mark as expired",
+      "revertToSent": "Revert to sent",
+      "reopen": "Reopen as draft",
+      "markAsPaid": "Mark as paid",
+      "markAsOverdue": "Mark as overdue",
+      "markAsCancelled": "Cancel",
+      "markAsCancelledRefund": "Cancel (refund)"
+    },
+    "list": {
+      "searchPlaceholder": "Search number or recipient",
+      "allStatuses": "All statuses",
+      "none": "No document yet.",
+      "loadMore": "Load more",
+      "new": "New",
+      "templates": "Templates",
+      "refundable": "Refundable expenses",
+      "import": "Import"
+    },
+    "form": {
+      "modes": {
+        "blank": "Blank",
+        "fromExisting": "From existing",
+        "fromTemplate": "From template"
+      },
+      "company": "Issuing company",
+      "issuedFrom": "Issued from {{name}}",
+      "primary": "primary",
+      "noCompanies": "Attach a company in Settings before creating a document.",
+      "project": "Project",
+      "projectNone": "No project",
+      "recipient": "Recipient",
+      "recipientName": "Name",
+      "recipientAddress": "Address",
+      "recipientEmail": "Email",
+      "recipientSiret": "SIRET",
+      "details": "Details",
+      "issueDate": "Issue date",
+      "validityUntil": "Valid until",
+      "paymentDue": "Payment due",
+      "paymentTerms": "Payment terms",
+      "documentNumber": "Document number",
+      "importStatus": "Status",
+      "items": "Lines",
+      "addLine": "Add line",
+      "removeLine": "Remove",
+      "category": "Category",
+      "description": "Description",
+      "quantity": "Qty",
+      "unitPrice": "Unit price HT",
+      "vatRate": "VAT %",
+      "lineHt": "Line HT",
+      "suggestions": "Suggestions",
+      "noSuggestions": "No suggestion.",
+      "totalHt": "Total HT",
+      "tva": "VAT {{rate}} %",
+      "totalTtc": "Total TTC",
+      "notes": "Notes",
+      "terms": "Terms",
+      "signatureBlock": "Signature block",
+      "create": "Create",
+      "importAction": "Import",
+      "errors": {
+        "companyRequired": "Choose an issuing company.",
+        "recipientRequired": "Recipient name is required.",
+        "atLeastOneItem": "Add at least one line.",
+        "itemDescriptionRequired": "Description required.",
+        "itemQuantityPositive": "Quantity must be > 0.",
+        "itemUnitPricePositive": "Unit price must be ≥ 0.",
+        "itemVatRatePositive": "VAT must be between 0 and 100.",
+        "documentNumberRequired": "Document number is required."
+      }
+    },
+    "actions": {
+      "changeStatus": "Status",
+      "pdf": "PDF",
+      "xlsx": "XLSX",
+      "clone": "Duplicate",
+      "cloneAs": "Duplicate as {{kind}}",
+      "convert": "Convert to invoice",
+      "convertTitle": "Convert to invoice",
+      "deleteConfirm": "Delete {{number}}?",
+      "invalidTransition": "This status change is not allowed."
+    },
+    "toast": {
+      "documentCreated": "Document created.",
+      "documentSaved": "Document saved.",
+      "documentDeleted": "Document deleted.",
+      "devisConverted": "Quote converted to invoice."
+    },
+    "fromExisting": {
+      "title": "Copy an existing document",
+      "none": "No document to copy.",
+      "hint": "Dates are reset; everything else is copied."
+    },
+    "fromTemplate": {
+      "title": "Create from a template",
+      "none": "No template for this kind.",
+      "recipient": "Recipient name",
+      "create": "Create document"
+    },
+    "templates": {
+      "title": "Templates",
+      "new": "New template",
+      "edit": "Edit template",
+      "none": "No template yet.",
+      "devisGroup": "Quote templates",
+      "factureGroup": "Invoice templates",
+      "itemsCount": "{{count}} line(s)",
+      "vatRateNone": "no default VAT",
+      "name": "Name",
+      "kind": "Kind",
+      "kindImmutable": "Kind cannot be changed after creation.",
+      "defaultVatRate": "Default VAT %",
+      "use": "Use",
+      "deleteConfirm": "Delete template {{name}}?",
+      "deleted": "Template deleted.",
+      "nameRequired": "Name is required."
+    },
+    "refundable": {
+      "title": "Refundable expenses",
+      "add": "Add expenses",
+      "none": "No expense tracked for reimbursement.",
+      "allCompanies": "All companies",
+      "summary": {
+        "refundedTotal": "Refunded",
+        "refundedByCompany": "By company",
+        "refundedByBank": "By bank",
+        "toRefund": "To refund"
+      },
+      "status": {
+        "refundable": "Refundable",
+        "refund_pending": "Refund pending",
+        "refunded": "Refunded"
+      },
+      "refundedBy": {
+        "company": "Company",
+        "bank": "Bank",
+        "both": "Both"
+      },
+      "statusLabel": "Status",
+      "refundedByTitle": "Refunded by whom?",
+      "remove": "Untrack",
+      "removeConfirm": "Stop tracking {{number}}?",
+      "fundsRelease": "Release {{number}}",
+      "attachments": "{{count}} file(s)",
+      "noAttachments": "No file",
+      "dialog": {
+        "title": "Add expenses",
+        "search": "Search project, number, recipient",
+        "none": "No candidate expense.",
+        "confirm": "Add {{count}}",
+        "partial": "Some expenses could not be added."
+      }
+    }
   }
 }
