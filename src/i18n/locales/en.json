@@ -1,5 +1,15 @@
 {
-  "common": { "loading": "Loading…", "retry": "Retry" },
+  "common": {
+    "loading": "Loading…",
+    "retry": "Retry",
+    "comingSoon": "Coming soon.",
+    "networkError": "Network error",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "ok": "OK"
+  },
   "login": {
     "title": "Sign in to Folio",
     "email": "Email",
@@ -13,5 +23,39 @@
     "noProjects": "No projects yet.",
     "loadError": "Could not load projects.",
     "signOut": "Sign out"
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "billing": "Billing",
+    "library": "Library",
+    "settings": "Settings"
+  },
+  "project": {
+    "budget": "Budget",
+    "sections": {
+      "overview": "Overview",
+      "invoices": "Invoices",
+      "labor": "Labor",
+      "documents": "Documents",
+      "photos": "Photos",
+      "notes": "Notes",
+      "planning": "Planning",
+      "chiffrage": "Chiffrage",
+      "analyses": "Analyses",
+      "members": "Members",
+      "tags": "Tags",
+      "settings": "Settings"
+    },
+    "spent": "Spent"
+  },
+  "settings": {
+    "signedInAs": "Signed in as",
+    "language": "Language",
+    "languages": {
+      "en": "English",
+      "fr": "Français",
+      "vi": "Tiếng Việt"
+    }
   }
 }

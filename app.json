@@ -25,15 +25,40 @@
     "android": {
       "package": "com.flowitup.folio",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
+      ]
     },
-    "plugins": ["expo-router", "expo-secure-store", "expo-localization"],
-    "experiments": {
-      "typedRoutes": true
-    }
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-localization",
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Folio uses your photos to attach invoices, documents and site pictures.",
+          "cameraPermission": "Folio uses the camera to capture invoices and site pictures."
+        }
+      ],
+      [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
+        }
+      ],
+      [
+        "@react-native-community/datetimepicker",
+        {}
+      ]
+    ]
   }
 }
