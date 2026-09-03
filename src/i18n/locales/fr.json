@@ -1,0 +1,17 @@
+{
+  "common": { "loading": "Chargement…", "retry": "Réessayer" },
+  "login": {
+    "title": "Connexion à Folio",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "failed": "Échec de la connexion : {{message}}"
+  },
+  "home": {
+    "welcome": "Connecté en tant que {{email}}",
+    "projects": "Chantiers",
+    "noProjects": "Aucun chantier pour le moment.",
+    "loadError": "Impossible de charger les chantiers.",
+    "signOut": "Se déconnecter"
+  }
+}

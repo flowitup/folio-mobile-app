@@ -1,0 +1,17 @@
+{
+  "common": { "loading": "Loading…", "retry": "Retry" },
+  "login": {
+    "title": "Sign in to Folio",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "failed": "Sign-in failed: {{message}}"
+  },
+  "home": {
+    "welcome": "Signed in as {{email}}",
+    "projects": "Projects",
+    "noProjects": "No projects yet.",
+    "loadError": "Could not load projects.",
+    "signOut": "Sign out"
+  }
+}

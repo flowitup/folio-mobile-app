@@ -1,0 +1,17 @@
+{
+  "common": { "loading": "Đang tải…", "retry": "Thử lại" },
+  "login": {
+    "title": "Đăng nhập Folio",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "submit": "Đăng nhập",
+    "failed": "Đăng nhập thất bại: {{message}}"
+  },
+  "home": {
+    "welcome": "Đã đăng nhập: {{email}}",
+    "projects": "Công trình",
+    "noProjects": "Chưa có công trình nào.",
+    "loadError": "Không tải được danh sách công trình.",
+    "signOut": "Đăng xuất"
+  }
+}
