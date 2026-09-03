@@ -1,5 +1,15 @@
 {
-  "common": { "loading": "Đang tải…", "retry": "Thử lại" },
+  "common": {
+    "loading": "Đang tải…",
+    "retry": "Thử lại",
+    "comingSoon": "Sắp ra mắt.",
+    "networkError": "Lỗi mạng",
+    "cancel": "Huỷ",
+    "confirm": "Xác nhận",
+    "save": "Lưu",
+    "delete": "Xoá",
+    "ok": "OK"
+  },
   "login": {
     "title": "Đăng nhập Folio",
     "email": "Email",
@@ -13,5 +23,39 @@
     "noProjects": "Chưa có công trình nào.",
     "loadError": "Không tải được danh sách công trình.",
     "signOut": "Đăng xuất"
+  },
+  "tabs": {
+    "dashboard": "Tổng quan",
+    "projects": "Công trình",
+    "billing": "Hoá đơn",
+    "library": "Thư viện",
+    "settings": "Cài đặt"
+  },
+  "project": {
+    "budget": "Ngân sách",
+    "sections": {
+      "overview": "Tổng quan",
+      "invoices": "Hoá đơn",
+      "labor": "Nhân công",
+      "documents": "Tài liệu",
+      "photos": "Ảnh",
+      "notes": "Ghi chú",
+      "planning": "Kế hoạch",
+      "chiffrage": "Chiffrage",
+      "analyses": "Phân tích",
+      "members": "Thành viên",
+      "tags": "Nhãn",
+      "settings": "Cài đặt"
+    },
+    "spent": "Đã chi"
+  },
+  "settings": {
+    "signedInAs": "Đã đăng nhập",
+    "language": "Ngôn ngữ",
+    "languages": {
+      "en": "English",
+      "fr": "Français",
+      "vi": "Tiếng Việt"
+    }
   }
 }

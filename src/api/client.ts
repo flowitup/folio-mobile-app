@@ -18,6 +18,10 @@ function isAuthPath(url: string): boolean {
 
 /** Called when the refresh token is rejected; the auth provider signs the user out. */
 let onSessionExpired: (() => void) | null = null;
+/** Invoked by raw-fetch helpers when a refresh fails. */
+export function notifySessionExpired(): void {
+  onSessionExpired?.();
+}
 export function setSessionExpiredHandler(handler: (() => void) | null): void {
   onSessionExpired = handler;
 }
@@ -25,7 +29,7 @@ export function setSessionExpiredHandler(handler: (() => void) | null): void {
 // Single-flight refresh: concurrent 401s share one refresh request.
 let refreshInFlight: Promise<string | null> | null = null;
 
-async function refreshAccessToken(): Promise<string | null> {
+export async function refreshAccessToken(): Promise<string | null> {
   if (refreshInFlight) return refreshInFlight;
   refreshInFlight = (async () => {
     const { refreshToken } = await getStoredTokens();

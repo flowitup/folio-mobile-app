@@ -1,5 +1,15 @@
 {
-  "common": { "loading": "Chargement…", "retry": "Réessayer" },
+  "common": {
+    "loading": "Chargement…",
+    "retry": "Réessayer",
+    "comingSoon": "Bientôt disponible.",
+    "networkError": "Erreur réseau",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "ok": "OK"
+  },
   "login": {
     "title": "Connexion à Folio",
     "email": "E-mail",
@@ -13,5 +23,39 @@
     "noProjects": "Aucun chantier pour le moment.",
     "loadError": "Impossible de charger les chantiers.",
     "signOut": "Se déconnecter"
+  },
+  "tabs": {
+    "dashboard": "Tableau de bord",
+    "projects": "Chantiers",
+    "billing": "Facturation",
+    "library": "Bibliothèque",
+    "settings": "Réglages"
+  },
+  "project": {
+    "budget": "Budget",
+    "sections": {
+      "overview": "Aperçu",
+      "invoices": "Factures",
+      "labor": "Main-d'œuvre",
+      "documents": "Documents",
+      "photos": "Photos",
+      "notes": "Notes",
+      "planning": "Planning",
+      "chiffrage": "Chiffrage",
+      "analyses": "Analyses",
+      "members": "Membres",
+      "tags": "Étiquettes",
+      "settings": "Réglages"
+    },
+    "spent": "Dépensé"
+  },
+  "settings": {
+    "signedInAs": "Connecté en tant que",
+    "language": "Langue",
+    "languages": {
+      "en": "English",
+      "fr": "Français",
+      "vi": "Tiếng Việt"
+    }
   }
 }
