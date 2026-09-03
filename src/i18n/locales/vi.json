@@ -329,5 +329,71 @@
       "worker": "Nhân công",
       "allWorkers": "Tất cả nhân công"
     }
+  },
+  "documents": {
+    "add": "Thêm tài liệu",
+    "edit": "Sửa tài liệu",
+    "none": "Chưa có tài liệu.",
+    "uploaded": "Đã tải tài liệu.",
+    "deleted": "Đã xoá tài liệu.",
+    "deleteConfirm": "Xoá {{name}}?",
+    "filename": "Tên tệp",
+    "tags": "Nhãn",
+    "tagsHint": "Cách nhau bằng dấu phẩy",
+    "allTags": "Tất cả nhãn",
+    "kinds": {
+      "pdf": "PDF",
+      "image": "Ảnh",
+      "spreadsheet": "Bảng tính",
+      "doc": "Văn bản",
+      "cad": "CAD",
+      "text": "Văn bản thô",
+      "other": "Khác"
+    },
+    "sort": {
+      "created_at": "Ngày",
+      "name": "Tên",
+      "size": "Kích thước",
+      "uploader": "Người tải"
+    }
+  },
+  "photos": {
+    "add": "Thêm ảnh",
+    "none": "Chưa có ảnh.",
+    "uploaded": "Đã tải ảnh.",
+    "deleted": "Đã xoá ảnh.",
+    "deleteConfirm": "Xoá ảnh này?",
+    "caption": "Chú thích",
+    "share": "Chia sẻ",
+    "videoHint": "Video — dùng Chia sẻ để mở."
+  },
+  "notes": {
+    "create": "Ghi chú mới",
+    "edit": "Sửa ghi chú",
+    "none": "Chưa có ghi chú.",
+    "created": "Đã thêm ghi chú.",
+    "deleted": "Đã xoá ghi chú.",
+    "deleteConfirm": "Xoá \"{{title}}\"?",
+    "title": "Tiêu đề",
+    "titleRequired": "Cần nhập tiêu đề.",
+    "description": "Chi tiết",
+    "category": "Danh mục",
+    "searchPlaceholder": "Tìm ghi chú",
+    "markDone": "Đánh dấu xong",
+    "reopen": "Mở lại",
+    "categories": {
+      "inspection": "Kiểm tra",
+      "delivery": "Giao hàng",
+      "payment": "Thanh toán",
+      "decision": "Quyết định",
+      "call": "Cuộc gọi",
+      "general": "Chung"
+    }
+  },
+  "notifications": {
+    "title": "Nhắc nhở ({{count}})",
+    "none": "Không có nhắc nhở.",
+    "due": "Đến hạn {{date}}",
+    "dismiss": "Bỏ qua"
   }
 }

@@ -329,5 +329,71 @@
       "worker": "Ouvrier",
       "allWorkers": "Tous les ouvriers"
     }
+  },
+  "documents": {
+    "add": "Ajouter un document",
+    "edit": "Modifier le document",
+    "none": "Aucun document.",
+    "uploaded": "Document ajouté.",
+    "deleted": "Document supprimé.",
+    "deleteConfirm": "Supprimer {{name}} ?",
+    "filename": "Nom du fichier",
+    "tags": "Étiquettes",
+    "tagsHint": "Séparées par des virgules",
+    "allTags": "Toutes les étiquettes",
+    "kinds": {
+      "pdf": "PDF",
+      "image": "Image",
+      "spreadsheet": "Tableur",
+      "doc": "Document",
+      "cad": "CAD",
+      "text": "Texte",
+      "other": "Autre"
+    },
+    "sort": {
+      "created_at": "Date",
+      "name": "Nom",
+      "size": "Taille",
+      "uploader": "Auteur"
+    }
+  },
+  "photos": {
+    "add": "Ajouter des photos",
+    "none": "Aucune photo.",
+    "uploaded": "Photo ajoutée.",
+    "deleted": "Photo supprimée.",
+    "deleteConfirm": "Supprimer cette photo ?",
+    "caption": "Légende",
+    "share": "Partager",
+    "videoHint": "Vidéo — utilisez Partager pour l'ouvrir."
+  },
+  "notes": {
+    "create": "Nouvelle note",
+    "edit": "Modifier la note",
+    "none": "Aucune note.",
+    "created": "Note ajoutée.",
+    "deleted": "Note supprimée.",
+    "deleteConfirm": "Supprimer « {{title}} » ?",
+    "title": "Titre",
+    "titleRequired": "Le titre est obligatoire.",
+    "description": "Détails",
+    "category": "Catégorie",
+    "searchPlaceholder": "Rechercher une note",
+    "markDone": "Marquer terminé",
+    "reopen": "Rouvrir",
+    "categories": {
+      "inspection": "Inspection",
+      "delivery": "Livraison",
+      "payment": "Paiement",
+      "decision": "Décision",
+      "call": "Appel",
+      "general": "Général"
+    }
+  },
+  "notifications": {
+    "title": "Rappels ({{count}})",
+    "none": "Aucun rappel en attente.",
+    "due": "Échéance {{date}}",
+    "dismiss": "Ignorer"
   }
 }
