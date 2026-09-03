@@ -40,6 +40,8 @@ export const Sheet = forwardRef<BottomSheetModal, Props>(function Sheet(
       snapPoints={snapPoints}
       backdropComponent={renderBackdrop}
       enableDynamicSizing={false}
+      // A sheet opened from inside another sheet (Select in a form) stacks instead of replacing it.
+      stackBehavior="push"
     >
       <BottomSheetScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}

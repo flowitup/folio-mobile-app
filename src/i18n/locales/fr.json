@@ -8,7 +8,8 @@
     "confirm": "Confirmer",
     "save": "Enregistrer",
     "delete": "Supprimer",
-    "ok": "OK"
+    "ok": "OK",
+    "saved": "Enregistré."
   },
   "login": {
     "title": "Connexion à Folio",
@@ -47,7 +48,34 @@
       "tags": "Étiquettes",
       "settings": "Réglages"
     },
-    "spent": "Dépensé"
+    "spent": "Dépensé",
+    "created": "Chantier créé.",
+    "deleted": "Chantier supprimé.",
+    "edit": "Modifier le chantier",
+    "delete": "Supprimer le chantier",
+    "deleteConfirmTitle": "Supprimer {{name}} ?",
+    "deleteConfirmMessage": "Les factures, la main-d'œuvre et les documents de ce chantier seront supprimés. Irréversible.",
+    "searchPlaceholder": "Rechercher un chantier",
+    "noMatch": "Aucun chantier ne correspond.",
+    "remaining": "Restant",
+    "spentPersonal": "Dépenses perso",
+    "spentByCredits": "Payé en avoirs",
+    "laborAccrued": "Main-d'œuvre due",
+    "laborPaid": "Main-d'œuvre payée",
+    "laborUnpaid": "Main-d'œuvre impayée",
+    "members": "Membres",
+    "form": {
+      "createTitle": "Nouveau chantier",
+      "editTitle": "Modifier le chantier",
+      "create": "Créer",
+      "name": "Nom",
+      "nameRequired": "Le nom est obligatoire.",
+      "address": "Adresse",
+      "budget": "Budget (€)",
+      "budgetSource": "Source du budget",
+      "budgetSourceHint": "Texte libre, ex. prêt bancaire, fonds propres",
+      "invoicePrefix": "Préfixe de facture"
+    }
   },
   "settings": {
     "signedInAs": "Connecté en tant que",
@@ -57,5 +85,38 @@
       "fr": "Français",
       "vi": "Tiếng Việt"
     }
+  },
+  "members": {
+    "title": "Membres ({{count}})",
+    "none": "Aucun membre.",
+    "invite": "Inviter un membre",
+    "sendInvite": "Envoyer l'invitation",
+    "inviteSent": "Invitation envoyée.",
+    "invalidEmail": "Saisissez un e-mail valide.",
+    "roleRequired": "Choisissez un rôle.",
+    "role": "Rôle",
+    "changeRole": "Changer le rôle…",
+    "remove": "Retirer",
+    "removed": "Membre retiré.",
+    "removeConfirm": "Retirer {{email}} de ce chantier ?",
+    "joined": "Depuis le {{date}}",
+    "pendingInvitations": "Invitations en attente",
+    "expires": "expire le {{date}}",
+    "revoke": "Révoquer",
+    "invitationRevoked": "Invitation révoquée."
+  },
+  "tags": {
+    "create": "Nouvelle étiquette",
+    "edit": "Modifier l'étiquette",
+    "name": "Nom",
+    "nameRequired": "Le nom est obligatoire.",
+    "color": "Couleur",
+    "none": "Aucune étiquette.",
+    "deleted": "Étiquette supprimée.",
+    "deleteConfirm": "Supprimer l'étiquette {{name}} ?",
+    "deleteHint": "Les saisies et factures gardent leurs données mais perdent cette étiquette.",
+    "summary": "Coût par étiquette",
+    "untagged": "Sans étiquette",
+    "summaryLine": "Main-d'œuvre {{labor}} ({{entries}} saisies) · Dépenses {{expenses}} ({{invoices}} factures)"
   }
 }
