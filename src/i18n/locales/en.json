@@ -232,15 +232,7 @@
       "payments": "Payments"
     },
     "calendar": {
-      "weekdays": [
-        "Mo",
-        "Tu",
-        "We",
-        "Th",
-        "Fr",
-        "Sa",
-        "Su"
-      ]
+      "weekdays": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
     },
     "shift": {
       "full": "Full day",
@@ -395,5 +387,97 @@
     "none": "No reminders due.",
     "due": "Due {{date}}",
     "dismiss": "Dismiss"
+  },
+  "tasks": {
+    "create": "New task",
+    "edit": "Edit task",
+    "none": "No tasks in this lane.",
+    "created": "Task created.",
+    "deleted": "Task deleted.",
+    "deleteConfirm": "Delete \"{{title}}\"?",
+    "title": "Title",
+    "titleRequired": "Title is required.",
+    "description": "Description",
+    "statusLabel": "Lane",
+    "priorityLabel": "Priority",
+    "dueDate": "Due date",
+    "due": "Due {{date}}",
+    "labels": "Labels",
+    "status": {
+      "backlog": "Backlog",
+      "todo": "To do",
+      "in_progress": "In progress",
+      "blocked": "Blocked",
+      "done": "Done"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    }
+  },
+  "chiffrage": {
+    "totalHt": "Total excl. VAT",
+    "totalTtc": "Total incl. VAT",
+    "unpricedCount": "{{count}} article(s) without price",
+    "coversAll": "covers everything",
+    "none": "No postes yet. Add one to start pricing materials.",
+    "nameRequired": "Name is required.",
+    "priceRequired": "Enter a unit price.",
+    "supplierRequired": "Pick a shop or enter a supplier name.",
+    "addPoste": "Add poste",
+    "addStore": "Add shop",
+    "addRoom": "Add room",
+    "addUnit": "Add unit",
+    "addArticle": "Add article",
+    "addStoreToPoste": "Shop for this poste",
+    "addQuote": "Add price",
+    "image": "Photo",
+    "removeImage": "Remove photo",
+    "unpriced": "no price yet",
+    "source": {
+      "selected": "selected",
+      "cheapest": "cheapest",
+      "none": "—"
+    },
+    "noShop": "No shop",
+    "shop": "Shop",
+    "supplierName": "Supplier name",
+    "productUrl": "Product URL",
+    "unitPriceHt": "Unit price excl. VAT (€)",
+    "unit": "Unit",
+    "unitSymbol": "Unit symbol",
+    "room": "Room",
+    "noRoom": "No room",
+    "website": "Website",
+    "deleteQuote": "Delete this price?",
+    "deleteArticle": "Delete article {{name}}?",
+    "deletePoste": "Delete poste {{name}} and its articles?",
+    "deleteStore": "Delete shop {{name}}?",
+    "deleteRoom": "Delete room {{name}}?",
+    "sheet": {
+      "poste": "Poste",
+      "article": "Article",
+      "quote": "Price",
+      "store": "Shop",
+      "room": "Room",
+      "unit": "Unit"
+    }
+  },
+  "analyses": {
+    "upload": "Add analysis",
+    "edit": "Edit analysis",
+    "none": "No analyses yet.",
+    "uploaded": "Analysis added.",
+    "deleted": "Analysis deleted.",
+    "deleteConfirm": "Delete \"{{title}}\"?",
+    "title": "Title",
+    "titleRequired": "Title is required.",
+    "fileRequired": "Pick the HTML report first.",
+    "pickFile": "Choose HTML report",
+    "summary": "Summary",
+    "sourceUrl": "Source URL",
+    "searchPlaceholder": "Search analyses"
   }
 }

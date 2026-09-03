@@ -232,15 +232,7 @@
       "payments": "Paiements"
     },
     "calendar": {
-      "weekdays": [
-        "Lu",
-        "Ma",
-        "Me",
-        "Je",
-        "Ve",
-        "Sa",
-        "Di"
-      ]
+      "weekdays": ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"]
     },
     "shift": {
       "full": "Journée",
@@ -395,5 +387,97 @@
     "none": "Aucun rappel en attente.",
     "due": "Échéance {{date}}",
     "dismiss": "Ignorer"
+  },
+  "tasks": {
+    "create": "Nouvelle tâche",
+    "edit": "Modifier la tâche",
+    "none": "Aucune tâche dans cette colonne.",
+    "created": "Tâche créée.",
+    "deleted": "Tâche supprimée.",
+    "deleteConfirm": "Supprimer « {{title}} » ?",
+    "title": "Titre",
+    "titleRequired": "Le titre est obligatoire.",
+    "description": "Description",
+    "statusLabel": "Colonne",
+    "priorityLabel": "Priorité",
+    "dueDate": "Échéance",
+    "due": "Échéance {{date}}",
+    "labels": "Étiquettes",
+    "status": {
+      "backlog": "Backlog",
+      "todo": "À faire",
+      "in_progress": "En cours",
+      "blocked": "Bloqué",
+      "done": "Terminé"
+    },
+    "priority": {
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute",
+      "urgent": "Urgente"
+    }
+  },
+  "chiffrage": {
+    "totalHt": "Total HT",
+    "totalTtc": "Total TTC",
+    "unpricedCount": "{{count}} article(s) sans prix",
+    "coversAll": "couvre tout",
+    "none": "Aucun poste. Ajoutez-en un pour chiffrer les matériaux.",
+    "nameRequired": "Le nom est obligatoire.",
+    "priceRequired": "Saisissez un prix unitaire.",
+    "supplierRequired": "Choisissez un magasin ou saisissez un fournisseur.",
+    "addPoste": "Ajouter un poste",
+    "addStore": "Ajouter un magasin",
+    "addRoom": "Ajouter une pièce",
+    "addUnit": "Ajouter une unité",
+    "addArticle": "Ajouter un article",
+    "addStoreToPoste": "Magasin pour ce poste",
+    "addQuote": "Ajouter un prix",
+    "image": "Photo",
+    "removeImage": "Retirer la photo",
+    "unpriced": "pas encore de prix",
+    "source": {
+      "selected": "choisi",
+      "cheapest": "moins cher",
+      "none": "—"
+    },
+    "noShop": "Sans magasin",
+    "shop": "Magasin",
+    "supplierName": "Nom du fournisseur",
+    "productUrl": "URL du produit",
+    "unitPriceHt": "Prix unitaire HT (€)",
+    "unit": "Unité",
+    "unitSymbol": "Symbole de l'unité",
+    "room": "Pièce",
+    "noRoom": "Sans pièce",
+    "website": "Site web",
+    "deleteQuote": "Supprimer ce prix ?",
+    "deleteArticle": "Supprimer l'article {{name}} ?",
+    "deletePoste": "Supprimer le poste {{name}} et ses articles ?",
+    "deleteStore": "Supprimer le magasin {{name}} ?",
+    "deleteRoom": "Supprimer la pièce {{name}} ?",
+    "sheet": {
+      "poste": "Poste",
+      "article": "Article",
+      "quote": "Prix",
+      "store": "Magasin",
+      "room": "Pièce",
+      "unit": "Unité"
+    }
+  },
+  "analyses": {
+    "upload": "Ajouter une analyse",
+    "edit": "Modifier l'analyse",
+    "none": "Aucune analyse.",
+    "uploaded": "Analyse ajoutée.",
+    "deleted": "Analyse supprimée.",
+    "deleteConfirm": "Supprimer « {{title}} » ?",
+    "title": "Titre",
+    "titleRequired": "Le titre est obligatoire.",
+    "fileRequired": "Choisissez d'abord le rapport HTML.",
+    "pickFile": "Choisir le rapport HTML",
+    "summary": "Résumé",
+    "sourceUrl": "URL source",
+    "searchPlaceholder": "Rechercher une analyse"
   }
 }

@@ -232,15 +232,7 @@
       "payments": "Thanh toán"
     },
     "calendar": {
-      "weekdays": [
-        "T2",
-        "T3",
-        "T4",
-        "T5",
-        "T6",
-        "T7",
-        "CN"
-      ]
+      "weekdays": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
     },
     "shift": {
       "full": "Cả ngày",
@@ -395,5 +387,97 @@
     "none": "Không có nhắc nhở.",
     "due": "Đến hạn {{date}}",
     "dismiss": "Bỏ qua"
+  },
+  "tasks": {
+    "create": "Công việc mới",
+    "edit": "Sửa công việc",
+    "none": "Không có công việc ở cột này.",
+    "created": "Đã tạo công việc.",
+    "deleted": "Đã xoá công việc.",
+    "deleteConfirm": "Xoá \"{{title}}\"?",
+    "title": "Tiêu đề",
+    "titleRequired": "Cần nhập tiêu đề.",
+    "description": "Mô tả",
+    "statusLabel": "Cột",
+    "priorityLabel": "Ưu tiên",
+    "dueDate": "Hạn",
+    "due": "Hạn {{date}}",
+    "labels": "Nhãn",
+    "status": {
+      "backlog": "Tồn đọng",
+      "todo": "Cần làm",
+      "in_progress": "Đang làm",
+      "blocked": "Bị chặn",
+      "done": "Xong"
+    },
+    "priority": {
+      "low": "Thấp",
+      "medium": "Trung bình",
+      "high": "Cao",
+      "urgent": "Khẩn"
+    }
+  },
+  "chiffrage": {
+    "totalHt": "Tổng chưa VAT",
+    "totalTtc": "Tổng có VAT",
+    "unpricedCount": "{{count}} mục chưa có giá",
+    "coversAll": "đủ tất cả",
+    "none": "Chưa có hạng mục. Thêm để bắt đầu báo giá.",
+    "nameRequired": "Cần nhập tên.",
+    "priceRequired": "Nhập đơn giá.",
+    "supplierRequired": "Chọn cửa hàng hoặc nhập tên nhà cung cấp.",
+    "addPoste": "Thêm hạng mục",
+    "addStore": "Thêm cửa hàng",
+    "addRoom": "Thêm phòng",
+    "addUnit": "Thêm đơn vị",
+    "addArticle": "Thêm mục",
+    "addStoreToPoste": "Cửa hàng cho hạng mục",
+    "addQuote": "Thêm giá",
+    "image": "Ảnh",
+    "removeImage": "Bỏ ảnh",
+    "unpriced": "chưa có giá",
+    "source": {
+      "selected": "đã chọn",
+      "cheapest": "rẻ nhất",
+      "none": "—"
+    },
+    "noShop": "Không cửa hàng",
+    "shop": "Cửa hàng",
+    "supplierName": "Tên nhà cung cấp",
+    "productUrl": "Link sản phẩm",
+    "unitPriceHt": "Đơn giá chưa VAT (€)",
+    "unit": "Đơn vị",
+    "unitSymbol": "Ký hiệu đơn vị",
+    "room": "Phòng",
+    "noRoom": "Không phòng",
+    "website": "Website",
+    "deleteQuote": "Xoá giá này?",
+    "deleteArticle": "Xoá mục {{name}}?",
+    "deletePoste": "Xoá hạng mục {{name}} và các mục?",
+    "deleteStore": "Xoá cửa hàng {{name}}?",
+    "deleteRoom": "Xoá phòng {{name}}?",
+    "sheet": {
+      "poste": "Hạng mục",
+      "article": "Mục",
+      "quote": "Giá",
+      "store": "Cửa hàng",
+      "room": "Phòng",
+      "unit": "Đơn vị"
+    }
+  },
+  "analyses": {
+    "upload": "Thêm phân tích",
+    "edit": "Sửa phân tích",
+    "none": "Chưa có phân tích.",
+    "uploaded": "Đã thêm phân tích.",
+    "deleted": "Đã xoá phân tích.",
+    "deleteConfirm": "Xoá \"{{title}}\"?",
+    "title": "Tiêu đề",
+    "titleRequired": "Cần nhập tiêu đề.",
+    "fileRequired": "Chọn tệp HTML trước.",
+    "pickFile": "Chọn báo cáo HTML",
+    "summary": "Tóm tắt",
+    "sourceUrl": "Link nguồn",
+    "searchPlaceholder": "Tìm phân tích"
   }
 }
