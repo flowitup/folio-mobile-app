@@ -232,15 +232,7 @@
       "payments": "Payments"
     },
     "calendar": {
-      "weekdays": [
-        "Mo",
-        "Tu",
-        "We",
-        "Th",
-        "Fr",
-        "Sa",
-        "Su"
-      ]
+      "weekdays": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
     },
     "shift": {
       "full": "Full day",
@@ -433,6 +425,7 @@
     "none": "No postes yet. Add one to start pricing materials.",
     "nameRequired": "Name is required.",
     "priceRequired": "Enter a unit price.",
+    "supplierRequired": "Pick a shop or enter a supplier name.",
     "addPoste": "Add poste",
     "addStore": "Add shop",
     "addRoom": "Add room",

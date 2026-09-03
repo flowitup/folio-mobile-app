@@ -232,15 +232,7 @@
       "payments": "Thanh toán"
     },
     "calendar": {
-      "weekdays": [
-        "T2",
-        "T3",
-        "T4",
-        "T5",
-        "T6",
-        "T7",
-        "CN"
-      ]
+      "weekdays": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
     },
     "shift": {
       "full": "Cả ngày",
@@ -433,6 +425,7 @@
     "none": "Chưa có hạng mục. Thêm để bắt đầu báo giá.",
     "nameRequired": "Cần nhập tên.",
     "priceRequired": "Nhập đơn giá.",
+    "supplierRequired": "Chọn cửa hàng hoặc nhập tên nhà cung cấp.",
     "addPoste": "Thêm hạng mục",
     "addStore": "Thêm cửa hàng",
     "addRoom": "Thêm phòng",

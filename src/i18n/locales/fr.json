@@ -232,15 +232,7 @@
       "payments": "Paiements"
     },
     "calendar": {
-      "weekdays": [
-        "Lu",
-        "Ma",
-        "Me",
-        "Je",
-        "Ve",
-        "Sa",
-        "Di"
-      ]
+      "weekdays": ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"]
     },
     "shift": {
       "full": "Journée",
@@ -433,6 +425,7 @@
     "none": "Aucun poste. Ajoutez-en un pour chiffrer les matériaux.",
     "nameRequired": "Le nom est obligatoire.",
     "priceRequired": "Saisissez un prix unitaire.",
+    "supplierRequired": "Choisissez un magasin ou saisissez un fournisseur.",
     "addPoste": "Ajouter un poste",
     "addStore": "Ajouter un magasin",
     "addRoom": "Ajouter une pièce",

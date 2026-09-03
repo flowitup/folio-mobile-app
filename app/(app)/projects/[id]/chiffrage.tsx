@@ -121,6 +121,9 @@ export default function ProjectChiffrageSection() {
         const price = parseMoneyInput(draft.unit_price_ht ?? "");
         if (price == null)
           return showToast(t("chiffrage.priceRequired"), "error");
+        // The API refuses a quote with no origin (store or supplier name).
+        if (!draft.store_id && !draft.supplier_name?.trim())
+          return showToast(t("chiffrage.supplierRequired"), "error");
         const payload = {
           unit_price_ht: price,
           tva_rate: parseMoneyInput(draft.tva_rate ?? "20") ?? 20,
