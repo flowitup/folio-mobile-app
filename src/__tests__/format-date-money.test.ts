@@ -38,6 +38,8 @@ describe("money helpers", () => {
   it("parses comma and dot decimals", () => {
     expect(parseMoneyInput("1 234,50")).toBe(1234.5);
     expect(parseMoneyInput("76.9")).toBe(76.9);
+    expect(parseMoneyInput("1.234,50")).toBe(1234.5);
+    expect(parseMoneyInput("1,234.50")).toBe(1234.5);
     expect(parseMoneyInput("")).toBeNull();
     expect(parseMoneyInput("x")).toBeNull();
   });

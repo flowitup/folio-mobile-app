@@ -9,6 +9,8 @@ import type { PropsWithChildren } from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const DEFAULT_SNAP_POINTS = ["50%", "90%"];
+
 type Props = PropsWithChildren<{
   title?: string;
   snapPoints?: (string | number)[];
@@ -16,7 +18,7 @@ type Props = PropsWithChildren<{
 
 /** Bottom sheet modal wrapper. Open with `ref.current?.present()`, close with `dismiss()`. */
 export const Sheet = forwardRef<BottomSheetModal, Props>(function Sheet(
-  { title, snapPoints = ["50%", "90%"], children },
+  { title, snapPoints = DEFAULT_SNAP_POINTS, children },
   ref,
 ) {
   const insets = useSafeAreaInsets();

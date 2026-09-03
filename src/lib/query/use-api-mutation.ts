@@ -12,11 +12,13 @@ type Options<TVariables, TData> = {
   /** Toast shown on success; omit for silent mutations. */
   successMessage?: string;
   onSuccess?: (data: TData, variables: TVariables) => void;
+  /** Custom error handling; return true to suppress the default error toast. */
+  onError?: (error: unknown, variables: TVariables) => boolean | void;
 };
 
 /**
  * Mutation wrapper enforcing the app-wide conventions: invalidate the listed queries,
- * toast on success when asked, always toast the API error message on failure.
+ * toast on success when asked, toast the API error message on failure.
  */
 export function useApiMutation<TVariables = void, TData = unknown>(
   options: Options<TVariables, TData>,
@@ -35,11 +37,12 @@ export function useApiMutation<TVariables = void, TData = unknown>(
       if (options.successMessage) showToast(options.successMessage, "success");
       options.onSuccess?.(data, variables);
     },
-    onError: (error) => {
+    onError: (error, variables) => {
+      if (__DEV__ && !(error instanceof ApiError))
+        console.error("[useApiMutation]", error);
+      if (options.onError?.(error, variables) === true) return;
       const message =
-        error instanceof ApiError
-          ? error.message
-          : t("common.networkError", { defaultValue: "Network error" });
+        error instanceof ApiError ? error.message : t("common.networkError");
       showToast(message, "error");
     },
   });

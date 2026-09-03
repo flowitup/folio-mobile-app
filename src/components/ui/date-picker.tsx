@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Modal, Platform, Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
+import { ToastViewport } from "@/components/ui/toast";
 import { formatDate, parseIsoDate, toIsoDate } from "@/lib/format/date";
 
 type Props = {
@@ -110,6 +111,7 @@ export function DatePicker({
               />
             </Pressable>
           </Pressable>
+          <ToastViewport />
         </Modal>
       ) : null}
     </View>

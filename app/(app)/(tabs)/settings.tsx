@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
-import i18n, { SUPPORTED_LOCALES } from "@/i18n";
+import i18n, { SUPPORTED_LOCALES, setLocale } from "@/i18n";
 import type { SupportedLocale } from "@/i18n";
 
 export default function SettingsTab() {
@@ -41,7 +41,7 @@ export default function SettingsTab() {
             value: code,
             label: t(`settings.languages.${code}`),
           }))}
-          onChange={(code) => void i18n.changeLanguage(code)}
+          onChange={(code) => void setLocale(code)}
         />
         <Button
           label={t("home.signOut")}

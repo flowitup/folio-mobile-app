@@ -42,7 +42,7 @@ export function ProjectSectionBar({ projectId }: Props) {
             ? pathname === base
             : pathname.startsWith(href);
         return (
-          <Link key={section} href={href} asChild>
+          <Link key={section} href={href} replace asChild>
             <Pressable
               testID={`section-${section}`}
               className={`justify-center border-b-2 px-3 ${active ? "border-primary" : "border-transparent"}`}

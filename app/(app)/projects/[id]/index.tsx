@@ -12,6 +12,8 @@ export default function ProjectOverviewSection() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const project = useProject(id);
 
+  if (!id)
+    return <Text className="p-4 text-danger">{t("home.loadError")}</Text>;
   if (project.isPending) return <ActivityIndicator className="mt-8" />;
   if (project.isError || !project.data)
     return <Text className="p-4 text-danger">{t("home.loadError")}</Text>;

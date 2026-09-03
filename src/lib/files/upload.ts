@@ -1,4 +1,6 @@
-import { getStoredTokens } from "@/auth/token-storage";
+import { File } from "expo-file-system";
+
+import { authedFetch } from "@/api/authed-fetch";
 import { API_BASE_URL } from "@/config/env";
 import { ApiError } from "@/lib/query/api-error";
 
@@ -9,14 +11,12 @@ function toFormPart(file: PickedFile): unknown {
   return { uri: file.uri, name: file.name, type: file.mimeType };
 }
 
-async function authHeaders(): Promise<Record<string, string>> {
-  const { accessToken } = await getStoredTokens();
-  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
-}
-
-async function throwIfFailed(response: Response): Promise<void> {
+async function throwIfFailed(
+  response: Response,
+  fallbackCode: string,
+): Promise<void> {
   if (response.ok) return;
-  let code = "HttpError";
+  let code = fallbackCode;
   let message = `HTTP ${response.status}`;
   try {
     const body = (await response.json()) as {
@@ -39,25 +39,33 @@ export async function uploadMultipart<T = unknown>(
   path: string,
   files: { field: string; file: PickedFile }[],
   fields: Record<string, string> = {},
+  signal?: AbortSignal,
 ): Promise<T> {
   const form = new FormData();
   for (const [key, value] of Object.entries(fields)) form.append(key, value);
   for (const { field, file } of files)
     form.append(field, toFormPart(file) as Blob);
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await authedFetch(`${API_BASE_URL}${path}`, {
     method: "POST",
-    headers: await authHeaders(),
     body: form,
+    signal,
   });
-  await throwIfFailed(response);
+  await throwIfFailed(response, "UploadFailed");
   return (await response.json()) as T;
 }
 
+// Backend contract (project_documents/routes.py): presign → { presigned_url, storage_key, doc_id },
+// confirm ← { doc_id, storage_key, filename, content_type, size_bytes }.
 type PresignResponse = {
-  upload_url: string;
+  presigned_url: string;
   storage_key: string;
-  headers?: Record<string, string>;
+  doc_id: string;
 };
+
+/** Reads the picked file from disk; the PUT needs raw bytes, not a multipart part. */
+async function readFileBytes(file: PickedFile): Promise<Uint8Array> {
+  return new File(file.uri).bytes();
+}
 
 /**
  * Project document upload as the web does it: presign → PUT bytes to storage → confirm.
@@ -66,30 +74,33 @@ type PresignResponse = {
 export async function presignedUpload<T = unknown>(
   projectId: string,
   file: PickedFile,
+  signal?: AbortSignal,
 ): Promise<T> {
   const base = `${API_BASE_URL}/api/v1/projects/${encodeURIComponent(projectId)}/documents`;
-  const headers = {
-    ...(await authHeaders()),
-    "Content-Type": "application/json",
-  };
+  const bytes = await readFileBytes(file);
+  const sizeBytes = file.size ?? bytes.byteLength;
+  const json = { "Content-Type": "application/json" };
 
-  const presign = await fetch(`${base}/presign`, {
+  const presign = await authedFetch(`${base}/presign`, {
     method: "POST",
-    headers,
+    headers: json,
     body: JSON.stringify({
       filename: file.name,
       content_type: file.mimeType,
-      size: file.size,
+      size_bytes: sizeBytes,
     }),
+    signal,
   });
-  await throwIfFailed(presign);
+  await throwIfFailed(presign, "PresignFailed");
   const target = (await presign.json()) as PresignResponse;
 
-  const bytes = await fetch(file.uri).then((r) => r.blob());
-  const put = await fetch(target.upload_url, {
+  // Storage URL is not the API origin: authedFetch sends no Bearer here.
+  const put = await authedFetch(target.presigned_url, {
     method: "PUT",
-    headers: { "Content-Type": file.mimeType, ...(target.headers ?? {}) },
-    body: bytes,
+    headers: { "Content-Type": file.mimeType },
+    // RN fetch accepts typed arrays via XHR; the DOM lib typing is narrower than the runtime.
+    body: bytes as unknown as BodyInit,
+    signal,
   });
   if (!put.ok)
     throw new ApiError(
@@ -98,16 +109,18 @@ export async function presignedUpload<T = unknown>(
       `Storage upload failed (HTTP ${put.status})`,
     );
 
-  const confirm = await fetch(`${base}/confirm`, {
+  const confirm = await authedFetch(`${base}/confirm`, {
     method: "POST",
-    headers,
+    headers: json,
     body: JSON.stringify({
+      doc_id: target.doc_id,
       storage_key: target.storage_key,
       filename: file.name,
       content_type: file.mimeType,
-      size: file.size,
+      size_bytes: sizeBytes,
     }),
+    signal,
   });
-  await throwIfFailed(confirm);
+  await throwIfFailed(confirm, "ConfirmFailed");
   return (await confirm.json()) as T;
 }

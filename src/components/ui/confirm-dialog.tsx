@@ -1,6 +1,7 @@
 import { Modal, Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
+import { ToastViewport } from "@/components/ui/toast";
 
 type Props = {
   visible: boolean;
@@ -69,6 +70,7 @@ export function ConfirmDialog({
           </View>
         </Pressable>
       </Pressable>
+      <ToastViewport />
     </Modal>
   );
 }

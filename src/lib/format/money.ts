@@ -24,7 +24,18 @@ export function formatMoney(
 
 /** Parses user-typed amounts accepting both `,` and `.` decimals and spaces as thousands separators. */
 export function parseMoneyInput(text: string): number | null {
-  const normalized = text.replace(/\s/g, "").replace(",", ".");
+  // Last separator is the decimal mark; every earlier "." or "," is a thousands separator.
+  const compact = text.replace(/\s/g, "");
+  const lastSeparator = Math.max(
+    compact.lastIndexOf(","),
+    compact.lastIndexOf("."),
+  );
+  const normalized =
+    lastSeparator === -1
+      ? compact
+      : compact.slice(0, lastSeparator).replace(/[.,]/g, "") +
+        "." +
+        compact.slice(lastSeparator + 1);
   if (normalized === "" || normalized === "-" || normalized === ".")
     return null;
   const value = Number(normalized);
