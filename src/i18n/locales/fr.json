@@ -479,5 +479,183 @@
     "summary": "Résumé",
     "sourceUrl": "URL source",
     "searchPlaceholder": "Rechercher une analyse"
+  },
+  "billing": {
+    "title": "Facturation",
+    "devis": "Devis",
+    "factures": "Factures",
+    "kind": {
+      "devis": "Devis",
+      "facture": "Facture"
+    },
+    "accessDenied": "La facturation est réservée aux administrateurs de société.",
+    "status": {
+      "draft": "Brouillon",
+      "sent": "Envoyé",
+      "accepted": "Accepté",
+      "rejected": "Refusé",
+      "expired": "Expiré",
+      "paid": "Payée",
+      "overdue": "En retard",
+      "cancelled": "Annulée"
+    },
+    "transitions": {
+      "markAsSent": "Marquer envoyé",
+      "markAsAccepted": "Marquer accepté",
+      "markAsRejected": "Marquer refusé",
+      "markAsExpired": "Marquer expiré",
+      "revertToSent": "Repasser en envoyé",
+      "reopen": "Rouvrir en brouillon",
+      "markAsPaid": "Marquer payée",
+      "markAsOverdue": "Marquer en retard",
+      "markAsCancelled": "Annuler",
+      "markAsCancelledRefund": "Annuler (remboursement)"
+    },
+    "list": {
+      "searchPlaceholder": "Rechercher numéro ou destinataire",
+      "allStatuses": "Tous les statuts",
+      "none": "Aucun document.",
+      "loadMore": "Charger plus",
+      "new": "Nouveau",
+      "templates": "Modèles",
+      "refundable": "Dépenses remboursables",
+      "import": "Importer"
+    },
+    "form": {
+      "modes": {
+        "blank": "Vierge",
+        "fromExisting": "Depuis un existant",
+        "fromTemplate": "Depuis un modèle"
+      },
+      "company": "Société émettrice",
+      "issuedFrom": "Émis par {{name}}",
+      "primary": "principale",
+      "noCompanies": "Rattachez une société dans les Réglages avant de créer un document.",
+      "project": "Chantier",
+      "projectNone": "Aucun chantier",
+      "recipient": "Destinataire",
+      "recipientName": "Nom",
+      "recipientAddress": "Adresse",
+      "recipientEmail": "E-mail",
+      "recipientSiret": "SIRET",
+      "details": "Détails",
+      "issueDate": "Date d'émission",
+      "validityUntil": "Valable jusqu'au",
+      "paymentDue": "Échéance de paiement",
+      "paymentTerms": "Conditions de paiement",
+      "documentNumber": "Numéro du document",
+      "importStatus": "Statut",
+      "items": "Lignes",
+      "addLine": "Ajouter une ligne",
+      "removeLine": "Retirer",
+      "category": "Catégorie",
+      "description": "Description",
+      "quantity": "Qté",
+      "unitPrice": "Prix unitaire HT",
+      "vatRate": "TVA %",
+      "lineHt": "Ligne HT",
+      "suggestions": "Suggestions",
+      "noSuggestions": "Aucune suggestion.",
+      "totalHt": "Total HT",
+      "tva": "TVA {{rate}} %",
+      "totalTtc": "Total TTC",
+      "notes": "Notes",
+      "terms": "Conditions",
+      "signatureBlock": "Bloc signature",
+      "create": "Créer",
+      "importAction": "Importer",
+      "errors": {
+        "companyRequired": "Choisissez une société émettrice.",
+        "recipientRequired": "Le nom du destinataire est obligatoire.",
+        "atLeastOneItem": "Ajoutez au moins une ligne.",
+        "itemDescriptionRequired": "Description obligatoire.",
+        "itemQuantityPositive": "La quantité doit être > 0.",
+        "itemUnitPricePositive": "Le prix unitaire doit être ≥ 0.",
+        "itemVatRatePositive": "La TVA doit être entre 0 et 100.",
+        "documentNumberRequired": "Le numéro du document est obligatoire."
+      }
+    },
+    "actions": {
+      "changeStatus": "Statut",
+      "pdf": "PDF",
+      "xlsx": "XLSX",
+      "clone": "Dupliquer",
+      "cloneAs": "Dupliquer en {{kind}}",
+      "convert": "Convertir en facture",
+      "convertTitle": "Convertir en facture",
+      "deleteConfirm": "Supprimer {{number}} ?",
+      "invalidTransition": "Ce changement de statut n'est pas autorisé."
+    },
+    "toast": {
+      "documentCreated": "Document créé.",
+      "documentSaved": "Document enregistré.",
+      "documentDeleted": "Document supprimé.",
+      "devisConverted": "Devis converti en facture."
+    },
+    "fromExisting": {
+      "title": "Copier un document existant",
+      "none": "Aucun document à copier.",
+      "hint": "Les dates sont réinitialisées ; le reste est copié."
+    },
+    "fromTemplate": {
+      "title": "Créer depuis un modèle",
+      "none": "Aucun modèle pour ce type.",
+      "recipient": "Nom du destinataire",
+      "create": "Créer le document"
+    },
+    "templates": {
+      "title": "Modèles",
+      "new": "Nouveau modèle",
+      "edit": "Modifier le modèle",
+      "none": "Aucun modèle.",
+      "devisGroup": "Modèles de devis",
+      "factureGroup": "Modèles de facture",
+      "itemsCount": "{{count}} ligne(s)",
+      "vatRateNone": "sans TVA par défaut",
+      "name": "Nom",
+      "kind": "Type",
+      "kindImmutable": "Le type ne peut pas être modifié après création.",
+      "defaultVatRate": "TVA % par défaut",
+      "use": "Utiliser",
+      "deleteConfirm": "Supprimer le modèle {{name}} ?",
+      "deleted": "Modèle supprimé.",
+      "nameRequired": "Le nom est obligatoire."
+    },
+    "refundable": {
+      "title": "Dépenses remboursables",
+      "add": "Ajouter des dépenses",
+      "none": "Aucune dépense suivie pour remboursement.",
+      "allCompanies": "Toutes les sociétés",
+      "summary": {
+        "refundedTotal": "Remboursé",
+        "refundedByCompany": "Par la société",
+        "refundedByBank": "Par la banque",
+        "toRefund": "À rembourser"
+      },
+      "status": {
+        "refundable": "Remboursable",
+        "refund_pending": "Remboursement en attente",
+        "refunded": "Remboursée"
+      },
+      "refundedBy": {
+        "company": "Société",
+        "bank": "Banque",
+        "both": "Les deux"
+      },
+      "statusLabel": "Statut",
+      "refundedByTitle": "Remboursée par qui ?",
+      "remove": "Ne plus suivre",
+      "removeConfirm": "Ne plus suivre {{number}} ?",
+      "fundsRelease": "Déblocage {{number}}",
+      "attachments": "{{count}} fichier(s)",
+      "noAttachments": "Aucun fichier",
+      "dialog": {
+        "title": "Ajouter des dépenses",
+        "search": "Rechercher chantier, numéro, destinataire",
+        "none": "Aucune dépense candidate.",
+        "confirm": "Ajouter {{count}}",
+        "partial": "Certaines dépenses n'ont pas pu être ajoutées."
+      }
+    }
   }
 }
