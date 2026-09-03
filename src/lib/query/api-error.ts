@@ -45,3 +45,8 @@ export function unwrap<T>(result: FetchResult<T>): T {
 export function unwrapVoid(result: FetchResult<unknown>): void {
   if (result.error !== undefined) unwrap(result);
 }
+
+/** unwrap for endpoints the spec leaves untyped (200 with no schema): caller asserts the shape. */
+export function unwrapAs<T>(result: FetchResult<unknown>): T {
+  return unwrap(result) as unknown as T;
+}

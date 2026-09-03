@@ -8,7 +8,8 @@
     "confirm": "Xác nhận",
     "save": "Lưu",
     "delete": "Xoá",
-    "ok": "OK"
+    "ok": "OK",
+    "saved": "Đã lưu."
   },
   "login": {
     "title": "Đăng nhập Folio",
@@ -47,7 +48,34 @@
       "tags": "Nhãn",
       "settings": "Cài đặt"
     },
-    "spent": "Đã chi"
+    "spent": "Đã chi",
+    "created": "Đã tạo công trình.",
+    "deleted": "Đã xoá công trình.",
+    "edit": "Sửa công trình",
+    "delete": "Xoá công trình",
+    "deleteConfirmTitle": "Xoá {{name}}?",
+    "deleteConfirmMessage": "Hoá đơn, nhân công và tài liệu của công trình này sẽ bị xoá. Không thể hoàn tác.",
+    "searchPlaceholder": "Tìm công trình",
+    "noMatch": "Không có công trình phù hợp.",
+    "remaining": "Còn lại",
+    "spentPersonal": "Chi cá nhân",
+    "spentByCredits": "Trả bằng phiếu tín dụng",
+    "laborAccrued": "Nhân công phát sinh",
+    "laborPaid": "Nhân công đã trả",
+    "laborUnpaid": "Nhân công chưa trả",
+    "members": "Thành viên",
+    "form": {
+      "createTitle": "Công trình mới",
+      "editTitle": "Sửa công trình",
+      "create": "Tạo",
+      "name": "Tên",
+      "nameRequired": "Cần nhập tên.",
+      "address": "Địa chỉ",
+      "budget": "Ngân sách (€)",
+      "budgetSource": "Nguồn ngân sách",
+      "budgetSourceHint": "Nhập tự do, vd: vay ngân hàng, vốn tự có",
+      "invoicePrefix": "Tiền tố hoá đơn"
+    }
   },
   "settings": {
     "signedInAs": "Đã đăng nhập",
@@ -57,5 +85,38 @@
       "fr": "Français",
       "vi": "Tiếng Việt"
     }
+  },
+  "members": {
+    "title": "Thành viên ({{count}})",
+    "none": "Chưa có thành viên.",
+    "invite": "Mời thành viên",
+    "sendInvite": "Gửi lời mời",
+    "inviteSent": "Đã gửi lời mời.",
+    "invalidEmail": "Nhập email hợp lệ.",
+    "roleRequired": "Chọn vai trò.",
+    "role": "Vai trò",
+    "changeRole": "Đổi vai trò…",
+    "remove": "Gỡ",
+    "removed": "Đã gỡ thành viên.",
+    "removeConfirm": "Gỡ {{email}} khỏi công trình này?",
+    "joined": "Tham gia {{date}}",
+    "pendingInvitations": "Lời mời đang chờ",
+    "expires": "hết hạn {{date}}",
+    "revoke": "Thu hồi",
+    "invitationRevoked": "Đã thu hồi lời mời."
+  },
+  "tags": {
+    "create": "Nhãn mới",
+    "edit": "Sửa nhãn",
+    "name": "Tên",
+    "nameRequired": "Cần nhập tên.",
+    "color": "Màu",
+    "none": "Chưa có nhãn.",
+    "deleted": "Đã xoá nhãn.",
+    "deleteConfirm": "Xoá nhãn {{name}}?",
+    "deleteHint": "Các bản ghi và hoá đơn giữ nguyên dữ liệu nhưng mất nhãn này.",
+    "summary": "Chi phí theo nhãn",
+    "untagged": "Không nhãn",
+    "summaryLine": "Nhân công {{labor}} ({{entries}} bản ghi) · Chi phí {{expenses}} ({{invoices}} hoá đơn)"
   }
 }

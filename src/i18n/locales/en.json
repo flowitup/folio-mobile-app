@@ -8,7 +8,8 @@
     "confirm": "Confirm",
     "save": "Save",
     "delete": "Delete",
-    "ok": "OK"
+    "ok": "OK",
+    "saved": "Saved."
   },
   "login": {
     "title": "Sign in to Folio",
@@ -47,7 +48,34 @@
       "tags": "Tags",
       "settings": "Settings"
     },
-    "spent": "Spent"
+    "spent": "Spent",
+    "created": "Project created.",
+    "deleted": "Project deleted.",
+    "edit": "Edit project",
+    "delete": "Delete project",
+    "deleteConfirmTitle": "Delete {{name}}?",
+    "deleteConfirmMessage": "Invoices, labor and documents of this project will be removed. This cannot be undone.",
+    "searchPlaceholder": "Search projects",
+    "noMatch": "No project matches your search.",
+    "remaining": "Remaining",
+    "spentPersonal": "Personal spend",
+    "spentByCredits": "Paid with credits",
+    "laborAccrued": "Labor accrued",
+    "laborPaid": "Labor paid",
+    "laborUnpaid": "Labor unpaid",
+    "members": "Members",
+    "form": {
+      "createTitle": "New project",
+      "editTitle": "Edit project",
+      "create": "Create",
+      "name": "Name",
+      "nameRequired": "Name is required.",
+      "address": "Address",
+      "budget": "Budget (€)",
+      "budgetSource": "Budget source",
+      "budgetSourceHint": "Free text, e.g. bank loan, own funds",
+      "invoicePrefix": "Invoice prefix"
+    }
   },
   "settings": {
     "signedInAs": "Signed in as",
@@ -57,5 +85,38 @@
       "fr": "Français",
       "vi": "Tiếng Việt"
     }
+  },
+  "members": {
+    "title": "Members ({{count}})",
+    "none": "No members yet.",
+    "invite": "Invite a member",
+    "sendInvite": "Send invitation",
+    "inviteSent": "Invitation sent.",
+    "invalidEmail": "Enter a valid email.",
+    "roleRequired": "Choose a role.",
+    "role": "Role",
+    "changeRole": "Change role…",
+    "remove": "Remove",
+    "removed": "Member removed.",
+    "removeConfirm": "Remove {{email}} from this project?",
+    "joined": "Joined {{date}}",
+    "pendingInvitations": "Pending invitations",
+    "expires": "expires {{date}}",
+    "revoke": "Revoke",
+    "invitationRevoked": "Invitation revoked."
+  },
+  "tags": {
+    "create": "New tag",
+    "edit": "Edit tag",
+    "name": "Name",
+    "nameRequired": "Name is required.",
+    "color": "Color",
+    "none": "No tags yet.",
+    "deleted": "Tag deleted.",
+    "deleteConfirm": "Delete tag {{name}}?",
+    "deleteHint": "Entries and invoices keep their data but lose this tag.",
+    "summary": "Cost by tag",
+    "untagged": "Untagged",
+    "summaryLine": "Labor {{labor}} ({{entries}} entries) · Expenses {{expenses}} ({{invoices}} invoices)"
   }
 }
