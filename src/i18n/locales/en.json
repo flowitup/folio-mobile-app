@@ -329,5 +329,71 @@
       "worker": "Worker",
       "allWorkers": "All workers"
     }
+  },
+  "documents": {
+    "add": "Add a document",
+    "edit": "Edit document",
+    "none": "No documents yet.",
+    "uploaded": "Document uploaded.",
+    "deleted": "Document deleted.",
+    "deleteConfirm": "Delete {{name}}?",
+    "filename": "File name",
+    "tags": "Tags",
+    "tagsHint": "Comma separated",
+    "allTags": "All tags",
+    "kinds": {
+      "pdf": "PDF",
+      "image": "Image",
+      "spreadsheet": "Spreadsheet",
+      "doc": "Document",
+      "cad": "CAD",
+      "text": "Text",
+      "other": "Other"
+    },
+    "sort": {
+      "created_at": "Date",
+      "name": "Name",
+      "size": "Size",
+      "uploader": "Uploader"
+    }
+  },
+  "photos": {
+    "add": "Add photos",
+    "none": "No photos yet.",
+    "uploaded": "Photo uploaded.",
+    "deleted": "Photo deleted.",
+    "deleteConfirm": "Delete this photo?",
+    "caption": "Caption",
+    "share": "Share",
+    "videoHint": "Video — use Share to open it."
+  },
+  "notes": {
+    "create": "New note",
+    "edit": "Edit note",
+    "none": "No notes yet.",
+    "created": "Note added.",
+    "deleted": "Note deleted.",
+    "deleteConfirm": "Delete \"{{title}}\"?",
+    "title": "Title",
+    "titleRequired": "Title is required.",
+    "description": "Details",
+    "category": "Category",
+    "searchPlaceholder": "Search notes",
+    "markDone": "Mark done",
+    "reopen": "Reopen",
+    "categories": {
+      "inspection": "Inspection",
+      "delivery": "Delivery",
+      "payment": "Payment",
+      "decision": "Decision",
+      "call": "Call",
+      "general": "General"
+    }
+  },
+  "notifications": {
+    "title": "Reminders ({{count}})",
+    "none": "No reminders due.",
+    "due": "Due {{date}}",
+    "dismiss": "Dismiss"
   }
 }
