@@ -9,7 +9,8 @@
     "save": "Save",
     "delete": "Delete",
     "ok": "OK",
-    "saved": "Saved."
+    "saved": "Saved.",
+    "edit": "Edit"
   },
   "login": {
     "title": "Sign in to Folio",
@@ -118,5 +119,109 @@
     "summary": "Cost by tag",
     "untagged": "Untagged",
     "summaryLine": "Labor {{labor}} ({{entries}} entries) · Expenses {{expenses}} ({{invoices}} invoices)"
+  },
+  "invoices": {
+    "all": "All",
+    "none": "No invoices yet.",
+    "created": "Invoice created.",
+    "deleted": "Invoice deleted.",
+    "deleteConfirm": "Delete invoice {{number}}?",
+    "allTags": "All tags",
+    "types": {
+      "released_funds": "Released funds",
+      "labor": "Labor",
+      "materials_services": "Materials & services",
+      "others": "Others",
+      "return": "Return / avoir"
+    },
+    "serviceMonthShort": "for",
+    "auto": "auto",
+    "paidWithAvoir": "Paid with avoir",
+    "refundOf": "Refund of",
+    "unassignedWorker": "Unassigned",
+    "paidTotal": "Paid: {{amount}}",
+    "total": "Total",
+    "totalHt": "Total excl. VAT",
+    "totalTva": "VAT",
+    "totalTtc": "Total incl. VAT",
+    "printPdf": "Print / share PDF",
+    "transferToCompany": "Transfer to company payment",
+    "markRefunded": "Mark as refunded by the company",
+    "refundStatusUpdated": "Refund status updated.",
+    "refund": {
+      "refundable": "Refundable",
+      "refund_pending": "Refund pending",
+      "refunded": "Refunded",
+      "bank": "Bank refund",
+      "by": {
+        "company": "by company",
+        "bank": "by bank",
+        "both": "by company and bank"
+      }
+    },
+    "purse": {
+      "released": "Funds released",
+      "company": "Company",
+      "companySpent": "{{name}} spent",
+      "personalSpent": "Personal spent"
+    },
+    "print": {
+      "title": "Invoice"
+    },
+    "export": {
+      "trigger": "Export",
+      "title": "Export invoices",
+      "format": "Format",
+      "from": "From month",
+      "to": "To month",
+      "run": "Download"
+    },
+    "attachments": {
+      "title": "Attachments ({{count}})",
+      "add": "Add",
+      "camera": "Take a photo",
+      "library": "Photo library",
+      "document": "Choose a file",
+      "uploaded": "Attachment added.",
+      "deleted": "Attachment deleted.",
+      "rename": "Rename",
+      "deleteConfirm": "Delete {{name}}?",
+      "permissionDenied": "Camera or photo access was denied. Enable it in Settings."
+    },
+    "form": {
+      "type": "Type",
+      "issueDate": "Issue date",
+      "issueDateRequired": "Issue date is required.",
+      "recipient": "Recipient",
+      "recipientRequired": "Recipient is required.",
+      "recipientAddress": "Recipient address",
+      "worker": "Worker",
+      "workerNone": "No worker linked",
+      "serviceMonth": "Service month",
+      "serviceMonthRequired": "Service month is required for labor.",
+      "paymentMethod": "Payment method",
+      "paymentMethodNone": "None",
+      "tag": "Tag",
+      "tagNone": "No tag",
+      "refundHint": "A return nets against expenses. Link the materials & services invoice it refunds.",
+      "refundsInvoice": "Refunds invoice",
+      "refundsInvoiceNone": "Not linked",
+      "settledVia": "Settled via",
+      "settledViaCash": "Cash / bank",
+      "settledViaAvoir": "Avoir (credit note)",
+      "appliedTo": "Applied to invoice",
+      "appliedToNone": "Not applied",
+      "items": "Items",
+      "itemsRequired": "Add at least one item with a description.",
+      "description": "Description",
+      "quantity": "Qty",
+      "unitPrice": "Unit price",
+      "vatRate": "VAT %",
+      "lineTotal": "Line total",
+      "addItem": "Add item",
+      "notes": "Notes",
+      "highlight": "Highlight",
+      "create": "Create invoice"
+    }
   }
 }

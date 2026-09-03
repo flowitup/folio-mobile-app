@@ -1,5 +1,6 @@
 import type { PropsWithChildren, ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 
 import { Button } from "@/components/ui/button";
 
@@ -8,10 +9,12 @@ import { Button } from "@/components/ui/button";
 export function Card({
   children,
   className,
-}: PropsWithChildren<{ className?: string }>) {
+  style,
+}: PropsWithChildren<{ className?: string; style?: StyleProp<ViewStyle> }>) {
   return (
     <View
       className={`rounded-lg border border-border bg-white p-4 ${className ?? ""}`}
+      style={style}
     >
       {children}
     </View>

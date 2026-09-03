@@ -6,9 +6,9 @@ import { ApiError } from "@/lib/query/api-error";
 
 import type { PickedFile } from "./pick";
 
-/** React Native's FormData accepts `{ uri, name, type }` objects as file parts. */
-function toFormPart(file: PickedFile): unknown {
-  return { uri: file.uri, name: file.name, type: file.mimeType };
+/** Expo's fetch accepts expo-file-system `File` objects (Blob-compatible) as multipart parts. */
+function toFormPart(file: PickedFile): Blob {
+  return new File(file.uri) as unknown as Blob;
 }
 
 async function throwIfFailed(
@@ -44,7 +44,7 @@ export async function uploadMultipart<T = unknown>(
   const form = new FormData();
   for (const [key, value] of Object.entries(fields)) form.append(key, value);
   for (const { field, file } of files)
-    form.append(field, toFormPart(file) as Blob);
+    form.append(field, toFormPart(file), file.name);
   const response = await authedFetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     body: form,
