@@ -144,6 +144,26 @@ export function useUpdateInvoice(projectId: string, invoiceId: string) {
   });
 }
 
+/** Assigns a worker to a labor invoice (payments tab quick-assign). */
+export function useAssignInvoiceWorker(projectId: string) {
+  const { t } = useTranslation();
+  return useApiMutation<{ invoiceId: string; workerId: string }, Invoice>({
+    mutationFn: async ({ invoiceId, workerId }) =>
+      unwrapAs<Invoice>(
+        await api.PUT("/api/v1/projects/{project_id}/invoices/{invoice_id}", {
+          params: { path: { project_id: projectId, invoice_id: invoiceId } },
+          body: { worker_id: workerId } as never,
+        }),
+      ),
+    invalidates: [
+      invoiceKeys.all(projectId),
+      invoiceKeys.laborPayments(projectId),
+      ["projects", projectId],
+    ],
+    successMessage: t("common.saved"),
+  });
+}
+
 export function useDeleteInvoice(projectId: string) {
   const { t } = useTranslation();
   return useApiMutation<{ invoiceId: string }>({

@@ -223,5 +223,111 @@
       "highlight": "Tô màu",
       "create": "Tạo hoá đơn"
     }
+  },
+  "labor": {
+    "tabs": {
+      "summary": "Tổng hợp",
+      "attendance": "Chấm công",
+      "workers": "Nhân công",
+      "payments": "Thanh toán"
+    },
+    "calendar": {
+      "weekdays": [
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "CN"
+      ]
+    },
+    "shift": {
+      "full": "Cả ngày",
+      "half": "Nửa ngày",
+      "overtime": "Tăng ca",
+      "none": "Không ca"
+    },
+    "workers": {
+      "add": "Thêm nhân công",
+      "edit": "Sửa nhân công",
+      "name": "Tên",
+      "nameRequired": "Cần nhập tên.",
+      "dailyRate": "Đơn giá ngày (€)",
+      "rateRequired": "Đơn giá phải lớn hơn 0.",
+      "phone": "Điện thoại",
+      "role": "Vai trò",
+      "roleNone": "Không vai trò",
+      "none": "Chưa có nhân công.",
+      "created": "Đã thêm nhân công.",
+      "deleted": "Đã gỡ nhân công.",
+      "deleteConfirm": "Gỡ {{name}}?",
+      "deleteHint": "Lịch sử chấm công vẫn được giữ.",
+      "inactive": "ngừng",
+      "day": "ngày"
+    },
+    "rates": {
+      "link": "Đơn giá",
+      "title": "Đơn giá — {{name}}",
+      "current": "Đơn giá hiện tại: {{rate}} / ngày",
+      "effectiveDate": "Áp dụng từ",
+      "add": "Thêm thay đổi"
+    },
+    "log": {
+      "open": "Chấm công ngày",
+      "title": "Chấm công {{date}}",
+      "sameAsLastDay": "Giống ngày trước",
+      "noWorkers": "Tất cả nhân công đã được chấm ngày này.",
+      "supplement": "Giờ thêm",
+      "submit": "Chấm {{count}} nhân công",
+      "saved": "Đã lưu chấm công.",
+      "entryDeleted": "Đã xoá bản ghi.",
+      "shiftType": "Ca",
+      "amountOverride": "Ghi đè số tiền (€)",
+      "amountOverrideHint": "Thay thế chi phí tính toán của ngày.",
+      "note": "Ghi chú",
+      "effectiveCost": "Chi phí hiện tại: {{amount}}",
+      "dayTag": "Nhãn cho cả ngày",
+      "conflictTitle": "Đã chấm công nơi khác",
+      "conflictGeneric": "Một số nhân công đã chấm công ở công trình khác cùng ngày.",
+      "conflictConfirm": "Vẫn chấm công"
+    },
+    "activities": {
+      "title": "Hoạt động",
+      "placeholder": "Hoạt động mới…",
+      "add": "Thêm hoạt động"
+    },
+    "description": {
+      "title": "Mô tả ngày"
+    },
+    "summary": {
+      "days": "Ngày công",
+      "cost": "Chi phí nhân công",
+      "bankedHours": "Giờ tích luỹ",
+      "bonus": "Ngày thưởng · chi phí",
+      "allTime": "Tổng chi phí từ đầu",
+      "none": "Không có chấm công tháng này.",
+      "rowLine": "{{days}} ngày · {{banked}} h tích luỹ · {{bonus}} ngày thưởng · đã trả {{paid}}",
+      "monthly": "Theo tháng"
+    },
+    "payments": {
+      "settled": "Đã đủ",
+      "due": "Còn nợ",
+      "line": "Cần trả {{owed}} · đã trả {{paid}} · còn {{balance}}",
+      "record": "Ghi thanh toán",
+      "recordTitle": "Thanh toán — {{name}}",
+      "amount": "Số tiền (€)",
+      "amountRequired": "Nhập số tiền lớn hơn 0.",
+      "itemDescription": "Thanh toán nhân công {{month}}",
+      "none": "Không có khoản phải trả tháng này.",
+      "unassigned": "Hoá đơn nhân công chưa gán",
+      "assignWorker": "Gán cho nhân công…",
+      "openInvoice": "Mở hoá đơn"
+    },
+    "export": {
+      "title": "Xuất nhân công",
+      "worker": "Nhân công",
+      "allWorkers": "Tất cả nhân công"
+    }
   }
 }
