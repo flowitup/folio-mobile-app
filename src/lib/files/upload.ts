@@ -33,16 +33,19 @@ async function throwIfFailed(
 
 /**
  * Multipart upload to an API path (invoice attachments, photos, product images…).
- * `fields` are extra text parts. Returns the parsed JSON body.
+ * `fields` are extra text parts; array values repeat the key. Returns the parsed JSON body.
  */
 export async function uploadMultipart<T = unknown>(
   path: string,
   files: { field: string; file: PickedFile }[],
-  fields: Record<string, string> = {},
+  fields: Record<string, string | string[]> = {},
   signal?: AbortSignal,
 ): Promise<T> {
   const form = new FormData();
-  for (const [key, value] of Object.entries(fields)) form.append(key, value);
+  // Arrays repeat the key (e.g. `tags`), matching Flask `request.form.getlist`.
+  for (const [key, value] of Object.entries(fields))
+    for (const part of Array.isArray(value) ? value : [value])
+      form.append(key, part);
   for (const { field, file } of files)
     form.append(field, toFormPart(file), file.name);
   const response = await authedFetch(`${API_BASE_URL}${path}`, {
