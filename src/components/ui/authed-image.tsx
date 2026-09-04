@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Image } from "react-native";
-import type { ImageProps } from "react-native";
+import type { ImageErrorEvent, ImageProps } from "react-native";
 
+import { authedFetch } from "@/api/authed-fetch";
 import { getStoredTokens } from "@/auth/token-storage";
 import { API_BASE_URL } from "@/config/env";
 
@@ -10,9 +11,31 @@ type Props = Omit<ImageProps, "source"> & {
   path: string;
 };
 
-/** `Image` for API-served media that requires the Bearer token (thumbnails, product images). */
-export function AuthedImage({ path, ...rest }: Props) {
+/** Downloads the image through the token-refreshing fetch and returns it as a data URI. */
+async function fetchAsDataUri(uri: string): Promise<string | null> {
+  const response = await authedFetch(uri);
+  if (!response.ok) return null;
+  const blob = await response.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () =>
+      resolve(typeof reader.result === "string" ? reader.result : null);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * `Image` for API-served media that requires the Bearer token (thumbnails, product images,
+ * chat attachments). First try: the native image loader with the stored token as a header.
+ * If that fails (expired token, or a platform image pipeline that mishandles the header),
+ * fall back to `authedFetch` — same refresh logic as the API client — and render the bytes.
+ */
+export function AuthedImage({ path, onError, ...rest }: Props) {
   const [token, setToken] = useState<string | null>(null);
+  const [fallback, setFallback] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  const uri = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
 
   useEffect(() => {
     let active = true;
@@ -24,11 +47,21 @@ export function AuthedImage({ path, ...rest }: Props) {
     };
   }, []);
 
-  if (!token) return null;
-  const uri = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
+  function handleError(event: ImageErrorEvent) {
+    onError?.(event);
+    if (fallback || failed) return;
+    void fetchAsDataUri(uri).then((dataUri) => {
+      if (dataUri) setFallback(dataUri);
+      else setFailed(true);
+    });
+  }
+
+  if (fallback) return <Image source={{ uri: fallback }} {...rest} />;
+  if (!token || failed) return null;
   return (
     <Image
       source={{ uri, headers: { Authorization: `Bearer ${token}` } }}
+      onError={handleError}
       {...rest}
     />
   );
