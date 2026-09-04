@@ -1120,5 +1120,69 @@
     "confirmBody": "La personne source est supprimée et tous ses ouvriers passent à la cible. Irréversible.",
     "done": "Fusion effectuée. {{count}} ouvrier(s) réaffecté(s).",
     "sameError": "Choisissez deux personnes différentes."
+  },
+  "dashboard": {
+    "loadError": "Impossible de charger les données de l'aperçu",
+    "money": {
+      "spentThisMonth": "Dépensé ce mois-ci",
+      "pctSpent": "{{pct}}% dépensé · {{spent}}"
+    },
+    "spendByType": {
+      "title": "Dépenses mensuelles par type",
+      "rangeShared": "{{from}} – {{to}} · échelle commune",
+      "viewExpense": "Dépenses",
+      "currentHighlighted": "Mois en cours en surbrillance · tendance superposée",
+      "sixMonthSpend": "Dépenses sur 6 mois"
+    },
+    "agenda": {
+      "title": "Cette semaine",
+      "viewAll": "Agenda",
+      "overdue": "En retard",
+      "today": "Aujourd'hui",
+      "thisWeek": "Cette semaine",
+      "empty": "Rien à l'agenda cette semaine."
+    },
+    "summary": {
+      "left": "restant",
+      "released": "Débloqué",
+      "spent": "Dépensé",
+      "companyPurse": "Caisse entreprise",
+      "personalPurse": "Caisse personnelle",
+      "refundableByCompany": "Remboursable · entreprise",
+      "refundableByBank": "Remboursable · banque",
+      "refundableCount": "{{n}} remboursables",
+      "returnsReceived": "Avoirs reçus ({{n}})",
+      "netOfReturns": "net des avoirs",
+      "vsMonth": "{{delta}} vs {{month}}"
+    },
+    "invoiceCount": "{{n}} dépenses",
+    "remainingToSpend": "Reste à dépenser",
+    "bankRelease": {
+      "title": "Déblocage du crédit bancaire",
+      "overDrawn": "Dépassement de",
+      "drawsMeta": "{{count}} déblocages · {first} → {last}",
+      "headlineMeta": "restants sur {{credit}} de crédit · {{pct}} débloqués",
+      "segmentHint": "Un segment par déblocage · débloqué {{amount}}",
+      "creditLabel": "Crédit {{amount}}",
+      "leftLabel": "{{amount}} restants",
+      "largestDraw": "Plus gros déblocage",
+      "lastDraw": "Dernier déblocage",
+      "noCredit": "Aucun crédit bancaire enregistré",
+      "noCreditHint": "Renseignez le crédit initial accordé par votre banque dans les paramètres du projet.",
+      "openSettings": "Ouvrir les paramètres du projet",
+      "noReleases": "Aucun fonds débloqué pour l'instant",
+      "settingsCardTitle": "Crédit bancaire (crédit immobilier)",
+      "settingsCardHint": "Montant initial accordé par la banque. Les déblocages de fonds en sont déduits."
+    },
+    "project": "Chantier",
+    "noProjects": "Aucun chantier.",
+    "weather": "22°C · dégagé · équipe sur site",
+    "reminders": "Rappels",
+    "credit": "Crédit",
+    "spentTotal": "Dépensé (net des avoirs)",
+    "bank": {
+      "segments": "Un segment par déblocage",
+      "draws": "{{count}} déblocage(s)"
+    }
   }
 }
