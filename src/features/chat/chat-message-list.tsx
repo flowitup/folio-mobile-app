@@ -4,7 +4,7 @@ import { Text, View } from "react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Icon } from "@/components/ui/icon";
-import type { ChatMessage } from "@/features/chat/chat-api";
+import type { ChatMember, ChatMessage } from "@/features/chat/chat-api";
 import {
   dayDividerLabel,
   groupMessagesByDay,
@@ -28,13 +28,50 @@ function formatSize(bytes: number): string {
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
+/** Tiny overlapping avatars of the members whose read marker stops at this message. */
+function SeenBy({ members, mine }: { members: ChatMember[]; mine: boolean }) {
+  const { t } = useTranslation();
+  const tokens = useTokens();
+  const shown = members.slice(0, 4);
+  return (
+    <View
+      testID="chat-seen-by"
+      accessibilityLabel={t("chat.seenBy", {
+        names: members.map((m) => m.name).join(", "),
+      })}
+      className={`flex-row items-center px-1 ${mine ? "justify-end" : "justify-start"}`}
+    >
+      {shown.map((member, index) => (
+        <View
+          key={member.id}
+          style={{ marginLeft: index === 0 ? 0 : -5 }}
+          className="rounded-full border border-paper"
+        >
+          <Avatar
+            name={member.name}
+            size={14}
+            color={senderColor(member.id, tokens)}
+          />
+        </View>
+      ))}
+      {members.length > shown.length ? (
+        <Text className="ml-1 font-sans text-[10px] text-muted-2">
+          +{members.length - shown.length}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
 /** One bubble row: incoming = avatar + name + card bubble; mine = positive bubble on the right. */
 function MessageRow({
   message,
   showSender,
+  seenBy,
 }: {
   message: ChatMessage;
   showSender: boolean;
+  seenBy: ChatMember[] | undefined;
 }) {
   const tokens = useTokens();
   const mine = message.mine;
@@ -102,13 +139,25 @@ function MessageRow({
         <Text className="px-1 font-sans text-[10px] text-muted-2">
           {timeOf(message.created_at)}
         </Text>
+        {seenBy && seenBy.length > 0 ? (
+          <SeenBy members={seenBy} mine={mine} />
+        ) : null}
       </View>
     </View>
   );
 }
 
-/** Messages under day dividers, oldest first (the parent scrolls to the end). */
-export function ChatMessageList({ messages }: { messages: ChatMessage[] }) {
+/**
+ * Messages under day dividers, oldest first (the parent scrolls to the end).
+ * `seen` maps a message id to the members whose read marker lands on it (see `seenByMessage`).
+ */
+export function ChatMessageList({
+  messages,
+  seen,
+}: {
+  messages: ChatMessage[];
+  seen?: Map<string, ChatMember[]>;
+}) {
   const { t } = useTranslation();
   const groups = groupMessagesByDay(messages);
   return (
@@ -127,6 +176,7 @@ export function ChatMessageList({ messages }: { messages: ChatMessage[] }) {
                 key={message.id}
                 message={message}
                 showSender={showsSender(group.messages, index)}
+                seenBy={seen?.get(message.id)}
               />
             ))}
           </View>

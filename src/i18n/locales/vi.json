@@ -1356,6 +1356,7 @@
     "yesterday": "Hôm qua",
     "empty": "Chưa có tin nhắn.",
     "disabled": "Máy chủ này chưa bật trò chuyện.",
-    "permissionDenied": "Không được phép truy cập ảnh."
+    "permissionDenied": "Không được phép truy cập ảnh.",
+    "seenBy": "{{names}} đã xem"
   }
 }

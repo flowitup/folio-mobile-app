@@ -1356,6 +1356,7 @@
     "yesterday": "Hier",
     "empty": "Pas encore de message.",
     "disabled": "La discussion n'est pas activée sur ce serveur.",
-    "permissionDenied": "Accès aux photos refusé."
+    "permissionDenied": "Accès aux photos refusé.",
+    "seenBy": "Vu par {{names}}"
   }
 }
