@@ -47,7 +47,8 @@
       "analyses": "Analyses",
       "members": "Members",
       "tags": "Tags",
-      "settings": "Settings"
+      "settings": "Settings",
+      "salaries": "Salaries"
     },
     "spent": "Spent",
     "created": "Project created.",
@@ -1226,5 +1227,36 @@
       "segments": "One segment per draw",
       "draws": "{{count}} draw(s)"
     }
+  },
+  "salaries": {
+    "title": "Salaries",
+    "worker": "Worker",
+    "noWorkers": "No worker on this project yet.",
+    "noMonths": "No month with work or payment yet.",
+    "days": "{{count}} day(s)",
+    "earned": "Earned",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "totalEarned": "Total earned",
+    "totalPaid": "Total paid",
+    "outstanding": "Outstanding",
+    "status": {
+      "paid": "Paid",
+      "partial": "Partially paid",
+      "unpaid": "Unpaid",
+      "overpaid": "Overpaid",
+      "none": "—"
+    },
+    "markPaid": "Mark as paid",
+    "markUnpaid": "Mark as unpaid",
+    "markPaidTitle": "Pay {{month}}",
+    "amount": "Amount",
+    "paymentMethod": "Payment method",
+    "noPaymentMethod": "No payment method",
+    "unpaidConfirm": "Remove the {{count}} payment(s) recorded for {{month}}? The month will show as unpaid again.",
+    "payments": "Payments",
+    "paidToast": "Payment recorded.",
+    "unpaidToast": "Payments removed.",
+    "readOnly": "Only an admin or manager can change the paid status."
   }
 }

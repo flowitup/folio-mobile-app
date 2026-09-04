@@ -47,7 +47,8 @@
       "analyses": "Phân tích",
       "members": "Thành viên",
       "tags": "Nhãn",
-      "settings": "Cài đặt"
+      "settings": "Cài đặt",
+      "salaries": "Lương"
     },
     "spent": "Đã chi",
     "created": "Đã tạo công trình.",
@@ -1226,5 +1227,36 @@
       "segments": "Một đoạn mỗi lần giải ngân",
       "draws": "{{count}} lần giải ngân"
     }
+  },
+  "salaries": {
+    "title": "Lương",
+    "worker": "Nhân công",
+    "noWorkers": "Chưa có nhân công trong công trình.",
+    "noMonths": "Chưa có tháng nào có công hoặc thanh toán.",
+    "days": "{{count}} ngày",
+    "earned": "Đã kiếm",
+    "paid": "Đã trả",
+    "remaining": "Còn lại",
+    "totalEarned": "Tổng kiếm được",
+    "totalPaid": "Tổng đã trả",
+    "outstanding": "Còn phải trả",
+    "status": {
+      "paid": "Đã trả",
+      "partial": "Trả một phần",
+      "unpaid": "Chưa trả",
+      "overpaid": "Trả dư",
+      "none": "—"
+    },
+    "markPaid": "Đánh dấu đã trả",
+    "markUnpaid": "Đánh dấu chưa trả",
+    "markPaidTitle": "Trả lương {{month}}",
+    "amount": "Số tiền",
+    "paymentMethod": "Phương thức thanh toán",
+    "noPaymentMethod": "Không có phương thức",
+    "unpaidConfirm": "Xóa {{count}} khoản thanh toán của {{month}}? Tháng sẽ trở về chưa trả.",
+    "payments": "Thanh toán",
+    "paidToast": "Đã ghi nhận thanh toán.",
+    "unpaidToast": "Đã xóa thanh toán.",
+    "readOnly": "Chỉ admin hoặc quản lý mới đổi được trạng thái thanh toán."
   }
 }

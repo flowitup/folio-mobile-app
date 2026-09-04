@@ -47,7 +47,8 @@
       "analyses": "Analyses",
       "members": "Membres",
       "tags": "Étiquettes",
-      "settings": "Réglages"
+      "settings": "Réglages",
+      "salaries": "Salaires"
     },
     "spent": "Dépensé",
     "created": "Chantier créé.",
@@ -1226,5 +1227,36 @@
       "segments": "Un segment par déblocage",
       "draws": "{{count}} déblocage(s)"
     }
+  },
+  "salaries": {
+    "title": "Salaires",
+    "worker": "Ouvrier",
+    "noWorkers": "Aucun ouvrier sur ce chantier.",
+    "noMonths": "Aucun mois avec du travail ou un paiement.",
+    "days": "{{count}} jour(s)",
+    "earned": "Gagné",
+    "paid": "Payé",
+    "remaining": "Reste",
+    "totalEarned": "Total gagné",
+    "totalPaid": "Total payé",
+    "outstanding": "Reste à payer",
+    "status": {
+      "paid": "Payé",
+      "partial": "Partiellement payé",
+      "unpaid": "Non payé",
+      "overpaid": "Trop-perçu",
+      "none": "—"
+    },
+    "markPaid": "Marquer payé",
+    "markUnpaid": "Marquer non payé",
+    "markPaidTitle": "Payer {{month}}",
+    "amount": "Montant",
+    "paymentMethod": "Moyen de paiement",
+    "noPaymentMethod": "Sans moyen de paiement",
+    "unpaidConfirm": "Supprimer le(s) {{count}} paiement(s) enregistré(s) pour {{month}} ? Le mois repassera en non payé.",
+    "payments": "Paiements",
+    "paidToast": "Paiement enregistré.",
+    "unpaidToast": "Paiements supprimés.",
+    "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement."
   }
 }
