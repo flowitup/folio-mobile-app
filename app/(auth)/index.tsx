@@ -25,8 +25,8 @@ const FIELD =
 const RESEND_SECONDS = 60;
 
 /**
- * Đăng nhập Folio: ink "F" tile, Fraunces title. The backend's LOGIN_MODE decides which sign-in
- * is offered: phone (SMS code), email (password) or both (segmented switch, phone first).
+ * Đăng nhập Folio: ink "F" tile, Fraunces title. Phone (SMS code) is the app's sign-in; email +
+ * password appears only when the backend's LOGIN_MODE activates it (`email` or `both`).
  */
 export default function LoginScreen() {
   const { t } = useTranslation();

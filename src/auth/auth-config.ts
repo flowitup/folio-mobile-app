@@ -10,7 +10,7 @@ export type LoginMode = "email" | "phone" | "both";
 
 /**
  * Public sign-in options of the backend (LOGIN_MODE / REFRESH_TOKEN_POLICY), read on the login
- * screen so it shows only the sign-in the deployment offers. Unavailable → both are offered.
+ * screen so it shows only the sign-in the deployment offers. Unavailable → phone only.
  */
 export function useAuthConfig() {
   return useQuery({
@@ -22,9 +22,12 @@ export function useAuthConfig() {
   });
 }
 
-/** Sign-in methods to offer for a config value (default: both, phone first). */
+/**
+ * Sign-in methods to offer. Email + password stays hidden on the app unless the backend
+ * activates it (`email` or `both`); phone is the default, also while the config is loading.
+ */
 export function loginModesFor(mode: string | undefined): ("phone" | "email")[] {
   if (mode === "email") return ["email"];
-  if (mode === "phone") return ["phone"];
-  return ["phone", "email"];
+  if (mode === "both") return ["phone", "email"];
+  return ["phone"];
 }

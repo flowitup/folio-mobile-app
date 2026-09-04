@@ -6,8 +6,12 @@ describe("loginModesFor", () => {
     expect(loginModesFor("phone")).toEqual(["phone"]);
   });
 
-  it("offers both, phone first, for 'both' or when the config is unknown", () => {
+  it("offers both, phone first, only when the backend activates email too", () => {
     expect(loginModesFor("both")).toEqual(["phone", "email"]);
-    expect(loginModesFor(undefined)).toEqual(["phone", "email"]);
+  });
+
+  it("hides email while the config is unknown", () => {
+    expect(loginModesFor(undefined)).toEqual(["phone"]);
+    expect(loginModesFor("weird")).toEqual(["phone"]);
   });
 });
