@@ -12,11 +12,12 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { MonthPicker } from "@/components/ui/month-picker";
-import { Card, EmptyState, ErrorState } from "@/components/ui/primitives";
+import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
 import { INVOICE_TYPES } from "@/features/invoices/invoice-form";
+import { ExpensePursesCard } from "@/features/invoices/expense-purses-card";
 import { InvoiceRow } from "@/features/invoices/invoice-row";
 import type {
   InvoiceExportFormat,
@@ -27,7 +28,14 @@ import {
   useInvoices,
   useLaborPaymentsSummary,
 } from "@/features/invoices/invoices-api";
+import { BankReleaseCard } from "@/features/dashboard/dashboard-cards";
+import { useProject } from "@/features/projects/projects-api";
 import { useTags } from "@/features/projects/tags-api";
+import {
+  buildDrawSeries,
+  computeBankReleaseMetrics,
+} from "@/lib/dashboard/bank-release-metrics";
+import { buildPursesSummary } from "@/lib/invoices/expense-purses";
 import { currentMonth, formatMonth } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { groupInvoicesByMonth } from "@/lib/invoices/group-invoices-by-month";
@@ -59,6 +67,7 @@ export default function ProjectInvoicesSection() {
   const [exportType, setExportType] = useState<Tab>("all");
   const [exporting, setExporting] = useState(false);
 
+  const project = useProject(id);
   const rows = useMemo(() => invoices.data?.invoices ?? [], [invoices.data]);
   const monthGroups = useMemo(
     () => (tab === "all" ? groupInvoicesByMonth(rows) : []),
@@ -174,34 +183,27 @@ export default function ProjectInvoicesSection() {
         </View>
 
         {meta && tab === "all" && !tagId ? (
-          <Card className="mb-4">
-            <View className="flex-row justify-between py-1">
-              <Text className="text-sm text-muted-foreground">
-                {t("invoices.purse.released")}
-              </Text>
-              <Text className="text-sm text-primary">
-                {formatMoney(meta.funds_released_total ?? 0)}
-              </Text>
-            </View>
-            <View className="flex-row justify-between py-1">
-              <Text className="text-sm text-muted-foreground">
-                {t("invoices.purse.companySpent", {
-                  name: meta.company_name ?? t("invoices.purse.company"),
-                })}
-              </Text>
-              <Text className="text-sm text-primary">
-                {formatMoney(meta.company_spent_total ?? 0)}
-              </Text>
-            </View>
-            <View className="flex-row justify-between py-1">
-              <Text className="text-sm text-muted-foreground">
-                {t("invoices.purse.personalSpent")}
-              </Text>
-              <Text className="text-sm text-primary">
-                {formatMoney(meta.personal_spent_total ?? 0)}
-              </Text>
-            </View>
-          </Card>
+          <>
+            <ExpensePursesCard
+              summary={buildPursesSummary(rows)}
+              releasedCompany={
+                meta.funds_released_company_total ??
+                (meta.funds_released_total ?? 0) -
+                  (meta.funds_released_personal_total ?? 0)
+              }
+              releasedPersonal={meta.funds_released_personal_total ?? 0}
+              companyName={meta.company_name ?? null}
+            />
+            <BankReleaseCard
+              metrics={computeBankReleaseMetrics(
+                project.data?.budget == null
+                  ? null
+                  : Number(project.data.budget),
+                meta.funds_released_total ?? 0,
+              )}
+              draws={buildDrawSeries(rows)}
+            />
+          </>
         ) : null}
 
         {invoices.isPending ? (

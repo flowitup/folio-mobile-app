@@ -60,7 +60,7 @@
     "noMatch": "Aucun chantier ne correspond.",
     "remaining": "Restant",
     "spentPersonal": "Dépenses perso",
-    "spentByCredits": "Payé en avoirs",
+    "spentByCredits": "Dépensé sur crédit",
     "laborAccrued": "Main-d'œuvre due",
     "laborPaid": "Main-d'œuvre payée",
     "laborUnpaid": "Main-d'œuvre impayée",
@@ -76,7 +76,13 @@
       "budgetSource": "Source du budget",
       "budgetSourceHint": "Texte libre, ex. prêt bancaire, fonds propres",
       "invoicePrefix": "Préfixe de facture"
-    }
+    },
+    "allProjects": "Tous les chantiers",
+    "active": "Actifs",
+    "team": "Équipe",
+    "creditTotal": "Crédit total",
+    "overBudget": "Dépassement de",
+    "laborUnpaidHint": "Dû aux ouvriers. Non compris dans le total ci-dessus."
   },
   "settings": {
     "signedInAs": "Connecté en tant que",
@@ -236,7 +242,35 @@
       "notes": "Notes",
       "highlight": "Surlignage",
       "create": "Créer la facture"
-    }
+    },
+    "summary": {
+      "totalExpenses": "Total dépenses",
+      "companyPurse": "Caisse entreprise",
+      "personalPurse": "Caisse personnelle",
+      "released": "Débloqué",
+      "spent": "Dépensé",
+      "left": "restant",
+      "ofReleased": "sur {{amount}} débloqués",
+      "refundableCount": "{{n}} remboursables",
+      "credit": "Crédit",
+      "refundsReceived": "{{n}} avoirs reçus",
+      "returnsReceived": "Avoirs reçus ({{n}})",
+      "outstandingAvoirs": "{{n}} avoirs en attente",
+      "pendingRefunds": "Remboursements en attente",
+      "refundableByCompany": "Remboursable · entreprise",
+      "refundableByBank": "Remboursable · banque",
+      "vsMonth": "{{delta}} vs {{month}}",
+      "byType": "Dépenses par type",
+      "netOfReturns": "net des avoirs",
+      "paidByCompany": "entreprise",
+      "paidByPersonal": "personnel",
+      "sumOfTypes": "Total",
+      "sharedScaleTo": "échelle commune jusqu'à {{amount}}"
+    },
+    "tvaShort": "TVA",
+    "invoiceCount_zero": "aucune dépense",
+    "invoiceCount_one": "1 dépense",
+    "invoiceCount_other": "{{n}} dépenses"
   },
   "labor": {
     "tabs": {
@@ -361,7 +395,8 @@
       "name": "Nom",
       "size": "Taille",
       "uploader": "Auteur"
-    }
+    },
+    "allUploaders": "Tous les auteurs"
   },
   "photos": {
     "add": "Ajouter des photos",
@@ -371,7 +406,8 @@
     "deleteConfirm": "Supprimer cette photo ?",
     "caption": "Légende",
     "share": "Partager",
-    "videoHint": "Vidéo — utilisez Partager pour l'ouvrir."
+    "videoHint": "Vidéo — utilisez Partager pour l'ouvrir.",
+    "loadMore": "Charger plus"
   },
   "notes": {
     "create": "Nouvelle note",
@@ -477,7 +513,13 @@
       "store": "Magasin",
       "room": "Pièce",
       "unit": "Unité"
-    }
+    },
+    "pickFromLibrary": "Choisir dans la bibliothèque",
+    "librarySearch": "Rechercher un produit",
+    "libraryNone": "Aucun produit trouvé.",
+    "imageFromUrl": "Image depuis une URL",
+    "imageUrl": "URL de l'image",
+    "takePhoto": "Prendre une photo"
   },
   "analyses": {
     "upload": "Ajouter une analyse",

@@ -60,7 +60,7 @@
     "noMatch": "No project matches your search.",
     "remaining": "Remaining",
     "spentPersonal": "Personal spend",
-    "spentByCredits": "Paid with credits",
+    "spentByCredits": "Spent on credit",
     "laborAccrued": "Labor accrued",
     "laborPaid": "Labor paid",
     "laborUnpaid": "Labor unpaid",
@@ -76,7 +76,13 @@
       "budgetSource": "Budget source",
       "budgetSourceHint": "Free text, e.g. bank loan, own funds",
       "invoicePrefix": "Invoice prefix"
-    }
+    },
+    "allProjects": "All projects",
+    "active": "Active",
+    "team": "Team",
+    "creditTotal": "Credit total",
+    "overBudget": "Over by",
+    "laborUnpaidHint": "Owed to workers. Not included in the total above."
   },
   "settings": {
     "signedInAs": "Signed in as",
@@ -236,7 +242,35 @@
       "notes": "Notes",
       "highlight": "Highlight",
       "create": "Create invoice"
-    }
+    },
+    "summary": {
+      "totalExpenses": "Total expenses",
+      "companyPurse": "Company purse",
+      "personalPurse": "Personal purse",
+      "released": "Released",
+      "spent": "Spent",
+      "left": "left",
+      "ofReleased": "of {{amount}} released",
+      "refundableCount": "{{n}} refundable",
+      "credit": "Credit",
+      "refundsReceived": "{{n}} returns received",
+      "returnsReceived": "Returns received ({{n}})",
+      "outstandingAvoirs": "{{n}} outstanding avoirs",
+      "pendingRefunds": "Pending refunds",
+      "refundableByCompany": "Refundable · company",
+      "refundableByBank": "Refundable · bank",
+      "vsMonth": "{{delta}} vs {{month}}",
+      "byType": "Expenses by type",
+      "netOfReturns": "net of returns",
+      "paidByCompany": "company",
+      "paidByPersonal": "personal",
+      "sumOfTypes": "Total",
+      "sharedScaleTo": "shared scale to {{amount}}"
+    },
+    "tvaShort": "VAT",
+    "invoiceCount_zero": "no expense",
+    "invoiceCount_one": "{{n}} expense",
+    "invoiceCount_other": "{{n}} expenses"
   },
   "labor": {
     "tabs": {
@@ -361,7 +395,8 @@
       "name": "Name",
       "size": "Size",
       "uploader": "Uploader"
-    }
+    },
+    "allUploaders": "All uploaders"
   },
   "photos": {
     "add": "Add photos",
@@ -371,7 +406,8 @@
     "deleteConfirm": "Delete this photo?",
     "caption": "Caption",
     "share": "Share",
-    "videoHint": "Video — use Share to open it."
+    "videoHint": "Video — use Share to open it.",
+    "loadMore": "Load more"
   },
   "notes": {
     "create": "New note",
@@ -477,7 +513,13 @@
       "store": "Shop",
       "room": "Room",
       "unit": "Unit"
-    }
+    },
+    "pickFromLibrary": "Pick from the library",
+    "librarySearch": "Search a product",
+    "libraryNone": "No product found.",
+    "imageFromUrl": "Image from URL",
+    "imageUrl": "Image URL",
+    "takePhoto": "Take a photo"
   },
   "analyses": {
     "upload": "Add analysis",

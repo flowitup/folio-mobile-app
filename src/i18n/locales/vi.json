@@ -60,7 +60,7 @@
     "noMatch": "Không có công trình phù hợp.",
     "remaining": "Còn lại",
     "spentPersonal": "Chi cá nhân",
-    "spentByCredits": "Trả bằng phiếu tín dụng",
+    "spentByCredits": "Chi từ tín dụng",
     "laborAccrued": "Nhân công phát sinh",
     "laborPaid": "Nhân công đã trả",
     "laborUnpaid": "Nhân công chưa trả",
@@ -76,7 +76,13 @@
       "budgetSource": "Nguồn ngân sách",
       "budgetSourceHint": "Nhập tự do, vd: vay ngân hàng, vốn tự có",
       "invoicePrefix": "Tiền tố hoá đơn"
-    }
+    },
+    "allProjects": "Tất cả công trình",
+    "active": "Đang hoạt động",
+    "team": "Đội",
+    "creditTotal": "Tổng tín dụng",
+    "overBudget": "Vượt",
+    "laborUnpaidHint": "Nợ nhân công. Không tính vào tổng ở trên."
   },
   "settings": {
     "signedInAs": "Đã đăng nhập",
@@ -236,7 +242,35 @@
       "notes": "Ghi chú",
       "highlight": "Tô màu",
       "create": "Tạo hoá đơn"
-    }
+    },
+    "summary": {
+      "totalExpenses": "Tổng chi phí",
+      "companyPurse": "Quỹ công ty",
+      "personalPurse": "Quỹ cá nhân",
+      "released": "Đã giải ngân",
+      "spent": "Đã chi",
+      "left": "còn lại",
+      "ofReleased": "trên {{amount}} đã giải ngân",
+      "refundableCount": "{{n}} khoản chờ hoàn",
+      "credit": "Ghi có",
+      "refundsReceived": "Đã nhận {{n}} khoản trả hàng",
+      "returnsReceived": "Đã nhận trả hàng ({{n}})",
+      "outstandingAvoirs": "{{n}} avoir chưa áp dụng",
+      "pendingRefunds": "Hoàn tiền đang chờ",
+      "refundableByCompany": "Chờ hoàn · công ty",
+      "refundableByBank": "Chờ hoàn · ngân hàng",
+      "vsMonth": "{{delta}} so với {{month}}",
+      "byType": "Chi phí theo loại",
+      "netOfReturns": "đã trừ hoàn trả",
+      "paidByCompany": "công ty",
+      "paidByPersonal": "cá nhân",
+      "sumOfTypes": "Tổng",
+      "sharedScaleTo": "thang chung đến {{amount}}"
+    },
+    "tvaShort": "VAT",
+    "invoiceCount_zero": "không có chi phí",
+    "invoiceCount_one": "{{n}} chi phí",
+    "invoiceCount_other": "{{n}} chi phí"
   },
   "labor": {
     "tabs": {
@@ -361,7 +395,8 @@
       "name": "Tên",
       "size": "Kích thước",
       "uploader": "Người tải"
-    }
+    },
+    "allUploaders": "Mọi người tải lên"
   },
   "photos": {
     "add": "Thêm ảnh",
@@ -371,7 +406,8 @@
     "deleteConfirm": "Xoá ảnh này?",
     "caption": "Chú thích",
     "share": "Chia sẻ",
-    "videoHint": "Video — dùng Chia sẻ để mở."
+    "videoHint": "Video — dùng Chia sẻ để mở.",
+    "loadMore": "Tải thêm"
   },
   "notes": {
     "create": "Ghi chú mới",
@@ -477,7 +513,13 @@
       "store": "Cửa hàng",
       "room": "Phòng",
       "unit": "Đơn vị"
-    }
+    },
+    "pickFromLibrary": "Chọn từ thư viện",
+    "librarySearch": "Tìm sản phẩm",
+    "libraryNone": "Không tìm thấy sản phẩm.",
+    "imageFromUrl": "Ảnh từ URL",
+    "imageUrl": "URL ảnh",
+    "takePhoto": "Chụp ảnh"
   },
   "analyses": {
     "upload": "Thêm phân tích",

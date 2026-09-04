@@ -8,6 +8,15 @@ import { HIGHLIGHT_COLORS } from "@/lib/invoices/invoice-totals";
 
 import type { Invoice } from "./invoice-types";
 
+/** Tabs where the web ledger shows a VAT column: Σ qty × price × vat_rate / 100. */
+const TVA_TYPES = new Set(["released_funds", "materials_services", "others"]);
+function invoiceTva(items: Invoice["items"]): number {
+  return items.reduce(
+    (sum, it) => sum + it.quantity * it.unit_price * ((it.vat_rate ?? 0) / 100),
+    0,
+  );
+}
+
 const REFUND_TONE = {
   refundable: "neutral",
   refund_pending: "warning",
@@ -49,6 +58,9 @@ export function InvoiceRow({
             {invoice.invoice_number} · {formatDate(invoice.issue_date)}
             {invoice.service_month
               ? ` · ${t("invoices.serviceMonthShort")} ${invoice.service_month.slice(0, 7)}`
+              : ""}
+            {TVA_TYPES.has(invoice.type)
+              ? ` · ${t("invoices.tvaShort")} ${formatMoney(invoiceTva(invoice.items))}`
               : ""}
           </Text>
         </View>

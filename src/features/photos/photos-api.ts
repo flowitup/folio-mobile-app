@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
@@ -51,6 +51,27 @@ export function useProjectPhotos(projectId: string, page = 1, perPage = 100) {
           },
         }),
       ),
+  });
+}
+
+/** Paged gallery with "load more": pages accumulate until `total` is reached (web loadMorePhotosAction). */
+export function useProjectPhotosInfinite(projectId: string, perPage = 60) {
+  return useInfiniteQuery({
+    queryKey: [...photoKeys.all(projectId), "infinite"],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) =>
+      unwrapAs<PhotosPage>(
+        await api.GET("/api/v1/projects/{project_id}/photos", {
+          params: {
+            path: { project_id: projectId },
+            query: { page: pageParam, per_page: perPage } as never,
+          },
+        }),
+      ),
+    getNextPageParam: (last, pages) => {
+      const loaded = pages.reduce((n, p) => n + p.items.length, 0);
+      return loaded < last.total ? last.page + 1 : undefined;
+    },
   });
 }
 

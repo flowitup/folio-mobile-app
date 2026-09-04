@@ -30,6 +30,9 @@ import type {
   ChiffrageQuote,
   ChiffrageStore,
 } from "@/features/chiffrage/chiffrage-types";
+import { LibraryProductPickerSheet } from "@/features/chiffrage/library-product-picker-sheet";
+import type { PickedProduct } from "@/features/chiffrage/library-product-picker-sheet";
+import { useProject } from "@/features/projects/projects-api";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -47,6 +50,13 @@ export default function ProjectChiffrageSection() {
   useRefetchOnFocus(tree.refetch);
 
   const sheet = useRef<BottomSheetModal>(null);
+  const pickerSheet = useRef<BottomSheetModal>(null);
+  const urlSheet = useRef<BottomSheetModal>(null);
+  const project = useProject(id);
+  const [imageArticle, setImageArticle] = useState<ChiffrageArticle | null>(
+    null,
+  );
+  const [imageUrl, setImageUrl] = useState("");
   const [kind, setKind] = useState<SheetKind>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [parentId, setParentId] = useState<string | null>(null);
@@ -129,6 +139,7 @@ export default function ProjectChiffrageSection() {
           tva_rate: parseMoneyInput(draft.tva_rate ?? "20") ?? 20,
           store_id: draft.store_id || null,
           supplier_name: draft.supplier_name?.trim() || null,
+          library_product_id: draft.library_product_id || null,
           product_url: draft.product_url?.trim() || null,
           note: draft.note?.trim() || null,
         };
@@ -185,6 +196,24 @@ export default function ProjectChiffrageSection() {
       });
   }
 
+  /** Library pick prefills the quote; the shop is matched by supplier name when the project has it. */
+  function applyLibraryPick(picked: PickedProduct) {
+    const match = (tree.data?.stores ?? []).find(
+      (s) =>
+        s.name.trim().toLowerCase() ===
+        picked.supplierName.trim().toLowerCase(),
+    );
+    setDraft((d) => ({
+      ...d,
+      store_id: match?.id ?? d.store_id ?? "",
+      supplier_name: match ? (d.supplier_name ?? "") : picked.supplierName,
+      library_product_id: picked.productId,
+      product_url: picked.productUrl ?? d.product_url ?? "",
+      unit_price_ht: picked.suggestedPrice ?? d.unit_price_ht ?? "",
+    }));
+    pickerSheet.current?.dismiss();
+  }
+
   if (tree.isPending) return <ActivityIndicator className="mt-8" />;
   const data = tree.data;
   if (!data)
@@ -218,6 +247,7 @@ export default function ProjectChiffrageSection() {
             tva_rate: String(quote.tva_rate),
             store_id: quote.store_id ?? "",
             supplier_name: quote.supplier_name ?? "",
+            library_product_id: quote.library_product_id ?? "",
             product_url: quote.product_url ?? "",
             note: quote.note ?? "",
           })
@@ -313,6 +343,26 @@ export default function ProjectChiffrageSection() {
               >
                 <Text className="text-sm text-primary">
                   {t("chiffrage.image")}
+                </Text>
+              </Pressable>
+              <Pressable
+                testID={`article-camera-${article.id}`}
+                onPress={() => void pickArticleImage(article, "camera")}
+              >
+                <Text className="text-sm text-primary">
+                  {t("chiffrage.takePhoto")}
+                </Text>
+              </Pressable>
+              <Pressable
+                testID={`article-image-url-${article.id}`}
+                onPress={() => {
+                  setImageArticle(article);
+                  setImageUrl("");
+                  urlSheet.current?.present();
+                }}
+              >
+                <Text className="text-sm text-primary">
+                  {t("chiffrage.imageFromUrl")}
                 </Text>
               </Pressable>
               {image ? (
@@ -573,6 +623,14 @@ export default function ProjectChiffrageSection() {
         >
           {kind === "quote" ? (
             <>
+              <Button
+                testID="quote-pick-library"
+                label={t("chiffrage.pickFromLibrary")}
+                variant="secondary"
+                size="sm"
+                className="mb-3"
+                onPress={() => pickerSheet.current?.present()}
+              />
               <Input
                 testID="quote-price"
                 label={t("chiffrage.unitPriceHt")}
@@ -694,6 +752,41 @@ export default function ProjectChiffrageSection() {
             onPress={submit}
           />
         </ScrollView>
+      </Sheet>
+      <LibraryProductPickerSheet
+        ref={pickerSheet}
+        companyId={project.data?.company_id ?? null}
+        onPick={applyLibraryPick}
+      />
+      <Sheet
+        ref={urlSheet}
+        title={t("chiffrage.imageFromUrl")}
+        snapPoints={["40%"]}
+      >
+        <View className="p-4">
+          <Input
+            testID="article-image-url-input"
+            label={t("chiffrage.imageUrl")}
+            value={imageUrl}
+            onChangeText={setImageUrl}
+            autoCapitalize="none"
+            keyboardType="url"
+            placeholder="https://"
+          />
+          <Button
+            testID="article-image-url-submit"
+            label={t("common.save")}
+            loading={actions.setArticleImageFromUrl.isPending}
+            disabled={!imageUrl.trim()}
+            onPress={() =>
+              imageArticle &&
+              actions.setArticleImageFromUrl.mutate(
+                { articleId: imageArticle.id, url: imageUrl.trim() },
+                { onSuccess: () => urlSheet.current?.dismiss() },
+              )
+            }
+          />
+        </View>
       </Sheet>
       <ConfirmDialog
         visible={confirm !== null}
