@@ -17,7 +17,11 @@
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
-    "failed": "Sign-in failed: {{message}}"
+    "failed": "Sign-in failed: {{message}}",
+    "subtitle": "Same account as the web app.",
+    "show": "Show",
+    "hide": "Hide",
+    "forgot": "Forgot your password? Contact the project administrator."
   },
   "home": {
     "welcome": "Signed in as {{email}}",
@@ -27,10 +31,11 @@
     "signOut": "Sign out"
   },
   "tabs": {
-    "dashboard": "Dashboard",
-    "projects": "Projects",
-    "billing": "Billing",
-    "library": "Library",
+    "overview": "Overview",
+    "expenses": "Expenses",
+    "labor": "Labor",
+    "planning": "Planning",
+    "menu": "Menu",
     "settings": "Settings"
   },
   "project": {
@@ -106,7 +111,8 @@
     },
     "manage": "Manage",
     "role": "Role: {{role}}",
-    "usersAdmin": "Users (admin)"
+    "usersAdmin": "Users (admin)",
+    "title": "Settings"
   },
   "members": {
     "title": "Members ({{count}})",
@@ -281,7 +287,10 @@
       "payments": "Payments"
     },
     "calendar": {
-      "weekdays": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+      "weekdays": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+      "empty": "No attendance yet",
+      "logDay": "Log this day",
+      "details": "Activities & notes"
     },
     "shift": {
       "full": "Full day",
@@ -305,7 +314,8 @@
       "deleteConfirm": "Remove {{name}}?",
       "deleteHint": "Their attendance history stays on the project.",
       "inactive": "inactive",
-      "day": "day"
+      "day": "day",
+      "perDay": "per day · {{count}} days"
     },
     "rates": {
       "link": "Rates",
@@ -363,12 +373,24 @@
       "none": "Nothing owed this month.",
       "unassigned": "Labor invoices without a worker",
       "assignWorker": "Assign to a worker…",
-      "openInvoice": "Open invoice"
+      "openInvoice": "Open invoice",
+      "paidShort": "Paid",
+      "dueShort": "Due"
     },
     "export": {
       "title": "Export labor",
       "worker": "Worker",
       "allWorkers": "All workers"
+    },
+    "segments": {
+      "calendar": "Attendance",
+      "workers": "Workers",
+      "payments": "Payments"
+    },
+    "headerSub": "{{count}} workers active · {{month}}",
+    "kpi": {
+      "cost": "Cost",
+      "unpaid": "Unpaid"
     }
   },
   "documents": {
@@ -1226,6 +1248,22 @@
     "bank": {
       "segments": "One segment per draw",
       "draws": "{{count}} draw(s)"
+    },
+    "overview": {
+      "pctSpent": "{{pct}} % spent",
+      "ofCredit": "of",
+      "creditWord": "credit",
+      "releasedWord": "released",
+      "personal": "Personal",
+      "pay": "Pay",
+      "spendByType": "Spend by type · 6 months",
+      "expensesLink": "Expense ledger",
+      "typeColumn": "Type",
+      "monthTotal": "Total {{month}}",
+      "thisWeek": "This week · {{count}} tasks",
+      "budgetCredit": "Budget / credit",
+      "bankRemaining": "Bank credit left",
+      "pendingCompany": "Awaiting company refund ({{count}})"
     }
   },
   "salaries": {
@@ -1258,5 +1296,50 @@
     "paidToast": "Payment recorded.",
     "unpaidToast": "Payments removed.",
     "readOnly": "Only an admin or manager can change the paid status."
+  },
+  "shell": {
+    "switchProject": "Switch project",
+    "projectsCount": "Projects · {{count}}",
+    "newProject": "+ New project",
+    "membersCount_one": "{{count}} member",
+    "membersCount_other": "{{count}} members",
+    "pctSpent": "{{pct}} % spent",
+    "overBudget": "over budget",
+    "noBudget": "no budget set",
+    "spentNoBudget": "{{amount}} spent",
+    "menu": "Menu",
+    "projectSections": "Project",
+    "settingsSub": "Company, payments, roles",
+    "billingSub": "Quotes · Invoices",
+    "librarySub": "{{products}} products · {{suppliers}} suppliers",
+    "projectSectionsSub": "Documents, photos, notes…"
+  },
+  "expenses": {
+    "add": "Add",
+    "itemsCount_one": "{{count}} item",
+    "itemsCount_other": "{{count}} items",
+    "purseCaption": "left · {{pct}} % used",
+    "pendingRefunds_one": "{{count}} expense awaiting company refund",
+    "pendingRefunds_other": "{{count}} expenses awaiting company refund",
+    "view": "View",
+    "export": "Export Excel / PDF",
+    "filters": {
+      "released_funds": "Released funds",
+      "labor": "Labor",
+      "materials_services": "Materials & services",
+      "others": "Others"
+    },
+    "abbr": {
+      "labor": "LB",
+      "materials_services": "MS",
+      "others": "OT",
+      "released_funds": "RF",
+      "return": "RT"
+    }
+  },
+  "planning": {
+    "newTask": "Task",
+    "moveUp": "Up",
+    "moveDown": "Down"
   }
 }

@@ -43,7 +43,9 @@ export function DatePicker({
   return (
     <View className="mb-4">
       {label ? (
-        <Text className="mb-1.5 font-sans-medium text-[11px] uppercase tracking-[1.1px] text-muted">{label}</Text>
+        <Text className="mb-1.5 font-sans-medium text-[11px] uppercase tracking-[1.1px] text-muted">
+          {label}
+        </Text>
       ) : null}
       <View className="flex-row items-center">
         <Pressable
@@ -53,7 +55,7 @@ export function DatePicker({
             setDraft(parseIsoDate(value) ?? new Date());
             setOpen(true);
           }}
-          className="flex-1 h-12 justify-center rounded-[10px] border border-line-2 bg-card px-3.5"
+          className="h-12 flex-1 justify-center rounded-[10px] border border-line-2 bg-card px-3.5"
         >
           <Text
             className={

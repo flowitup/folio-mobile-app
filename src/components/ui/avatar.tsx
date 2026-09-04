@@ -13,14 +13,16 @@ type Props = {
 };
 
 /** Initials avatar: round colored circle for people, ink square with a serif initial for projects. */
-export function Avatar({ name, size = 36, color, square = false, testID }: Props) {
+export function Avatar({
+  name,
+  size = 36,
+  color,
+  square = false,
+  testID,
+}: Props) {
   const tokens = useTokens();
   const fill = color ?? (square ? tokens.ink : tokens.paper2);
-  const textColor = color
-    ? "#ffffff"
-    : square
-      ? tokens.onInk
-      : tokens.ink;
+  const textColor = color ? "#ffffff" : square ? tokens.onInk : tokens.ink;
   return (
     <View
       testID={testID}

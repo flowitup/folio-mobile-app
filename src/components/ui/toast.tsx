@@ -106,9 +106,7 @@ export function ToastViewport() {
           onPress={() => context.dismiss(item.id)}
           className={`mb-2 w-full rounded-xl px-4 py-3 ${KIND_CLASS[item.kind]}`}
         >
-          <Text className="font-sans text-sm text-on-ink">
-            {item.message}
-          </Text>
+          <Text className="font-sans text-sm text-on-ink">{item.message}</Text>
         </Pressable>
       ))}
     </View>

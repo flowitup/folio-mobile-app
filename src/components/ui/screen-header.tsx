@@ -36,7 +36,9 @@ export function ScreenHeader({ title, back = false, onBack, right }: Props) {
           onPress={
             onBack ??
             (() =>
-              router.canGoBack() ? router.back() : router.navigate("/(app)/(tabs)"))
+              router.canGoBack()
+                ? router.back()
+                : router.navigate("/(app)/(tabs)"))
           }
           hitSlop={8}
           className="-ml-1.5 h-10 w-10 items-center justify-center active:opacity-70"

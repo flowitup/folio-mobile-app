@@ -17,7 +17,11 @@
     "email": "Email",
     "password": "Mật khẩu",
     "submit": "Đăng nhập",
-    "failed": "Đăng nhập thất bại: {{message}}"
+    "failed": "Đăng nhập thất bại: {{message}}",
+    "subtitle": "Cùng tài khoản với bản web.",
+    "show": "Hiện",
+    "hide": "Ẩn",
+    "forgot": "Quên mật khẩu? Liên hệ quản trị viên công trình."
   },
   "home": {
     "welcome": "Đã đăng nhập: {{email}}",
@@ -27,10 +31,11 @@
     "signOut": "Đăng xuất"
   },
   "tabs": {
-    "dashboard": "Tổng quan",
-    "projects": "Công trình",
-    "billing": "Hoá đơn",
-    "library": "Thư viện",
+    "overview": "Tổng quan",
+    "expenses": "Chi phí",
+    "labor": "Nhân công",
+    "planning": "Kế hoạch",
+    "menu": "Menu",
     "settings": "Cài đặt"
   },
   "project": {
@@ -106,7 +111,8 @@
     },
     "manage": "Quản lý",
     "role": "Vai trò: {{role}}",
-    "usersAdmin": "Người dùng (admin)"
+    "usersAdmin": "Người dùng (admin)",
+    "title": "Cài đặt"
   },
   "members": {
     "title": "Thành viên ({{count}})",
@@ -281,7 +287,10 @@
       "payments": "Thanh toán"
     },
     "calendar": {
-      "weekdays": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+      "weekdays": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+      "empty": "Chưa chấm công",
+      "logDay": "Chấm công ngày này",
+      "details": "Hoạt động & ghi chú"
     },
     "shift": {
       "full": "Cả ngày",
@@ -305,7 +314,8 @@
       "deleteConfirm": "Gỡ {{name}}?",
       "deleteHint": "Lịch sử chấm công vẫn được giữ.",
       "inactive": "ngừng",
-      "day": "ngày"
+      "day": "ngày",
+      "perDay": "mỗi ngày · {{count}} ngày"
     },
     "rates": {
       "link": "Đơn giá",
@@ -363,12 +373,24 @@
       "none": "Không có khoản phải trả tháng này.",
       "unassigned": "Hoá đơn nhân công chưa gán",
       "assignWorker": "Gán cho nhân công…",
-      "openInvoice": "Mở hoá đơn"
+      "openInvoice": "Mở hoá đơn",
+      "paidShort": "Đã trả",
+      "dueShort": "Còn"
     },
     "export": {
       "title": "Xuất nhân công",
       "worker": "Nhân công",
       "allWorkers": "Tất cả nhân công"
+    },
+    "segments": {
+      "calendar": "Chấm công",
+      "workers": "Nhân công",
+      "payments": "Thanh toán"
+    },
+    "headerSub": "{{count}} thợ đang làm · {{month}}",
+    "kpi": {
+      "cost": "Chi phí",
+      "unpaid": "Chưa trả"
     }
   },
   "documents": {
@@ -1226,6 +1248,22 @@
     "bank": {
       "segments": "Một đoạn mỗi lần giải ngân",
       "draws": "{{count}} lần giải ngân"
+    },
+    "overview": {
+      "pctSpent": "{{pct}} % đã chi",
+      "ofCredit": "trên",
+      "creditWord": "tín dụng",
+      "releasedWord": "đã giải ngân",
+      "personal": "Cá nhân",
+      "pay": "Trả",
+      "spendByType": "Chi theo loại · 6 tháng",
+      "expensesLink": "Sổ chi phí",
+      "typeColumn": "Loại",
+      "monthTotal": "Tổng {{month}}",
+      "thisWeek": "Tuần này · {{count}} việc",
+      "budgetCredit": "Ngân sách / tín dụng",
+      "bankRemaining": "Tín dụng NH còn lại",
+      "pendingCompany": "Chờ công ty hoàn ({{count}})"
     }
   },
   "salaries": {
@@ -1258,5 +1296,50 @@
     "paidToast": "Đã ghi nhận thanh toán.",
     "unpaidToast": "Đã xóa thanh toán.",
     "readOnly": "Chỉ admin hoặc quản lý mới đổi được trạng thái thanh toán."
+  },
+  "shell": {
+    "switchProject": "Đổi công trình",
+    "projectsCount": "Công trình · {{count}}",
+    "newProject": "+ Công trình mới",
+    "membersCount_one": "{{count}} thành viên",
+    "membersCount_other": "{{count}} thành viên",
+    "pctSpent": "{{pct}} % đã chi",
+    "overBudget": "vượt ngân sách",
+    "noBudget": "chưa đặt ngân sách",
+    "spentNoBudget": "{{amount}} đã chi",
+    "menu": "Menu",
+    "projectSections": "Công trình",
+    "settingsSub": "Công ty, thanh toán, vai trò",
+    "billingSub": "Báo giá · Hóa đơn",
+    "librarySub": "{{products}} sản phẩm · {{suppliers}} nhà cung cấp",
+    "projectSectionsSub": "Tài liệu, ảnh, ghi chú…"
+  },
+  "expenses": {
+    "add": "Thêm",
+    "itemsCount_one": "{{count}} khoản",
+    "itemsCount_other": "{{count}} khoản",
+    "purseCaption": "còn lại · {{pct}} % đã dùng",
+    "pendingRefunds_one": "{{count}} khoản đang chờ công ty hoàn",
+    "pendingRefunds_other": "{{count}} khoản đang chờ công ty hoàn",
+    "view": "Xem",
+    "export": "Xuất Excel / PDF",
+    "filters": {
+      "released_funds": "Vốn giải ngân",
+      "labor": "Nhân công",
+      "materials_services": "Vật tư & DV",
+      "others": "Khác"
+    },
+    "abbr": {
+      "labor": "NC",
+      "materials_services": "VT",
+      "others": "K",
+      "released_funds": "GN",
+      "return": "TH"
+    }
+  },
+  "planning": {
+    "newTask": "Công việc",
+    "moveUp": "Lên",
+    "moveDown": "Xuống"
   }
 }

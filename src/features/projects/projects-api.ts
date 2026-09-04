@@ -87,7 +87,7 @@ export function useDeleteProject(projectId: string) {
       ),
     invalidates: [projectKeys.all],
     successMessage: t("project.deleted"),
-    onSuccess: () => router.navigate("/(app)/(tabs)/projects"),
+    onSuccess: () => router.navigate("/(app)/(tabs)"),
   });
 }
 

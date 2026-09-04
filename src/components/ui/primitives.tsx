@@ -20,16 +20,19 @@ export function Card({
   radius = 12,
   elevated = false,
   padded = true,
+  testID,
 }: PropsWithChildren<{
   className?: string;
   style?: StyleProp<ViewStyle>;
   radius?: 12 | 14 | 16;
   elevated?: boolean;
   padded?: boolean;
+  testID?: string;
 }>) {
   const tokens = useTokens();
   return (
     <View
+      testID={testID}
       className={`border border-line bg-card ${padded ? "p-4" : ""} ${className ?? ""}`}
       style={[
         { borderRadius: radius },
@@ -187,7 +190,9 @@ export function ErrorState({
 }) {
   return (
     <View className="items-center px-6 py-12" testID="error-state">
-      <Text className="mb-4 text-center font-sans text-negative">{message}</Text>
+      <Text className="mb-4 text-center font-sans text-negative">
+        {message}
+      </Text>
       <Button
         label={retryLabel}
         variant="secondary"

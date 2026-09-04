@@ -76,7 +76,9 @@ export function Segmented<T extends string>({
             onPress={() => onChange(option.value)}
             accessibilityState={{ selected: active }}
             className={`flex-1 items-center justify-center ${thumb} ${active ? "bg-card" : ""}`}
-            style={active ? { boxShadow: "0 1px 2px rgba(26,26,26,0.08)" } : null}
+            style={
+              active ? { boxShadow: "0 1px 2px rgba(26,26,26,0.08)" } : null
+            }
           >
             <Text
               className={`font-sans-medium text-[13px] ${active ? "text-ink" : "text-muted"}`}

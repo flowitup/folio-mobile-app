@@ -27,7 +27,8 @@ export const LIGHT = {
   negative: "#b3543d",
   negativeTint: "#f3dccf",
   scrim: "rgba(26,26,26,0.35)",
-  shadowCard: "0 1px 0 rgba(26,26,26,0.02), 0 8px 24px -16px rgba(26,26,26,0.08)",
+  shadowCard:
+    "0 1px 0 rgba(26,26,26,0.02), 0 8px 24px -16px rgba(26,26,26,0.08)",
 } as const;
 
 export const DARK: Tokens = {

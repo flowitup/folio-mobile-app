@@ -14,11 +14,16 @@ type Props = {
 };
 
 /** Month stepper pill (card bg, 1px line, 32px arrows) used by labor and invoice month views. */
-export function MonthPicker({ value, onChange, testID, compact = false }: Props) {
+export function MonthPicker({
+  value,
+  onChange,
+  testID,
+  compact = false,
+}: Props) {
   const tokens = useTokens();
   return (
     <View
-      className={`flex-row items-center self-start rounded-full border border-line bg-card p-0.5 ${compact ? "" : "mb-3 self-stretch justify-between"}`}
+      className={`flex-row items-center self-start rounded-full border border-line bg-card p-0.5 ${compact ? "" : "mb-3 justify-between self-stretch"}`}
       testID={testID}
     >
       <Pressable
@@ -47,5 +52,7 @@ export function MonthPicker({ value, onChange, testID, compact = false }: Props)
 /** `YYYY-MM` → short month in the active locale (`Thg 9`, `sept.`, `Sep`). */
 export function shortMonthLabel(month: string): string {
   const [y, m] = month.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: "short" });
+  return new Date(y, m - 1, 1).toLocaleDateString(undefined, {
+    month: "short",
+  });
 }

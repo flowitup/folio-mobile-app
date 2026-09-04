@@ -75,7 +75,7 @@ export default function AcceptInviteScreen() {
     try {
       await acceptInvite({ token, name: trimmed, password });
       await signIn(state.invite.email, password);
-      router.replace("/(app)/(tabs)/dashboard");
+      router.replace("/(app)/(tabs)");
     } catch (caught) {
       setError(
         caught instanceof Error
