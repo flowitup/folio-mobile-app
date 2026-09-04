@@ -1342,5 +1342,20 @@
     "newTask": "Task",
     "moveUp": "Up",
     "moveDown": "Down"
+  },
+  "chat": {
+    "title": "Team chat",
+    "open": "Open chat",
+    "membersCount_one": "{{count}} member",
+    "membersCount_other": "{{count}} members",
+    "placeholder": "Message…",
+    "send": "Send",
+    "attachImage": "Choose a photo",
+    "takePhoto": "Take a photo",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "empty": "No messages yet.",
+    "disabled": "Chat is not enabled on this server.",
+    "permissionDenied": "Photo access was denied."
   }
 }

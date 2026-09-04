@@ -1342,5 +1342,20 @@
     "newTask": "Công việc",
     "moveUp": "Lên",
     "moveDown": "Xuống"
+  },
+  "chat": {
+    "title": "Trò chuyện nhóm",
+    "open": "Mở trò chuyện",
+    "membersCount_one": "{{count}} thành viên",
+    "membersCount_other": "{{count}} thành viên",
+    "placeholder": "Nhắn tin…",
+    "send": "Gửi",
+    "attachImage": "Chọn ảnh",
+    "takePhoto": "Chụp ảnh",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "empty": "Chưa có tin nhắn.",
+    "disabled": "Máy chủ này chưa bật trò chuyện.",
+    "permissionDenied": "Không được phép truy cập ảnh."
   }
 }

@@ -1329,6 +1329,181 @@ export interface paths {
     };
     trace?: never;
   };
+  "/api/v1/chat/channels": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the chat channels of the current user */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ChannelListResponse"];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/chat/channels/{channel_key}/messages": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List messages of a channel (oldest first) with its members */
+    get: {
+      parameters: {
+        query?: {
+          before?: string | null;
+          limit?: number;
+        };
+        header?: never;
+        path: {
+          channel_key: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["MessagePageResponse"];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Send a message (JSON text, or multipart/form-data with an image `file`) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          channel_key: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["SendMessageBody"];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["MessageResponse"];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/chat/channels/{channel_key}/read": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Mark a channel as read up to now */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          channel_key: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/chat/messages/{message_id}/attachment": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Download a message attachment (channel members only) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          message_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/companies": {
     parameters: {
       query?: never;
@@ -1841,6 +2016,42 @@ export interface paths {
         };
       };
     };
+    trace?: never;
+  };
+  "/api/v1/features": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Feature flags of this deployment */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["FeaturesResponse"];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/api/v1/invitations": {
@@ -6110,6 +6321,17 @@ export interface components {
        */
       recipient_siret: string | null;
     };
+    /** AttachmentResponse */
+    AttachmentResponse: {
+      /** Content Type */
+      content_type: string;
+      /** Filename */
+      filename: string;
+      /** Size Bytes */
+      size_bytes: number;
+      /** Url */
+      url: string;
+    };
     /**
      * BulkAddRequest
      * @description POST /admin/users/<user_id>/memberships request body.
@@ -6204,6 +6426,28 @@ export interface components {
       date: string;
       /** Entries */
       entries: components["schemas"]["BulkLogAttendanceEntry"][];
+    };
+    /** ChannelListResponse */
+    ChannelListResponse: {
+      /** Items */
+      items: components["schemas"]["ChannelResponse"][];
+    };
+    /** ChannelResponse */
+    ChannelResponse: {
+      /** Id */
+      id: string;
+      /** Key */
+      key: string;
+      /** Kind */
+      kind: string;
+      /** Last Message At */
+      last_message_at: string | null;
+      /** Member Count */
+      member_count: number;
+      /** Name */
+      name: string;
+      /** Unread Count */
+      unread_count: number;
     };
     /**
      * CloneRequest
@@ -6660,6 +6904,14 @@ export interface components {
       tag_id: string | null;
     };
     /**
+     * FeaturesResponse
+     * @description Feature flags of this deployment, as seen by the apps.
+     */
+    FeaturesResponse: {
+      /** Chat */
+      chat: boolean;
+    };
+    /**
      * ImportBillingDocumentRequest
      * @description Request body for POST /billing-documents/import.
      *
@@ -6935,6 +7187,38 @@ export interface components {
       token_type: string;
       user: components["schemas"]["UserResponse"];
     };
+    /** MemberResponse */
+    MemberResponse: {
+      /** Id */
+      id: string;
+      /** Name */
+      name: string;
+    };
+    /** MessagePageResponse */
+    MessagePageResponse: {
+      /** Items */
+      items: components["schemas"]["MessageResponse"][];
+      /** Members */
+      members: components["schemas"]["MemberResponse"][];
+    };
+    /** MessageResponse */
+    MessageResponse: {
+      attachment: components["schemas"]["AttachmentResponse"] | null;
+      /** Body */
+      body: string | null;
+      /** Channel Key */
+      channel_key: string;
+      /** Created At */
+      created_at: string;
+      /** Id */
+      id: string;
+      /** Mine */
+      mine: boolean;
+      /** Sender Id */
+      sender_id: string;
+      /** Sender Name */
+      sender_name: string;
+    };
     /**
      * MoveTaskSchema
      * @description Atomic drag-drop endpoint payload.
@@ -7113,6 +7397,16 @@ export interface components {
        * @default Bearer
        */
       token_type: string;
+    };
+    /**
+     * SendMessageBody
+     * @description JSON body of POST /chat/channels/<key>/messages (text-only messages).
+     *
+     *     Messages with an image use multipart/form-data instead: ``body`` text part + ``file``.
+     */
+    SendMessageBody: {
+      /** Body */
+      body: string;
     };
     /**
      * SetDayDescriptionSchema

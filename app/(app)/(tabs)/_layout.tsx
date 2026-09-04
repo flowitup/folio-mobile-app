@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import { View } from "react-native";
 
 import { AccountSheet } from "@/components/shell/account-sheet";
+import { ChatFab } from "@/components/shell/chat-fab";
 import { FloatingTabBar } from "@/components/shell/floating-tab-bar";
 import { MenuSheet } from "@/components/shell/menu-sheet";
 import { NotificationsSheet } from "@/components/shell/notifications-sheet";
@@ -45,6 +46,7 @@ export default function TabsLayout() {
               <Tabs.Screen key={name} name={name} options={{ href: null }} />
             ))}
           </Tabs>
+          <ChatFab />
           <ProjectSwitcherSheet />
           <AccountSheet />
           <MenuSheet />
