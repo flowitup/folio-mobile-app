@@ -21,7 +21,21 @@
     "subtitle": "Cùng tài khoản với bản web.",
     "show": "Hiện",
     "hide": "Ẩn",
-    "forgot": "Quên mật khẩu? Liên hệ quản trị viên công trình."
+    "forgot": "Quên mật khẩu? Liên hệ quản trị viên công trình.",
+    "mode": {
+      "phone": "Số điện thoại",
+      "email": "Email"
+    },
+    "phone": "Số điện thoại",
+    "phoneHint": "VD: 0912 345 678 hoặc +33 6 12 34 56 78",
+    "invalidPhone": "Nhập số điện thoại hợp lệ.",
+    "sendCode": "Gửi mã",
+    "codeSentTo": "Mã 6 số đã gửi tới {{phone}}.",
+    "code": "Mã SMS",
+    "verify": "Đăng nhập",
+    "resend": "Gửi lại",
+    "resendIn": "Gửi lại sau {{seconds}} giây",
+    "changePhone": "Đổi số"
   },
   "home": {
     "welcome": "Đã đăng nhập: {{email}}",
@@ -1103,7 +1117,8 @@
         "empty": "Không tìm thấy người dùng phù hợp",
         "searching": "Đang tìm…",
         "selected": "Đã chọn: {{email}}",
-        "clear": "Xoá"
+        "clear": "Xoá",
+        "phone": "Số điện thoại (đăng nhập SMS)"
       },
       "projects": {
         "label": "Dự án",

@@ -21,7 +21,21 @@
     "subtitle": "Same account as the web app.",
     "show": "Show",
     "hide": "Hide",
-    "forgot": "Forgot your password? Contact the project administrator."
+    "forgot": "Forgot your password? Contact the project administrator.",
+    "mode": {
+      "phone": "Phone number",
+      "email": "Email"
+    },
+    "phone": "Phone number",
+    "phoneHint": "e.g. 0912 345 678 or +33 6 12 34 56 78",
+    "invalidPhone": "Enter a valid phone number.",
+    "sendCode": "Send code",
+    "codeSentTo": "A 6-digit code was sent to {{phone}}.",
+    "code": "SMS code",
+    "verify": "Sign in",
+    "resend": "Send again",
+    "resendIn": "Send again in {{seconds}} s",
+    "changePhone": "Change number"
   },
   "home": {
     "welcome": "Signed in as {{email}}",
@@ -1103,7 +1117,8 @@
         "empty": "No users match your search",
         "searching": "Searching…",
         "selected": "Selected: {{email}}",
-        "clear": "Clear"
+        "clear": "Clear",
+        "phone": "Phone (SMS sign-in)"
       },
       "projects": {
         "label": "Projects",

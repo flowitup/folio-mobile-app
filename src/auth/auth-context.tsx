@@ -18,6 +18,10 @@ import {
 import type { components } from "@/api/generated/schema";
 
 export type AuthUser = components["schemas"]["UserResponse"];
+// Session lifetime is a backend setting (REFRESH_TOKEN_POLICY): "persistent" deployments
+// return a never-expiring refresh token, so the app stays signed in until sign-out;
+// "expiring" ones return the 7-day token. Sign-out hands the refresh token back so the
+// backend revokes it either way.
 
 type AuthStatus = "loading" | "signedOut" | "signedIn";
 
@@ -25,8 +29,23 @@ type AuthContextValue = {
   status: AuthStatus;
   user: AuthUser | null;
   signIn: (email: string, password: string) => Promise<void>;
+  /** Asks the backend to text a 6-digit code; resolves with the code's lifetime in seconds. */
+  requestOtp: (phone: string) => Promise<number>;
+  signInWithOtp: (phone: string, code: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
+
+type LoginPayload = components["schemas"]["LoginResponse"];
+
+function errorMessage(
+  error: unknown,
+  response: { status: number } | undefined,
+): string {
+  return (
+    (error as { message?: string } | undefined)?.message ??
+    `HTTP ${response?.status ?? "?"}`
+  );
+}
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -54,6 +73,33 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return () => setSessionExpiredHandler(null);
   }, [signOutLocally]);
 
+  const completeSignIn = useCallback(async (data: LoginPayload) => {
+    await setStoredTokens(data.access_token, data.refresh_token);
+    setUser(data.user);
+    setStatus("signedIn");
+  }, []);
+
+  const requestOtp = useCallback(async (phone: string) => {
+    const { data, error, response } = await api.POST(
+      "/api/v1/auth/otp/request",
+      { body: { phone } },
+    );
+    if (!data) throw new Error(errorMessage(error, response));
+    return data.expires_in;
+  }, []);
+
+  const signInWithOtp = useCallback(
+    async (phone: string, code: string) => {
+      const { data, error, response } = await api.POST(
+        "/api/v1/auth/otp/verify",
+        { body: { phone, code } },
+      );
+      if (!data) throw new Error(errorMessage(error, response));
+      await completeSignIn(data);
+    },
+    [completeSignIn],
+  );
+
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error, response } = await api.POST("/api/v1/auth/login", {
       body: { email, password },
@@ -70,14 +116,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   const signOut = useCallback(async () => {
-    // Best effort server-side revocation; local sign-out must succeed even offline.
-    await api.POST("/api/v1/auth/logout").catch(() => undefined);
+    // Best effort server-side revocation (access + refresh); local sign-out must succeed even offline.
+    const { refreshToken } = await getStoredTokens();
+    await api
+      .POST("/api/v1/auth/logout", {
+        body: { refresh_token: refreshToken },
+      })
+      .catch(() => undefined);
     await signOutLocally();
   }, [signOutLocally]);
 
   const value = useMemo(
-    () => ({ status, user, signIn, signOut }),
-    [status, user, signIn, signOut],
+    () => ({ status, user, signIn, requestOtp, signInWithOtp, signOut }),
+    [status, user, signIn, requestOtp, signInWithOtp, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

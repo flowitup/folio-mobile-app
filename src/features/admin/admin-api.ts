@@ -9,6 +9,8 @@ export interface UserSearchItem {
   id: string;
   email: string;
   display_name: string | null;
+  /** E.164 number used for SMS-code sign-in; null when not assigned. */
+  phone?: string | null;
 }
 
 export type BulkAddStatus =
@@ -65,7 +67,12 @@ export function useGlobalRoles(enabled = true) {
 export function useUpdateUser() {
   const { t } = useTranslation();
   return useApiMutation<
-    { userId: string; email?: string; display_name?: string | null },
+    {
+      userId: string;
+      email?: string;
+      display_name?: string | null;
+      phone?: string | null;
+    },
     UserSearchItem
   >({
     mutationFn: async ({ userId, ...body }) =>
