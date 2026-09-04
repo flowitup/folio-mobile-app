@@ -21,7 +21,21 @@
     "subtitle": "Même compte que la version web.",
     "show": "Afficher",
     "hide": "Masquer",
-    "forgot": "Mot de passe oublié ? Contactez l'administrateur du chantier."
+    "forgot": "Mot de passe oublié ? Contactez l'administrateur du chantier.",
+    "mode": {
+      "phone": "Numéro de téléphone",
+      "email": "Email"
+    },
+    "phone": "Numéro de téléphone",
+    "phoneHint": "ex. 06 12 34 56 78 ou +84 912 345 678",
+    "invalidPhone": "Saisissez un numéro de téléphone valide.",
+    "sendCode": "Envoyer le code",
+    "codeSentTo": "Un code à 6 chiffres a été envoyé au {{phone}}.",
+    "code": "Code SMS",
+    "verify": "Se connecter",
+    "resend": "Renvoyer",
+    "resendIn": "Renvoyer dans {{seconds}} s",
+    "changePhone": "Changer de numéro"
   },
   "home": {
     "welcome": "Connecté en tant que {{email}}",
@@ -1103,7 +1117,8 @@
         "empty": "Aucun utilisateur ne correspond à votre recherche",
         "searching": "Recherche en cours…",
         "selected": "Sélectionné : {{email}}",
-        "clear": "Effacer"
+        "clear": "Effacer",
+        "phone": "Téléphone (connexion par SMS)"
       },
       "projects": {
         "label": "Projets",

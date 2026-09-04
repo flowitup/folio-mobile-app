@@ -334,6 +334,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/otp/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send a 6-digit sign-in code by SMS to a phone number */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["OtpRequestBody"];
+                };
+            };
+            responses: {
+                /** @description Response */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OtpRequestResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/otp/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Exchange a phone number + SMS code for tokens */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["OtpVerifyBody"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LoginResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/refresh": {
         parameters: {
             query?: never;
@@ -7272,6 +7352,32 @@ export interface components {
             title: string | null;
         };
         /**
+         * OtpRequestBody
+         * @description POST /auth/otp/request — ask for a 6-digit code by SMS.
+         */
+        OtpRequestBody: {
+            /** Phone */
+            phone: string;
+        };
+        /**
+         * OtpRequestResponse
+         * @description Always 202: the code (if the phone is known) is valid for ``expires_in`` seconds.
+         */
+        OtpRequestResponse: {
+            /** Expires In */
+            expires_in: number;
+        };
+        /**
+         * OtpVerifyBody
+         * @description POST /auth/otp/verify — exchange phone + code for tokens.
+         */
+        OtpVerifyBody: {
+            /** Code */
+            code: string;
+            /** Phone */
+            phone: string;
+        };
+        /**
          * ProjectResponse
          * @description Single project response.
          */
@@ -7885,6 +7991,11 @@ export interface components {
             id: string;
             /** Permissions */
             permissions: string[];
+            /**
+             * Phone
+             * @default null
+             */
+            phone: string | null;
             /** Roles */
             roles: string[];
         };

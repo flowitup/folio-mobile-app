@@ -57,6 +57,7 @@ export default function AdminUsersScreen() {
   const editSheet = useRef<BottomSheetModal>(null);
   const [editEmail, setEditEmail] = useState("");
   const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
 
   useEffect(() => {
     const handle = setTimeout(
@@ -126,6 +127,7 @@ export default function AdminUsersScreen() {
                 </Text>
                 <Text className="text-xs text-muted-foreground">
                   {item.email}
+                  {item.phone ? ` · ${item.phone}` : ""}
                 </Text>
               </Pressable>
             ))
@@ -146,6 +148,7 @@ export default function AdminUsersScreen() {
                 onPress={() => {
                   setEditEmail(selected.email);
                   setEditName(selected.display_name ?? "");
+                  setEditPhone(selected.phone ?? "");
                   editSheet.current?.present();
                 }}
               />
@@ -253,7 +256,7 @@ export default function AdminUsersScreen() {
         ) : null}
       </ScrollView>
 
-      <Sheet ref={editSheet} title={t("common.edit")} snapPoints={["45%"]}>
+      <Sheet ref={editSheet} title={t("common.edit")} snapPoints={["55%"]}>
         <View className="p-4">
           <Input
             testID="user-edit-email"
@@ -269,6 +272,15 @@ export default function AdminUsersScreen() {
             value={editName}
             onChangeText={setEditName}
           />
+          <Input
+            testID="user-edit-phone"
+            label={t("admin.bulkAdd.userSearch.phone")}
+            value={editPhone}
+            onChangeText={setEditPhone}
+            keyboardType="phone-pad"
+            autoComplete="tel"
+            placeholder="+84 912 345 678"
+          />
           <Button
             testID="user-edit-submit"
             label={t("common.save")}
@@ -280,6 +292,7 @@ export default function AdminUsersScreen() {
                   userId: selected.id,
                   email: editEmail.trim(),
                   display_name: editName.trim() || null,
+                  phone: editPhone.trim() || null,
                 },
                 {
                   onSuccess: (updated) => {
