@@ -122,7 +122,7 @@ export default function NewBillingDocumentScreen() {
     : `${t("billing.list.new")} · ${t(`billing.kind.${kind}`)}`;
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader title={title} back />
       <ScrollView
         contentContainerClassName="p-4 pb-12"
@@ -222,7 +222,7 @@ export default function NewBillingDocumentScreen() {
               key={item.id}
               testID={`template-pick-${item.id}`}
               onPress={() => setTemplate(item)}
-              className={`mb-2 rounded-lg border px-4 py-3 ${preselected?.id === item.id ? "border-primary bg-muted" : "border-border"}`}
+              className={`mb-2 rounded-lg border px-4 py-3 ${preselected?.id === item.id ? "border-primary bg-paper-2" : "border-border"}`}
             >
               <Text className="text-base font-medium text-primary">
                 {item.name}

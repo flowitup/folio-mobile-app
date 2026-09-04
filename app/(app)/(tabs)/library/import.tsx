@@ -47,7 +47,7 @@ export default function LibraryImportScreen() {
   }
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader title={t("library.import")} back />
       <ScrollView
         contentContainerClassName="p-4 pb-12"

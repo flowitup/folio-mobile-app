@@ -124,7 +124,7 @@ export function MenuSheet() {
             <MenuRow
               testID="menu-billing"
               icon="file-text"
-              title={t("billing.title")}
+              title={t("shell.billingTitle")}
               subtitle={t("shell.billingSub")}
               onPress={() => go("/billing")}
             />

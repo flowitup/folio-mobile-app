@@ -226,10 +226,10 @@ export function SpendByTypeCard({
           <Text className="flex-1 font-sans text-[10.5px] uppercase tracking-[0.84px] text-muted">
             {t("dashboard.overview.typeColumn")}
           </Text>
-          <Text className="w-[74px] text-right font-sans text-[10.5px] uppercase tracking-[0.84px] text-muted">
+          <Text className="w-[96px] text-right font-sans text-[10.5px] uppercase tracking-[0.84px] text-muted">
             {shortMonthLabel(currentMonthKey)}
           </Text>
-          <Text className="w-[52px] text-right font-sans text-[10.5px] uppercase tracking-[0.84px] text-muted">
+          <Text className="w-[46px] text-right font-sans text-[10.5px] uppercase tracking-[0.84px] text-muted">
             Δ
           </Text>
         </View>
@@ -253,11 +253,15 @@ export function SpendByTypeCard({
                     {t(`invoices.types.${bucket.type}`)}
                   </Text>
                 </View>
-                <Text className="w-[74px] text-right font-mono-regular text-[14px] text-ink">
+                <Text
+                  className="w-[96px] text-right font-mono-regular text-[14px] text-ink"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
                   {formatMoney(current)}
                 </Text>
                 <Text
-                  className="w-[52px] text-right font-mono-regular text-xs"
+                  className="w-[46px] text-right font-mono-regular text-xs"
                   style={{ color: deltaColor(bucket.deltaPct, tokens) }}
                 >
                   {formatDelta(bucket.deltaPct)}
@@ -276,11 +280,15 @@ export function SpendByTypeCard({
               month: shortMonthLabel(currentMonthKey),
             })}
           </Text>
-          <Text className="w-[74px] text-right font-mono-semibold text-[14px] text-ink">
+          <Text
+            className="w-[96px] text-right font-mono-semibold text-[14px] text-ink"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
             {formatMoney(totalCurrent)}
           </Text>
           <Text
-            className="w-[52px] text-right font-mono-semibold text-xs"
+            className="w-[46px] text-right font-mono-semibold text-xs"
             style={{ color: deltaColor(totalDeltaPct, tokens) }}
           >
             {formatDelta(totalDeltaPct)}

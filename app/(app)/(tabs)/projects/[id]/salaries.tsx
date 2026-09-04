@@ -149,7 +149,7 @@ export default function ProjectSalariesSection() {
     (worker && laborInvoices.isPending);
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScrollView contentContainerClassName="p-4 pb-12">
         {workers.data && workers.data.length === 0 ? (
           <EmptyState message={t("salaries.noWorkers")} />

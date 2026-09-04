@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 
 import { Icon } from "@/components/ui/icon";
-import { formatMonth, shiftMonth } from "@/lib/format/date";
+import { formatMonth, localeTag, shiftMonth } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
 
 type Props = {
@@ -52,7 +52,7 @@ export function MonthPicker({
 /** `YYYY-MM` → short month in the active locale (`Thg 9`, `sept.`, `Sep`). */
 export function shortMonthLabel(month: string): string {
   const [y, m] = month.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString(undefined, {
-    month: "short",
-  });
+  return new Intl.DateTimeFormat(localeTag(), { month: "short" }).format(
+    new Date(y, m - 1, 1),
+  );
 }

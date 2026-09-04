@@ -11,7 +11,12 @@ import { SelectedProjectProvider } from "@/features/projects/selected-project";
 import { useTokens } from "@/theme/tokens";
 
 /** Routes that are reached through the Menu sheet; they keep the tab bar but are not tab items. */
-const HIDDEN_ROUTES = ["billing", "library", "settings", "projects"] as const;
+const HIDDEN_ROUTES = [
+  "billing",
+  "library",
+  "settings",
+  "projects/[id]",
+] as const;
 
 /**
  * Project-first shell (design 2a): four tabs of the selected project plus a Menu item, one

@@ -58,7 +58,7 @@ export default function LaborRolesScreen() {
   }
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader
         title={t("laborRoles.title")}
         back

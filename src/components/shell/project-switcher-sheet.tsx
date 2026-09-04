@@ -13,9 +13,11 @@ import { projectCan, useCreateProject } from "@/features/projects/projects-api";
 import type { Project } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatMoney } from "@/lib/format/money";
-import { computeBudgetMeta } from "@/lib/projects/budget-display";
 
-/** Second line of a switcher row: address · members · budget state (README "Đổi công trình"). */
+/**
+ * Second line of a switcher row: address · members · budget state (README "Đổi công trình").
+ * "Remaining" is budget − spent, the same figure as the overview headline.
+ */
 export function projectRowMeta(
   project: Project,
   t: (key: string, options?: Record<string, unknown>) => string,
@@ -25,40 +27,36 @@ export function projectRowMeta(
   tone: "ink" | "negative" | "muted";
   pct: number;
 } {
-  const meta = computeBudgetMeta(
-    project.budget ?? 0,
-    project.spent_personal ?? 0,
-    project.spent_by_credits ?? 0,
-  );
+  const budget = project.budget ?? 0;
+  const spent = project.spent ?? 0;
   const parts = [
     project.address,
     t("shell.membersCount", { count: project.user_count ?? 0 }),
   ].filter(Boolean) as string[];
-  if (meta.creditTotal <= 0) {
+  if (budget <= 0) {
     parts.push(t("shell.noBudget"));
     return {
       meta: parts.join(" · "),
-      remain: t("shell.spentNoBudget", {
-        amount: formatMoney(project.spent ?? 0),
-      }),
+      remain: t("shell.spentNoBudget", { amount: formatMoney(spent) }),
       tone: "muted",
       pct: 0,
     };
   }
-  if (meta.isOverBudget) {
+  const remaining = budget - spent;
+  if (remaining < 0) {
     parts.push(t("shell.overBudget"));
     return {
       meta: parts.join(" · "),
-      remain: formatMoney(meta.remaining),
+      remain: formatMoney(remaining),
       tone: "negative",
       pct: 100,
     };
   }
-  const pct = Math.round(meta.progress * 100);
+  const pct = Math.round((spent / budget) * 100);
   parts.push(t("shell.pctSpent", { pct }));
   return {
     meta: parts.join(" · "),
-    remain: formatMoney(meta.remaining),
+    remain: formatMoney(remaining),
     tone: "ink",
     pct,
   };

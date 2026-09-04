@@ -1312,7 +1312,8 @@
     "settingsSub": "Company, payments, roles",
     "billingSub": "Quotes · Invoices",
     "librarySub": "{{products}} products · {{suppliers}} suppliers",
-    "projectSectionsSub": "Documents, photos, notes…"
+    "projectSectionsSub": "Documents, photos, notes…",
+    "billingTitle": "Quotes & invoices"
   },
   "expenses": {
     "add": "Add",

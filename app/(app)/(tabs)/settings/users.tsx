@@ -76,14 +76,14 @@ export default function AdminUsersScreen() {
 
   if (!superadmin)
     return (
-      <View className="flex-1 bg-card">
+      <View className="flex-1 bg-paper">
         <ScreenHeader title={t("admin.bulkAdd.title")} back />
         <EmptyState message={t("settings.users.permissionDenied")} />
       </View>
     );
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader title={t("admin.bulkAdd.title")} back />
       <ScrollView
         contentContainerClassName="p-4 pb-12"

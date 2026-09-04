@@ -59,14 +59,14 @@ export default function BillingDocumentScreen() {
   const doc = query.data;
   if (query.isPending)
     return (
-      <View className="flex-1 bg-card">
+      <View className="flex-1 bg-paper">
         <ScreenHeader title="…" back />
         <ActivityIndicator className="mt-8" />
       </View>
     );
   if (!doc)
     return (
-      <View className="flex-1 bg-card">
+      <View className="flex-1 bg-paper">
         <ScreenHeader title={t("billing.title")} back />
         <ErrorState
           message={t("home.loadError")}
@@ -96,7 +96,7 @@ export default function BillingDocumentScreen() {
   const busy = clone.isPending || convert.isPending || setStatus.isPending;
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader title={doc.document_number} back />
       <ScrollView
         contentContainerClassName="p-4 pb-12"

@@ -51,7 +51,7 @@ export function Select<T extends string>({
       >
         <Text
           numberOfLines={1}
-          className={`mr-2 flex-1 font-sans ${compact ? "text-[13px]" : "text-base"} ${selected ? "text-ink" : "text-muted"}`}
+          className={`mr-2 font-sans ${compact ? "text-[13px]" : "flex-1 text-base"} ${selected ? "text-ink" : "text-muted"}`}
         >
           {selected?.label ?? placeholder ?? "—"}
         </Text>

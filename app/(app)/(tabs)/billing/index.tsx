@@ -74,7 +74,7 @@ export default function BillingHub() {
 
   return (
     <View className="flex-1 bg-paper">
-      <ScreenHeader title={t("billing.title")} back />
+      <ScreenHeader title={t("shell.billingTitle")} back />
       {access.loading ? (
         <ActivityIndicator className="mt-8" color={tokens.ink} />
       ) : null}

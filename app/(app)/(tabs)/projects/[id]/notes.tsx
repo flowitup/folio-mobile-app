@@ -98,7 +98,7 @@ export default function ProjectNotesSection() {
   }));
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

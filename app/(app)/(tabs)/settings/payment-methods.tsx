@@ -22,7 +22,7 @@ export default function PaymentMethodsScreen() {
     (user?.permissions.includes("*:*") ?? false) || selected?.role === "admin";
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader title={t("paymentMethods.title")} back />
       <ScrollView
         contentContainerClassName="p-4 pb-12"

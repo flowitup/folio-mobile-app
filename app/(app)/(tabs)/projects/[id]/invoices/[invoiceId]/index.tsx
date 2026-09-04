@@ -145,7 +145,7 @@ export default function InvoiceDetailScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-card"
+      className="flex-1 bg-paper"
       contentContainerClassName="p-4 pb-12"
     >
       <Card

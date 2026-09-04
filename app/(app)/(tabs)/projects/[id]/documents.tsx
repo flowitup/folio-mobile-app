@@ -108,7 +108,7 @@ export default function ProjectDocumentsSection() {
   const items = documents.data?.items ?? [];
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

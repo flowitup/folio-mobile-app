@@ -56,14 +56,14 @@ export default function LibraryProductScreen() {
 
   if (query.isPending)
     return (
-      <View className="flex-1 bg-card">
+      <View className="flex-1 bg-paper">
         <ScreenHeader title="…" back />
         <ActivityIndicator className="mt-8" />
       </View>
     );
   if (!product)
     return (
-      <View className="flex-1 bg-card">
+      <View className="flex-1 bg-paper">
         <ScreenHeader title={t("library.detailTitle")} back />
         <ErrorState
           message={t("home.loadError")}
@@ -111,7 +111,7 @@ export default function LibraryProductScreen() {
   }
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader
         title={product.name}
         back
@@ -125,7 +125,7 @@ export default function LibraryProductScreen() {
         }
       />
       <ScrollView contentContainerClassName="p-4 pb-12">
-        <View className="aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-muted">
+        <View className="aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-paper-2">
           {product.has_image ? (
             <AuthedImage
               key={product.updated_at}

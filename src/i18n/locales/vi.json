@@ -1312,7 +1312,8 @@
     "settingsSub": "Công ty, thanh toán, vai trò",
     "billingSub": "Báo giá · Hóa đơn",
     "librarySub": "{{products}} sản phẩm · {{suppliers}} nhà cung cấp",
-    "projectSectionsSub": "Tài liệu, ảnh, ghi chú…"
+    "projectSectionsSub": "Tài liệu, ảnh, ghi chú…",
+    "billingTitle": "Báo giá & hóa đơn"
   },
   "expenses": {
     "add": "Thêm",

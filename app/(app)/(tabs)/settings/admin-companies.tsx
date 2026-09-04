@@ -29,7 +29,7 @@ export default function AdminCompaniesScreen() {
   const [key, setKey] = useState(0);
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader
         title={t("companies.admin.title")}
         back

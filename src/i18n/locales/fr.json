@@ -1312,7 +1312,8 @@
     "settingsSub": "Société, paiements, rôles",
     "billingSub": "Devis · Factures",
     "librarySub": "{{products}} produits · {{suppliers}} fournisseurs",
-    "projectSectionsSub": "Documents, photos, notes…"
+    "projectSectionsSub": "Documents, photos, notes…",
+    "billingTitle": "Devis & factures"
   },
   "expenses": {
     "add": "Ajouter",

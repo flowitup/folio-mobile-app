@@ -44,6 +44,8 @@ export function LaborKpis({ days, cost, unpaid }: KpiProps) {
         <Text
           className="mt-0.5 font-mono text-xl text-ink"
           testID="labor-kpi-days"
+          numberOfLines={1}
+          adjustsFontSizeToFit
         >
           {days}
         </Text>
@@ -55,6 +57,8 @@ export function LaborKpis({ days, cost, unpaid }: KpiProps) {
         <Text
           className="mt-0.5 font-mono text-xl text-ink"
           testID="labor-kpi-cost"
+          numberOfLines={1}
+          adjustsFontSizeToFit
         >
           {formatMoney(cost)}
         </Text>
@@ -66,6 +70,8 @@ export function LaborKpis({ days, cost, unpaid }: KpiProps) {
         <Text
           className="mt-0.5 font-mono text-xl text-warning"
           testID="labor-kpi-unpaid"
+          numberOfLines={1}
+          adjustsFontSizeToFit
         >
           {formatMoney(unpaid)}
         </Text>

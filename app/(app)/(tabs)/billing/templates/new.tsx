@@ -12,7 +12,7 @@ export default function NewBillingTemplateScreen() {
   const { kind } = useLocalSearchParams<{ kind?: string }>();
   const create = useCreateBillingTemplate();
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader title={t("billing.templates.new")} back />
       <ScrollView
         contentContainerClassName="p-4 pb-12"

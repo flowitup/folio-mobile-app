@@ -230,7 +230,7 @@ export default function ProjectChiffrageSection() {
   const renderQuote = (article: ChiffrageArticle, quote: ChiffrageQuote) => (
     <View
       key={quote.id}
-      className={`mt-1 flex-row items-center rounded border px-2 py-1 ${quote.is_selected ? "border-primary bg-muted" : "border-border"}`}
+      className={`mt-1 flex-row items-center rounded border px-2 py-1 ${quote.is_selected ? "border-primary bg-paper-2" : "border-border"}`}
     >
       <Pressable
         testID={`quote-select-${quote.id}`}
@@ -397,7 +397,7 @@ export default function ProjectChiffrageSection() {
   };
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScrollView contentContainerClassName="p-4 pb-12">
         <Card className="mb-3">
           <View className="flex-row justify-between">

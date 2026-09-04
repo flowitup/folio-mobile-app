@@ -87,7 +87,7 @@ export default function ProjectTagsSection() {
   const rows = summary.data ?? [];
 
   return (
-    <ScrollView className="flex-1 bg-card" contentContainerClassName="p-4">
+    <ScrollView className="flex-1 bg-paper" contentContainerClassName="p-4">
       {canManage ? (
         <Button
           testID="tags-create"

@@ -104,7 +104,12 @@ export function AttendanceCalendar({
                     <View
                       key={workerId}
                       className="h-[5px] w-[5px] rounded-full"
-                      style={{ backgroundColor: colorOf(workerId) }}
+                      style={{
+                        backgroundColor: colorOf(workerId),
+                        // Keeps an ink-colored worker dot visible on the selected (ink) cell.
+                        borderWidth: isSelected ? 0.5 : 0,
+                        borderColor: tokens.onInk,
+                      }}
                     />
                   ))}
                 </View>

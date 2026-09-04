@@ -63,7 +63,7 @@ function PurseRows({
           ? ` · ${t("invoices.summary.refundsReceived", { n: breakdown.returnsCount })} (${formatMoney(breakdown.returnsTotal)})`
           : ""}
       </Text>
-      <View className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
+      <View className="mt-1 h-2 w-full overflow-hidden rounded-full bg-paper-2">
         <View
           className="h-2 rounded-full bg-primary"
           style={{ width: `${pct}%` }}
@@ -83,7 +83,7 @@ function PurseRows({
             >
               {t(`invoices.types.${type}`)}
             </Text>
-            <View className="h-2 flex-1 overflow-hidden rounded bg-muted">
+            <View className="h-2 flex-1 overflow-hidden rounded bg-paper-2">
               <View
                 style={{
                   width: `${width}%`,

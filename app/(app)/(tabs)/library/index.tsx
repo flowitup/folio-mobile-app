@@ -132,14 +132,14 @@ export default function LibraryTab() {
 
   if (companies.data && companies.data.length === 0)
     return (
-      <View className="flex-1 bg-card">
+      <View className="flex-1 bg-paper">
         <ScreenHeader title={t("library.title")} />
         <EmptyState message={t("billing.form.noCompanies")} />
       </View>
     );
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader
         title={t("library.title")}
         right={
@@ -328,7 +328,7 @@ export default function LibraryTab() {
         animationType="slide"
         onRequestClose={() => setComparing(false)}
       >
-        <View className="flex-1 bg-card">
+        <View className="flex-1 bg-paper">
           <ScreenHeader
             title={t("library.compareTitle")}
             back
@@ -341,7 +341,7 @@ export default function LibraryTab() {
                   key={product.id}
                   className="w-44 rounded-lg border border-border p-2"
                 >
-                  <View className="aspect-square w-full items-center justify-center overflow-hidden rounded bg-muted">
+                  <View className="aspect-square w-full items-center justify-center overflow-hidden rounded bg-paper-2">
                     {product.has_image ? (
                       <AuthedImage
                         path={productImagePath(product.id)}

@@ -25,7 +25,7 @@ export default function EditBillingTemplateScreen() {
   const template = query.data;
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader
         title={template?.name ?? t("billing.templates.edit")}
         back

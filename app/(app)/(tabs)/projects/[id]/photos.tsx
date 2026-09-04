@@ -71,7 +71,7 @@ export default function ProjectPhotosSection() {
   const cell = Math.floor((width - 32 - 8) / 3);
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScrollView contentContainerClassName="p-4 pb-12">
         <Button
           testID="photos-add"
@@ -99,7 +99,7 @@ export default function ProjectPhotosSection() {
                     setCaptionDraft(photo.caption ?? "");
                   }}
                   style={{ width: cell, height: cell }}
-                  className="overflow-hidden rounded bg-muted"
+                  className="overflow-hidden rounded bg-paper-2"
                 >
                   <AuthedImage
                     path={photo.thumbnail_url}

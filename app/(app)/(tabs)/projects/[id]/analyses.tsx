@@ -116,7 +116,7 @@ export default function ProjectAnalysesSection() {
   const items = analyses.data ?? [];
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScrollView contentContainerClassName="p-4 pb-12">
         <View className="mb-2 flex-row items-center gap-2">
           <TextInput
@@ -271,7 +271,7 @@ export default function ProjectAnalysesSection() {
         onRequestClose={() => setViewing(null)}
       >
         {viewing ? (
-          <View className="flex-1 bg-card">
+          <View className="flex-1 bg-paper">
             <View className="flex-row items-center border-b border-border px-4 pb-3 pt-14">
               <Text
                 className="flex-1 text-lg font-semibold text-primary"

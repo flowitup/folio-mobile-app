@@ -98,7 +98,7 @@ export default function PersonsMergeScreen() {
   const merge = useMergePersons();
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader title={t("persons.title")} back />
       <ScrollView
         contentContainerClassName="p-4 pb-12"

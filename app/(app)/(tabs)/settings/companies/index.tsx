@@ -41,7 +41,7 @@ export default function MyCompaniesScreen() {
   const [detaching, setDetaching] = useState<MyCompany | null>(null);
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader
         title={t("companies.my.title")}
         back

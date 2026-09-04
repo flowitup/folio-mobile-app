@@ -68,7 +68,12 @@ import type {
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useTags } from "@/features/projects/tags-api";
-import { currentMonth, formatMonth, toIsoDate } from "@/lib/format/date";
+import {
+  currentMonth,
+  formatMonth,
+  localeTag,
+  toIsoDate,
+} from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { ApiError } from "@/lib/query/api-error";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -87,7 +92,7 @@ function monthRange(month: string): { from: string; to: string } {
 
 /** Nhân công: month stepper, segmented Chấm công / Nhân công / Thanh toán, calendar + day card, worker and payment cards. */
 export default function LaborTab() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const tokens = useTokens();
   const { user } = useAuth();
@@ -329,14 +334,7 @@ export default function LaborTab() {
               />
             )}
             <LaborDayCard
-              title={dayCardTitle(
-                selectedDay,
-                i18n.language === "vi"
-                  ? "vi-VN"
-                  : i18n.language === "fr"
-                    ? "fr-FR"
-                    : "en-GB",
-              )}
+              title={dayCardTitle(selectedDay, localeTag())}
               entries={dayEntries}
               colorOf={colorOf}
               roleOf={roleOf}

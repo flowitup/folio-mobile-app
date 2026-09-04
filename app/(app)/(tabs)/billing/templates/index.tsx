@@ -41,7 +41,7 @@ export default function BillingTemplatesScreen() {
   ];
 
   return (
-    <View className="flex-1 bg-card">
+    <View className="flex-1 bg-paper">
       <ScreenHeader
         title={t("billing.templates.title")}
         back

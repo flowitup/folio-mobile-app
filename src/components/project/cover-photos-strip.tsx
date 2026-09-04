@@ -28,7 +28,7 @@ export function CoverPhotosStrip({ projectId }: { projectId: string }) {
           <Pressable
             key={photo.id}
             onPress={() => router.navigate(`/projects/${projectId}/photos`)}
-            className="mr-2 h-24 w-24 overflow-hidden rounded-lg bg-muted"
+            className="mr-2 h-24 w-24 overflow-hidden rounded-lg bg-paper-2"
           >
             <AuthedImage
               path={photo.thumbnail_url}

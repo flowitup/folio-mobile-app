@@ -35,7 +35,7 @@ export function ProductCard({
       onLongPress={onLongPress}
       className={`mb-3 flex-1 rounded-lg border bg-card p-2 ${selected ? "border-primary" : "border-border"}`}
     >
-      <View className="aspect-video w-full items-center justify-center overflow-hidden rounded bg-muted">
+      <View className="aspect-video w-full items-center justify-center overflow-hidden rounded bg-paper-2">
         {product.has_image ? (
           <AuthedImage
             path={productImagePath(product.id)}
