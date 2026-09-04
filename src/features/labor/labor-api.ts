@@ -448,3 +448,49 @@ export function exportLabor(
     : `/api/v1/projects/${encodeURIComponent(projectId)}/labor-export?${query}`;
   return downloadAndShare(path, `labor-${from}-${to}.${format}`);
 }
+
+// ---- labor roles management (settings) --------------------------------------------------------
+
+export function useCreateLaborRole() {
+  const { t } = useTranslation();
+  return useApiMutation<{ name: string; color: string }, LaborRole>({
+    mutationFn: async (body) =>
+      unwrapAs<LaborRole>(
+        await api.POST("/api/v1/labor/roles", { body: body as never }),
+      ),
+    invalidates: [laborKeys.roles],
+    successMessage: t("common.saved"),
+  });
+}
+
+export function useUpdateLaborRole() {
+  const { t } = useTranslation();
+  return useApiMutation<
+    { roleId: string; name?: string; color?: string },
+    LaborRole
+  >({
+    mutationFn: async ({ roleId, ...body }) =>
+      unwrapAs<LaborRole>(
+        await api.PATCH("/api/v1/labor/roles/{role_id}", {
+          params: { path: { role_id: roleId } },
+          body: body as never,
+        }),
+      ),
+    invalidates: [laborKeys.roles],
+    successMessage: t("common.saved"),
+  });
+}
+
+export function useDeleteLaborRole() {
+  const { t } = useTranslation();
+  return useApiMutation<{ roleId: string }>({
+    mutationFn: async ({ roleId }) =>
+      unwrapVoid(
+        await api.DELETE("/api/v1/labor/roles/{role_id}", {
+          params: { path: { role_id: roleId } },
+        }),
+      ),
+    invalidates: [laborKeys.roles],
+    successMessage: t("common.saved"),
+  });
+}
