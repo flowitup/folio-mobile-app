@@ -1328,11 +1328,6 @@
             "minLength": 8,
             "title": "Password",
             "type": "string"
-          },
-          "persistent": {
-            "default": false,
-            "title": "Persistent",
-            "type": "boolean"
           }
         },
         "required": ["email", "password"],
@@ -1580,11 +1575,6 @@
             "pattern": "^\\s*\\d{6}\\s*$",
             "title": "Code",
             "type": "string"
-          },
-          "persistent": {
-            "default": false,
-            "title": "Persistent",
-            "type": "boolean"
           },
           "phone": {
             "maxLength": 32,
@@ -2757,7 +2747,7 @@
             "description": "OK"
           }
         },
-        "summary": "Exchange a phone number + SMS code for tokens",
+        "summary": "Exchange a phone number + SMS code for tokens (mobile app: session lasts until sign-out)",
         "tags": ["auth"]
       }
     },

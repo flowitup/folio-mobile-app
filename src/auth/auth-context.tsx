@@ -18,9 +18,10 @@ import {
 import type { components } from "@/api/generated/schema";
 
 export type AuthUser = components["schemas"]["UserResponse"];
-// The app keeps a session until the user signs out: login asks for a never-expiring
-// refresh token, and sign-out hands it back so the backend revokes it for good.
-const PERSISTENT_SESSION = true;
+// Session lifetime is decided by the backend per sign-in path: the SMS-code sign-in
+// returns a never-expiring refresh token (signed in until sign-out), email + password
+// keeps the 7-day token like the web app. Sign-out hands the refresh token back so the
+// backend revokes it either way.
 
 type AuthStatus = "loading" | "signedOut" | "signedIn";
 
@@ -91,7 +92,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     async (phone: string, code: string) => {
       const { data, error, response } = await api.POST(
         "/api/v1/auth/otp/verify",
-        { body: { phone, code, persistent: PERSISTENT_SESSION } },
+        { body: { phone, code } },
       );
       if (!data) throw new Error(errorMessage(error, response));
       await completeSignIn(data);
@@ -101,7 +102,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error, response } = await api.POST("/api/v1/auth/login", {
-      body: { email, password, persistent: PERSISTENT_SESSION },
+      body: { email, password },
     });
     if (!data) {
       const message =

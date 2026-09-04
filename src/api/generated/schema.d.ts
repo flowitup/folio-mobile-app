@@ -387,7 +387,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Exchange a phone number + SMS code for tokens */
+        /** Exchange a phone number + SMS code for tokens (mobile app: session lasts until sign-out) */
         post: {
             parameters: {
                 query?: never;
@@ -7233,11 +7233,6 @@ export interface components {
             email: string;
             /** Password */
             password: string;
-            /**
-             * Persistent
-             * @default false
-             */
-            persistent: boolean;
         };
         /**
          * LoginResponse
@@ -7394,11 +7389,6 @@ export interface components {
         OtpVerifyBody: {
             /** Code */
             code: string;
-            /**
-             * Persistent
-             * @default false
-             */
-            persistent: boolean;
             /** Phone */
             phone: string;
         };
