@@ -4,8021 +4,7983 @@
  */
 
 export interface paths {
-  "/api/v1/admin/users": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Search users by email or display name (superadmin only) */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/admin/users/{user_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Update a user's email / display name (superadmin only) */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          user_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/admin/users/{user_id}/memberships": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Bulk-add an existing user to multiple projects with the given role */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          user_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["BulkAddRequest"];
-        };
-      };
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["BulkAddResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/attachments/{attachment_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete an invoice attachment */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          attachment_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/attachments/{attachment_id}/download": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Download an invoice attachment */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          attachment_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/attachments/{attachment_id}/rename": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Rename an invoice attachment */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          attachment_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/auth/login": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Authenticate user and return tokens */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["LoginRequest"];
-        };
-      };
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["LoginResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/logout": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Logout user and clear cookies */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/me": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get current authenticated user info */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["UserResponse"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/refresh": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Refresh access token using refresh token */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["RefreshResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/bibliotheque/categories": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/bibliotheque/import": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/bibliotheque/products": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/bibliotheque/products/{product_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          product_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          product_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          product_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/bibliotheque/products/{product_id}/image": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          product_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          product_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/bibliotheque/products/{product_id}/image-from-url": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          product_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/bibliotheque/suppliers": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-document-templates": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List all billing templates for the authenticated user */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new billing document template */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateTemplateRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-document-templates/{template_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Retrieve a single billing template by ID */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          template_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    /** Partially update a billing document template */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          template_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateTemplateRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    /** Delete a billing document template */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          template_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-documents": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List billing documents for the authenticated user */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new billing document (devis or facture) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateBillingDocumentRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-documents/activity-suggestions": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Return line-item suggestions aggregated from the requester's documents */
-    get: {
-      parameters: {
-        query?: {
-          category?: string | null;
-          q?: string | null;
-          limit?: number;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-documents/from-template/{template_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Create a new billing document pre-filled from a template */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          template_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["ApplyTemplateRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-documents/import": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Import a historical billing document with a pre-supplied document number */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["ImportBillingDocumentRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-documents/{doc_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Retrieve a single billing document by ID */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          doc_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    /** Partially update a billing document (immutable fields rejected by schema) */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          doc_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateBillingDocumentRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    /** Delete a billing document */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          doc_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-documents/{doc_id}/clone": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Clone an existing billing document into a new draft */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          doc_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CloneRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-documents/{doc_id}/convert-to-facture": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Convert an accepted devis to a new facture draft */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          doc_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["ConvertRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-documents/{doc_id}/pdf": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Render billing document as PDF and stream as attachment */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          doc_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing-documents/{doc_id}/status": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Transition a billing document to a new status */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          doc_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateStatusRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/billing-documents/{doc_id}/xlsx": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Render billing document as XLSX and stream as attachment */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          doc_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing/materials-expenses": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/billing/materials-expenses/{invoice_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          invoice_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/chat/channels": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List the chat channels of the current user */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["ChannelListResponse"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/chat/channels/{channel_key}/messages": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List messages of a channel (oldest first) with its members */
-    get: {
-      parameters: {
-        query?: {
-          before?: string | null;
-          limit?: number;
-        };
-        header?: never;
-        path: {
-          channel_key: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["MessagePageResponse"];
-          };
-        };
-      };
-    };
-    put?: never;
-    /** Send a message (JSON text, or multipart/form-data with an image `file`) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          channel_key: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["SendMessageBody"];
-        };
-      };
-      responses: {
-        /** @description Created */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["MessageResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/chat/channels/{channel_key}/read": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Mark a channel as read up to now */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          channel_key: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/chat/messages/{message_id}/attachment": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Download a message attachment (channel members only) */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          message_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List companies */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new company (admin only) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateCompanyRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/attach-by-token": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Attach the caller to a company by redeeming an invite token */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["RedeemInviteTokenRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get a company by ID */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    /** Update a company (admin only) */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateCompanyRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    /** Delete a company (admin only) */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/access": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Detach the authenticated caller from a company */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/access/{target_user_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Remove a user from a company (admin only) */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-          target_user_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/access/{target_user_id}/role": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Change a company member's role (admin only) */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-          target_user_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/attached-users": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List users attached to a company (admin only) */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/invite-tokens": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Generate an invite token for a company (admin only) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/invite-tokens/active": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Revoke the active invite token for a company (admin only) */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/payment-methods": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List payment methods for a company */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new payment method for a company (admin only) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreatePaymentMethodRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/payment-methods/{payment_method_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Soft-delete a payment method (admin only) */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-          payment_method_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Partially update a payment method (admin only) */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-          payment_method_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdatePaymentMethodRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/features": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Feature flags of this deployment */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["FeaturesResponse"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/invitations": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Create an invitation (or directly add existing user) to a project */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateInviteRequest"];
-        };
-      };
-      responses: {
-        /** @description Created */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["CreateInviteResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/invitations/accept": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Accept an invitation: create account + membership, return JWT cookies */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["AcceptInviteRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/invitations/projects/{project_id}/invitations": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List invitations for a project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/invitations/verify/{token}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Verify an invitation token and return safe metadata */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          token: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["VerifyInviteResponse"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/invitations/{invitation_id}/revoke": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Revoke a pending invitation */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          invitation_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/labor/roles": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List all labor roles with the suggested color palette */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new labor role */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateLaborRoleRequest"];
-        };
-      };
-      responses: {
-        /** @description Created */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["LaborRoleResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/labor/roles/{role_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete a labor role */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          role_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Update name and/or color of a labor role */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          role_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateLaborRoleRequest"];
-        };
-      };
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["LaborRoleResponse"];
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/notifications": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/notifications/{note_id}/dismiss": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          note_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/persons": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/persons/{source_person_id}/merge": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          source_person_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List projects for current user */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new project */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateProjectRequest"];
-        };
-      };
-      responses: {
-        /** @description Created */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["ProjectResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get a single project by ID */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["ProjectResponse"];
-          };
-        };
-      };
-    };
-    /** Update an existing project */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateProjectRequest"];
-        };
-      };
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["ProjectResponse"];
-          };
-        };
-      };
-    };
-    post?: never;
-    /** Delete a project */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/analyses": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List analysis reports for a project */
-    get: {
-      parameters: {
-        query?: {
-          q?: string | null;
-          tag?: string[];
-          sort?: "created_at" | "title";
-          order?: "asc" | "desc";
-          page?: number;
-          per_page?: number;
-        };
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Upload an HTML analysis report to a project (multipart/form-data) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/analyses/tags": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List the distinct tags used by a project's analyses */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/analyses/{analysis_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get an analysis report's metadata */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          analysis_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    /** Soft-delete an analysis report */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          analysis_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Edit an analysis report's title/summary/source_url/tags */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          analysis_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["AnalysisUpdateBody"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/analyses/{analysis_id}/content": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get the raw HTML body of an analysis report */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          analysis_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/billing-documents": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List all billing documents linked to a project (project:read required) */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          article_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          article_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/image": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          article_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          article_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          article_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/image-from-url": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          article_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/quotes": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          article_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/reorder": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          article_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/postes": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          poste_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          poste_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}/articles": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          poste_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}/reorder": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          poste_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}/stores": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          poste_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/quotes/{quote_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          quote_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          quote_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/quotes/{quote_id}/select": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          quote_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/rooms": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/rooms/{room_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          room_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          room_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/rooms/{room_id}/reorder": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          room_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/stores": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/stores/{store_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          store_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          store_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/units": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/chiffrage/units/{unit_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          unit_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/documents": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List project documents with optional filters */
-    get: {
-      parameters: {
-        query?: {
-          type?: (
-            "pdf" | "image" | "spreadsheet" | "doc" | "cad" | "text" | "other"
-          )[];
-          tag?: string[];
-          uploader_id?: string | null;
-          sort?: "name" | "size" | "created_at" | "uploader";
-          order?: "asc" | "desc";
-          page?: number;
-          per_page?: number;
-        };
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Upload a document to a project (multipart/form-data) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/documents/confirm": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Confirm a presigned upload — verify S3 object exists and persist DB row */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/documents/presign": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Generate a presigned PUT URL for direct-to-S3 browser upload */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/documents/tags": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List all tags used in a project's documents */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/documents/{document_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete a project document */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          document_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/documents/{document_id}/download": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Download a project document */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          document_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/documents/{document_id}/preview-url": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Return a short-lived presigned GET URL for browser preview */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          document_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/documents/{document_id}/rename": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Rename a project document */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          document_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/documents/{document_id}/tags": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Replace all tags on a project document */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          document_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/invoices": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List invoices for a project, optionally filtered by ?type=/?tag_id=/?service_month=/?worker_id= */
-    get: {
-      parameters: {
-        query?: {
-          service_month?: string | null;
-          worker_id?: string | null;
-        };
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new invoice for a project */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateInvoiceSchema"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/invoices-export": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Stream xlsx or pdf export for a project's invoices */
-    get: {
-      parameters: {
-        query: {
-          from: string;
-          to: string;
-          format: "xlsx" | "pdf";
-          type?:
-            | (
-                | "released_funds"
-                | "labor"
-                | "materials_services"
-                | "others"
-                | "return"
-              )
-            | null;
-        };
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/invoices/{invoice_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Retrieve a single invoice by ID, scoped to the project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          invoice_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    /** Partially update an invoice */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          invoice_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateInvoiceSchema"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    /** Delete an invoice by ID, scoped to the project */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          invoice_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/invoices/{invoice_id}/attachments": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List attachments for an invoice */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          invoice_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Upload an attachment to an invoice */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          invoice_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-activities": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List labor activities for a project with optional date filters */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a labor activity for a project day (multiple entries per day allowed) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateActivitySchema"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-activities/{activity_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Update an existing labor activity by ID */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          activity_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateActivitySchema"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    /** Delete a labor activity */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          activity_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-day-descriptions": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List labor day descriptions for a project within a date range */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    /** Upsert (or clear) the labor day description for a project day */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["SetDayDescriptionSchema"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-entries": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List labor entries for a project with optional filters */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Log daily attendance for a worker */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["LogAttendanceRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-entries/bulk": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Bulk-log attendance for N workers on a single date */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["BulkLogAttendanceRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-entries/conflicts": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Return cross-project labor conflicts on a given date */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-entries/day-tag": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Bulk set (or clear) the tag on all labor entries of a project day */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["DayTagRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-entries/{entry_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Update an existing labor entry */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          entry_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateAttendanceRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    /** Delete a labor entry */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          entry_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-export": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Stream xlsx or pdf export for a project's labor data */
-    get: {
-      parameters: {
-        query: {
-          from: string;
-          to: string;
-          format: "xlsx" | "pdf";
-        };
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-monthly-summary": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Per-month rollup of labor totals across all workers on a project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-payments-summary": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Aggregate paid labor amounts per service month and worker */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["LaborPaymentsSummarySchema"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/labor-summary": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get aggregated labor summary for a project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/members": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Return project members with role and join date */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/members/{user_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Change a project member's role */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          user_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/notes": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List all journal notes for a project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a journal note for a project */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NoteCreateBody"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/notes/{note_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete a journal note */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          note_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Update a journal note's fields */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          note_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["NoteUpdateBody"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/photos": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List progress photos for a project */
-    get: {
-      parameters: {
-        query?: {
-          page?: number;
-          per_page?: number;
-        };
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Upload a progress photo to a project (multipart/form-data) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/photos/{photo_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Soft-delete a project photo */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          photo_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Update caption and/or captured_at on a project photo */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          photo_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/photos/{photo_id}/original": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Stream the original full-resolution image for a project photo */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          photo_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/photos/{photo_id}/thumbnail": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Stream the JPEG thumbnail for a project photo */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          photo_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/tag-summary": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Per-tag cost rollup (labor + expenses) for a project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/tags": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List all phase tags for a project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new phase tag for a project */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["TagCreateBody"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/tags/{tag_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Update a phase tag's name and/or color */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          tag_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["TagUpdateBody"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    /** Delete a phase tag (downstream entries/invoices get tag_id=NULL) */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          tag_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/tasks": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List tasks for a project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new task in a project */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateTaskSchema"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/users": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get users assigned to a project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** DEPRECATED — invite-only signup is the only membership-creation path */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/users/{user_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Remove a user from a project */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          user_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/workers": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List workers for a project */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    /** Create a new worker for a project */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateWorkerRequest"];
-        };
-      };
-      responses: {
-        /** @description Created */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["WorkerResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/workers/{worker_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Update an existing worker */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          worker_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateWorkerRequest"];
-        };
-      };
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["WorkerResponse"];
-          };
-        };
-      };
-    };
-    post?: never;
-    /** Soft delete a worker (deactivate) */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          worker_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/workers/{worker_id}/labor-export": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Stream xlsx or pdf export for a single worker's labor data */
-    get: {
-      parameters: {
-        query: {
-          from: string;
-          to: string;
-          format: "xlsx" | "pdf";
-        };
-        header?: never;
-        path: {
-          project_id: string;
-          worker_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/workers/{worker_id}/rate-changes": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          worker_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          worker_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/workers/{worker_id}/rate-changes/{rc_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          worker_id: string;
-          rc_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/roles": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/tasks/{task_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get a single task by ID */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          task_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    /** Update a task's fields */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          task_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateTaskSchema"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    /** Delete a task */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          task_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/tasks/{task_id}/move": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Move a task to a new status column */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          task_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["MoveTaskSchema"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/v1/users": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/users/me/primary-company": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Set the caller's primary company */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["SetPrimaryCompanyRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/users/{user_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          user_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/health": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
+    "/api/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search users by email or display name (superadmin only) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a user's email / display name (superadmin only) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    user_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}/memberships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk-add an existing user to multiple projects with the given role */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    user_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BulkAddRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BulkAddResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attachments/{attachment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an invoice attachment */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    attachment_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attachments/{attachment_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download an invoice attachment */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    attachment_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attachments/{attachment_id}/rename": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Rename an invoice attachment */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    attachment_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Authenticate user and return tokens */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LoginRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LoginResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout user and clear cookies */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current authenticated user info */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh access token using refresh token */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RefreshResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bibliotheque/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bibliotheque/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bibliotheque/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bibliotheque/products/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    product_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    product_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    product_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/bibliotheque/products/{product_id}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    product_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    product_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bibliotheque/products/{product_id}/image-from-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    product_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bibliotheque/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-document-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all billing templates for the authenticated user */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new billing document template */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTemplateRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-document-templates/{template_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieve a single billing template by ID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    template_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        /** Partially update a billing document template */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    template_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateTemplateRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        /** Delete a billing document template */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    template_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List billing documents for the authenticated user */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new billing document (devis or facture) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateBillingDocumentRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-documents/activity-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return line-item suggestions aggregated from the requester's documents */
+        get: {
+            parameters: {
+                query?: {
+                    category?: string | null;
+                    q?: string | null;
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-documents/from-template/{template_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a new billing document pre-filled from a template */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    template_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ApplyTemplateRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-documents/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import a historical billing document with a pre-supplied document number */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ImportBillingDocumentRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-documents/{doc_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieve a single billing document by ID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    doc_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        /** Partially update a billing document (immutable fields rejected by schema) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    doc_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateBillingDocumentRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        /** Delete a billing document */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    doc_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-documents/{doc_id}/clone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clone an existing billing document into a new draft */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    doc_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CloneRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-documents/{doc_id}/convert-to-facture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Convert an accepted devis to a new facture draft */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    doc_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ConvertRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-documents/{doc_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Render billing document as PDF and stream as attachment */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    doc_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing-documents/{doc_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Transition a billing document to a new status */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    doc_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateStatusRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/billing-documents/{doc_id}/xlsx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Render billing document as XLSX and stream as attachment */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    doc_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/materials-expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/materials-expenses/{invoice_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    invoice_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/chat/channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the chat channels of the current user */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChannelListResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/channels/{channel_key}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List messages of a channel (oldest first) with its members */
+        get: {
+            parameters: {
+                query?: {
+                    before?: string | null;
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    channel_key: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MessagePageResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Send a message (JSON text, or multipart/form-data with an image `file`) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    channel_key: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SendMessageBody"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MessageResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/channels/{channel_key}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark a channel as read up to now */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    channel_key: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/messages/{message_id}/attachment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download a message attachment (channel members only) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    message_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List companies */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new company (admin only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateCompanyRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/attach-by-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Attach the caller to a company by redeeming an invite token */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RedeemInviteTokenRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a company by ID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        /** Update a company (admin only) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateCompanyRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        /** Delete a company (admin only) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Detach the authenticated caller from a company */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}/access/{target_user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a user from a company (admin only) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                    target_user_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}/access/{target_user_id}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change a company member's role (admin only) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                    target_user_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}/attached-users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List users attached to a company (admin only) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}/invite-tokens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate an invite token for a company (admin only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}/invite-tokens/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke the active invite token for a company (admin only) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}/payment-methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List payment methods for a company */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new payment method for a company (admin only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreatePaymentMethodRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}/payment-methods/{payment_method_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Soft-delete a payment method (admin only) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                    payment_method_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Partially update a payment method (admin only) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                    payment_method_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdatePaymentMethodRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/features": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Feature flags of this deployment */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FeaturesResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an invitation (or directly add existing user) to a project */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateInviteRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CreateInviteResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invitations/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept an invitation: create account + membership, return JWT cookies */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AcceptInviteRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invitations/projects/{project_id}/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List invitations for a project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invitations/verify/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Verify an invitation token and return safe metadata */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    token: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["VerifyInviteResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invitations/{invitation_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke a pending invitation */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    invitation_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/labor/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all labor roles with the suggested color palette */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new labor role */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateLaborRoleRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LaborRoleResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/labor/roles/{role_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a labor role */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    role_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update name and/or color of a labor role */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    role_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateLaborRoleRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LaborRoleResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{note_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    note_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/persons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/persons/{source_person_id}/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    source_person_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List projects for current user */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new project */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateProjectRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProjectResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single project by ID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProjectResponse"];
+                    };
+                };
+            };
+        };
+        /** Update an existing project */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateProjectRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProjectResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete a project */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/analyses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List analysis reports for a project */
+        get: {
+            parameters: {
+                query?: {
+                    q?: string | null;
+                    tag?: string[];
+                    sort?: "created_at" | "title";
+                    order?: "asc" | "desc";
+                    page?: number;
+                    per_page?: number;
+                };
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Upload an HTML analysis report to a project (multipart/form-data) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/analyses/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the distinct tags used by a project's analyses */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/analyses/{analysis_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an analysis report's metadata */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    analysis_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Soft-delete an analysis report */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    analysis_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Edit an analysis report's title/summary/source_url/tags */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    analysis_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AnalysisUpdateBody"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/analyses/{analysis_id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the raw HTML body of an analysis report */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    analysis_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/billing-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all billing documents linked to a project (project:read required) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    article_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    article_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    article_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    article_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    article_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/image-from-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    article_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    article_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    article_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/postes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    poste_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    poste_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    poste_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    poste_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}/stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    poste_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/quotes/{quote_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    quote_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    quote_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/quotes/{quote_id}/select": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    quote_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/rooms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/rooms/{room_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    room_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    room_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/rooms/{room_id}/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    room_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/stores/{store_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    store_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    store_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/chiffrage/units/{unit_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    unit_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List project documents with optional filters */
+        get: {
+            parameters: {
+                query?: {
+                    type?: ("pdf" | "image" | "spreadsheet" | "doc" | "cad" | "text" | "other")[];
+                    tag?: string[];
+                    uploader_id?: string | null;
+                    sort?: "name" | "size" | "created_at" | "uploader";
+                    order?: "asc" | "desc";
+                    page?: number;
+                    per_page?: number;
+                };
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Upload a document to a project (multipart/form-data) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/documents/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm a presigned upload — verify S3 object exists and persist DB row */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/documents/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate a presigned PUT URL for direct-to-S3 browser upload */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/documents/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all tags used in a project's documents */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/documents/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a project document */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    document_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/documents/{document_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download a project document */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    document_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/documents/{document_id}/preview-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a short-lived presigned GET URL for browser preview */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    document_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/documents/{document_id}/rename": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Rename a project document */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    document_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/documents/{document_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace all tags on a project document */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    document_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List invoices for a project, optionally filtered by ?type=/?tag_id=/?service_month=/?worker_id= */
+        get: {
+            parameters: {
+                query?: {
+                    service_month?: string | null;
+                    worker_id?: string | null;
+                };
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new invoice for a project */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateInvoiceSchema"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/invoices-export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream xlsx or pdf export for a project's invoices */
+        get: {
+            parameters: {
+                query: {
+                    from: string;
+                    to: string;
+                    format: "xlsx" | "pdf";
+                    type?: ("released_funds" | "labor" | "materials_services" | "others" | "return") | null;
+                };
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/invoices/{invoice_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieve a single invoice by ID, scoped to the project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    invoice_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        /** Partially update an invoice */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    invoice_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateInvoiceSchema"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        /** Delete an invoice by ID, scoped to the project */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    invoice_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/invoices/{invoice_id}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List attachments for an invoice */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    invoice_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Upload an attachment to an invoice */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    invoice_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List labor activities for a project with optional date filters */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a labor activity for a project day (multiple entries per day allowed) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateActivitySchema"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-activities/{activity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update an existing labor activity by ID */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    activity_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateActivitySchema"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        /** Delete a labor activity */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    activity_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-day-descriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List labor day descriptions for a project within a date range */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        /** Upsert (or clear) the labor day description for a project day */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetDayDescriptionSchema"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List labor entries for a project with optional filters */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Log daily attendance for a worker */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LogAttendanceRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-entries/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk-log attendance for N workers on a single date */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BulkLogAttendanceRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-entries/conflicts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return cross-project labor conflicts on a given date */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-entries/day-tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Bulk set (or clear) the tag on all labor entries of a project day */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DayTagRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-entries/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update an existing labor entry */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    entry_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateAttendanceRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        /** Delete a labor entry */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    entry_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream xlsx or pdf export for a project's labor data */
+        get: {
+            parameters: {
+                query: {
+                    from: string;
+                    to: string;
+                    format: "xlsx" | "pdf";
+                };
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-monthly-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Per-month rollup of labor totals across all workers on a project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-payments-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Aggregate paid labor amounts per service month and worker */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LaborPaymentsSummarySchema"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get aggregated labor summary for a project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return project members with role and join date */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change a project member's role */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    user_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all journal notes for a project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a journal note for a project */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NoteCreateBody"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/notes/{note_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a journal note */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    note_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a journal note's fields */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    note_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NoteUpdateBody"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List progress photos for a project */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    per_page?: number;
+                };
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Upload a progress photo to a project (multipart/form-data) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/photos/{photo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Soft-delete a project photo */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    photo_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update caption and/or captured_at on a project photo */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    photo_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/photos/{photo_id}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream the original full-resolution image for a project photo */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    photo_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/photos/{photo_id}/thumbnail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream the JPEG thumbnail for a project photo */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    photo_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/tag-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Per-tag cost rollup (labor + expenses) for a project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all phase tags for a project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new phase tag for a project */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TagCreateBody"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/tags/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update a phase tag's name and/or color */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    tag_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TagUpdateBody"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        /** Delete a phase tag (downstream entries/invoices get tag_id=NULL) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    tag_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List tasks for a project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new task in a project */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTaskSchema"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get users assigned to a project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** DEPRECATED — invite-only signup is the only membership-creation path */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a user from a project */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    user_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/workers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List workers for a project */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Create a new worker for a project */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateWorkerRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkerResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/workers/{worker_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update an existing worker */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    worker_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateWorkerRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkerResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Soft delete a worker (deactivate) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    worker_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/workers/{worker_id}/labor-export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream xlsx or pdf export for a single worker's labor data */
+        get: {
+            parameters: {
+                query: {
+                    from: string;
+                    to: string;
+                    format: "xlsx" | "pdf";
+                };
+                header?: never;
+                path: {
+                    project_id: string;
+                    worker_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/workers/{worker_id}/rate-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    worker_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    worker_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/workers/{worker_id}/rate-changes/{rc_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    worker_id: string;
+                    rc_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{task_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single task by ID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    task_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        /** Update a task's fields */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    task_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateTaskSchema"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        /** Delete a task */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    task_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{task_id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Move a task to a new status column */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    task_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MoveTaskSchema"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/me/primary-company": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the caller's primary company */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetPrimaryCompanyRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    user_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /**
-     * AcceptInviteRequest
-     * @description POST /invitations/accept request body.
-     */
-    AcceptInviteRequest: {
-      /** Name */
-      name: string;
-      /** Password */
-      password: string;
-      /** Token */
-      token: string;
-    };
-    /**
-     * AnalysisUpdateBody
-     * @description Request body for PATCH /api/v1/projects/<id>/analyses/<id>.
-     *
-     *     Every field is optional — the route only forwards fields present in the
-     *     raw JSON payload (via ``model_fields_set``) so an omitted field leaves the
-     *     corresponding entity attribute untouched (see UpdateProjectAnalysisUseCase
-     *     docstring for the landmine this avoids).
-     */
-    AnalysisUpdateBody: {
-      /**
-       * Source Url
-       * @default null
-       */
-      source_url: string | null;
-      /**
-       * Summary
-       * @default null
-       */
-      summary: string | null;
-      /**
-       * Tags
-       * @default null
-       */
-      tags: string[] | null;
-      /**
-       * Title
-       * @default null
-       */
-      title: string | null;
-    };
-    /**
-     * ApplyTemplateRequest
-     * @description Body for POST /billing-documents/from-template/<template_id>.
-     */
-    ApplyTemplateRequest: {
-      /**
-       * Company Id
-       * @default null
-       */
-      company_id: string | null;
-      /**
-       * Issue Date
-       * @default null
-       */
-      issue_date: string | null;
-      /**
-       * Project Id
-       * @default null
-       */
-      project_id: string | null;
-      /**
-       * Recipient Address
-       * @default null
-       */
-      recipient_address: string | null;
-      /**
-       * Recipient Email
-       * @default null
-       */
-      recipient_email: string | null;
-      /** Recipient Name */
-      recipient_name: string;
-      /**
-       * Recipient Siret
-       * @default null
-       */
-      recipient_siret: string | null;
-    };
-    /** AttachmentResponse */
-    AttachmentResponse: {
-      /** Content Type */
-      content_type: string;
-      /** Filename */
-      filename: string;
-      /** Size Bytes */
-      size_bytes: number;
-      /** Url */
-      url: string;
-    };
-    /**
-     * BulkAddRequest
-     * @description POST /admin/users/<user_id>/memberships request body.
-     */
-    BulkAddRequest: {
-      /** Project Ids */
-      project_ids: string[];
-      /**
-       * Role Id
-       * Format: uuid
-       */
-      role_id: string;
-    };
-    /**
-     * BulkAddResponse
-     * @description POST /admin/users/<user_id>/memberships response body.
-     */
-    BulkAddResponse: {
-      /** Results */
-      results: components["schemas"]["BulkAddResultItem"][];
-    };
-    /**
-     * BulkAddResultItem
-     * @description Per-project result entry in a bulk-add response.
-     */
-    BulkAddResultItem: {
-      /**
-       * Project Id
-       * Format: uuid
-       */
-      project_id: string;
-      /** Project Name */
-      project_name: string | null;
-      /**
-       * Status
-       * @enum {string}
-       */
-      status:
-        | "added"
-        | "already_member_same_role"
-        | "already_member_different_role"
-        | "project_not_found";
-    };
-    /**
-     * BulkLogAttendanceEntry
-     * @description One row inside a bulk-log request body.
-     */
-    BulkLogAttendanceEntry: {
-      /**
-       * Amount Override
-       * @default null
-       */
-      amount_override: number | null;
-      /**
-       * Note
-       * @default null
-       */
-      note: string | null;
-      /**
-       * Shift Type
-       * @default null
-       */
-      shift_type: ("full" | "half" | "overtime") | null;
-      /**
-       * Supplement Hours
-       * @default 0
-       */
-      supplement_hours: number;
-      /**
-       * Tag Id
-       * @default null
-       */
-      tag_id: string | null;
-      /** Worker Id */
-      worker_id: string;
-    };
-    /**
-     * BulkLogAttendanceRequest
-     * @description Request body for the bulk-log endpoint.
-     *
-     *     Single date + N entries, atomic. Cook 3a of phase-03. Cap at 50
-     *     entries per request to keep the worst-case worker-validation
-     *     O(N) loop bounded and to discourage abuse from a compromised JWT.
-     */
-    BulkLogAttendanceRequest: {
-      /**
-       * Acknowledge Conflicts
-       * @default false
-       */
-      acknowledge_conflicts: boolean;
-      /** Date */
-      date: string;
-      /** Entries */
-      entries: components["schemas"]["BulkLogAttendanceEntry"][];
-    };
-    /** ChannelListResponse */
-    ChannelListResponse: {
-      /** Items */
-      items: components["schemas"]["ChannelResponse"][];
-    };
-    /** ChannelResponse */
-    ChannelResponse: {
-      /** Id */
-      id: string;
-      /** Key */
-      key: string;
-      /** Kind */
-      kind: string;
-      /** Last Message At */
-      last_message_at: string | null;
-      /** Member Count */
-      member_count: number;
-      /** Name */
-      name: string;
-      /** Unread Count */
-      unread_count: number;
-    };
-    /**
-     * CloneRequest
-     * @description Optional body for POST /billing-documents/<id>/clone.
-     */
-    CloneRequest: {
-      /**
-       * Company Id
-       * @default null
-       */
-      company_id: string | null;
-      /**
-       * Override Kind
-       * @default null
-       */
-      override_kind: ("devis" | "facture") | null;
-    };
-    /**
-     * ConvertRequest
-     * @description Optional body for POST /billing-documents/<id>/convert-to-facture.
-     *
-     *     Both fields are optional — empty body {} is accepted.
-     */
-    ConvertRequest: {
-      /**
-       * Company Id
-       * @default null
-       */
-      company_id: string | null;
-      /**
-       * Payment Due Date
-       * @default null
-       */
-      payment_due_date: string | null;
-      /**
-       * Payment Terms
-       * @default null
-       */
-      payment_terms: string | null;
-    };
-    /** CreateActivitySchema */
-    CreateActivitySchema: {
-      /** Date */
-      date: string;
-      /** Title */
-      title: string;
-    };
-    /**
-     * CreateBillingDocumentRequest
-     * @description Request body for POST /billing-documents.
-     */
-    CreateBillingDocumentRequest: {
-      /**
-       * Company Id
-       * Format: uuid
-       */
-      company_id: string;
-      /**
-       * Issue Date
-       * @default null
-       */
-      issue_date: string | null;
-      /** Items */
-      items: components["schemas"]["ItemSchema"][];
-      /**
-       * Kind
-       * @enum {string}
-       */
-      kind: "devis" | "facture";
-      /**
-       * Notes
-       * @default null
-       */
-      notes: string | null;
-      /**
-       * Payment Due Date
-       * @default null
-       */
-      payment_due_date: string | null;
-      /**
-       * Payment Terms
-       * @default null
-       */
-      payment_terms: string | null;
-      /**
-       * Project Id
-       * @default null
-       */
-      project_id: string | null;
-      /**
-       * Recipient Address
-       * @default null
-       */
-      recipient_address: string | null;
-      /**
-       * Recipient Email
-       * @default null
-       */
-      recipient_email: string | null;
-      /** Recipient Name */
-      recipient_name: string;
-      /**
-       * Recipient Siret
-       * @default null
-       */
-      recipient_siret: string | null;
-      /**
-       * Signature Block Text
-       * @default null
-       */
-      signature_block_text: string | null;
-      /**
-       * Terms
-       * @default null
-       */
-      terms: string | null;
-      /**
-       * Validity Until
-       * @default null
-       */
-      validity_until: string | null;
-    };
-    /**
-     * CreateCompanyRequest
-     * @description Request body for POST /companies (admin).
-     */
-    CreateCompanyRequest: {
-      /** Address */
-      address: string;
-      /**
-       * Bic
-       * @default null
-       */
-      bic: string | null;
-      /**
-       * Default Payment Terms
-       * @default null
-       */
-      default_payment_terms: string | null;
-      /**
-       * Iban
-       * @default null
-       */
-      iban: string | null;
-      /** Legal Name */
-      legal_name: string;
-      /**
-       * Logo Url
-       * @default null
-       */
-      logo_url: string | null;
-      /**
-       * Prefix Override
-       * @default null
-       */
-      prefix_override: string | null;
-      /**
-       * Siret
-       * @default null
-       */
-      siret: string | null;
-      /**
-       * Tva Number
-       * @default null
-       */
-      tva_number: string | null;
-    };
-    /**
-     * CreateInviteRequest
-     * @description POST /invitations request body.
-     */
-    CreateInviteRequest: {
-      /**
-       * Email
-       * Format: email
-       */
-      email: string;
-      /**
-       * Project Id
-       * Format: uuid
-       */
-      project_id: string;
-      /**
-       * Role Id
-       * Format: uuid
-       */
-      role_id: string;
-    };
-    /**
-     * CreateInviteResponse
-     * @description POST /invitations response body.
-     *
-     *     SECURITY/UX NOTE — kind discriminator leak (H3 from code-review):
-     *     ``kind`` reveals whether the supplied email belongs to an existing user
-     *     (``direct_added``) or not (``invitation_sent``). Accepted within the admin
-     *     trust boundary because ``project:invite`` callers can already enumerate
-     *     users via /projects/<id>/members. Do NOT echo this discriminator on any
-     *     public-facing endpoint.
-     */
-    CreateInviteResponse: {
-      /**
-       * Expires At
-       * @default null
-       */
-      expires_at: string | null;
-      /**
-       * Invitation Id
-       * @default null
-       */
-      invitation_id: string | null;
-      /**
-       * Kind
-       * @enum {string}
-       */
-      kind: "invitation_sent" | "direct_added";
-      /**
-       * User Id
-       * @default null
-       */
-      user_id: string | null;
-    };
-    /**
-     * CreateInvoiceSchema
-     * @description Request body for creating an invoice.
-     *
-     *     refunds_invoice_id is optional; only valid when type='return'. When provided,
-     *     the use-case validates that the target is a same-project materials_services invoice
-     *     and enforces the cap (cumulative returns may not exceed the source total).
-     *     Mixed-sign unit_price is allowed for materials_services and return types.
-     *     service_month is optional; only valid when type='labor'. The use-case normalizes
-     *     any day-of-month to day=1.
-     *     settled_via/applied_to_invoice_id are optional; only valid when type='return'.
-     *     applied_to_invoice_id additionally requires settled_via='avoir' — the use-case
-     *     validates the target and enforces the applied-amount cap, then auto-aligns the
-     *     return's payment_method_id to the target's.
-     *     worker_id is optional; only valid when type='labor'. The use-case validates the
-     *     worker belongs to this project and overrides recipient_name with a server-side
-     *     snapshot of the worker's display name.
-     */
-    CreateInvoiceSchema: {
-      /**
-       * Applied To Invoice Id
-       * @default null
-       */
-      applied_to_invoice_id: string | null;
-      /**
-       * Highlight Color
-       * @default null
-       */
-      highlight_color:
-        ("red" | "orange" | "yellow" | "green" | "blue" | "purple") | null;
-      /**
-       * Issue Date
-       * Format: date
-       */
-      issue_date: string;
-      /** Items */
-      items: components["schemas"]["InvoiceItemSchema"][];
-      /**
-       * Notes
-       * @default null
-       */
-      notes: string | null;
-      /**
-       * Payment Method Id
-       * @default null
-       */
-      payment_method_id: string | null;
-      /**
-       * Recipient Address
-       * @default null
-       */
-      recipient_address: string | null;
-      /** Recipient Name */
-      recipient_name: string;
-      /**
-       * Refunds Invoice Id
-       * @default null
-       */
-      refunds_invoice_id: string | null;
-      /**
-       * Service Month
-       * @default null
-       */
-      service_month: string | null;
-      /**
-       * Settled Via
-       * @default null
-       */
-      settled_via: ("cash" | "avoir") | null;
-      /**
-       * Tag Id
-       * @default null
-       */
-      tag_id: string | null;
-      /**
-       * Type
-       * @enum {string}
-       */
-      type:
-        "released_funds" | "labor" | "materials_services" | "others" | "return";
-      /**
-       * Worker Id
-       * @default null
-       */
-      worker_id: string | null;
-    };
-    /** CreateLaborRoleRequest */
-    CreateLaborRoleRequest: {
-      /** Color */
-      color: string;
-      /** Name */
-      name: string;
-    };
-    /**
-     * CreatePaymentMethodRequest
-     * @description Request body for POST /companies/<id>/payment-methods.
-     */
-    CreatePaymentMethodRequest: {
-      /** Label */
-      label: string;
-    };
-    /**
-     * CreateProjectRequest
-     * @description Request body for creating a project.
-     */
-    CreateProjectRequest: {
-      /**
-       * Address
-       * @default null
-       */
-      address: string | null;
-      /**
-       * Budget
-       * @default null
-       */
-      budget: number | string | null;
-      /**
-       * Budget Source
-       * @default null
-       */
-      budget_source: string | null;
-      /** Name */
-      name: string;
-    };
-    /** CreateTaskSchema */
-    CreateTaskSchema: {
-      /**
-       * Assignee Id
-       * @default null
-       */
-      assignee_id: string | null;
-      /**
-       * Description
-       * @default null
-       */
-      description: string | null;
-      /**
-       * Due Date
-       * @default null
-       */
-      due_date: string | null;
-      /** Labels */
-      labels?: string[];
-      /**
-       * Priority
-       * @default medium
-       */
-      priority: string;
-      /**
-       * Status
-       * @default backlog
-       */
-      status: string;
-      /** Title */
-      title: string;
-    };
-    /**
-     * CreateTemplateRequest
-     * @description Request body for POST /billing-document-templates.
-     */
-    CreateTemplateRequest: {
-      /**
-       * Default Vat Rate
-       * @default null
-       */
-      default_vat_rate: number | string | null;
-      /** Items */
-      items?: components["schemas"]["ItemSchema"][];
-      /**
-       * Kind
-       * @enum {string}
-       */
-      kind: "devis" | "facture";
-      /** Name */
-      name: string;
-      /**
-       * Notes
-       * @default null
-       */
-      notes: string | null;
-      /**
-       * Terms
-       * @default null
-       */
-      terms: string | null;
-    };
-    /**
-     * CreateWorkerRequest
-     * @description Request body for creating a worker.
-     *
-     *     ``person_id`` (cook 1d-ii-b) lets the caller link this Worker to an
-     *     existing Person picked via the PersonTypeahead. When omitted, the
-     *     legacy flow runs: name + phone create a fresh Person via the
-     *     CreateWorkerUseCase before linking. Either path produces a Worker
-     *     with a non-null person_id once Phase 1c backfill has completed.
-     */
-    CreateWorkerRequest: {
-      /** Daily Rate */
-      daily_rate: number;
-      /** Name */
-      name: string;
-      /**
-       * Person Id
-       * @default null
-       */
-      person_id: string | null;
-      /**
-       * Phone
-       * @default null
-       */
-      phone: string | null;
-      /**
-       * Role Id
-       * @default null
-       */
-      role_id: string | null;
-    };
-    /**
-     * DayTagRequest
-     * @description Request body for PUT /labor-entries/day-tag.
-     *
-     *     ``tag_id`` explicitly null (or omitted) clears the tag on every entry of
-     *     the day; a UUID overwrites the tag on every entry of the day. The
-     *     use-case rejects a tag_id that does not belong to the project.
-     */
-    DayTagRequest: {
-      /** Date */
-      date: string;
-      /**
-       * Tag Id
-       * @default null
-       */
-      tag_id: string | null;
-    };
-    /**
-     * FeaturesResponse
-     * @description Feature flags of this deployment, as seen by the apps.
-     */
-    FeaturesResponse: {
-      /** Chat */
-      chat: boolean;
-    };
-    /**
-     * ImportBillingDocumentRequest
-     * @description Request body for POST /billing-documents/import.
-     *
-     *     Strict mode (extra='forbid'). All fields same as CreateBillingDocumentRequest
-     *     plus mandatory document_number + status, and optional created_at.
-     */
-    ImportBillingDocumentRequest: {
-      /**
-       * Company Id
-       * Format: uuid
-       */
-      company_id: string;
-      /**
-       * Created At
-       * @default null
-       */
-      created_at: string | null;
-      /** Document Number */
-      document_number: string;
-      /**
-       * Issue Date
-       * @default null
-       */
-      issue_date: string | null;
-      /** Items */
-      items: components["schemas"]["ItemSchema"][];
-      /**
-       * Kind
-       * @enum {string}
-       */
-      kind: "devis" | "facture";
-      /**
-       * Notes
-       * @default null
-       */
-      notes: string | null;
-      /**
-       * Payment Due Date
-       * @default null
-       */
-      payment_due_date: string | null;
-      /**
-       * Payment Terms
-       * @default null
-       */
-      payment_terms: string | null;
-      /**
-       * Project Id
-       * @default null
-       */
-      project_id: string | null;
-      /**
-       * Recipient Address
-       * @default null
-       */
-      recipient_address: string | null;
-      /**
-       * Recipient Email
-       * @default null
-       */
-      recipient_email: string | null;
-      /** Recipient Name */
-      recipient_name: string;
-      /**
-       * Recipient Siret
-       * @default null
-       */
-      recipient_siret: string | null;
-      /**
-       * Signature Block Text
-       * @default null
-       */
-      signature_block_text: string | null;
-      /**
-       * Status
-       * @enum {string}
-       */
-      status: "draft" | "sent" | "paid" | "cancelled";
-      /**
-       * Terms
-       * @default null
-       */
-      terms: string | null;
-      /**
-       * Validity Until
-       * @default null
-       */
-      validity_until: string | null;
-    };
-    /**
-     * InvoiceItemSchema
-     * @description A single line item on an invoice.
-     *
-     *     unit_price carries no ge=0 bound — sign validation is type-dependent and
-     *     enforced in the use-case (mixed-sign allowed for materials_services + return).
-     *     quantity must be > 0; vat_rate is 0–100.
-     */
-    InvoiceItemSchema: {
-      /** Description */
-      description: string;
-      /** Quantity */
-      quantity: number;
-      /** Unit Price */
-      unit_price: number;
-      /**
-       * Vat Rate
-       * @default 0
-       */
-      vat_rate: number;
-    };
-    /**
-     * ItemSchema
-     * @description A single line item used in create / update / template schemas.
-     */
-    ItemSchema: {
-      /**
-       * Category
-       * @default null
-       */
-      category: string | null;
-      /** Description */
-      description: string;
-      /** Quantity */
-      quantity: number | string;
-      /** Unit Price */
-      unit_price: number | string;
-      /** Vat Rate */
-      vat_rate: number | string;
-    };
-    /**
-     * LaborPaymentsMonthSchema
-     * @description One (service_month) bucket of the labor-payments summary response.
-     *
-     *     year/month are both null for the no-service_month bucket, always last.
-     */
-    LaborPaymentsMonthSchema: {
-      /**
-       * Company Paid
-       * @default 0
-       */
-      company_paid: number;
-      /**
-       * Month
-       * @default null
-       */
-      month: number | null;
-      /**
-       * Personal Paid
-       * @default 0
-       */
-      personal_paid: number;
-      /** Total Paid */
-      total_paid: number;
-      /** Unassigned Count */
-      unassigned_count: number;
-      /** Unassigned Paid */
-      unassigned_paid: number;
-      /** Workers */
-      workers: components["schemas"]["LaborPaymentsWorkerSchema"][];
-      /**
-       * Year
-       * @default null
-       */
-      year: number | null;
-    };
-    /**
-     * LaborPaymentsSummarySchema
-     * @description Response body for GET /projects/<id>/labor-payments-summary.
-     */
-    LaborPaymentsSummarySchema: {
-      /** Months */
-      months: components["schemas"]["LaborPaymentsMonthSchema"][];
-    };
-    /**
-     * LaborPaymentsWorkerSchema
-     * @description One worker's paid total within a labor-payments month bucket.
-     */
-    LaborPaymentsWorkerSchema: {
-      /** Invoice Count */
-      invoice_count: number;
-      /** Paid */
-      paid: number;
-      /** Worker Id */
-      worker_id: string;
-      /** Worker Name */
-      worker_name: string;
-    };
-    /** LaborRoleResponse */
-    LaborRoleResponse: {
-      /** Color */
-      color: string;
-      /** Created At */
-      created_at: string;
-      /** Id */
-      id: string;
-      /** Name */
-      name: string;
-    };
-    /**
-     * LogAttendanceRequest
-     * @description Request body for logging attendance.
-     *
-     *     Valid combos:
-     *     - shift_type set (supplement_hours may be 0 or >0)
-     *     - shift_type None AND supplement_hours > 0  (supplement-only row)
-     *
-     *     Invalid combos (422):
-     *     - shift_type None AND supplement_hours == 0  (empty row)
-     *     - shift_type None AND amount_override set    (override without shift)
-     */
-    LogAttendanceRequest: {
-      /**
-       * Amount Override
-       * @default null
-       */
-      amount_override: number | null;
-      /** Date */
-      date: string;
-      /**
-       * Note
-       * @default null
-       */
-      note: string | null;
-      /**
-       * Shift Type
-       * @default null
-       */
-      shift_type: ("full" | "half" | "overtime") | null;
-      /**
-       * Supplement Hours
-       * @default 0
-       */
-      supplement_hours: number;
-      /**
-       * Tag Id
-       * @default null
-       */
-      tag_id: string | null;
-      /** Worker Id */
-      worker_id: string;
-    };
-    /**
-     * LoginRequest
-     * @description Login request payload.
-     */
-    LoginRequest: {
-      /**
-       * Email
-       * Format: email
-       */
-      email: string;
-      /** Password */
-      password: string;
-    };
-    /**
-     * LoginResponse
-     * @description Login response with tokens and user info.
-     */
-    LoginResponse: {
-      /** Access Token */
-      access_token: string;
-      /**
-       * Expires In
-       * @default 1800
-       */
-      expires_in: number;
-      /** Refresh Token */
-      refresh_token: string;
-      /**
-       * Token Type
-       * @default Bearer
-       */
-      token_type: string;
-      user: components["schemas"]["UserResponse"];
-    };
-    /** MemberResponse */
-    MemberResponse: {
-      /** Id */
-      id: string;
-      /** Name */
-      name: string;
-    };
-    /** MessagePageResponse */
-    MessagePageResponse: {
-      /** Items */
-      items: components["schemas"]["MessageResponse"][];
-      /** Members */
-      members: components["schemas"]["MemberResponse"][];
-    };
-    /** MessageResponse */
-    MessageResponse: {
-      attachment: components["schemas"]["AttachmentResponse"] | null;
-      /** Body */
-      body: string | null;
-      /** Channel Key */
-      channel_key: string;
-      /** Created At */
-      created_at: string;
-      /** Id */
-      id: string;
-      /** Mine */
-      mine: boolean;
-      /** Sender Id */
-      sender_id: string;
-      /** Sender Name */
-      sender_name: string;
-    };
-    /**
-     * MoveTaskSchema
-     * @description Atomic drag-drop endpoint payload.
-     */
-    MoveTaskSchema: {
-      /**
-       * After Id
-       * @default null
-       */
-      after_id: string | null;
-      /**
-       * Before Id
-       * @default null
-       */
-      before_id: string | null;
-      /** Status */
-      status: string;
-    };
-    /**
-     * NoteCreateBody
-     * @description Request body for POST /api/v1/projects/<id>/notes.
-     */
-    NoteCreateBody: {
-      /**
-       * Category
-       * @default general
-       * @enum {string}
-       */
-      category:
-        "inspection" | "delivery" | "payment" | "decision" | "call" | "general";
-      /**
-       * Description
-       * @default null
-       */
-      description: string | null;
-      /** Title */
-      title: string;
-    };
-    /**
-     * NoteUpdateBody
-     * @description Request body for PATCH /api/v1/projects/<id>/notes/<id>.
-     */
-    NoteUpdateBody: {
-      /**
-       * Category
-       * @default null
-       */
-      category:
-        | (
-            | "inspection"
-            | "delivery"
-            | "payment"
-            | "decision"
-            | "call"
-            | "general"
-          )
-        | null;
-      /**
-       * Description
-       * @default null
-       */
-      description: string | null;
-      /**
-       * Status
-       * @default null
-       */
-      status: ("open" | "done") | null;
-      /**
-       * Title
-       * @default null
-       */
-      title: string | null;
-    };
-    /**
-     * ProjectResponse
-     * @description Single project response.
-     */
-    ProjectResponse: {
-      /** Address */
-      address: string | null;
-      /**
-       * Budget
-       * @default null
-       */
-      budget: number | null;
-      /**
-       * Budget Source
-       * @default null
-       */
-      budget_source: string | null;
-      /**
-       * Company Id
-       * @default null
-       */
-      company_id: string | null;
-      /** Created At */
-      created_at: string;
-      /** Id */
-      id: string;
-      /**
-       * Invoice Prefix
-       * @default null
-       */
-      invoice_prefix: string | null;
-      /**
-       * Labor Accrued
-       * @default 0
-       */
-      labor_accrued: number;
-      /**
-       * Labor Paid
-       * @default 0
-       */
-      labor_paid: number;
-      /**
-       * Labor Unpaid
-       * @default 0
-       */
-      labor_unpaid: number;
-      /**
-       * My Permissions
-       * @default []
-       */
-      my_permissions: string[];
-      /** Name */
-      name: string;
-      /** Owner Id */
-      owner_id: string;
-      /**
-       * Personal By Type
-       * @default {}
-       */
-      personal_by_type: {
-        [key: string]: number;
-      };
-      /**
-       * Spent
-       * @default 0
-       */
-      spent: number;
-      /**
-       * Spent By Credits
-       * @default 0
-       */
-      spent_by_credits: number;
-      /**
-       * Spent Personal
-       * @default 0
-       */
-      spent_personal: number;
-      /** User Count */
-      user_count: number;
-    };
-    /**
-     * RedeemInviteTokenRequest
-     * @description Request body for POST /companies/attach-by-token.
-     */
-    RedeemInviteTokenRequest: {
-      /** Token */
-      token: string;
-    };
-    /**
-     * RefreshResponse
-     * @description Refresh token response.
-     */
-    RefreshResponse: {
-      /** Access Token */
-      access_token: string;
-      /**
-       * Expires In
-       * @default 1800
-       */
-      expires_in: number;
-      /**
-       * Token Type
-       * @default Bearer
-       */
-      token_type: string;
-    };
-    /**
-     * SendMessageBody
-     * @description JSON body of POST /chat/channels/<key>/messages (text-only messages).
-     *
-     *     Messages with an image use multipart/form-data instead: ``body`` text part + ``file``.
-     */
-    SendMessageBody: {
-      /** Body */
-      body: string;
-    };
-    /**
-     * SetDayDescriptionSchema
-     * @description Request body for PUT /labor-day-descriptions.
-     *
-     *     description may be empty/blank — the server will delete the row in that case.
-     *     No min_length constraint here so callers can explicitly clear with "".
-     */
-    SetDayDescriptionSchema: {
-      /** Date */
-      date: string;
-      /** Description */
-      description: string;
-    };
-    /**
-     * SetPrimaryCompanyRequest
-     * @description Request body for PUT /users/me/primary-company.
-     */
-    SetPrimaryCompanyRequest: {
-      /**
-       * Company Id
-       * Format: uuid
-       */
-      company_id: string;
-    };
-    /**
-     * TagCreateBody
-     * @description Request body for POST /projects/<pid>/tags.
-     */
-    TagCreateBody: {
-      /** Color */
-      color: string;
-      /** Name */
-      name: string;
-    };
-    /**
-     * TagUpdateBody
-     * @description Request body for PUT /projects/<pid>/tags/<tag_id>.
-     */
-    TagUpdateBody: {
-      /**
-       * Color
-       * @default null
-       */
-      color: string | null;
-      /**
-       * Name
-       * @default null
-       */
-      name: string | null;
-    };
-    /** UpdateActivitySchema */
-    UpdateActivitySchema: {
-      /**
-       * Title
-       * @default null
-       */
-      title: string | null;
-    };
-    /**
-     * UpdateAttendanceRequest
-     * @description Request body for updating attendance.
-     *
-     *     All fields are optional to allow partial updates.
-     *     When shift_type is explicitly cleared (None) while amount_override is set,
-     *     the validator rejects the combination.
-     */
-    UpdateAttendanceRequest: {
-      /**
-       * Amount Override
-       * @default null
-       */
-      amount_override: number | null;
-      /**
-       * Note
-       * @default null
-       */
-      note: string | null;
-      /**
-       * Shift Type
-       * @default null
-       */
-      shift_type: ("full" | "half" | "overtime") | null;
-      /**
-       * Supplement Hours
-       * @default null
-       */
-      supplement_hours: number | null;
-      /**
-       * Tag Id
-       * @default null
-       */
-      tag_id: string | null;
-    };
-    /**
-     * UpdateBillingDocumentRequest
-     * @description Request body for PUT /billing-documents/<id>.
-     *
-     *     Fields immutable after creation are intentionally absent:
-     *     kind, document_number, status, source_devis_id, and all issuer_* fields.
-     *     Any attempt to send them will be rejected by extra='forbid'.
-     */
-    UpdateBillingDocumentRequest: {
-      /**
-       * Issue Date
-       * @default null
-       */
-      issue_date: string | null;
-      /**
-       * Items
-       * @default null
-       */
-      items: components["schemas"]["ItemSchema"][] | null;
-      /**
-       * Notes
-       * @default null
-       */
-      notes: string | null;
-      /**
-       * Payment Due Date
-       * @default null
-       */
-      payment_due_date: string | null;
-      /**
-       * Payment Terms
-       * @default null
-       */
-      payment_terms: string | null;
-      /**
-       * Project Id
-       * @default null
-       */
-      project_id: string | null;
-      /**
-       * Recipient Address
-       * @default null
-       */
-      recipient_address: string | null;
-      /**
-       * Recipient Email
-       * @default null
-       */
-      recipient_email: string | null;
-      /**
-       * Recipient Name
-       * @default null
-       */
-      recipient_name: string | null;
-      /**
-       * Recipient Siret
-       * @default null
-       */
-      recipient_siret: string | null;
-      /**
-       * Signature Block Text
-       * @default null
-       */
-      signature_block_text: string | null;
-      /**
-       * Terms
-       * @default null
-       */
-      terms: string | null;
-      /**
-       * Validity Until
-       * @default null
-       */
-      validity_until: string | null;
-    };
-    /**
-     * UpdateCompanyRequest
-     * @description Request body for PUT /companies/<id> (admin).
-     *
-     *     All fields optional; extra='forbid' prevents sending id/created_by/timestamps.
-     */
-    UpdateCompanyRequest: {
-      /**
-       * Address
-       * @default null
-       */
-      address: string | null;
-      /**
-       * Bic
-       * @default null
-       */
-      bic: string | null;
-      /**
-       * Default Payment Terms
-       * @default null
-       */
-      default_payment_terms: string | null;
-      /**
-       * Iban
-       * @default null
-       */
-      iban: string | null;
-      /**
-       * Legal Name
-       * @default null
-       */
-      legal_name: string | null;
-      /**
-       * Logo Url
-       * @default null
-       */
-      logo_url: string | null;
-      /**
-       * Prefix Override
-       * @default null
-       */
-      prefix_override: string | null;
-      /**
-       * Siret
-       * @default null
-       */
-      siret: string | null;
-      /**
-       * Tva Number
-       * @default null
-       */
-      tva_number: string | null;
-    };
-    /**
-     * UpdateInvoiceSchema
-     * @description Request body for partially updating an invoice.
-     *
-     *     payment_method_id, tag_id, refunds_invoice_id, service_month, settled_via,
-     *     applied_to_invoice_id, and worker_id use exclude_unset semantics:
-     *       - field absent  → do not touch that field
-     *       - field = null  → clear the field
-     *       - field = value → set to that value
-     *     Mixed-sign unit_price is allowed for materials_services and return types.
-     */
-    UpdateInvoiceSchema: {
-      /**
-       * Applied To Invoice Id
-       * @default null
-       */
-      applied_to_invoice_id: string | null;
-      /**
-       * Highlight Color
-       * @default null
-       */
-      highlight_color:
-        ("red" | "orange" | "yellow" | "green" | "blue" | "purple") | null;
-      /**
-       * Issue Date
-       * @default null
-       */
-      issue_date: string | null;
-      /**
-       * Items
-       * @default null
-       */
-      items: components["schemas"]["InvoiceItemSchema"][] | null;
-      /**
-       * Notes
-       * @default null
-       */
-      notes: string | null;
-      /**
-       * Payment Method Id
-       * @default null
-       */
-      payment_method_id: string | null;
-      /**
-       * Recipient Address
-       * @default null
-       */
-      recipient_address: string | null;
-      /**
-       * Recipient Name
-       * @default null
-       */
-      recipient_name: string | null;
-      /**
-       * Refunds Invoice Id
-       * @default null
-       */
-      refunds_invoice_id: string | null;
-      /**
-       * Service Month
-       * @default null
-       */
-      service_month: string | null;
-      /**
-       * Settled Via
-       * @default null
-       */
-      settled_via: ("cash" | "avoir") | null;
-      /**
-       * Tag Id
-       * @default null
-       */
-      tag_id: string | null;
-      /**
-       * Type
-       * @default null
-       */
-      type:
-        | (
-            | "released_funds"
-            | "labor"
-            | "materials_services"
-            | "others"
-            | "return"
-          )
-        | null;
-      /**
-       * Worker Id
-       * @default null
-       */
-      worker_id: string | null;
-    };
-    /** UpdateLaborRoleRequest */
-    UpdateLaborRoleRequest: {
-      /**
-       * Color
-       * @default null
-       */
-      color: string | null;
-      /**
-       * Name
-       * @default null
-       */
-      name: string | null;
-    };
-    /**
-     * UpdatePaymentMethodRequest
-     * @description Request body for PATCH /companies/<id>/payment-methods/<id>.
-     *
-     *     At least one of label, is_active, is_company_payment, or is_personal_payment
-     *     must be provided.
-     */
-    UpdatePaymentMethodRequest: {
-      /**
-       * Is Active
-       * @default null
-       */
-      is_active: boolean | null;
-      /**
-       * Is Company Payment
-       * @default null
-       */
-      is_company_payment: boolean | null;
-      /**
-       * Is Personal Payment
-       * @default null
-       */
-      is_personal_payment: boolean | null;
-      /**
-       * Label
-       * @default null
-       */
-      label: string | null;
-    };
-    /**
-     * UpdateProjectRequest
-     * @description Request body for updating a project.
-     *
-     *     Uses model_fields_set to distinguish "field omitted" (no-op) from
-     *     "field explicitly set to null" (clear the value). This prevents a
-     *     PATCH of only budget_source from accidentally wiping budget.
-     */
-    UpdateProjectRequest: {
-      /**
-       * Address
-       * @default null
-       */
-      address: string | null;
-      /**
-       * Budget
-       * @default null
-       */
-      budget: number | string | null;
-      /**
-       * Budget Source
-       * @default null
-       */
-      budget_source: string | null;
-      /**
-       * Invoice Prefix
-       * @default null
-       */
-      invoice_prefix: string | null;
-      /**
-       * Name
-       * @default null
-       */
-      name: string | null;
-    };
-    /**
-     * UpdateStatusRequest
-     * @description Request body for PATCH /billing-documents/<id>/status.
-     */
-    UpdateStatusRequest: {
-      /**
-       * New Status
-       * @enum {string}
-       */
-      new_status:
-        | "draft"
-        | "sent"
-        | "accepted"
-        | "rejected"
-        | "expired"
-        | "paid"
-        | "overdue"
-        | "cancelled";
-    };
-    /**
-     * UpdateTaskSchema
-     * @description All fields optional — partial update.
-     */
-    UpdateTaskSchema: {
-      /**
-       * Assignee Id
-       * @default null
-       */
-      assignee_id: string | null;
-      /**
-       * Description
-       * @default null
-       */
-      description: string | null;
-      /**
-       * Due Date
-       * @default null
-       */
-      due_date: string | null;
-      /**
-       * Labels
-       * @default null
-       */
-      labels: string[] | null;
-      /**
-       * Priority
-       * @default null
-       */
-      priority: string | null;
-      /**
-       * Title
-       * @default null
-       */
-      title: string | null;
-    };
-    /**
-     * UpdateTemplateRequest
-     * @description Request body for PUT /billing-document-templates/<id>.
-     */
-    UpdateTemplateRequest: {
-      /**
-       * Default Vat Rate
-       * @default null
-       */
-      default_vat_rate: number | string | null;
-      /**
-       * Items
-       * @default null
-       */
-      items: components["schemas"]["ItemSchema"][] | null;
-      /**
-       * Name
-       * @default null
-       */
-      name: string | null;
-      /**
-       * Notes
-       * @default null
-       */
-      notes: string | null;
-      /**
-       * Terms
-       * @default null
-       */
-      terms: string | null;
-    };
-    /**
-     * UpdateWorkerRequest
-     * @description Request body for updating a worker.
-     *
-     *     ``daily_rate`` is intentionally excluded: the base rate is immutable after
-     *     worker creation. Use POST /workers/<id>/rate-changes to record pay-rate
-     *     changes with an effective date so history is preserved.
-     */
-    UpdateWorkerRequest: {
-      /**
-       * Name
-       * @default null
-       */
-      name: string | null;
-      /**
-       * Phone
-       * @default null
-       */
-      phone: string | null;
-      /**
-       * Role Id
-       * @default null
-       */
-      role_id: string | null;
-    };
-    /**
-     * UserResponse
-     * @description User info response.
-     */
-    UserResponse: {
-      /** Email */
-      email: string;
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string;
-      /** Permissions */
-      permissions: string[];
-      /** Roles */
-      roles: string[];
-    };
-    /**
-     * VerifyInviteResponse
-     * @description GET /invitations/verify/<token> response body.
-     */
-    VerifyInviteResponse: {
-      /**
-       * Email
-       * Format: email
-       */
-      email: string;
-      /**
-       * Expires At
-       * Format: date-time
-       */
-      expires_at: string;
-      /** Inviter Name */
-      inviter_name: string;
-      /** Project Name */
-      project_name: string;
-      /** Role Name */
-      role_name: string;
-    };
-    /**
-     * WorkerResponse
-     * @description Single worker response.
-     *
-     *     person_id / person_name / person_phone surface the joined Person identity
-     *     introduced by plan 260512-2341-labor-calendar-and-bulk-log (cook 1d-ii-a).
-     *     They are additive — the legacy ``name`` and ``phone`` fields remain
-     *     populated from the workers table for back-compat with FE callers that
-     *     haven't migrated yet. A follow-up release tightens the contract to
-     *     require person_id and ultimately drops the inline name/phone columns.
-     *
-     *     role_id / role_name / role_color surface the joined LaborRole identity.
-     *     Nullable for workers without a role assignment.
-     */
-    WorkerResponse: {
-      /** Created At */
-      created_at: string;
-      /**
-       * Current Daily Rate
-       * @default 0
-       */
-      current_daily_rate: number;
-      /** Daily Rate */
-      daily_rate: number;
-      /** Id */
-      id: string;
-      /** Is Active */
-      is_active: boolean;
-      /** Name */
-      name: string;
-      /**
-       * Person Id
-       * @default null
-       */
-      person_id: string | null;
-      /**
-       * Person Name
-       * @default null
-       */
-      person_name: string | null;
-      /**
-       * Person Phone
-       * @default null
-       */
-      person_phone: string | null;
-      /** Phone */
-      phone: string | null;
-      /** Project Id */
-      project_id: string;
-      /**
-       * Role Color
-       * @default null
-       */
-      role_color: string | null;
-      /**
-       * Role Id
-       * @default null
-       */
-      role_id: string | null;
-      /**
-       * Role Name
-       * @default null
-       */
-      role_name: string | null;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    schemas: {
+        /**
+         * AcceptInviteRequest
+         * @description POST /invitations/accept request body.
+         */
+        AcceptInviteRequest: {
+            /** Name */
+            name: string;
+            /** Password */
+            password: string;
+            /** Token */
+            token: string;
+        };
+        /**
+         * AnalysisUpdateBody
+         * @description Request body for PATCH /api/v1/projects/<id>/analyses/<id>.
+         *
+         *     Every field is optional — the route only forwards fields present in the
+         *     raw JSON payload (via ``model_fields_set``) so an omitted field leaves the
+         *     corresponding entity attribute untouched (see UpdateProjectAnalysisUseCase
+         *     docstring for the landmine this avoids).
+         */
+        AnalysisUpdateBody: {
+            /**
+             * Source Url
+             * @default null
+             */
+            source_url: string | null;
+            /**
+             * Summary
+             * @default null
+             */
+            summary: string | null;
+            /**
+             * Tags
+             * @default null
+             */
+            tags: string[] | null;
+            /**
+             * Title
+             * @default null
+             */
+            title: string | null;
+        };
+        /**
+         * ApplyTemplateRequest
+         * @description Body for POST /billing-documents/from-template/<template_id>.
+         */
+        ApplyTemplateRequest: {
+            /**
+             * Company Id
+             * @default null
+             */
+            company_id: string | null;
+            /**
+             * Issue Date
+             * @default null
+             */
+            issue_date: string | null;
+            /**
+             * Project Id
+             * @default null
+             */
+            project_id: string | null;
+            /**
+             * Recipient Address
+             * @default null
+             */
+            recipient_address: string | null;
+            /**
+             * Recipient Email
+             * @default null
+             */
+            recipient_email: string | null;
+            /** Recipient Name */
+            recipient_name: string;
+            /**
+             * Recipient Siret
+             * @default null
+             */
+            recipient_siret: string | null;
+        };
+        /** AttachmentResponse */
+        AttachmentResponse: {
+            /** Content Type */
+            content_type: string;
+            /** Filename */
+            filename: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Url */
+            url: string;
+        };
+        /**
+         * BulkAddRequest
+         * @description POST /admin/users/<user_id>/memberships request body.
+         */
+        BulkAddRequest: {
+            /** Project Ids */
+            project_ids: string[];
+            /**
+             * Role Id
+             * Format: uuid
+             */
+            role_id: string;
+        };
+        /**
+         * BulkAddResponse
+         * @description POST /admin/users/<user_id>/memberships response body.
+         */
+        BulkAddResponse: {
+            /** Results */
+            results: components["schemas"]["BulkAddResultItem"][];
+        };
+        /**
+         * BulkAddResultItem
+         * @description Per-project result entry in a bulk-add response.
+         */
+        BulkAddResultItem: {
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /** Project Name */
+            project_name: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "added" | "already_member_same_role" | "already_member_different_role" | "project_not_found";
+        };
+        /**
+         * BulkLogAttendanceEntry
+         * @description One row inside a bulk-log request body.
+         */
+        BulkLogAttendanceEntry: {
+            /**
+             * Amount Override
+             * @default null
+             */
+            amount_override: number | null;
+            /**
+             * Note
+             * @default null
+             */
+            note: string | null;
+            /**
+             * Shift Type
+             * @default null
+             */
+            shift_type: ("full" | "half" | "overtime") | null;
+            /**
+             * Supplement Hours
+             * @default 0
+             */
+            supplement_hours: number;
+            /**
+             * Tag Id
+             * @default null
+             */
+            tag_id: string | null;
+            /** Worker Id */
+            worker_id: string;
+        };
+        /**
+         * BulkLogAttendanceRequest
+         * @description Request body for the bulk-log endpoint.
+         *
+         *     Single date + N entries, atomic. Cook 3a of phase-03. Cap at 50
+         *     entries per request to keep the worst-case worker-validation
+         *     O(N) loop bounded and to discourage abuse from a compromised JWT.
+         */
+        BulkLogAttendanceRequest: {
+            /**
+             * Acknowledge Conflicts
+             * @default false
+             */
+            acknowledge_conflicts: boolean;
+            /** Date */
+            date: string;
+            /** Entries */
+            entries: components["schemas"]["BulkLogAttendanceEntry"][];
+        };
+        /** ChannelListResponse */
+        ChannelListResponse: {
+            /** Items */
+            items: components["schemas"]["ChannelResponse"][];
+        };
+        /** ChannelResponse */
+        ChannelResponse: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Kind */
+            kind: string;
+            /** Last Message At */
+            last_message_at: string | null;
+            /** Member Count */
+            member_count: number;
+            /** Name */
+            name: string;
+            /** Unread Count */
+            unread_count: number;
+        };
+        /**
+         * CloneRequest
+         * @description Optional body for POST /billing-documents/<id>/clone.
+         */
+        CloneRequest: {
+            /**
+             * Company Id
+             * @default null
+             */
+            company_id: string | null;
+            /**
+             * Override Kind
+             * @default null
+             */
+            override_kind: ("devis" | "facture") | null;
+        };
+        /**
+         * ConvertRequest
+         * @description Optional body for POST /billing-documents/<id>/convert-to-facture.
+         *
+         *     Both fields are optional — empty body {} is accepted.
+         */
+        ConvertRequest: {
+            /**
+             * Company Id
+             * @default null
+             */
+            company_id: string | null;
+            /**
+             * Payment Due Date
+             * @default null
+             */
+            payment_due_date: string | null;
+            /**
+             * Payment Terms
+             * @default null
+             */
+            payment_terms: string | null;
+        };
+        /** CreateActivitySchema */
+        CreateActivitySchema: {
+            /** Date */
+            date: string;
+            /** Title */
+            title: string;
+        };
+        /**
+         * CreateBillingDocumentRequest
+         * @description Request body for POST /billing-documents.
+         */
+        CreateBillingDocumentRequest: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Issue Date
+             * @default null
+             */
+            issue_date: string | null;
+            /** Items */
+            items: components["schemas"]["ItemSchema"][];
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "devis" | "facture";
+            /**
+             * Notes
+             * @default null
+             */
+            notes: string | null;
+            /**
+             * Payment Due Date
+             * @default null
+             */
+            payment_due_date: string | null;
+            /**
+             * Payment Terms
+             * @default null
+             */
+            payment_terms: string | null;
+            /**
+             * Project Id
+             * @default null
+             */
+            project_id: string | null;
+            /**
+             * Recipient Address
+             * @default null
+             */
+            recipient_address: string | null;
+            /**
+             * Recipient Email
+             * @default null
+             */
+            recipient_email: string | null;
+            /** Recipient Name */
+            recipient_name: string;
+            /**
+             * Recipient Siret
+             * @default null
+             */
+            recipient_siret: string | null;
+            /**
+             * Signature Block Text
+             * @default null
+             */
+            signature_block_text: string | null;
+            /**
+             * Terms
+             * @default null
+             */
+            terms: string | null;
+            /**
+             * Validity Until
+             * @default null
+             */
+            validity_until: string | null;
+        };
+        /**
+         * CreateCompanyRequest
+         * @description Request body for POST /companies (admin).
+         */
+        CreateCompanyRequest: {
+            /** Address */
+            address: string;
+            /**
+             * Bic
+             * @default null
+             */
+            bic: string | null;
+            /**
+             * Default Payment Terms
+             * @default null
+             */
+            default_payment_terms: string | null;
+            /**
+             * Iban
+             * @default null
+             */
+            iban: string | null;
+            /** Legal Name */
+            legal_name: string;
+            /**
+             * Logo Url
+             * @default null
+             */
+            logo_url: string | null;
+            /**
+             * Prefix Override
+             * @default null
+             */
+            prefix_override: string | null;
+            /**
+             * Siret
+             * @default null
+             */
+            siret: string | null;
+            /**
+             * Tva Number
+             * @default null
+             */
+            tva_number: string | null;
+        };
+        /**
+         * CreateInviteRequest
+         * @description POST /invitations request body.
+         */
+        CreateInviteRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /**
+             * Role Id
+             * Format: uuid
+             */
+            role_id: string;
+        };
+        /**
+         * CreateInviteResponse
+         * @description POST /invitations response body.
+         *
+         *     SECURITY/UX NOTE — kind discriminator leak (H3 from code-review):
+         *     ``kind`` reveals whether the supplied email belongs to an existing user
+         *     (``direct_added``) or not (``invitation_sent``). Accepted within the admin
+         *     trust boundary because ``project:invite`` callers can already enumerate
+         *     users via /projects/<id>/members. Do NOT echo this discriminator on any
+         *     public-facing endpoint.
+         */
+        CreateInviteResponse: {
+            /**
+             * Expires At
+             * @default null
+             */
+            expires_at: string | null;
+            /**
+             * Invitation Id
+             * @default null
+             */
+            invitation_id: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "invitation_sent" | "direct_added";
+            /**
+             * User Id
+             * @default null
+             */
+            user_id: string | null;
+        };
+        /**
+         * CreateInvoiceSchema
+         * @description Request body for creating an invoice.
+         *
+         *     refunds_invoice_id is optional; only valid when type='return'. When provided,
+         *     the use-case validates that the target is a same-project materials_services invoice
+         *     and enforces the cap (cumulative returns may not exceed the source total).
+         *     Mixed-sign unit_price is allowed for materials_services and return types.
+         *     service_month is optional; only valid when type='labor'. The use-case normalizes
+         *     any day-of-month to day=1.
+         *     settled_via/applied_to_invoice_id are optional; only valid when type='return'.
+         *     applied_to_invoice_id additionally requires settled_via='avoir' — the use-case
+         *     validates the target and enforces the applied-amount cap, then auto-aligns the
+         *     return's payment_method_id to the target's.
+         *     worker_id is optional; only valid when type='labor'. The use-case validates the
+         *     worker belongs to this project and overrides recipient_name with a server-side
+         *     snapshot of the worker's display name.
+         */
+        CreateInvoiceSchema: {
+            /**
+             * Applied To Invoice Id
+             * @default null
+             */
+            applied_to_invoice_id: string | null;
+            /**
+             * Highlight Color
+             * @default null
+             */
+            highlight_color: ("red" | "orange" | "yellow" | "green" | "blue" | "purple") | null;
+            /**
+             * Issue Date
+             * Format: date
+             */
+            issue_date: string;
+            /** Items */
+            items: components["schemas"]["InvoiceItemSchema"][];
+            /**
+             * Notes
+             * @default null
+             */
+            notes: string | null;
+            /**
+             * Payment Method Id
+             * @default null
+             */
+            payment_method_id: string | null;
+            /**
+             * Recipient Address
+             * @default null
+             */
+            recipient_address: string | null;
+            /** Recipient Name */
+            recipient_name: string;
+            /**
+             * Refunds Invoice Id
+             * @default null
+             */
+            refunds_invoice_id: string | null;
+            /**
+             * Service Month
+             * @default null
+             */
+            service_month: string | null;
+            /**
+             * Settled Via
+             * @default null
+             */
+            settled_via: ("cash" | "avoir") | null;
+            /**
+             * Tag Id
+             * @default null
+             */
+            tag_id: string | null;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "released_funds" | "labor" | "materials_services" | "others" | "return";
+            /**
+             * Worker Id
+             * @default null
+             */
+            worker_id: string | null;
+        };
+        /** CreateLaborRoleRequest */
+        CreateLaborRoleRequest: {
+            /** Color */
+            color: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * CreatePaymentMethodRequest
+         * @description Request body for POST /companies/<id>/payment-methods.
+         */
+        CreatePaymentMethodRequest: {
+            /** Label */
+            label: string;
+        };
+        /**
+         * CreateProjectRequest
+         * @description Request body for creating a project.
+         */
+        CreateProjectRequest: {
+            /**
+             * Address
+             * @default null
+             */
+            address: string | null;
+            /**
+             * Budget
+             * @default null
+             */
+            budget: number | string | null;
+            /**
+             * Budget Source
+             * @default null
+             */
+            budget_source: string | null;
+            /** Name */
+            name: string;
+        };
+        /** CreateTaskSchema */
+        CreateTaskSchema: {
+            /**
+             * Assignee Id
+             * @default null
+             */
+            assignee_id: string | null;
+            /**
+             * Description
+             * @default null
+             */
+            description: string | null;
+            /**
+             * Due Date
+             * @default null
+             */
+            due_date: string | null;
+            /** Labels */
+            labels?: string[];
+            /**
+             * Priority
+             * @default medium
+             */
+            priority: string;
+            /**
+             * Status
+             * @default backlog
+             */
+            status: string;
+            /** Title */
+            title: string;
+        };
+        /**
+         * CreateTemplateRequest
+         * @description Request body for POST /billing-document-templates.
+         */
+        CreateTemplateRequest: {
+            /**
+             * Default Vat Rate
+             * @default null
+             */
+            default_vat_rate: number | string | null;
+            /** Items */
+            items?: components["schemas"]["ItemSchema"][];
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "devis" | "facture";
+            /** Name */
+            name: string;
+            /**
+             * Notes
+             * @default null
+             */
+            notes: string | null;
+            /**
+             * Terms
+             * @default null
+             */
+            terms: string | null;
+        };
+        /**
+         * CreateWorkerRequest
+         * @description Request body for creating a worker.
+         *
+         *     ``person_id`` (cook 1d-ii-b) lets the caller link this Worker to an
+         *     existing Person picked via the PersonTypeahead. When omitted, the
+         *     legacy flow runs: name + phone create a fresh Person via the
+         *     CreateWorkerUseCase before linking. Either path produces a Worker
+         *     with a non-null person_id once Phase 1c backfill has completed.
+         */
+        CreateWorkerRequest: {
+            /** Daily Rate */
+            daily_rate: number;
+            /** Name */
+            name: string;
+            /**
+             * Person Id
+             * @default null
+             */
+            person_id: string | null;
+            /**
+             * Phone
+             * @default null
+             */
+            phone: string | null;
+            /**
+             * Role Id
+             * @default null
+             */
+            role_id: string | null;
+        };
+        /**
+         * DayTagRequest
+         * @description Request body for PUT /labor-entries/day-tag.
+         *
+         *     ``tag_id`` explicitly null (or omitted) clears the tag on every entry of
+         *     the day; a UUID overwrites the tag on every entry of the day. The
+         *     use-case rejects a tag_id that does not belong to the project.
+         */
+        DayTagRequest: {
+            /** Date */
+            date: string;
+            /**
+             * Tag Id
+             * @default null
+             */
+            tag_id: string | null;
+        };
+        /**
+         * FeaturesResponse
+         * @description Feature flags of this deployment, as seen by the apps.
+         */
+        FeaturesResponse: {
+            /** Chat */
+            chat: boolean;
+        };
+        /**
+         * ImportBillingDocumentRequest
+         * @description Request body for POST /billing-documents/import.
+         *
+         *     Strict mode (extra='forbid'). All fields same as CreateBillingDocumentRequest
+         *     plus mandatory document_number + status, and optional created_at.
+         */
+        ImportBillingDocumentRequest: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Created At
+             * @default null
+             */
+            created_at: string | null;
+            /** Document Number */
+            document_number: string;
+            /**
+             * Issue Date
+             * @default null
+             */
+            issue_date: string | null;
+            /** Items */
+            items: components["schemas"]["ItemSchema"][];
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "devis" | "facture";
+            /**
+             * Notes
+             * @default null
+             */
+            notes: string | null;
+            /**
+             * Payment Due Date
+             * @default null
+             */
+            payment_due_date: string | null;
+            /**
+             * Payment Terms
+             * @default null
+             */
+            payment_terms: string | null;
+            /**
+             * Project Id
+             * @default null
+             */
+            project_id: string | null;
+            /**
+             * Recipient Address
+             * @default null
+             */
+            recipient_address: string | null;
+            /**
+             * Recipient Email
+             * @default null
+             */
+            recipient_email: string | null;
+            /** Recipient Name */
+            recipient_name: string;
+            /**
+             * Recipient Siret
+             * @default null
+             */
+            recipient_siret: string | null;
+            /**
+             * Signature Block Text
+             * @default null
+             */
+            signature_block_text: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "sent" | "paid" | "cancelled";
+            /**
+             * Terms
+             * @default null
+             */
+            terms: string | null;
+            /**
+             * Validity Until
+             * @default null
+             */
+            validity_until: string | null;
+        };
+        /**
+         * InvoiceItemSchema
+         * @description A single line item on an invoice.
+         *
+         *     unit_price carries no ge=0 bound — sign validation is type-dependent and
+         *     enforced in the use-case (mixed-sign allowed for materials_services + return).
+         *     quantity must be > 0; vat_rate is 0–100.
+         */
+        InvoiceItemSchema: {
+            /** Description */
+            description: string;
+            /** Quantity */
+            quantity: number;
+            /** Unit Price */
+            unit_price: number;
+            /**
+             * Vat Rate
+             * @default 0
+             */
+            vat_rate: number;
+        };
+        /**
+         * ItemSchema
+         * @description A single line item used in create / update / template schemas.
+         */
+        ItemSchema: {
+            /**
+             * Category
+             * @default null
+             */
+            category: string | null;
+            /** Description */
+            description: string;
+            /** Quantity */
+            quantity: number | string;
+            /** Unit Price */
+            unit_price: number | string;
+            /** Vat Rate */
+            vat_rate: number | string;
+        };
+        /**
+         * LaborPaymentsMonthSchema
+         * @description One (service_month) bucket of the labor-payments summary response.
+         *
+         *     year/month are both null for the no-service_month bucket, always last.
+         */
+        LaborPaymentsMonthSchema: {
+            /**
+             * Company Paid
+             * @default 0
+             */
+            company_paid: number;
+            /**
+             * Month
+             * @default null
+             */
+            month: number | null;
+            /**
+             * Personal Paid
+             * @default 0
+             */
+            personal_paid: number;
+            /** Total Paid */
+            total_paid: number;
+            /** Unassigned Count */
+            unassigned_count: number;
+            /** Unassigned Paid */
+            unassigned_paid: number;
+            /** Workers */
+            workers: components["schemas"]["LaborPaymentsWorkerSchema"][];
+            /**
+             * Year
+             * @default null
+             */
+            year: number | null;
+        };
+        /**
+         * LaborPaymentsSummarySchema
+         * @description Response body for GET /projects/<id>/labor-payments-summary.
+         */
+        LaborPaymentsSummarySchema: {
+            /** Months */
+            months: components["schemas"]["LaborPaymentsMonthSchema"][];
+        };
+        /**
+         * LaborPaymentsWorkerSchema
+         * @description One worker's paid total within a labor-payments month bucket.
+         */
+        LaborPaymentsWorkerSchema: {
+            /** Invoice Count */
+            invoice_count: number;
+            /** Paid */
+            paid: number;
+            /** Worker Id */
+            worker_id: string;
+            /** Worker Name */
+            worker_name: string;
+        };
+        /** LaborRoleResponse */
+        LaborRoleResponse: {
+            /** Color */
+            color: string;
+            /** Created At */
+            created_at: string;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * LogAttendanceRequest
+         * @description Request body for logging attendance.
+         *
+         *     Valid combos:
+         *     - shift_type set (supplement_hours may be 0 or >0)
+         *     - shift_type None AND supplement_hours > 0  (supplement-only row)
+         *
+         *     Invalid combos (422):
+         *     - shift_type None AND supplement_hours == 0  (empty row)
+         *     - shift_type None AND amount_override set    (override without shift)
+         */
+        LogAttendanceRequest: {
+            /**
+             * Amount Override
+             * @default null
+             */
+            amount_override: number | null;
+            /** Date */
+            date: string;
+            /**
+             * Note
+             * @default null
+             */
+            note: string | null;
+            /**
+             * Shift Type
+             * @default null
+             */
+            shift_type: ("full" | "half" | "overtime") | null;
+            /**
+             * Supplement Hours
+             * @default 0
+             */
+            supplement_hours: number;
+            /**
+             * Tag Id
+             * @default null
+             */
+            tag_id: string | null;
+            /** Worker Id */
+            worker_id: string;
+        };
+        /**
+         * LoginRequest
+         * @description Login request payload.
+         */
+        LoginRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Password */
+            password: string;
+        };
+        /**
+         * LoginResponse
+         * @description Login response with tokens and user info.
+         */
+        LoginResponse: {
+            /** Access Token */
+            access_token: string;
+            /**
+             * Expires In
+             * @default 1800
+             */
+            expires_in: number;
+            /** Refresh Token */
+            refresh_token: string;
+            /**
+             * Token Type
+             * @default Bearer
+             */
+            token_type: string;
+            user: components["schemas"]["UserResponse"];
+        };
+        /** MemberResponse */
+        MemberResponse: {
+            /** Id */
+            id: string;
+            /**
+             * Last Read At
+             * @default null
+             */
+            last_read_at: string | null;
+            /** Name */
+            name: string;
+        };
+        /** MessagePageResponse */
+        MessagePageResponse: {
+            /** Items */
+            items: components["schemas"]["MessageResponse"][];
+            /** Members */
+            members: components["schemas"]["MemberResponse"][];
+        };
+        /** MessageResponse */
+        MessageResponse: {
+            attachment: components["schemas"]["AttachmentResponse"] | null;
+            /** Body */
+            body: string | null;
+            /** Channel Key */
+            channel_key: string;
+            /** Created At */
+            created_at: string;
+            /** Id */
+            id: string;
+            /** Mine */
+            mine: boolean;
+            /** Sender Id */
+            sender_id: string;
+            /** Sender Name */
+            sender_name: string;
+        };
+        /**
+         * MoveTaskSchema
+         * @description Atomic drag-drop endpoint payload.
+         */
+        MoveTaskSchema: {
+            /**
+             * After Id
+             * @default null
+             */
+            after_id: string | null;
+            /**
+             * Before Id
+             * @default null
+             */
+            before_id: string | null;
+            /** Status */
+            status: string;
+        };
+        /**
+         * NoteCreateBody
+         * @description Request body for POST /api/v1/projects/<id>/notes.
+         */
+        NoteCreateBody: {
+            /**
+             * Category
+             * @default general
+             * @enum {string}
+             */
+            category: "inspection" | "delivery" | "payment" | "decision" | "call" | "general";
+            /**
+             * Description
+             * @default null
+             */
+            description: string | null;
+            /** Title */
+            title: string;
+        };
+        /**
+         * NoteUpdateBody
+         * @description Request body for PATCH /api/v1/projects/<id>/notes/<id>.
+         */
+        NoteUpdateBody: {
+            /**
+             * Category
+             * @default null
+             */
+            category: ("inspection" | "delivery" | "payment" | "decision" | "call" | "general") | null;
+            /**
+             * Description
+             * @default null
+             */
+            description: string | null;
+            /**
+             * Status
+             * @default null
+             */
+            status: ("open" | "done") | null;
+            /**
+             * Title
+             * @default null
+             */
+            title: string | null;
+        };
+        /**
+         * ProjectResponse
+         * @description Single project response.
+         */
+        ProjectResponse: {
+            /** Address */
+            address: string | null;
+            /**
+             * Budget
+             * @default null
+             */
+            budget: number | null;
+            /**
+             * Budget Source
+             * @default null
+             */
+            budget_source: string | null;
+            /**
+             * Company Id
+             * @default null
+             */
+            company_id: string | null;
+            /** Created At */
+            created_at: string;
+            /** Id */
+            id: string;
+            /**
+             * Invoice Prefix
+             * @default null
+             */
+            invoice_prefix: string | null;
+            /**
+             * Labor Accrued
+             * @default 0
+             */
+            labor_accrued: number;
+            /**
+             * Labor Paid
+             * @default 0
+             */
+            labor_paid: number;
+            /**
+             * Labor Unpaid
+             * @default 0
+             */
+            labor_unpaid: number;
+            /**
+             * My Permissions
+             * @default []
+             */
+            my_permissions: string[];
+            /** Name */
+            name: string;
+            /** Owner Id */
+            owner_id: string;
+            /**
+             * Personal By Type
+             * @default {}
+             */
+            personal_by_type: {
+                [key: string]: number;
+            };
+            /**
+             * Spent
+             * @default 0
+             */
+            spent: number;
+            /**
+             * Spent By Credits
+             * @default 0
+             */
+            spent_by_credits: number;
+            /**
+             * Spent Personal
+             * @default 0
+             */
+            spent_personal: number;
+            /** User Count */
+            user_count: number;
+        };
+        /**
+         * RedeemInviteTokenRequest
+         * @description Request body for POST /companies/attach-by-token.
+         */
+        RedeemInviteTokenRequest: {
+            /** Token */
+            token: string;
+        };
+        /**
+         * RefreshResponse
+         * @description Refresh token response.
+         */
+        RefreshResponse: {
+            /** Access Token */
+            access_token: string;
+            /**
+             * Expires In
+             * @default 1800
+             */
+            expires_in: number;
+            /**
+             * Token Type
+             * @default Bearer
+             */
+            token_type: string;
+        };
+        /**
+         * SendMessageBody
+         * @description JSON body of POST /chat/channels/<key>/messages (text-only messages).
+         *
+         *     Messages with an image use multipart/form-data instead: ``body`` text part + ``file``.
+         */
+        SendMessageBody: {
+            /** Body */
+            body: string;
+        };
+        /**
+         * SetDayDescriptionSchema
+         * @description Request body for PUT /labor-day-descriptions.
+         *
+         *     description may be empty/blank — the server will delete the row in that case.
+         *     No min_length constraint here so callers can explicitly clear with "".
+         */
+        SetDayDescriptionSchema: {
+            /** Date */
+            date: string;
+            /** Description */
+            description: string;
+        };
+        /**
+         * SetPrimaryCompanyRequest
+         * @description Request body for PUT /users/me/primary-company.
+         */
+        SetPrimaryCompanyRequest: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+        };
+        /**
+         * TagCreateBody
+         * @description Request body for POST /projects/<pid>/tags.
+         */
+        TagCreateBody: {
+            /** Color */
+            color: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * TagUpdateBody
+         * @description Request body for PUT /projects/<pid>/tags/<tag_id>.
+         */
+        TagUpdateBody: {
+            /**
+             * Color
+             * @default null
+             */
+            color: string | null;
+            /**
+             * Name
+             * @default null
+             */
+            name: string | null;
+        };
+        /** UpdateActivitySchema */
+        UpdateActivitySchema: {
+            /**
+             * Title
+             * @default null
+             */
+            title: string | null;
+        };
+        /**
+         * UpdateAttendanceRequest
+         * @description Request body for updating attendance.
+         *
+         *     All fields are optional to allow partial updates.
+         *     When shift_type is explicitly cleared (None) while amount_override is set,
+         *     the validator rejects the combination.
+         */
+        UpdateAttendanceRequest: {
+            /**
+             * Amount Override
+             * @default null
+             */
+            amount_override: number | null;
+            /**
+             * Note
+             * @default null
+             */
+            note: string | null;
+            /**
+             * Shift Type
+             * @default null
+             */
+            shift_type: ("full" | "half" | "overtime") | null;
+            /**
+             * Supplement Hours
+             * @default null
+             */
+            supplement_hours: number | null;
+            /**
+             * Tag Id
+             * @default null
+             */
+            tag_id: string | null;
+        };
+        /**
+         * UpdateBillingDocumentRequest
+         * @description Request body for PUT /billing-documents/<id>.
+         *
+         *     Fields immutable after creation are intentionally absent:
+         *     kind, document_number, status, source_devis_id, and all issuer_* fields.
+         *     Any attempt to send them will be rejected by extra='forbid'.
+         */
+        UpdateBillingDocumentRequest: {
+            /**
+             * Issue Date
+             * @default null
+             */
+            issue_date: string | null;
+            /**
+             * Items
+             * @default null
+             */
+            items: components["schemas"]["ItemSchema"][] | null;
+            /**
+             * Notes
+             * @default null
+             */
+            notes: string | null;
+            /**
+             * Payment Due Date
+             * @default null
+             */
+            payment_due_date: string | null;
+            /**
+             * Payment Terms
+             * @default null
+             */
+            payment_terms: string | null;
+            /**
+             * Project Id
+             * @default null
+             */
+            project_id: string | null;
+            /**
+             * Recipient Address
+             * @default null
+             */
+            recipient_address: string | null;
+            /**
+             * Recipient Email
+             * @default null
+             */
+            recipient_email: string | null;
+            /**
+             * Recipient Name
+             * @default null
+             */
+            recipient_name: string | null;
+            /**
+             * Recipient Siret
+             * @default null
+             */
+            recipient_siret: string | null;
+            /**
+             * Signature Block Text
+             * @default null
+             */
+            signature_block_text: string | null;
+            /**
+             * Terms
+             * @default null
+             */
+            terms: string | null;
+            /**
+             * Validity Until
+             * @default null
+             */
+            validity_until: string | null;
+        };
+        /**
+         * UpdateCompanyRequest
+         * @description Request body for PUT /companies/<id> (admin).
+         *
+         *     All fields optional; extra='forbid' prevents sending id/created_by/timestamps.
+         */
+        UpdateCompanyRequest: {
+            /**
+             * Address
+             * @default null
+             */
+            address: string | null;
+            /**
+             * Bic
+             * @default null
+             */
+            bic: string | null;
+            /**
+             * Default Payment Terms
+             * @default null
+             */
+            default_payment_terms: string | null;
+            /**
+             * Iban
+             * @default null
+             */
+            iban: string | null;
+            /**
+             * Legal Name
+             * @default null
+             */
+            legal_name: string | null;
+            /**
+             * Logo Url
+             * @default null
+             */
+            logo_url: string | null;
+            /**
+             * Prefix Override
+             * @default null
+             */
+            prefix_override: string | null;
+            /**
+             * Siret
+             * @default null
+             */
+            siret: string | null;
+            /**
+             * Tva Number
+             * @default null
+             */
+            tva_number: string | null;
+        };
+        /**
+         * UpdateInvoiceSchema
+         * @description Request body for partially updating an invoice.
+         *
+         *     payment_method_id, tag_id, refunds_invoice_id, service_month, settled_via,
+         *     applied_to_invoice_id, and worker_id use exclude_unset semantics:
+         *       - field absent  → do not touch that field
+         *       - field = null  → clear the field
+         *       - field = value → set to that value
+         *     Mixed-sign unit_price is allowed for materials_services and return types.
+         */
+        UpdateInvoiceSchema: {
+            /**
+             * Applied To Invoice Id
+             * @default null
+             */
+            applied_to_invoice_id: string | null;
+            /**
+             * Highlight Color
+             * @default null
+             */
+            highlight_color: ("red" | "orange" | "yellow" | "green" | "blue" | "purple") | null;
+            /**
+             * Issue Date
+             * @default null
+             */
+            issue_date: string | null;
+            /**
+             * Items
+             * @default null
+             */
+            items: components["schemas"]["InvoiceItemSchema"][] | null;
+            /**
+             * Notes
+             * @default null
+             */
+            notes: string | null;
+            /**
+             * Payment Method Id
+             * @default null
+             */
+            payment_method_id: string | null;
+            /**
+             * Recipient Address
+             * @default null
+             */
+            recipient_address: string | null;
+            /**
+             * Recipient Name
+             * @default null
+             */
+            recipient_name: string | null;
+            /**
+             * Refunds Invoice Id
+             * @default null
+             */
+            refunds_invoice_id: string | null;
+            /**
+             * Service Month
+             * @default null
+             */
+            service_month: string | null;
+            /**
+             * Settled Via
+             * @default null
+             */
+            settled_via: ("cash" | "avoir") | null;
+            /**
+             * Tag Id
+             * @default null
+             */
+            tag_id: string | null;
+            /**
+             * Type
+             * @default null
+             */
+            type: ("released_funds" | "labor" | "materials_services" | "others" | "return") | null;
+            /**
+             * Worker Id
+             * @default null
+             */
+            worker_id: string | null;
+        };
+        /** UpdateLaborRoleRequest */
+        UpdateLaborRoleRequest: {
+            /**
+             * Color
+             * @default null
+             */
+            color: string | null;
+            /**
+             * Name
+             * @default null
+             */
+            name: string | null;
+        };
+        /**
+         * UpdatePaymentMethodRequest
+         * @description Request body for PATCH /companies/<id>/payment-methods/<id>.
+         *
+         *     At least one of label, is_active, is_company_payment, or is_personal_payment
+         *     must be provided.
+         */
+        UpdatePaymentMethodRequest: {
+            /**
+             * Is Active
+             * @default null
+             */
+            is_active: boolean | null;
+            /**
+             * Is Company Payment
+             * @default null
+             */
+            is_company_payment: boolean | null;
+            /**
+             * Is Personal Payment
+             * @default null
+             */
+            is_personal_payment: boolean | null;
+            /**
+             * Label
+             * @default null
+             */
+            label: string | null;
+        };
+        /**
+         * UpdateProjectRequest
+         * @description Request body for updating a project.
+         *
+         *     Uses model_fields_set to distinguish "field omitted" (no-op) from
+         *     "field explicitly set to null" (clear the value). This prevents a
+         *     PATCH of only budget_source from accidentally wiping budget.
+         */
+        UpdateProjectRequest: {
+            /**
+             * Address
+             * @default null
+             */
+            address: string | null;
+            /**
+             * Budget
+             * @default null
+             */
+            budget: number | string | null;
+            /**
+             * Budget Source
+             * @default null
+             */
+            budget_source: string | null;
+            /**
+             * Invoice Prefix
+             * @default null
+             */
+            invoice_prefix: string | null;
+            /**
+             * Name
+             * @default null
+             */
+            name: string | null;
+        };
+        /**
+         * UpdateStatusRequest
+         * @description Request body for PATCH /billing-documents/<id>/status.
+         */
+        UpdateStatusRequest: {
+            /**
+             * New Status
+             * @enum {string}
+             */
+            new_status: "draft" | "sent" | "accepted" | "rejected" | "expired" | "paid" | "overdue" | "cancelled";
+        };
+        /**
+         * UpdateTaskSchema
+         * @description All fields optional — partial update.
+         */
+        UpdateTaskSchema: {
+            /**
+             * Assignee Id
+             * @default null
+             */
+            assignee_id: string | null;
+            /**
+             * Description
+             * @default null
+             */
+            description: string | null;
+            /**
+             * Due Date
+             * @default null
+             */
+            due_date: string | null;
+            /**
+             * Labels
+             * @default null
+             */
+            labels: string[] | null;
+            /**
+             * Priority
+             * @default null
+             */
+            priority: string | null;
+            /**
+             * Title
+             * @default null
+             */
+            title: string | null;
+        };
+        /**
+         * UpdateTemplateRequest
+         * @description Request body for PUT /billing-document-templates/<id>.
+         */
+        UpdateTemplateRequest: {
+            /**
+             * Default Vat Rate
+             * @default null
+             */
+            default_vat_rate: number | string | null;
+            /**
+             * Items
+             * @default null
+             */
+            items: components["schemas"]["ItemSchema"][] | null;
+            /**
+             * Name
+             * @default null
+             */
+            name: string | null;
+            /**
+             * Notes
+             * @default null
+             */
+            notes: string | null;
+            /**
+             * Terms
+             * @default null
+             */
+            terms: string | null;
+        };
+        /**
+         * UpdateWorkerRequest
+         * @description Request body for updating a worker.
+         *
+         *     ``daily_rate`` is intentionally excluded: the base rate is immutable after
+         *     worker creation. Use POST /workers/<id>/rate-changes to record pay-rate
+         *     changes with an effective date so history is preserved.
+         */
+        UpdateWorkerRequest: {
+            /**
+             * Name
+             * @default null
+             */
+            name: string | null;
+            /**
+             * Phone
+             * @default null
+             */
+            phone: string | null;
+            /**
+             * Role Id
+             * @default null
+             */
+            role_id: string | null;
+        };
+        /**
+         * UserResponse
+         * @description User info response.
+         */
+        UserResponse: {
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Permissions */
+            permissions: string[];
+            /** Roles */
+            roles: string[];
+        };
+        /**
+         * VerifyInviteResponse
+         * @description GET /invitations/verify/<token> response body.
+         */
+        VerifyInviteResponse: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Inviter Name */
+            inviter_name: string;
+            /** Project Name */
+            project_name: string;
+            /** Role Name */
+            role_name: string;
+        };
+        /**
+         * WorkerResponse
+         * @description Single worker response.
+         *
+         *     person_id / person_name / person_phone surface the joined Person identity
+         *     introduced by plan 260512-2341-labor-calendar-and-bulk-log (cook 1d-ii-a).
+         *     They are additive — the legacy ``name`` and ``phone`` fields remain
+         *     populated from the workers table for back-compat with FE callers that
+         *     haven't migrated yet. A follow-up release tightens the contract to
+         *     require person_id and ultimately drops the inline name/phone columns.
+         *
+         *     role_id / role_name / role_color surface the joined LaborRole identity.
+         *     Nullable for workers without a role assignment.
+         */
+        WorkerResponse: {
+            /** Created At */
+            created_at: string;
+            /**
+             * Current Daily Rate
+             * @default 0
+             */
+            current_daily_rate: number;
+            /** Daily Rate */
+            daily_rate: number;
+            /** Id */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /**
+             * Person Id
+             * @default null
+             */
+            person_id: string | null;
+            /**
+             * Person Name
+             * @default null
+             */
+            person_name: string | null;
+            /**
+             * Person Phone
+             * @default null
+             */
+            person_phone: string | null;
+            /** Phone */
+            phone: string | null;
+            /** Project Id */
+            project_id: string;
+            /**
+             * Role Color
+             * @default null
+             */
+            role_color: string | null;
+            /**
+             * Role Id
+             * @default null
+             */
+            role_id: string | null;
+            /**
+             * Role Name
+             * @default null
+             */
+            role_name: string | null;
+        };
+    };
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

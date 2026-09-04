@@ -1356,6 +1356,7 @@
     "yesterday": "Yesterday",
     "empty": "No messages yet.",
     "disabled": "Chat is not enabled on this server.",
-    "permissionDenied": "Photo access was denied."
+    "permissionDenied": "Photo access was denied.",
+    "seenBy": "Seen by {{names}}"
   }
 }

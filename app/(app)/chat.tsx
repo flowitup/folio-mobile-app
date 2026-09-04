@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useAuth } from "@/auth/auth-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
@@ -25,6 +26,7 @@ import {
   useSendChatMessage,
 } from "@/features/chat/chat-api";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
+import { seenByMessage } from "@/lib/chat/seen-by";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { useTokens, workerColor } from "@/theme/tokens";
@@ -36,6 +38,7 @@ import { useTokens, workerColor } from "@/theme/tokens";
  */
 export default function ChatScreen() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const tokens = useTokens();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -63,15 +66,30 @@ export default function ChatScreen() {
   const members = messages.data?.members ?? [];
   const items = messages.data?.items ?? [];
   const lastMessageId = items[items.length - 1]?.id;
+  const lastMessageMine = items[items.length - 1]?.mine ?? true;
+  // Who has read up to which message ("seen" avatars); recomputed on every poll.
+  const seen = useMemo(
+    () =>
+      seenByMessage(
+        messages.data?.items ?? [],
+        messages.data?.members ?? [],
+        user?.id,
+      ),
+    [messages.data, user?.id],
+  );
 
   // Opening (or switching to) a channel clears its unread marker.
   useEffect(() => {
     if (channelKey) markRead.mutate({ channelKey });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelKey]);
-  // Keep the list anchored to the newest message.
+  // Keep the list anchored to the newest message; an incoming one is read since the screen is open,
+  // so move the marker too (that is what shows this reader's avatar on the sender's side).
   useEffect(() => {
     if (lastMessageId) scrollRef.current?.scrollToEnd({ animated: false });
+    if (lastMessageId && !lastMessageMine && channelKey)
+      markRead.mutate({ channelKey });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastMessageId]);
 
   const canSend =
@@ -216,7 +234,9 @@ export default function ChatScreen() {
               {t("chat.empty")}
             </Text>
           ) : null}
-          {items.length > 0 ? <ChatMessageList messages={items} /> : null}
+          {items.length > 0 ? (
+            <ChatMessageList messages={items} seen={seen} />
+          ) : null}
         </ScrollView>
 
         {file ? (
