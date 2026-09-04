@@ -81,15 +81,14 @@ function MessageRow({
         {message.attachment ? (
           <View className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card">
             <View className="h-[120px] items-center justify-center bg-paper-2">
+              {/* Placeholder glyph sits under the image; it only shows until the bytes arrive. */}
+              <Icon name="image" size={28} color={tokens.muted} />
               <AuthedImage
                 path={message.attachment.url}
-                style={{ width: 200, height: 120 }}
+                style={{ position: "absolute", width: 200, height: 120 }}
                 resizeMode="cover"
                 accessibilityLabel={message.attachment.filename}
               />
-              <View className="absolute" pointerEvents="none">
-                <Icon name="image" size={28} color={tokens.muted} />
-              </View>
             </View>
             <Text
               className="px-2.5 py-1.5 font-mono-regular text-[11px] text-muted"
