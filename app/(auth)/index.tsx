@@ -141,7 +141,7 @@ function PhoneForm() {
             autoComplete="tel"
             keyboardType="phone-pad"
             textContentType="telephoneNumber"
-            placeholder="+84 912 345 678"
+            placeholder="06 12 34 56 78"
             placeholderTextColor={tokens.muted2}
             value={phoneInput}
             onChangeText={setPhoneInput}

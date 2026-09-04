@@ -2,17 +2,18 @@ import { normalizePhone } from "@/lib/auth/phone-number";
 
 describe("normalizePhone", () => {
   it.each([
-    ["0912345678", "+84912345678"],
-    ["0912 345 678", "+84912345678"],
+    ["0612345678", "+33612345678"],
+    ["06 12 34 56 78", "+33612345678"],
+    ["+33 6 12 34 56 78", "+33612345678"],
+    ["0033612345678", "+33612345678"],
     ["+84 912-345-678", "+84912345678"],
     ["0084912345678", "+84912345678"],
-    ["+33 6 12 34 56 78", "+33612345678"],
-  ])("normalises %s", (raw, expected) => {
+  ])("normalises %s (France by default)", (raw, expected) => {
     expect(normalizePhone(raw)).toBe(expected);
   });
 
-  it("uses the default region for national numbers", () => {
-    expect(normalizePhone("06 12 34 56 78", "FR")).toBe("+33612345678");
+  it("uses the region argument for national numbers", () => {
+    expect(normalizePhone("0912 345 678", "VN")).toBe("+84912345678");
   });
 
   it.each(["", "abc", "12345", "+0123456789", "912345678"])(

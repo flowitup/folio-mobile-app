@@ -279,7 +279,7 @@ export default function AdminUsersScreen() {
             onChangeText={setEditPhone}
             keyboardType="phone-pad"
             autoComplete="tel"
-            placeholder="+84 912 345 678"
+            placeholder="06 12 34 56 78"
           />
           <Button
             testID="user-edit-submit"

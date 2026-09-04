@@ -27,7 +27,7 @@
       "email": "Email"
     },
     "phone": "Phone number",
-    "phoneHint": "e.g. 0912 345 678 or +33 6 12 34 56 78",
+    "phoneHint": "e.g. 06 12 34 56 78, or +84 912 345 678 for a Vietnamese number",
     "invalidPhone": "Enter a valid phone number.",
     "sendCode": "Send code",
     "codeSentTo": "A 6-digit code was sent to {{phone}}.",
