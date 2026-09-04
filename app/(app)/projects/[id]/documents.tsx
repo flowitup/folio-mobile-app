@@ -35,6 +35,7 @@ import type {
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
+import { useMembers } from "@/features/projects/members-api";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 const SORTS: DocumentSort[] = ["created_at", "name", "size", "uploader"];
@@ -44,15 +45,30 @@ export default function ProjectDocumentsSection() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [kinds, setKinds] = useState<ProjectDocumentKind[]>([]);
-  const [tag, setTag] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [uploader, setUploader] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const [sort, setSort] = useState<DocumentSort>("created_at");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const documents = useDocuments(id, {
     kinds: kinds.length ? kinds : undefined,
-    tags: tag ? [tag] : undefined,
+    tags: selectedTags.length ? selectedTags : undefined,
+    uploaderId: uploader,
     sort,
     order,
+    page,
   });
+  const members = useMembers(id);
+  const totalPages = Math.max(
+    1,
+    Math.ceil((documents.data?.total ?? 0) / (documents.data?.per_page ?? 25)),
+  );
+  const toggleTag = (value: string) => {
+    setPage(1);
+    setSelectedTags((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    );
+  };
   const tags = useDocumentTags(id);
   const upload = useUploadDocument(id);
   const rename = useRenameDocument(id);
@@ -118,18 +134,51 @@ export default function ProjectDocumentsSection() {
           </Pressable>
         ))}
       </ScrollView>
+      {(tags.data?.length ?? 0) > 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="max-h-11 border-b border-border"
+          contentContainerClassName="px-2 items-center"
+        >
+          {(tags.data ?? []).map((value) => (
+            <Pressable
+              key={value}
+              testID={`documents-tag-${value}`}
+              onPress={() => toggleTag(value)}
+              className={`mr-2 rounded-full border px-3 py-1 ${selectedTags.includes(value) ? "border-primary bg-primary" : "border-border"}`}
+            >
+              <Text
+                className={
+                  selectedTags.includes(value)
+                    ? "text-xs text-primary-foreground"
+                    : "text-xs text-primary"
+                }
+              >
+                #{value}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      ) : null}
       <ScrollView className="flex-1" contentContainerClassName="p-4 pb-12">
         <View className="flex-row items-center gap-2">
           <View className="flex-1">
             <Select
-              testID="documents-tag"
-              placeholder={t("documents.allTags")}
-              value={tag ?? "__all__"}
+              testID="documents-uploader"
+              placeholder={t("documents.allUploaders")}
+              value={uploader ?? "__all__"}
               options={[
-                { value: "__all__", label: t("documents.allTags") },
-                ...(tags.data ?? []).map((value) => ({ value, label: value })),
+                { value: "__all__", label: t("documents.allUploaders") },
+                ...(members.data ?? []).map((member) => ({
+                  value: member.user_id,
+                  label: member.display_name ?? member.email,
+                })),
               ]}
-              onChange={(value) => setTag(value === "__all__" ? null : value)}
+              onChange={(value) => {
+                setPage(1);
+                setUploader(value === "__all__" ? null : value);
+              }}
             />
           </View>
           <View className="flex-1">
@@ -214,6 +263,30 @@ export default function ProjectDocumentsSection() {
             </View>
           </Card>
         ))}
+        {(documents.data?.total ?? 0) > (documents.data?.per_page ?? 25) ? (
+          <View className="mt-2 flex-row items-center justify-between">
+            <Button
+              testID="documents-prev"
+              label="‹"
+              size="sm"
+              variant="secondary"
+              disabled={page <= 1}
+              onPress={() => setPage((p) => Math.max(1, p - 1))}
+            />
+            <Text className="text-xs text-muted-foreground">
+              {t("library.pageOf", { page, pages: totalPages })} ·{" "}
+              {documents.data?.total ?? 0}
+            </Text>
+            <Button
+              testID="documents-next"
+              label="›"
+              size="sm"
+              variant="secondary"
+              disabled={page >= totalPages}
+              onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
+            />
+          </View>
+        ) : null}
       </ScrollView>
 
       <Sheet ref={addSheet} title={t("documents.add")} snapPoints={["35%"]}>

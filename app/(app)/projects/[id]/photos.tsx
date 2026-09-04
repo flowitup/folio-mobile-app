@@ -23,7 +23,7 @@ import {
   isVideo,
   sharePhoto,
   useDeletePhoto,
-  useProjectPhotos,
+  useProjectPhotosInfinite,
   useUpdatePhoto,
   useUploadPhoto,
 } from "@/features/photos/photos-api";
@@ -38,7 +38,7 @@ export default function ProjectPhotosSection() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
-  const photos = useProjectPhotos(id);
+  const photos = useProjectPhotosInfinite(id);
   const upload = useUploadPhoto(id);
   const update = useUpdatePhoto(id);
   const remove = useDeletePhoto(id);
@@ -51,7 +51,8 @@ export default function ProjectPhotosSection() {
 
   const groups = useMemo(() => {
     const map = new Map<string, ProjectPhoto[]>();
-    for (const photo of photos.data?.items ?? []) {
+    for (const photo of photos.data?.pages.flatMap((page) => page.items) ??
+      []) {
       const key = photo.captured_at.slice(0, 10);
       map.set(key, [...(map.get(key) ?? []), photo]);
     }
@@ -115,6 +116,15 @@ export default function ProjectPhotosSection() {
             </View>
           </View>
         ))}
+        {photos.hasNextPage ? (
+          <Button
+            testID="photos-load-more"
+            label={t("photos.loadMore")}
+            variant="secondary"
+            loading={photos.isFetchingNextPage}
+            onPress={() => void photos.fetchNextPage()}
+          />
+        ) : null}
       </ScrollView>
 
       <Sheet ref={addSheet} title={t("photos.add")} snapPoints={["30%"]}>

@@ -43,6 +43,7 @@ export type DocumentListParams = {
   sort?: DocumentSort;
   order?: "asc" | "desc";
   page?: number;
+  uploaderId?: string | null;
 };
 export type DocumentsPage = {
   items: ProjectDocument[];
@@ -66,6 +67,7 @@ function documentsQuery(params: DocumentListParams): string {
   if (params.sort) query.set("sort", params.sort);
   if (params.order) query.set("order", params.order);
   if (params.page) query.set("page", String(params.page));
+  if (params.uploaderId) query.set("uploader_id", params.uploaderId);
   return query.toString();
 }
 
