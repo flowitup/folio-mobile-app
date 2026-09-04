@@ -50,6 +50,9 @@ export async function pickImages(
     mediaTypes: includeVideos ? ["images", "videos"] : ["images"],
     allowsMultipleSelection: multiple,
     quality: 0.85,
+    // Ask iOS for JPEG-compatible assets instead of HEIC: the API only accepts jpeg / png / webp.
+    preferredAssetRepresentationMode:
+      ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
   });
   if (result.canceled) return { status: "canceled" };
   return { status: "picked", files: result.assets.map(imageAssetToFile) };
