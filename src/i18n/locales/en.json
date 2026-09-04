@@ -232,7 +232,15 @@
       "payments": "Payments"
     },
     "calendar": {
-      "weekdays": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+      "weekdays": [
+        "Mo",
+        "Tu",
+        "We",
+        "Th",
+        "Fr",
+        "Sa",
+        "Su"
+      ]
     },
     "shift": {
       "full": "Full day",
@@ -656,6 +664,122 @@
         "confirm": "Add {{count}}",
         "partial": "Some expenses could not be added."
       }
+    }
+  },
+  "library": {
+    "title": "Product Library",
+    "searchPlaceholder": "Search products…",
+    "allSuppliers": "All suppliers",
+    "allCategories": "All categories",
+    "supplier": "Supplier",
+    "category": "Category",
+    "size": "Size",
+    "uncategorized": "Uncategorized",
+    "lastPurchased": "Last purchased",
+    "viewProduct": "View product",
+    "compare": "Compare",
+    "compareAction": "Compare ({{count}})",
+    "compareMax": "You can compare up to {{count}} products",
+    "compareTitle": "Compare products",
+    "lastUnitPrice": "Last unit price",
+    "clearSelection": "Clear",
+    "removeFromCompare": "Remove from comparison",
+    "noResults": "No products found.",
+    "purchaseHistory": "Purchase history",
+    "date": "Date",
+    "quantity": "Qty",
+    "unitPrice": "Unit price",
+    "sourceRef": "Ref.",
+    "detailTitle": "Product details",
+    "page": "Page",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "addProduct": "Add product",
+    "createTitle": "Add product",
+    "editTitle": "Edit product",
+    "deleteTitle": "Delete product",
+    "uncategorizedOption": "Uncategorized",
+    "deleteWarning": "{{count}} purchase records",
+    "deleteConfirmLabel": "Type the product name to confirm",
+    "categories": {
+      "terrasse_jardin": "Terrace & garden",
+      "revetement_sol_mur_peinture": "Flooring, walls & paint",
+      "chauffage_clim_ventilation": "Heating, cooling & ventilation",
+      "salle_de_bains": "Bathroom",
+      "meuble_rangement": "Furniture & storage",
+      "cuisine": "Kitchen",
+      "luminaire": "Lighting",
+      "decoration": "Decoration",
+      "menuiserie": "Joinery",
+      "materiaux_construction": "Building materials",
+      "electricite_domotique": "Electrical & home automation",
+      "outillage": "Tools",
+      "plomberie": "Plumbing",
+      "quincaillerie": "Hardware",
+      "droguerie": "Household & cleaning",
+      "autre": "Other / Uncategorized"
+    },
+    "documentType": {
+      "ticket": "Receipt",
+      "commande": "Order"
+    },
+    "supplierMode": {
+      "existing": "Existing supplier",
+      "new": "New supplier"
+    },
+    "fields": {
+      "name": "Product name",
+      "supplierName": "Supplier name",
+      "supplierWebsite": "Supplier website (optional)",
+      "reference": "SKU / Reference",
+      "referenceHint": "Leave blank to auto-generate",
+      "category": "Category",
+      "size": "Size",
+      "description": "Description",
+      "productUrl": "Product URL",
+      "image": "Image",
+      "imageHint": "PNG / JPG / WebP, max 10 MB",
+      "replaceImage": "Replace image"
+    },
+    "validation": {
+      "nameRequired": "Product name is required.",
+      "supplierRequired": "Please select or enter a supplier."
+    },
+    "toast": {
+      "created": "Product added.",
+      "updated": "Product updated.",
+      "deleted": "Product deleted.",
+      "createError": "Failed to add product.",
+      "updateError": "Failed to update product.",
+      "deleteError": "Failed to delete product.",
+      "forbidden": "You don't have permission to manage the library.",
+      "imageUploadWarning": "Product saved, but the image could not be uploaded."
+    },
+    "company": "Company",
+    "import": "Import purchases",
+    "importHint": "Paste the import JSON (Leroy Merlin export): supplier_name, supplier_slug, records[]",
+    "importDone": "Import: {{created}} created, {{updated}} updated, {{purchases}} purchases, {{skipped}} skipped",
+    "importInvalid": "Invalid JSON or missing fields (supplier_name, supplier_slug, records).",
+    "imageFromUrl": "Image from URL",
+    "imageUrl": "Image URL",
+    "pickImage": "Pick an image",
+    "takePhoto": "Take a photo",
+    "noProducts": "No product.",
+    "reference": "Ref.",
+    "total": "{{count}} product(s)",
+    "pageOf": "Page {{page}} / {{pages}}",
+    "compareHint": "Long-press a product to compare it (max {{count}}).",
+    "purchasedTimes_zero": "Not purchased",
+    "purchasedTimes_one": "Purchased {{count}} time",
+    "purchasedTimes_other": "Purchased {{count}} times",
+    "compareSelected_zero": "No products selected",
+    "compareSelected_one": "{{count}} product selected",
+    "compareSelected_other": "{{count}} products selected",
+    "actions": {
+      "save": "Save",
+      "create": "Add product",
+      "cancel": "Cancel",
+      "delete": "Delete"
     }
   }
 }

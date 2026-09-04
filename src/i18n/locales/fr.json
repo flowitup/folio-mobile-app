@@ -232,7 +232,15 @@
       "payments": "Paiements"
     },
     "calendar": {
-      "weekdays": ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"]
+      "weekdays": [
+        "Lu",
+        "Ma",
+        "Me",
+        "Je",
+        "Ve",
+        "Sa",
+        "Di"
+      ]
     },
     "shift": {
       "full": "Journée",
@@ -656,6 +664,122 @@
         "confirm": "Ajouter {{count}}",
         "partial": "Certaines dépenses n'ont pas pu être ajoutées."
       }
+    }
+  },
+  "library": {
+    "title": "Bibliothèque de produits",
+    "searchPlaceholder": "Rechercher un produit…",
+    "allSuppliers": "Tous les fournisseurs",
+    "allCategories": "Toutes les catégories",
+    "supplier": "Fournisseur",
+    "category": "Catégorie",
+    "size": "Taille",
+    "uncategorized": "Non catégorisé",
+    "lastPurchased": "Dernier achat",
+    "viewProduct": "Voir le produit",
+    "compare": "Comparer",
+    "compareAction": "Comparer ({{count}})",
+    "compareMax": "Vous pouvez comparer jusqu'à {{count}} produits",
+    "compareTitle": "Comparer les produits",
+    "lastUnitPrice": "Dernier prix unitaire",
+    "clearSelection": "Effacer",
+    "removeFromCompare": "Retirer de la comparaison",
+    "noResults": "Aucun produit trouvé.",
+    "purchaseHistory": "Historique des achats",
+    "date": "Date",
+    "quantity": "Qté",
+    "unitPrice": "Prix unitaire",
+    "sourceRef": "Réf.",
+    "detailTitle": "Détail du produit",
+    "page": "Page",
+    "previousPage": "Page précédente",
+    "nextPage": "Page suivante",
+    "addProduct": "Ajouter un produit",
+    "createTitle": "Ajouter un produit",
+    "editTitle": "Modifier le produit",
+    "deleteTitle": "Supprimer le produit",
+    "uncategorizedOption": "Non catégorisé",
+    "deleteWarning": "{{count}} enregistrements d'achat",
+    "deleteConfirmLabel": "Saisissez le nom du produit pour confirmer",
+    "categories": {
+      "terrasse_jardin": "Terrasse et jardin",
+      "revetement_sol_mur_peinture": "Revêtement sol, mur et peinture",
+      "chauffage_clim_ventilation": "Chauffage, climatisation et ventilation",
+      "salle_de_bains": "Salle de bains",
+      "meuble_rangement": "Meuble et rangement",
+      "cuisine": "Cuisine",
+      "luminaire": "Luminaire",
+      "decoration": "Décoration",
+      "menuiserie": "Menuiserie",
+      "materiaux_construction": "Matériaux de construction",
+      "electricite_domotique": "Electricité et domotique",
+      "outillage": "Outillage",
+      "plomberie": "Plomberie",
+      "quincaillerie": "Quincaillerie",
+      "droguerie": "Droguerie",
+      "autre": "Autre / Non classé"
+    },
+    "documentType": {
+      "ticket": "Ticket",
+      "commande": "Commande"
+    },
+    "supplierMode": {
+      "existing": "Fournisseur existant",
+      "new": "Nouveau fournisseur"
+    },
+    "fields": {
+      "name": "Nom du produit",
+      "supplierName": "Nom du fournisseur",
+      "supplierWebsite": "Site web du fournisseur (optionnel)",
+      "reference": "SKU / Référence",
+      "referenceHint": "Laisser vide pour générer automatiquement",
+      "category": "Catégorie",
+      "size": "Taille",
+      "description": "Description",
+      "productUrl": "URL du produit",
+      "image": "Image",
+      "imageHint": "PNG / JPG / WebP, max 10 Mo",
+      "replaceImage": "Remplacer l'image"
+    },
+    "validation": {
+      "nameRequired": "Le nom du produit est obligatoire.",
+      "supplierRequired": "Veuillez sélectionner ou saisir un fournisseur."
+    },
+    "toast": {
+      "created": "Produit ajouté.",
+      "updated": "Produit mis à jour.",
+      "deleted": "Produit supprimé.",
+      "createError": "Impossible d'ajouter le produit.",
+      "updateError": "Impossible de mettre à jour le produit.",
+      "deleteError": "Impossible de supprimer le produit.",
+      "forbidden": "Vous n'avez pas la permission de gérer la bibliothèque.",
+      "imageUploadWarning": "Produit enregistré, mais l'image n'a pas pu être téléchargée."
+    },
+    "company": "Société",
+    "import": "Importer des achats",
+    "importHint": "Collez le JSON d'import (export Leroy Merlin) : supplier_name, supplier_slug, records[]",
+    "importDone": "Import : {{created}} créés, {{updated}} mis à jour, {{purchases}} achats, {{skipped}} ignorés",
+    "importInvalid": "JSON invalide ou champs manquants (supplier_name, supplier_slug, records).",
+    "imageFromUrl": "Image depuis une URL",
+    "imageUrl": "URL de l'image",
+    "pickImage": "Choisir une image",
+    "takePhoto": "Prendre une photo",
+    "noProducts": "Aucun produit.",
+    "reference": "Réf.",
+    "total": "{{count}} produit(s)",
+    "pageOf": "Page {{page}} / {{pages}}",
+    "compareHint": "Appui long sur un produit pour le comparer (max {{count}}).",
+    "purchasedTimes_zero": "Jamais acheté",
+    "purchasedTimes_one": "Acheté {{count}} fois",
+    "purchasedTimes_other": "Acheté {{count}} fois",
+    "compareSelected_zero": "Aucun produit sélectionné",
+    "compareSelected_one": "{{count}} produit sélectionné",
+    "compareSelected_other": "{{count}} produits sélectionnés",
+    "actions": {
+      "save": "Enregistrer",
+      "create": "Ajouter le produit",
+      "cancel": "Annuler",
+      "delete": "Supprimer"
     }
   }
 }

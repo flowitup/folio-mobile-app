@@ -7,6 +7,7 @@ export default function AppLayout() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="projects/[id]" />
       <Stack.Screen name="billing" />
+      <Stack.Screen name="library" />
     </Stack>
   );
 }

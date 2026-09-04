@@ -232,7 +232,15 @@
       "payments": "Thanh toán"
     },
     "calendar": {
-      "weekdays": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+      "weekdays": [
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "CN"
+      ]
     },
     "shift": {
       "full": "Cả ngày",
@@ -656,6 +664,122 @@
         "confirm": "Thêm {{count}}",
         "partial": "Một số chi phí không thể thêm."
       }
+    }
+  },
+  "library": {
+    "title": "Thư viện sản phẩm",
+    "searchPlaceholder": "Tìm kiếm sản phẩm…",
+    "allSuppliers": "Tất cả nhà cung cấp",
+    "allCategories": "Tất cả danh mục",
+    "supplier": "Nhà cung cấp",
+    "category": "Danh mục",
+    "size": "Kích cỡ",
+    "uncategorized": "Chưa phân loại",
+    "lastPurchased": "Mua lần cuối",
+    "viewProduct": "Xem sản phẩm",
+    "compare": "So sánh",
+    "compareAction": "So sánh ({{count}})",
+    "compareMax": "Bạn chỉ có thể so sánh tối đa {{count}} sản phẩm",
+    "compareTitle": "So sánh sản phẩm",
+    "lastUnitPrice": "Đơn giá gần nhất",
+    "clearSelection": "Xóa",
+    "removeFromCompare": "Bỏ khỏi so sánh",
+    "noResults": "Không tìm thấy sản phẩm.",
+    "purchaseHistory": "Lịch sử mua hàng",
+    "date": "Ngày",
+    "quantity": "SL",
+    "unitPrice": "Đơn giá",
+    "sourceRef": "Mã tài liệu",
+    "detailTitle": "Chi tiết sản phẩm",
+    "page": "Trang",
+    "previousPage": "Trang trước",
+    "nextPage": "Trang sau",
+    "addProduct": "Thêm sản phẩm",
+    "createTitle": "Thêm sản phẩm",
+    "editTitle": "Chỉnh sửa sản phẩm",
+    "deleteTitle": "Xóa sản phẩm",
+    "uncategorizedOption": "Chưa phân loại",
+    "deleteWarning": "{{count}} bản ghi mua hàng",
+    "deleteConfirmLabel": "Nhập tên sản phẩm để xác nhận",
+    "categories": {
+      "terrasse_jardin": "Sân vườn & ngoài trời",
+      "revetement_sol_mur_peinture": "Sàn, tường & sơn",
+      "chauffage_clim_ventilation": "Sưởi, điều hòa & thông gió",
+      "salle_de_bains": "Phòng tắm",
+      "meuble_rangement": "Nội thất & lưu trữ",
+      "cuisine": "Nhà bếp",
+      "luminaire": "Đèn & chiếu sáng",
+      "decoration": "Trang trí",
+      "menuiserie": "Cửa & mộc",
+      "materiaux_construction": "Vật liệu xây dựng",
+      "electricite_domotique": "Điện & nhà thông minh",
+      "outillage": "Dụng cụ",
+      "plomberie": "Ống nước",
+      "quincaillerie": "Kim khí & phụ kiện",
+      "droguerie": "Hóa phẩm gia dụng",
+      "autre": "Khác / Chưa phân loại"
+    },
+    "documentType": {
+      "ticket": "Phiếu",
+      "commande": "Đơn hàng"
+    },
+    "supplierMode": {
+      "existing": "Nhà cung cấp hiện có",
+      "new": "Nhà cung cấp mới"
+    },
+    "fields": {
+      "name": "Tên sản phẩm",
+      "supplierName": "Tên nhà cung cấp",
+      "supplierWebsite": "Website nhà cung cấp (tùy chọn)",
+      "reference": "SKU / Mã tham chiếu",
+      "referenceHint": "Để trống để tự động tạo",
+      "category": "Danh mục",
+      "size": "Kích cỡ",
+      "description": "Mô tả",
+      "productUrl": "URL sản phẩm",
+      "image": "Hình ảnh",
+      "imageHint": "PNG / JPG / WebP, tối đa 10 MB",
+      "replaceImage": "Thay hình ảnh"
+    },
+    "validation": {
+      "nameRequired": "Tên sản phẩm là bắt buộc.",
+      "supplierRequired": "Vui lòng chọn hoặc nhập tên nhà cung cấp."
+    },
+    "toast": {
+      "created": "Đã thêm sản phẩm.",
+      "updated": "Đã cập nhật sản phẩm.",
+      "deleted": "Đã xóa sản phẩm.",
+      "createError": "Không thể thêm sản phẩm.",
+      "updateError": "Không thể cập nhật sản phẩm.",
+      "deleteError": "Không thể xóa sản phẩm.",
+      "forbidden": "Bạn không có quyền quản lý thư viện.",
+      "imageUploadWarning": "Sản phẩm đã được lưu, nhưng không thể tải lên hình ảnh."
+    },
+    "company": "Công ty",
+    "import": "Nhập mua hàng",
+    "importHint": "Dán JSON nhập (xuất từ Leroy Merlin): supplier_name, supplier_slug, records[]",
+    "importDone": "Nhập: {{created}} tạo, {{updated}} cập nhật, {{purchases}} mua hàng, {{skipped}} bỏ qua",
+    "importInvalid": "JSON không hợp lệ hoặc thiếu trường (supplier_name, supplier_slug, records).",
+    "imageFromUrl": "Ảnh từ URL",
+    "imageUrl": "URL ảnh",
+    "pickImage": "Chọn ảnh",
+    "takePhoto": "Chụp ảnh",
+    "noProducts": "Không có sản phẩm.",
+    "reference": "Mã",
+    "total": "{{count}} sản phẩm",
+    "pageOf": "Trang {{page}} / {{pages}}",
+    "compareHint": "Nhấn giữ sản phẩm để so sánh (tối đa {{count}}).",
+    "purchasedTimes_zero": "Chưa mua",
+    "purchasedTimes_one": "Đã mua {{count}} lần",
+    "purchasedTimes_other": "Đã mua {{count}} lần",
+    "compareSelected_zero": "Chưa chọn sản phẩm",
+    "compareSelected_one": "Đã chọn {{count}} sản phẩm",
+    "compareSelected_other": "Đã chọn {{count}} sản phẩm",
+    "actions": {
+      "save": "Lưu",
+      "create": "Thêm sản phẩm",
+      "cancel": "Hủy",
+      "delete": "Xóa"
     }
   }
 }
