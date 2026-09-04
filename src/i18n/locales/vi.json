@@ -85,7 +85,21 @@
       "en": "English",
       "fr": "Français",
       "vi": "Tiếng Việt"
-    }
+    },
+    "sections": "Mục",
+    "myCompanies": "Công ty của tôi",
+    "paymentMethods": "Phương thức thanh toán",
+    "laborRoles": "Vai trò nhân công",
+    "personsMerge": "Gộp người",
+    "adminCompanies": "Tất cả công ty (admin)",
+    "users": {
+      "title": "Người dùng & vai trò",
+      "description": "Gán vai trò cho người dùng hiện có trên một hoặc nhiều dự án.",
+      "permissionDenied": "Bạn không có quyền thay đổi vai trò của người dùng."
+    },
+    "manage": "Quản lý",
+    "role": "Vai trò: {{role}}",
+    "usersAdmin": "Người dùng (admin)"
   },
   "members": {
     "title": "Thành viên ({{count}})",
@@ -232,15 +246,7 @@
       "payments": "Thanh toán"
     },
     "calendar": {
-      "weekdays": [
-        "T2",
-        "T3",
-        "T4",
-        "T5",
-        "T6",
-        "T7",
-        "CN"
-      ]
+      "weekdays": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
     },
     "shift": {
       "full": "Cả ngày",
@@ -781,5 +787,338 @@
       "cancel": "Hủy",
       "delete": "Xóa"
     }
+  },
+  "companies": {
+    "masking": {
+      "tooltip": "Chỉ quản trị viên mới nhìn thấy"
+    },
+    "my": {
+      "title": "Công ty của tôi",
+      "description": "Các công ty bạn đang liên kết. Các trường nhạy cảm được ẩn đi.",
+      "addCta": "Thêm công ty",
+      "empty": {
+        "title": "Chưa liên kết công ty nào",
+        "cta": "Dùng mã mời từ quản trị viên để liên kết công ty đầu tiên của bạn."
+      },
+      "card": {
+        "primaryBadge": "Chính",
+        "setPrimary": "Đặt làm chính",
+        "detach": "Hủy liên kết",
+        "detachConfirm": "Xóa bạn khỏi \"{{name}}\"? Bạn sẽ mất quyền truy cập và cần mã mời mới để liên kết lại."
+      }
+    },
+    "invite": {
+      "dialogTitle": "Liên kết công ty",
+      "inputLabel": "Mã mời",
+      "inputPlaceholder": "Dán mã mời do quản trị viên cung cấp…",
+      "attachCta": "Liên kết",
+      "successToast": "Đã liên kết công ty thành công.",
+      "tokenInvalidError": "Mã mời không hợp lệ, đã hết hạn hoặc đã được sử dụng."
+    },
+    "admin": {
+      "title": "Tất cả công ty",
+      "description": "Giao diện quản trị — hiển thị đầy đủ giá trị các trường nhạy cảm.",
+      "newCompany": "Công ty mới",
+      "createSuccessToast": "Đã tạo công ty.",
+      "empty": {
+        "title": "Chưa có công ty nào",
+        "description": "Tạo công ty đầu tiên để bắt đầu."
+      },
+      "table": {
+        "createdAt": "Ngày tạo",
+        "showingOf": "Hiển thị {{shown}} trong số {{total}}"
+      },
+      "manage": {
+        "title": "Quản lý",
+        "tabs": {
+          "edit": "Chỉnh sửa",
+          "invites": "Mã mời",
+          "users": "Người dùng liên kết",
+          "delete": "Xóa",
+          "payments": "Phương thức thanh toán"
+        },
+        "edit": {
+          "save": "Lưu thay đổi",
+          "savedToast": "Đã lưu công ty."
+        },
+        "invites": {
+          "title": "Mã mời",
+          "description": "Tạo mã dùng một lần có hiệu lực 7 ngày. Chia sẻ với người dùng cần liên kết công ty này.",
+          "generate": "Tạo mã mời",
+          "regenerate": "Tạo lại mã mời",
+          "regenerateConfirm": "Đã có mã mời đang hoạt động. Tạo lại sẽ vô hiệu hóa mã cũ. Tiếp tục?",
+          "revoke": "Thu hồi mã đang hoạt động",
+          "revokeConfirm": "Thao tác này sẽ vô hiệu hóa ngay mã hiện tại. Người dùng chưa dùng mã sẽ cần mã mới.",
+          "revokedToast": "Đã thu hồi mã mời.",
+          "policyNote": "Mã dùng một lần và hết hạn sau 7 ngày. Mỗi công ty chỉ có một mã đang hoạt động.",
+          "roleLabel": "Vai trò",
+          "roleAdminOption": "Quản trị (quản lý hóa đơn)",
+          "roleMemberOption": "Thành viên"
+        },
+        "attached": {
+          "nameEmail": "Tên / Email",
+          "attachedAt": "Ngày liên kết",
+          "primaryBadge": "Chính",
+          "boot": "Xóa người dùng",
+          "bootConfirm": "Xóa {{name}} khỏi công ty này? Họ sẽ mất quyền truy cập ngay lập tức.",
+          "empty": "Chưa có người dùng nào liên kết với công ty này.",
+          "countSingular": "người dùng",
+          "countPlural": "người dùng",
+          "roleColumn": "Vai trò",
+          "roleAdmin": "Quản trị",
+          "roleMember": "Thành viên",
+          "makeAdmin": "Đặt làm quản trị",
+          "makeMember": "Đặt làm thành viên",
+          "roleUpdatedToast": "Đã cập nhật vai trò"
+        },
+        "delete": {
+          "title": "Xóa công ty",
+          "body": "Xóa vĩnh viễn công ty này. Tất cả người dùng liên kết sẽ mất quyền truy cập. Các bản chụp tài liệu hiện có được giữ nguyên. Hành động này không thể hoàn tác.",
+          "confirm": "Xóa công ty",
+          "deletedToast": "Đã xóa công ty."
+        },
+        "paymentsLoading": "Đang tải phương thức thanh toán…",
+        "paymentsLoadError": "Không tải được phương thức thanh toán"
+      }
+    },
+    "form": {
+      "fields": {
+        "legalName": {
+          "label": "Tên pháp lý",
+          "placeholder": "vd. Công ty TNHH Lavandou"
+        },
+        "address": {
+          "label": "Địa chỉ",
+          "placeholder": "Số nhà, đường, thành phố, mã bưu chính, quốc gia"
+        },
+        "siret": {
+          "label": "Mã số doanh nghiệp",
+          "placeholder": "vd. 12345678900012"
+        },
+        "tvaNumber": {
+          "label": "Mã số thuế GTGT",
+          "placeholder": "vd. FR12345678901"
+        },
+        "iban": {
+          "label": "Số IBAN",
+          "placeholder": "vd. FR76 3000 6000 0112 3456 7890 189"
+        },
+        "bic": {
+          "label": "Mã BIC / SWIFT",
+          "placeholder": "vd. BNPAFRPPXXX"
+        },
+        "logoUrl": {
+          "label": "URL logo",
+          "placeholder": "https://example.com/logo.png"
+        },
+        "defaultPaymentTerms": {
+          "label": "Điều khoản thanh toán mặc định",
+          "placeholder": "vd. Thanh toán trong vòng 30 ngày kể từ ngày xuất hóa đơn.",
+          "help": "Tự động điền vào hóa đơn mới. Có thể chỉnh sửa theo từng tài liệu."
+        },
+        "prefixOverride": {
+          "label": "Tiền tố số tài liệu",
+          "placeholder": "vd. FLW (tối đa 8 ký tự)",
+          "help": "Tùy chọn. Chỉ dùng chữ hoa và chữ số. Tối đa 8 ký tự. Vd. \"FLW\" → FLW-DEV-2026-001."
+        }
+      },
+      "actions": {
+        "cancel": "Hủy",
+        "save": "Lưu"
+      },
+      "errors": {
+        "legalNameRequired": "Tên pháp lý là bắt buộc.",
+        "addressRequired": "Địa chỉ là bắt buộc.",
+        "prefixTooLong": "Tiền tố không được vượt quá 8 ký tự.",
+        "prefixInvalidChars": "Tiền tố chỉ được chứa chữ hoa và chữ số (A-Z, 0-9).",
+        "logoUrlInvalidScheme": "URL logo phải sử dụng http hoặc https.",
+        "logoUrlInvalidUrl": "URL logo không hợp lệ.",
+        "generic": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại."
+      }
+    },
+    "tokenGenerated": {
+      "dialogTitle": "Đã tạo mã mời",
+      "expiresLine": "Hết hạn: {{expiresAt}}",
+      "copyCta": "Sao chép mã",
+      "copiedToast": "Đã sao chép mã vào bộ nhớ tạm.",
+      "copyFailedToast": "Không thể sao chép vào bộ nhớ tạm.",
+      "oneShotWarning": "Hãy lưu mã này ngay — bạn sẽ không thấy lại sau khi đóng hộp thoại này.",
+      "autoCloseCountdown": "Tự động đóng sau {{seconds}}s"
+    },
+    "picker": {
+      "label": "Phát hành từ",
+      "placeholder": "Chọn công ty",
+      "primaryBadge": "Chính",
+      "noCompaniesCalloutTitle": "Chưa liên kết công ty",
+      "noCompaniesCalloutBody": "Thêm công ty trong Cài đặt để bắt đầu tạo báo giá và hóa đơn.",
+      "noCompaniesCalloutCta": "Mở cài đặt",
+      "detachedDuringEditError": "Công ty đã chọn không còn liên kết với tài khoản của bạn. Vui lòng tải lại trang."
+    },
+    "errors": {
+      "forbiddenAdminRequired": "Yêu cầu quyền quản trị viên.",
+      "companyAlreadyAttached": "Bạn đã được liên kết với công ty này.",
+      "activeTokenExists": "Đã có mã mời đang hoạt động. Dùng regenerate=true để thay thế.",
+      "conflict": "Đã xảy ra xung đột.",
+      "tokenInvalid": "Liên kết mời này không còn hợp lệ. Yêu cầu quản trị viên tạo liên kết mới.",
+      "validation": "Lỗi xác thực dữ liệu.",
+      "unauthorized": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+      "notFound": "Không tìm thấy tài nguyên yêu cầu.",
+      "rateLimited": "Quá nhiều yêu cầu. Vui lòng đợi rồi thử lại.",
+      "generic": "Đã xảy ra lỗi không mong muốn."
+    },
+    "x": {
+      "redeem": "Dùng mã mời",
+      "create": "Công ty mới",
+      "manage": "Quản lý",
+      "tokenShare": "Chia sẻ mã",
+      "token": "Mã",
+      "generating": "Đang tạo…",
+      "primary": "Chính",
+      "member": "Thành viên",
+      "admin": "Admin",
+      "deleteConfirm": "Xóa công ty {{name}}? Không thể hoàn tác."
+    },
+    "toast": {
+      "created": "Đã tạo công ty.",
+      "deleted": "Đã xóa công ty.",
+      "detached": "Đã tách công ty.",
+      "primarySet": "Đã cập nhật công ty chính.",
+      "attached": "Đã gắn công ty.",
+      "tokenRevoked": "Đã thu hồi mã mời.",
+      "removed": "Đã gỡ người dùng."
+    }
+  },
+  "paymentMethods": {
+    "title": "Phương thức thanh toán",
+    "description": "Quản lý cách hoá đơn được thanh toán cho công ty này. Phương thức mặc định không thể xoá nhưng có thể đổi tên.",
+    "addPlaceholder": "ví dụ Wise, Stripe…",
+    "addButton": "Thêm",
+    "builtin": "Mặc định",
+    "noMethods": "Chưa có phương thức thanh toán. Thêm một phương thức ở trên.",
+    "usedInInvoices": "{{count}} hoá đơn",
+    "deleteConfirmTitle": "Xoá phương thức thanh toán này?",
+    "deleteConfirmBody": "Các hoá đơn hiện tại vẫn giữ nhãn đã chụp. Hoá đơn mới sẽ không thể chọn phương thức này.",
+    "deleteConfirmCta": "Xoá",
+    "cancel": "Huỷ",
+    "cancelEditAria": "Huỷ chỉnh sửa",
+    "editLabelAria": "Chỉnh sửa \"{{name}}\"",
+    "deleteLabelAria": "Xoá \"{{name}}\"",
+    "errors": {
+      "duplicate_label": "Đã tồn tại phương thức thanh toán với tên này.",
+      "builtin_protected": "Không thể xoá phương thức mặc định.",
+      "not_found": "Không tìm thấy phương thức thanh toán.",
+      "permission_denied": "Bạn không có quyền quản lý phương thức thanh toán cho công ty này.",
+      "label_required": "Tên là bắt buộc.",
+      "label_too_long": "Tên quá dài (tối đa 120 ký tự)."
+    },
+    "toasts": {
+      "created": "Đã thêm phương thức thanh toán",
+      "renamed": "Đã đổi tên phương thức thanh toán",
+      "deleted": "Đã xoá phương thức thanh toán"
+    },
+    "builtins": {
+      "cash": "Tiền mặt"
+    },
+    "paidByCompany": "Công ty thanh toán",
+    "personalPayment": "Thanh toán cá nhân",
+    "companyLabel": "Công ty",
+    "noCompanies": "Bạn chưa thuộc công ty nào. Thêm một công ty ở “Công ty của tôi” để quản lý phương thức thanh toán.",
+    "loadError": "Không tải được phương thức thanh toán. Vui lòng thử lại.",
+    "noMethodsReadOnly": "Chưa có phương thức thanh toán nào được thiết lập.",
+    "readOnlyNote": "Cách hoá đơn được thanh toán cho công ty này. Chỉ quản trị viên mới có thể thêm, đổi tên hoặc xoá phương thức."
+  },
+  "admin": {
+    "bulkAdd": {
+      "title": "Thêm người dùng vào nhiều dự án",
+      "subtitle": "Tìm một người dùng hiện có, chọn các dự án và gán một vai trò cho tất cả.",
+      "userSearch": {
+        "label": "Tìm người dùng",
+        "placeholder": "Nhập ít nhất 3 ký tự của email hoặc tên",
+        "minChars": "Nhập ít nhất 3 ký tự để tìm kiếm",
+        "empty": "Không tìm thấy người dùng phù hợp",
+        "searching": "Đang tìm…",
+        "selected": "Đã chọn: {{email}}",
+        "clear": "Xoá"
+      },
+      "projects": {
+        "label": "Dự án",
+        "placeholder": "Lọc dự án...",
+        "empty": "Không có dự án nào",
+        "selectedCount": "Đã chọn {{count}}",
+        "maxReached": "Tối đa 50 dự án mỗi lần"
+      },
+      "role": {
+        "label": "Vai trò",
+        "placeholder": "Chọn vai trò"
+      },
+      "submit": "Thêm vào các dự án đã chọn",
+      "submitting": "Đang thêm...",
+      "errors": {
+        "userRequired": "Hãy chọn một người dùng trước",
+        "projectsRequired": "Chọn ít nhất một dự án",
+        "roleRequired": "Chọn một vai trò",
+        "generic": "Đã có lỗi xảy ra. Vui lòng thử lại.",
+        "forbidden": "Bạn không có quyền thực hiện thao tác này",
+        "userNotFound": "Không tìm thấy người dùng",
+        "roleNotFound": "Không tìm thấy vai trò",
+        "tooMany": "Quá nhiều dự án (tối đa 50 mỗi lần)",
+        "rateLimited": "Quá nhiều thao tác hàng loạt. Hãy thử lại sau một giờ."
+      },
+      "toast": {
+        "added": "Đã thêm người dùng vào {{count}} dự án",
+        "alreadyMember": "{{count}} dự án đã bỏ qua — người dùng đã là thành viên",
+        "differentRole": "{{count}} dự án đã bỏ qua — người dùng đang có vai trò khác",
+        "notFound": "{{count}} dự án không tồn tại"
+      }
+    }
+  },
+  "acceptInvite": {
+    "title": "Bạn được mời tham gia {{projectName}}",
+    "intro": "Thiết lập tài khoản để tham gia dự án.",
+    "subtitle": "{{inviterName}} đã mời bạn với vai trò {{roleName}}",
+    "emailLabel": "Email",
+    "nameLabel": "Họ và tên",
+    "passwordLabel": "Chọn mật khẩu",
+    "confirmLabel": "Xác nhận mật khẩu",
+    "submit": "Tạo tài khoản",
+    "submitting": "Đang tạo tài khoản...",
+    "passwordHint": "8-128 ký tự",
+    "passwordMismatch": "Mật khẩu không khớp",
+    "success": "Tài khoản đã được tạo. Chào mừng!",
+    "errors": {
+      "expired": "Lời mời này đã hết hạn. Hãy nhờ người mời gửi lại.",
+      "revoked": "Lời mời này đã bị thu hồi. Liên hệ người mời.",
+      "accepted": "Lời mời này đã được sử dụng. Hãy thử đăng nhập.",
+      "notFound": "Đường dẫn mời không hợp lệ.",
+      "generic": "Đã có lỗi xảy ra. Vui lòng thử lại."
+    },
+    "loggedInOther": {
+      "title": "Bạn đang đăng nhập bằng tài khoản khác",
+      "body": "Bạn đang đăng nhập là {{currentEmail}}. Đăng xuất để chấp nhận lời mời này.",
+      "signOut": "Đăng xuất và tiếp tục"
+    },
+    "backToLogin": "Đến trang đăng nhập"
+  },
+  "laborRoles": {
+    "title": "Vai trò nhân công",
+    "new": "Vai trò mới",
+    "edit": "Sửa vai trò",
+    "name": "Tên",
+    "color": "Màu",
+    "none": "Chưa có vai trò.",
+    "deleteConfirm": "Xóa vai trò {{name}}?",
+    "nameRequired": "Cần nhập tên."
+  },
+  "persons": {
+    "title": "Gộp người",
+    "source": "Nguồn (sẽ bị xóa)",
+    "target": "Đích (giữ lại)",
+    "search": "Tìm người",
+    "none": "Không tìm thấy.",
+    "merge": "Gộp",
+    "confirmTitle": "Gộp {{source}} vào {{target}}?",
+    "confirmBody": "Người nguồn bị xóa và mọi nhân công chuyển sang đích. Không thể hoàn tác.",
+    "done": "Đã gộp. {{count}} nhân công được chuyển.",
+    "sameError": "Chọn hai người khác nhau."
   }
 }
