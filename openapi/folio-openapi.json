@@ -139,6 +139,16 @@
         "title": "AttachmentResponse",
         "type": "object"
       },
+      "AuthConfigResponse": {
+        "description": "GET /auth/config \u2014 what this deployment offers, read by the apps before sign-in.",
+        "properties": {
+          "login_mode": { "title": "Login Mode", "type": "string" },
+          "session": { "title": "Session", "type": "string" }
+        },
+        "required": ["login_mode", "session"],
+        "title": "AuthConfigResponse",
+        "type": "object"
+      },
       "BulkAddRequest": {
         "description": "POST /admin/users/<user_id>/memberships request body.",
         "properties": {
@@ -2646,6 +2656,22 @@
         "tags": ["invoices"]
       }
     },
+    "/api/v1/auth/config": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthConfigResponse" }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Sign-in options of this deployment",
+        "tags": ["auth"]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "requestBody": {
@@ -2747,7 +2773,7 @@
             "description": "OK"
           }
         },
-        "summary": "Exchange a phone number + SMS code for tokens (mobile app: session lasts until sign-out)",
+        "summary": "Exchange a phone number + SMS code for tokens",
         "tags": ["auth"]
       }
     },

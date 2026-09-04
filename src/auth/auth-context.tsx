@@ -18,9 +18,9 @@ import {
 import type { components } from "@/api/generated/schema";
 
 export type AuthUser = components["schemas"]["UserResponse"];
-// Session lifetime is decided by the backend per sign-in path: the SMS-code sign-in
-// returns a never-expiring refresh token (signed in until sign-out), email + password
-// keeps the 7-day token like the web app. Sign-out hands the refresh token back so the
+// Session lifetime is a backend setting (REFRESH_TOKEN_POLICY): "persistent" deployments
+// return a never-expiring refresh token, so the app stays signed in until sign-out;
+// "expiring" ones return the 7-day token. Sign-out hands the refresh token back so the
 // backend revokes it either way.
 
 type AuthStatus = "loading" | "signedOut" | "signedIn";

@@ -224,6 +224,42 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/v1/auth/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sign-in options of this deployment */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthConfigResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/login": {
         parameters: {
             query?: never;
@@ -387,7 +423,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Exchange a phone number + SMS code for tokens (mobile app: session lasts until sign-out) */
+        /** Exchange a phone number + SMS code for tokens */
         post: {
             parameters: {
                 query?: never;
@@ -6405,6 +6441,16 @@ export interface components {
             size_bytes: number;
             /** Url */
             url: string;
+        };
+        /**
+         * AuthConfigResponse
+         * @description GET /auth/config — what this deployment offers, read by the apps before sign-in.
+         */
+        AuthConfigResponse: {
+            /** Login Mode */
+            login_mode: string;
+            /** Session */
+            session: string;
         };
         /**
          * BulkAddRequest

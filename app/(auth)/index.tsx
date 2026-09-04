@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   KeyboardAvoidingView,
@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { loginModesFor, useAuthConfig } from "@/auth/auth-config";
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
@@ -23,10 +24,19 @@ const FIELD =
   "h-12 flex-row items-center rounded-[10px] border border-line-2 bg-card px-3.5";
 const RESEND_SECONDS = 60;
 
-/** Đăng nhập Folio: ink "F" tile, Fraunces title, phone + SMS code by default, email + password kept. */
+/**
+ * Đăng nhập Folio: ink "F" tile, Fraunces title. The backend's LOGIN_MODE decides which sign-in
+ * is offered: phone (SMS code), email (password) or both (segmented switch, phone first).
+ */
 export default function LoginScreen() {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<Mode>("phone");
+  const config = useAuthConfig();
+  const modes = useMemo(
+    () => loginModesFor(config.data?.login_mode),
+    [config.data?.login_mode],
+  );
+  const [chosen, setChosen] = useState<Mode>("phone");
+  const mode: Mode = modes.includes(chosen) ? chosen : modes[0];
 
   return (
     <SafeAreaView className="flex-1 bg-paper">
@@ -44,17 +54,19 @@ export default function LoginScreen() {
           {t("login.subtitle")}
         </Text>
 
-        <View className="mb-6">
-          <Segmented<Mode>
-            testID="login-mode"
-            options={[
-              { value: "phone", label: t("login.mode.phone") },
-              { value: "email", label: t("login.mode.email") },
-            ]}
-            value={mode}
-            onChange={setMode}
-          />
-        </View>
+        {modes.length > 1 ? (
+          <View className="mb-6">
+            <Segmented<Mode>
+              testID="login-mode"
+              options={modes.map((value) => ({
+                value,
+                label: t(`login.mode.${value}`),
+              }))}
+              value={mode}
+              onChange={setChosen}
+            />
+          </View>
+        ) : null}
 
         {mode === "phone" ? <PhoneForm /> : <EmailForm />}
       </KeyboardAvoidingView>
