@@ -83,7 +83,7 @@ export default function ProjectMembersSection() {
   if (members.isPending) return <ActivityIndicator className="mt-8" />;
 
   return (
-    <ScrollView className="flex-1 bg-white" contentContainerClassName="p-4">
+    <ScrollView className="flex-1 bg-card" contentContainerClassName="p-4">
       {canInvite ? (
         <Button
           testID="members-invite"

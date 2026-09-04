@@ -91,14 +91,14 @@ export default function CompanyManageScreen() {
 
   if (company.isPending)
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-card">
         <ScreenHeader title="…" back />
         <ActivityIndicator className="mt-8" />
       </View>
     );
   if (!company.data)
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-card">
         <ScreenHeader title={t("companies.admin.manage.title")} back />
         <ErrorState
           message={t("home.loadError")}
@@ -110,7 +110,7 @@ export default function CompanyManageScreen() {
   const data = company.data;
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScreenHeader title={data.legal_name} back />
       <ScrollView
         horizontal
@@ -333,8 +333,8 @@ export default function CompanyManageScreen() {
         animationType="fade"
         onRequestClose={() => setGenerated(null)}
       >
-        <View className="flex-1 items-center justify-center bg-black/40 p-6">
-          <View className="w-full rounded-lg bg-white p-4">
+        <View className="flex-1 items-center justify-center bg-scrim p-6">
+          <View className="w-full rounded-lg bg-card p-4">
             <Text className="mb-2 text-lg font-semibold text-primary">
               {t("companies.tokenGenerated.dialogTitle")}
             </Text>

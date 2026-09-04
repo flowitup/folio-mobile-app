@@ -106,7 +106,7 @@ export default function DashboardTab() {
   const pending = (notifications.data ?? []).filter((item) => !item.dismissed);
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScreenHeader title={t("tabs.dashboard")} />
       <ScrollView contentContainerClassName="p-4 pb-12">
         {projects.isPending ? <ActivityIndicator className="mt-8" /> : null}

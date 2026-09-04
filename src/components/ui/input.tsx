@@ -1,13 +1,16 @@
 import { Text, TextInput, View } from "react-native";
 import type { TextInputProps } from "react-native";
 
+import { Eyebrow } from "@/components/ui/typography";
+import { useTokens } from "@/theme/tokens";
+
 type Props = TextInputProps & {
   label?: string;
   error?: string | null;
   hint?: string;
 };
 
-/** Labeled text input with optional error line. Pass `multiline` for a textarea. */
+/** 2a text field: eyebrow label, 48px card-colored input, 1px line-2 border, r10, 16px text. */
 export function Input({
   label,
   error,
@@ -16,22 +19,21 @@ export function Input({
   multiline,
   ...rest
 }: Props & { className?: string }) {
+  const tokens = useTokens();
   return (
     <View className="mb-4">
-      {label ? (
-        <Text className="mb-1 text-sm text-muted-foreground">{label}</Text>
-      ) : null}
+      {label ? <Eyebrow className="mb-1.5">{label}</Eyebrow> : null}
       <TextInput
         multiline={multiline}
         textAlignVertical={multiline ? "top" : "center"}
-        placeholderTextColor="#a3a3a3"
-        className={`rounded-lg border px-4 py-3 text-base text-primary ${error ? "border-danger" : "border-border"} ${multiline ? "min-h-24" : ""} ${className ?? ""}`}
+        placeholderTextColor={tokens.muted2}
+        className={`rounded-[10px] border bg-card px-3.5 font-sans text-base text-ink ${error ? "border-negative" : "border-line-2"} ${multiline ? "min-h-24 py-3" : "h-12"} ${className ?? ""}`}
         {...rest}
       />
       {error ? (
-        <Text className="mt-1 text-xs text-danger">{error}</Text>
+        <Text className="mt-1 font-sans text-xs text-negative">{error}</Text>
       ) : hint ? (
-        <Text className="mt-1 text-xs text-muted-foreground">{hint}</Text>
+        <Text className="mt-1 font-sans text-xs text-muted">{hint}</Text>
       ) : null}
     </View>
   );

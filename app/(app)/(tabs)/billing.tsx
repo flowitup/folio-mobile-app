@@ -51,21 +51,21 @@ export default function BillingTab() {
 
   if (access.loading)
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-card">
         <ScreenHeader title={t("billing.title")} />
         <ActivityIndicator className="mt-8" />
       </View>
     );
   if (!access.allowed)
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-card">
         <ScreenHeader title={t("billing.title")} />
         <EmptyState message={t("billing.accessDenied")} />
       </View>
     );
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScreenHeader
         title={t("billing.title")}
         right={

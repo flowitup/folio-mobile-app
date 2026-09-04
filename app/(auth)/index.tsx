@@ -35,21 +35,21 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-card">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1 justify-center px-6"
       >
-        <Text className="mb-8 text-3xl font-bold text-neutral-900">
+        <Text className="mb-8 text-3xl font-bold text-ink">
           {t("login.title")}
         </Text>
 
-        <Text className="mb-1 text-sm text-neutral-600">
+        <Text className="mb-1 text-sm text-muted">
           {t("login.email")}
         </Text>
         <TextInput
           testID="login-email"
-          className="mb-4 rounded-lg border border-neutral-300 px-4 py-3 text-base text-neutral-900"
+          className="mb-4 rounded-lg border border-neutral-300 px-4 py-3 text-base text-ink"
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -58,12 +58,12 @@ export default function LoginScreen() {
           onChangeText={setEmail}
         />
 
-        <Text className="mb-1 text-sm text-neutral-600">
+        <Text className="mb-1 text-sm text-muted">
           {t("login.password")}
         </Text>
         <TextInput
           testID="login-password"
-          className="mb-6 rounded-lg border border-neutral-300 px-4 py-3 text-base text-neutral-900"
+          className="mb-6 rounded-lg border border-neutral-300 px-4 py-3 text-base text-ink"
           secureTextEntry
           autoComplete="password"
           textContentType="password"
@@ -82,7 +82,7 @@ export default function LoginScreen() {
           testID="login-submit"
           disabled={!canSubmit}
           onPress={handleSubmit}
-          className={`items-center rounded-lg py-3 ${canSubmit ? "bg-neutral-900" : "bg-neutral-300"}`}
+          className={`items-center rounded-lg py-3 ${canSubmit ? "bg-ink" : "bg-line-2"}`}
         >
           <Text className="text-base font-semibold text-white">
             {submitting ? t("common.loading") : t("login.submit")}

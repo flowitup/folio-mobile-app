@@ -280,7 +280,7 @@ export default function ProjectLaborSection() {
   }));
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <View className="flex-row border-b border-border">
         {TABS.map((value) => (
           <Pressable

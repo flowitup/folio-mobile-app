@@ -88,7 +88,7 @@ export default function AcceptInviteScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScreenHeader
         title={t("acceptInvite.title", {
           projectName: state.kind === "ready" ? state.invite.project_name : "…",

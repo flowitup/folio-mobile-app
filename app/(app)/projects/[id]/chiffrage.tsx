@@ -397,7 +397,7 @@ export default function ProjectChiffrageSection() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScrollView contentContainerClassName="p-4 pb-12">
         <Card className="mb-3">
           <View className="flex-row justify-between">

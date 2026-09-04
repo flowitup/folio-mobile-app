@@ -32,7 +32,7 @@ export function ProjectSectionBar({ projectId }: Props) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      className="max-h-12 border-b border-border bg-white"
+      className="max-h-12 border-b border-border bg-card"
       contentContainerClassName="px-2"
       testID="project-section-bar"
     >

@@ -119,7 +119,7 @@ export default function ProjectInvoicesSection() {
   const meta = invoices.data;
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

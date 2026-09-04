@@ -35,21 +35,19 @@ export function ConfirmDialog({
       onRequestClose={onCancel}
     >
       <Pressable
-        className="flex-1 items-center justify-center bg-black/40 px-6"
+        className="flex-1 items-center justify-center bg-scrim px-6"
         onPress={onCancel}
       >
         <Pressable
-          className="w-full rounded-xl bg-white p-5"
+          className="w-full rounded-2xl bg-paper p-5"
           onPress={() => undefined}
           testID="confirm-dialog"
         >
-          <Text className="mb-2 text-lg font-semibold text-primary">
+          <Text className="mb-2 font-sans-semibold text-lg text-ink">
             {title}
           </Text>
           {message ? (
-            <Text className="mb-4 text-sm text-muted-foreground">
-              {message}
-            </Text>
+            <Text className="mb-4 font-sans text-sm text-muted">{message}</Text>
           ) : null}
           <View className="flex-row justify-end gap-2">
             <Button

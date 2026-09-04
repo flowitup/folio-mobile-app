@@ -104,7 +104,7 @@ export default function RefundableExpensesScreen() {
   const summary = expenses.data?.summary;
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScreenHeader
         title={t("billing.refundable.title")}
         back

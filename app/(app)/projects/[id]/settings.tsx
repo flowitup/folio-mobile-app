@@ -53,7 +53,7 @@ export default function ProjectSettingsSection() {
     data.owner_id === user?.id;
 
   return (
-    <ScrollView className="flex-1 bg-white" contentContainerClassName="p-4">
+    <ScrollView className="flex-1 bg-card" contentContainerClassName="p-4">
       <Card className="mb-4">
         <Field label={t("project.form.name")} value={data.name} />
         <Field label={t("project.form.address")} value={data.address ?? ""} />

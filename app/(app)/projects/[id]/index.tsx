@@ -20,7 +20,7 @@ export default function ProjectOverviewSection() {
     return <Text className="p-4 text-danger">{t("home.loadError")}</Text>;
 
   return (
-    <ScrollView className="flex-1 bg-white" contentContainerClassName="p-4">
+    <ScrollView className="flex-1 bg-card" contentContainerClassName="p-4">
       <ProjectSummaryCard project={project.data} />
       <CoverPhotosStrip projectId={id} />
     </ScrollView>

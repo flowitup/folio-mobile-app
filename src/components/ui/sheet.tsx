@@ -9,6 +9,8 @@ import type { PropsWithChildren } from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useTokens } from "@/theme/tokens";
+
 const DEFAULT_SNAP_POINTS = ["50%", "90%"];
 
 type Props = PropsWithChildren<{
@@ -16,12 +18,13 @@ type Props = PropsWithChildren<{
   snapPoints?: (string | number)[];
 }>;
 
-/** Bottom sheet modal wrapper. Open with `ref.current?.present()`, close with `dismiss()`. */
+/** Bottom sheet modal wrapper (paper panel, r20, line-2 grabber). Open with `ref.current?.present()`. */
 export const Sheet = forwardRef<BottomSheetModal, Props>(function Sheet(
   { title, snapPoints = DEFAULT_SNAP_POINTS, children },
   ref,
 ) {
   const insets = useSafeAreaInsets();
+  const tokens = useTokens();
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
@@ -29,9 +32,11 @@ export const Sheet = forwardRef<BottomSheetModal, Props>(function Sheet(
         appearsOnIndex={0}
         disappearsOnIndex={-1}
         pressBehavior="close"
+        style={[props.style, { backgroundColor: tokens.scrim }]}
+        opacity={1}
       />
     ),
-    [],
+    [tokens.scrim],
   );
 
   return (
@@ -40,6 +45,12 @@ export const Sheet = forwardRef<BottomSheetModal, Props>(function Sheet(
       snapPoints={snapPoints}
       backdropComponent={renderBackdrop}
       enableDynamicSizing={false}
+      backgroundStyle={{ backgroundColor: tokens.paper, borderRadius: 20 }}
+      handleIndicatorStyle={{
+        backgroundColor: tokens.line2,
+        width: 36,
+        height: 4,
+      }}
       // A sheet opened from inside another sheet (Select in a form) stacks instead of replacing it.
       stackBehavior="push"
     >
@@ -47,8 +58,8 @@ export const Sheet = forwardRef<BottomSheetModal, Props>(function Sheet(
         contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
       >
         {title ? (
-          <View className="border-b border-border px-4 pb-3">
-            <Text className="text-lg font-semibold text-primary">{title}</Text>
+          <View className="border-b border-line px-4 pb-3">
+            <Text className="font-sans-semibold text-lg text-ink">{title}</Text>
           </View>
         ) : null}
         {children}

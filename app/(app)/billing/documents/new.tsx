@@ -122,7 +122,7 @@ export default function NewBillingDocumentScreen() {
     : `${t("billing.list.new")} · ${t(`billing.kind.${kind}`)}`;
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScreenHeader title={title} back />
       <ScrollView
         contentContainerClassName="p-4 pb-12"

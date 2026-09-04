@@ -71,7 +71,7 @@ export default function ProjectPhotosSection() {
   const cell = Math.floor((width - 32 - 8) / 3);
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScrollView contentContainerClassName="p-4 pb-12">
         <Button
           testID="photos-add"
@@ -169,7 +169,7 @@ export default function ProjectPhotosSection() {
                 <Text className="mt-2 text-white">{t("photos.videoHint")}</Text>
               ) : null}
             </View>
-            <View className="bg-white p-4">
+            <View className="bg-card p-4">
               <Text className="mb-2 text-xs text-muted-foreground">
                 {formatDate(open.captured_at)} · {open.filename}
               </Text>

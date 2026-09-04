@@ -132,14 +132,14 @@ export default function LibraryTab() {
 
   if (companies.data && companies.data.length === 0)
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-card">
         <ScreenHeader title={t("library.title")} />
         <EmptyState message={t("billing.form.noCompanies")} />
       </View>
     );
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScreenHeader
         title={t("library.title")}
         right={
@@ -290,7 +290,7 @@ export default function LibraryTab() {
         }
       />
       {selected.size > 0 ? (
-        <View className="absolute bottom-4 left-4 right-4 flex-row items-center justify-between rounded-full border border-border bg-white px-4 py-2 shadow">
+        <View className="absolute bottom-4 left-4 right-4 flex-row items-center justify-between rounded-full border border-border bg-card px-4 py-2 shadow">
           <Text className="text-sm text-primary">
             {t("library.compareSelected", { count: selected.size })}
           </Text>
@@ -328,7 +328,7 @@ export default function LibraryTab() {
         animationType="slide"
         onRequestClose={() => setComparing(false)}
       >
-        <View className="flex-1 bg-white">
+        <View className="flex-1 bg-card">
           <ScreenHeader
             title={t("library.compareTitle")}
             back

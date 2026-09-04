@@ -56,14 +56,14 @@ export default function LibraryProductScreen() {
 
   if (query.isPending)
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-card">
         <ScreenHeader title="…" back />
         <ActivityIndicator className="mt-8" />
       </View>
     );
   if (!product)
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-card">
         <ScreenHeader title={t("library.detailTitle")} back />
         <ErrorState
           message={t("home.loadError")}
@@ -111,7 +111,7 @@ export default function LibraryProductScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScreenHeader
         title={product.name}
         back
@@ -287,8 +287,8 @@ export default function LibraryProductScreen() {
         animationType="fade"
         onRequestClose={() => setDeleting(false)}
       >
-        <View className="flex-1 items-center justify-center bg-black/40 p-6">
-          <View className="w-full rounded-lg bg-white p-4">
+        <View className="flex-1 items-center justify-center bg-scrim p-6">
+          <View className="w-full rounded-lg bg-card p-4">
             <Text className="mb-1 text-lg font-semibold text-primary">
               {t("library.deleteTitle")}
             </Text>

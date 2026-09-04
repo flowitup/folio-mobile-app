@@ -30,9 +30,9 @@ export function showToast(message: string, kind: ToastKind = "info"): void {
 }
 
 const KIND_CLASS: Record<ToastKind, string> = {
-  info: "bg-primary",
-  success: "bg-success",
-  error: "bg-danger",
+  info: "bg-ink",
+  success: "bg-positive",
+  error: "bg-negative",
 };
 
 export function ToastProvider({ children }: PropsWithChildren) {
@@ -104,9 +104,9 @@ export function ToastViewport() {
           key={item.id}
           testID={`toast-${item.kind}`}
           onPress={() => context.dismiss(item.id)}
-          className={`mb-2 w-full rounded-lg px-4 py-3 ${KIND_CLASS[item.kind]}`}
+          className={`mb-2 w-full rounded-xl px-4 py-3 ${KIND_CLASS[item.kind]}`}
         >
-          <Text className="text-sm text-primary-foreground">
+          <Text className="font-sans text-sm text-on-ink">
             {item.message}
           </Text>
         </Pressable>

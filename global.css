@@ -1,3 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Design tokens (2a hand-off). Same values as src/theme/tokens.ts — a Jest test enforces parity. */
+:root {
+  --paper: #f5f1ea;
+  --paper-2: #efe9de;
+  --card: #ffffff;
+  --line: #e3dccd;
+  --line-2: #d6cdbb;
+  --ink: #1a1a1a;
+  --ink-2: #2c2a26;
+  --muted: #8a8479;
+  --muted-2: #b8b1a4;
+  --on-ink: #f5f1ea;
+  --accent: #e8843c;
+  --accent-ink: #b96523;
+  --accent-tint: #fbe7d4;
+  --positive: #5a7a4a;
+  --positive-tint: #e6ecdc;
+  --warning: #c98e2b;
+  --warning-tint: #f5e9cf;
+  --negative: #b3543d;
+  --negative-tint: #f3dccf;
+  --scrim: rgba(26,26,26,0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #171513;
+    --paper-2: #211e1a;
+    --card: #1f1c18;
+    --line: #302b25;
+    --line-2: #3d372f;
+    --ink: #f1ece3;
+    --ink-2: #d9d2c5;
+    --muted: #9c948a;
+    --muted-2: #6b645b;
+    --on-ink: #171513;
+    --accent: #ee9552;
+    --accent-ink: #f2b07d;
+    --accent-tint: #3a2718;
+    --positive: #8fb07a;
+    --positive-tint: #26301f;
+    --warning: #d9a44a;
+    --warning-tint: #372b14;
+    --negative: #d0785f;
+    --negative-tint: #3a2119;
+    --scrim: rgba(0,0,0,0.55);
+  }
+}

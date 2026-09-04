@@ -144,7 +144,7 @@ export default function ProjectPlanningSection() {
   }));
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-card">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
