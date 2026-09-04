@@ -1120,5 +1120,69 @@
     "confirmBody": "Người nguồn bị xóa và mọi nhân công chuyển sang đích. Không thể hoàn tác.",
     "done": "Đã gộp. {{count}} nhân công được chuyển.",
     "sameError": "Chọn hai người khác nhau."
+  },
+  "dashboard": {
+    "loadError": "Không thể tải dữ liệu tổng quan",
+    "money": {
+      "spentThisMonth": "Đã chi tháng này",
+      "pctSpent": "{{pct}}% đã chi · {{spent}}"
+    },
+    "spendByType": {
+      "title": "Chi tiêu hàng tháng theo loại",
+      "rangeShared": "{{from}} – {{to}} · cùng thang đo",
+      "viewExpense": "Chi phí",
+      "currentHighlighted": "Tháng hiện tại được làm nổi bật · đường xu hướng chồng lên",
+      "sixMonthSpend": "Chi tiêu 6 tháng"
+    },
+    "agenda": {
+      "title": "Tuần này",
+      "viewAll": "Lịch trình",
+      "overdue": "Quá hạn",
+      "today": "Hôm nay",
+      "thisWeek": "Tuần này",
+      "empty": "Không có việc gì trong tuần này."
+    },
+    "summary": {
+      "left": "còn lại",
+      "released": "Đã giải ngân",
+      "spent": "Đã chi",
+      "companyPurse": "Quỹ công ty",
+      "personalPurse": "Quỹ cá nhân",
+      "refundableByCompany": "Chờ hoàn · công ty",
+      "refundableByBank": "Chờ hoàn · ngân hàng",
+      "refundableCount": "{{n}} khoản chờ hoàn",
+      "returnsReceived": "Đã nhận trả hàng ({{n}})",
+      "netOfReturns": "đã trừ hoàn trả",
+      "vsMonth": "{{delta}} so với {{month}}"
+    },
+    "invoiceCount": "{{n}} chi phí",
+    "remainingToSpend": "Còn lại để chi",
+    "bankRelease": {
+      "title": "Giải ngân tín dụng ngân hàng",
+      "overDrawn": "Vượt quá",
+      "drawsMeta": "{{count}} lần giải ngân · {first} → {last}",
+      "headlineMeta": "còn lại trên {{credit}} tín dụng · đã giải ngân {{pct}}",
+      "segmentHint": "Mỗi đoạn một lần giải ngân · đã rút {{amount}}",
+      "creditLabel": "Tín dụng {{amount}}",
+      "leftLabel": "còn {{amount}}",
+      "largestDraw": "Giải ngân lớn nhất",
+      "lastDraw": "Giải ngân gần nhất",
+      "noCredit": "Chưa ghi nhận tín dụng ngân hàng",
+      "noCreditHint": "Đặt hạn mức tín dụng ban đầu ngân hàng cấp trong cài đặt dự án.",
+      "openSettings": "Mở cài đặt dự án",
+      "noReleases": "Chưa có khoản giải ngân nào",
+      "settingsCardTitle": "Tín dụng ngân hàng (vay mua nhà)",
+      "settingsCardHint": "Số tiền ban đầu ngân hàng cấp. Các khoản giải ngân sẽ được trừ vào số này."
+    },
+    "project": "Công trình",
+    "noProjects": "Chưa có công trình.",
+    "weather": "22°C · trời quang · đội đang ở công trường",
+    "reminders": "Nhắc nhở",
+    "credit": "Tín dụng",
+    "spentTotal": "Đã chi (trừ hoàn trả)",
+    "bank": {
+      "segments": "Một đoạn mỗi lần giải ngân",
+      "draws": "{{count}} lần giải ngân"
+    }
   }
 }

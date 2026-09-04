@@ -1120,5 +1120,69 @@
     "confirmBody": "The source person is deleted and all their workers move to the target. This cannot be undone.",
     "done": "Merged. {{count}} worker(s) reassigned.",
     "sameError": "Pick two different persons."
+  },
+  "dashboard": {
+    "loadError": "Failed to load overview data",
+    "money": {
+      "spentThisMonth": "Spent this month",
+      "pctSpent": "{{pct}}% spent · {{spent}}"
+    },
+    "spendByType": {
+      "title": "Monthly spend by type",
+      "rangeShared": "{{from}} – {{to}} · shared scale",
+      "viewExpense": "Expense",
+      "currentHighlighted": "Current month highlighted · trend line overlaid",
+      "sixMonthSpend": "6-month spend"
+    },
+    "agenda": {
+      "title": "This week",
+      "viewAll": "Agenda",
+      "overdue": "Overdue",
+      "today": "Today",
+      "thisWeek": "This week",
+      "empty": "Nothing on the agenda this week."
+    },
+    "summary": {
+      "left": "left",
+      "released": "Released",
+      "spent": "Spent",
+      "companyPurse": "Company purse",
+      "personalPurse": "Personal purse",
+      "refundableByCompany": "Refundable · company",
+      "refundableByBank": "Refundable · bank",
+      "refundableCount": "{{n}} refundable",
+      "returnsReceived": "Returns received ({{n}})",
+      "netOfReturns": "net of returns",
+      "vsMonth": "{{delta}} vs {{month}}"
+    },
+    "invoiceCount": "{{n}} expenses",
+    "remainingToSpend": "Remaining to spend",
+    "bankRelease": {
+      "title": "Bank credit release",
+      "overDrawn": "Over-drawn by",
+      "drawsMeta": "{{count}} draws · {first} → {last}",
+      "headlineMeta": "remaining of {{credit}} credit · {{pct}} released",
+      "segmentHint": "One segment per draw · drawn {{amount}}",
+      "creditLabel": "Credit {{amount}}",
+      "leftLabel": "{{amount}} left",
+      "largestDraw": "Largest draw",
+      "lastDraw": "Last draw",
+      "noCredit": "No bank credit recorded",
+      "noCreditHint": "Set the initial credit granted by your bank in the project settings.",
+      "openSettings": "Open project settings",
+      "noReleases": "No funds released yet",
+      "settingsCardTitle": "Bank credit (mortgage loan)",
+      "settingsCardHint": "Initial amount granted by the bank. Funds releases are deducted from it."
+    },
+    "project": "Project",
+    "noProjects": "No project yet.",
+    "weather": "22°C · clear · site crew on site",
+    "reminders": "Reminders",
+    "credit": "Credit",
+    "spentTotal": "Spent (net of returns)",
+    "bank": {
+      "segments": "One segment per draw",
+      "draws": "{{count}} draw(s)"
+    }
   }
 }
