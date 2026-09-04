@@ -75,7 +75,7 @@ export default function AcceptInviteScreen() {
     try {
       await acceptInvite({ token, name: trimmed, password });
       await signIn(state.invite.email, password);
-      router.replace("/(app)/(tabs)/dashboard");
+      router.replace("/(app)/(tabs)");
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -88,7 +88,7 @@ export default function AcceptInviteScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-paper">
       <ScreenHeader
         title={t("acceptInvite.title", {
           projectName: state.kind === "ready" ? state.invite.project_name : "…",

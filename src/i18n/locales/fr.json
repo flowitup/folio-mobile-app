@@ -17,7 +17,11 @@
     "email": "E-mail",
     "password": "Mot de passe",
     "submit": "Se connecter",
-    "failed": "Échec de la connexion : {{message}}"
+    "failed": "Échec de la connexion : {{message}}",
+    "subtitle": "Même compte que la version web.",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "forgot": "Mot de passe oublié ? Contactez l'administrateur du chantier."
   },
   "home": {
     "welcome": "Connecté en tant que {{email}}",
@@ -27,11 +31,12 @@
     "signOut": "Se déconnecter"
   },
   "tabs": {
-    "dashboard": "Tableau de bord",
-    "projects": "Chantiers",
-    "billing": "Facturation",
-    "library": "Bibliothèque",
-    "settings": "Réglages"
+    "overview": "Aperçu",
+    "expenses": "Dépenses",
+    "labor": "Main-d'œuvre",
+    "planning": "Planning",
+    "menu": "Menu",
+    "settings": "Paramètres"
   },
   "project": {
     "budget": "Budget",
@@ -106,7 +111,8 @@
     },
     "manage": "Gérer",
     "role": "Rôle : {{role}}",
-    "usersAdmin": "Utilisateurs (admin)"
+    "usersAdmin": "Utilisateurs (admin)",
+    "title": "Paramètres"
   },
   "members": {
     "title": "Membres ({{count}})",
@@ -281,7 +287,10 @@
       "payments": "Paiements"
     },
     "calendar": {
-      "weekdays": ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"]
+      "weekdays": ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"],
+      "empty": "Aucun pointage",
+      "logDay": "Pointer ce jour",
+      "details": "Activités & notes"
     },
     "shift": {
       "full": "Journée",
@@ -305,7 +314,8 @@
       "deleteConfirm": "Retirer {{name}} ?",
       "deleteHint": "Son historique de présence reste sur le chantier.",
       "inactive": "inactif",
-      "day": "jour"
+      "day": "jour",
+      "perDay": "par jour · {{count}} jours"
     },
     "rates": {
       "link": "Taux",
@@ -363,12 +373,24 @@
       "none": "Rien à payer ce mois.",
       "unassigned": "Factures main-d'œuvre sans ouvrier",
       "assignWorker": "Attribuer à un ouvrier…",
-      "openInvoice": "Ouvrir la facture"
+      "openInvoice": "Ouvrir la facture",
+      "paidShort": "Payé",
+      "dueShort": "Reste"
     },
     "export": {
       "title": "Exporter la main-d'œuvre",
       "worker": "Ouvrier",
       "allWorkers": "Tous les ouvriers"
+    },
+    "segments": {
+      "calendar": "Pointage",
+      "workers": "Ouvriers",
+      "payments": "Paiements"
+    },
+    "headerSub": "{{count}} ouvriers actifs · {{month}}",
+    "kpi": {
+      "cost": "Coût",
+      "unpaid": "Impayé"
     }
   },
   "documents": {
@@ -1226,6 +1248,22 @@
     "bank": {
       "segments": "Un segment par déblocage",
       "draws": "{{count}} déblocage(s)"
+    },
+    "overview": {
+      "pctSpent": "{{pct}} % dépensés",
+      "ofCredit": "sur",
+      "creditWord": "de crédit",
+      "releasedWord": "débloqués",
+      "personal": "Personnel",
+      "pay": "Payer",
+      "spendByType": "Dépenses par type · 6 mois",
+      "expensesLink": "Journal des dépenses",
+      "typeColumn": "Type",
+      "monthTotal": "Total {{month}}",
+      "thisWeek": "Cette semaine · {{count}} tâches",
+      "budgetCredit": "Budget / crédit",
+      "bankRemaining": "Crédit bancaire restant",
+      "pendingCompany": "En attente de remboursement société ({{count}})"
     }
   },
   "salaries": {
@@ -1258,5 +1296,66 @@
     "paidToast": "Paiement enregistré.",
     "unpaidToast": "Paiements supprimés.",
     "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement."
+  },
+  "shell": {
+    "switchProject": "Changer de chantier",
+    "projectsCount": "Chantiers · {{count}}",
+    "newProject": "+ Nouveau chantier",
+    "membersCount_one": "{{count}} membre",
+    "membersCount_other": "{{count}} membres",
+    "pctSpent": "{{pct}} % dépensés",
+    "overBudget": "budget dépassé",
+    "noBudget": "pas de budget",
+    "spentNoBudget": "{{amount}} dépensés",
+    "menu": "Menu",
+    "projectSections": "Chantier",
+    "settingsSub": "Société, paiements, rôles",
+    "billingSub": "Devis · Factures",
+    "librarySub": "{{products}} produits · {{suppliers}} fournisseurs",
+    "projectSectionsSub": "Documents, photos, notes…",
+    "billingTitle": "Devis & factures"
+  },
+  "expenses": {
+    "add": "Ajouter",
+    "itemsCount_one": "{{count}} écriture",
+    "itemsCount_other": "{{count}} écritures",
+    "purseCaption": "restant · {{pct}} % utilisés",
+    "pendingRefunds_one": "{{count}} dépense en attente de remboursement société",
+    "pendingRefunds_other": "{{count}} dépenses en attente de remboursement société",
+    "view": "Voir",
+    "export": "Exporter Excel / PDF",
+    "filters": {
+      "released_funds": "Fonds débloqués",
+      "labor": "Main-d'œuvre",
+      "materials_services": "Matériaux & services",
+      "others": "Autres"
+    },
+    "abbr": {
+      "labor": "MO",
+      "materials_services": "MS",
+      "others": "AU",
+      "released_funds": "FD",
+      "return": "RE"
+    }
+  },
+  "planning": {
+    "newTask": "Tâche",
+    "moveUp": "Monter",
+    "moveDown": "Descendre"
+  },
+  "chat": {
+    "title": "Discussion d'équipe",
+    "open": "Ouvrir la discussion",
+    "membersCount_one": "{{count}} membre",
+    "membersCount_other": "{{count}} membres",
+    "placeholder": "Message…",
+    "send": "Envoyer",
+    "attachImage": "Choisir une photo",
+    "takePhoto": "Prendre une photo",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "empty": "Pas encore de message.",
+    "disabled": "La discussion n'est pas activée sur ce serveur.",
+    "permissionDenied": "Accès aux photos refusé."
   }
 }

@@ -117,7 +117,7 @@ export function CalendarMonthGrid({
                 key={iso}
                 testID={`calendar-day-${iso}`}
                 onPress={() => onSelectDay(iso)}
-                className={`flex-1 border p-1 ${isSelected ? "border-primary bg-muted" : "border-border"}`}
+                className={`flex-1 border p-1 ${isSelected ? "border-primary bg-paper-2" : "border-border"}`}
                 style={{ minHeight: 64 }}
               >
                 <View className="flex-row items-center justify-between">

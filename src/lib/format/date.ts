@@ -6,7 +6,8 @@ const LOCALE_TAG: Record<string, string> = {
   vi: "vi-VN",
 };
 
-function localeTag(): string {
+/** BCP-47 tag of the active UI language (en-GB / fr-FR / vi-VN). */
+export function localeTag(): string {
   return LOCALE_TAG[i18n.language] ?? "en-GB";
 }
 

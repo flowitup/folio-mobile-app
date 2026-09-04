@@ -6,11 +6,11 @@ export function PlaceholderScreen({ name }: { name: string }) {
   const { t } = useTranslation();
   return (
     <View
-      className="flex-1 items-center justify-center bg-white px-6"
+      className="flex-1 items-center justify-center bg-paper px-6"
       testID={`placeholder-${name}`}
     >
-      <Text className="mb-2 text-lg font-semibold text-primary">{name}</Text>
-      <Text className="text-center text-muted-foreground">
+      <Text className="mb-2 font-sans-semibold text-lg text-ink">{name}</Text>
+      <Text className="text-center font-sans text-muted">
         {t("common.comingSoon")}
       </Text>
     </View>

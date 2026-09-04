@@ -364,7 +364,7 @@ export const LogDaySheet = forwardRef<SheetHandle, LogDayProps>(
             return (
               <Card
                 key={worker.id}
-                className={`mb-2 ${state.checked ? "border-primary bg-muted" : ""}`}
+                className={`mb-2 ${state.checked ? "border-primary bg-paper-2" : ""}`}
               >
                 <View className="flex-row items-center">
                   <Pressable

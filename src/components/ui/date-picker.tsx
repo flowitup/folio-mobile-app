@@ -43,7 +43,9 @@ export function DatePicker({
   return (
     <View className="mb-4">
       {label ? (
-        <Text className="mb-1 text-sm text-muted-foreground">{label}</Text>
+        <Text className="mb-1.5 font-sans-medium text-[11px] uppercase tracking-[1.1px] text-muted">
+          {label}
+        </Text>
       ) : null}
       <View className="flex-row items-center">
         <Pressable
@@ -53,7 +55,7 @@ export function DatePicker({
             setDraft(parseIsoDate(value) ?? new Date());
             setOpen(true);
           }}
-          className="flex-1 rounded-lg border border-border px-4 py-3"
+          className="h-12 flex-1 justify-center rounded-[10px] border border-line-2 bg-card px-3.5"
         >
           <Text
             className={
@@ -88,11 +90,11 @@ export function DatePicker({
           onRequestClose={() => setOpen(false)}
         >
           <Pressable
-            className="flex-1 justify-end bg-black/40"
+            className="flex-1 justify-end bg-scrim"
             onPress={() => setOpen(false)}
           >
             <Pressable
-              className="rounded-t-xl bg-white p-4"
+              className="rounded-t-2.5xl bg-paper p-4"
               onPress={() => undefined}
             >
               <DateTimePicker
