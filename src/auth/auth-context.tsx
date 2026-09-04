@@ -18,6 +18,9 @@ import {
 import type { components } from "@/api/generated/schema";
 
 export type AuthUser = components["schemas"]["UserResponse"];
+// The app keeps a session until the user signs out: login asks for a never-expiring
+// refresh token, and sign-out hands it back so the backend revokes it for good.
+const PERSISTENT_SESSION = true;
 
 type AuthStatus = "loading" | "signedOut" | "signedIn";
 
@@ -88,7 +91,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     async (phone: string, code: string) => {
       const { data, error, response } = await api.POST(
         "/api/v1/auth/otp/verify",
-        { body: { phone, code } },
+        { body: { phone, code, persistent: PERSISTENT_SESSION } },
       );
       if (!data) throw new Error(errorMessage(error, response));
       await completeSignIn(data);
@@ -98,7 +101,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error, response } = await api.POST("/api/v1/auth/login", {
-      body: { email, password },
+      body: { email, password, persistent: PERSISTENT_SESSION },
     });
     if (!data) {
       const message =
@@ -112,8 +115,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   const signOut = useCallback(async () => {
-    // Best effort server-side revocation; local sign-out must succeed even offline.
-    await api.POST("/api/v1/auth/logout").catch(() => undefined);
+    // Best effort server-side revocation (access + refresh); local sign-out must succeed even offline.
+    const { refreshToken } = await getStoredTokens();
+    await api
+      .POST("/api/v1/auth/logout", {
+        body: { refresh_token: refreshToken },
+      })
+      .catch(() => undefined);
     await signOutLocally();
   }, [signOutLocally]);
 

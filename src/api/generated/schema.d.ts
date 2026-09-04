@@ -273,7 +273,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Logout user and clear cookies */
+        /** Logout user, clear cookies, revoke the access and refresh tokens */
         post: {
             parameters: {
                 query?: never;
@@ -281,7 +281,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LogoutBody"];
+                };
+            };
             responses: {
                 /** @description Success */
                 200: {
@@ -7229,6 +7233,11 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+            /**
+             * Persistent
+             * @default false
+             */
+            persistent: boolean;
         };
         /**
          * LoginResponse
@@ -7250,6 +7259,17 @@ export interface components {
              */
             token_type: string;
             user: components["schemas"]["UserResponse"];
+        };
+        /**
+         * LogoutBody
+         * @description Optional body of POST /auth/logout: Bearer clients pass their refresh token so it is revoked too.
+         */
+        LogoutBody: {
+            /**
+             * Refresh Token
+             * @default null
+             */
+            refresh_token: string | null;
         };
         /** MemberResponse */
         MemberResponse: {
@@ -7374,6 +7394,11 @@ export interface components {
         OtpVerifyBody: {
             /** Code */
             code: string;
+            /**
+             * Persistent
+             * @default false
+             */
+            persistent: boolean;
             /** Phone */
             phone: string;
         };
