@@ -7,6 +7,7 @@ export const PROJECT_SECTIONS = [
   "overview",
   "invoices",
   "labor",
+  "salaries",
   "documents",
   "photos",
   "notes",
