@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -11,19 +10,13 @@ import {
 
 import { useShell } from "@/components/shell/shell-context";
 import { ShellSheet } from "@/components/shell/shell-sheet";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { AttendanceRequestsSection } from "@/components/shell/attendance-requests-section";
 import { Badge } from "@/components/ui/primitives";
-import { showToast } from "@/components/ui/toast";
 import { Eyebrow } from "@/components/ui/typography";
-import {
-  useRejectAttendance,
-  useValidateAttendance,
-} from "@/features/labor/labor-api";
 import {
   useDismissNotification,
   useNotifications,
 } from "@/features/notes/notes-api";
-import type { AttendancePending } from "@/features/notes/notes-api";
 import { formatDate } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
 
@@ -38,9 +31,6 @@ export function NotificationsSheet() {
   const { sheet, closeSheet } = useShell();
   const notifications = useNotifications();
   const dismiss = useDismissNotification();
-  const validate = useValidateAttendance();
-  const reject = useRejectAttendance();
-  const [rejecting, setRejecting] = useState<AttendancePending | null>(null);
   const pending = (notifications.data?.items ?? []).filter(
     (item) => !item.dismissed,
   );
@@ -48,108 +38,7 @@ export function NotificationsSheet() {
 
   return (
     <ShellSheet open={sheet === "notifications"} testID="notifications-sheet">
-      {attendance.length > 0 ? (
-        <>
-          <Eyebrow className="mb-2">
-            {t("notifications.attendance.title", { count: attendance.length })}
-          </Eyebrow>
-          <View className="mb-4 overflow-hidden rounded-xl border border-line bg-card">
-            <ScrollView style={{ maxHeight: 260 }} bounces={false}>
-              {attendance.map((item) => (
-                <View
-                  key={item.entry_id}
-                  testID={`attendance-pending-${item.entry_id}`}
-                  className="gap-2 border-b border-line px-3.5 py-3"
-                >
-                  <Text
-                    className="font-sans-medium text-[14px] text-ink"
-                    numberOfLines={1}
-                  >
-                    {item.worker_name} · {formatDate(item.date)}
-                  </Text>
-                  <Text
-                    className="font-sans text-[11.5px] text-muted"
-                    numberOfLines={1}
-                  >
-                    {item.project_name} ·{" "}
-                    {t(`labor.shift.${item.shift_type ?? "none"}`)}
-                    {item.supplement_hours > 0
-                      ? ` · +${item.supplement_hours} h`
-                      : ""}
-                  </Text>
-                  <View className="flex-row gap-2">
-                    <Pressable
-                      testID={`attendance-validate-${item.entry_id}`}
-                      accessibilityRole="button"
-                      disabled={validate.isPending}
-                      onPress={() =>
-                        validate.mutate(
-                          {
-                            projectId: item.project_id,
-                            entryId: item.entry_id,
-                          },
-                          {
-                            onSuccess: () =>
-                              showToast(
-                                t("notifications.attendance.validatedToast"),
-                                "success",
-                              ),
-                          },
-                        )
-                      }
-                      className="h-8 flex-1 items-center justify-center rounded-full bg-positive active:opacity-70"
-                    >
-                      <Text className="font-sans-semibold text-[12.5px] text-on-ink">
-                        {t("notifications.attendance.validate")}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      testID={`attendance-reject-${item.entry_id}`}
-                      accessibilityRole="button"
-                      onPress={() => setRejecting(item)}
-                      className="h-8 flex-1 items-center justify-center rounded-full border border-line-2 active:opacity-70"
-                    >
-                      <Text className="font-sans-medium text-[12.5px] text-negative">
-                        {t("notifications.attendance.reject")}
-                      </Text>
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-          <ConfirmDialog
-            visible={rejecting !== null}
-            title={t("notifications.attendance.rejectConfirm", {
-              worker: rejecting?.worker_name ?? "",
-              date: rejecting ? formatDate(rejecting.date) : "",
-            })}
-            confirmLabel={t("notifications.attendance.reject")}
-            cancelLabel={t("common.cancel")}
-            destructive
-            loading={reject.isPending}
-            onCancel={() => setRejecting(null)}
-            onConfirm={() =>
-              rejecting &&
-              reject.mutate(
-                {
-                  projectId: rejecting.project_id,
-                  entryId: rejecting.entry_id,
-                },
-                {
-                  onSuccess: () => {
-                    setRejecting(null);
-                    showToast(
-                      t("notifications.attendance.rejectedToast"),
-                      "success",
-                    );
-                  },
-                },
-              )
-            }
-          />
-        </>
-      ) : null}
+      <AttendanceRequestsSection items={attendance} />
       <Eyebrow className="mb-2">
         {t("notifications.title", { count: pending.length })}
       </Eyebrow>
