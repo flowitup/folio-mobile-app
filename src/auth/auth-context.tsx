@@ -32,6 +32,13 @@ type AuthContextValue = {
   /** Asks the backend to text a 6-digit code; resolves with the code's lifetime in seconds. */
   requestOtp: (phone: string) => Promise<number>;
   signInWithOtp: (phone: string, code: string) => Promise<void>;
+  /** Sign-up: code to a phone without an account; resolves with the code's lifetime in seconds. */
+  requestSignupOtp: (phone: string) => Promise<number>;
+  signUpWithOtp: (
+    phone: string,
+    code: string,
+    displayName: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -100,6 +107,27 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [completeSignIn],
   );
 
+  const requestSignupOtp = useCallback(async (phone: string) => {
+    const { data, error, response } = await api.POST(
+      "/api/v1/auth/signup/request",
+      { body: { phone } },
+    );
+    if (!data) throw new Error(errorMessage(error, response));
+    return data.expires_in;
+  }, []);
+
+  const signUpWithOtp = useCallback(
+    async (phone: string, code: string, displayName: string) => {
+      const { data, error, response } = await api.POST(
+        "/api/v1/auth/signup/verify",
+        { body: { phone, code, display_name: displayName } },
+      );
+      if (!data) throw new Error(errorMessage(error, response));
+      await completeSignIn(data);
+    },
+    [completeSignIn],
+  );
+
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error, response } = await api.POST("/api/v1/auth/login", {
       body: { email, password },
@@ -127,8 +155,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [signOutLocally]);
 
   const value = useMemo(
-    () => ({ status, user, signIn, requestOtp, signInWithOtp, signOut }),
-    [status, user, signIn, requestOtp, signInWithOtp, signOut],
+    () => ({
+      status,
+      user,
+      signIn,
+      requestOtp,
+      signInWithOtp,
+      requestSignupOtp,
+      signUpWithOtp,
+      signOut,
+    }),
+    [
+      status,
+      user,
+      signIn,
+      requestOtp,
+      signInWithOtp,
+      requestSignupOtp,
+      signUpWithOtp,
+      signOut,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

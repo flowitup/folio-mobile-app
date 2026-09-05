@@ -31,6 +31,8 @@ import {
   useGenerateInviteToken,
   useRevokeInviteToken,
   useSetMemberRole,
+  useRevokeJoinCode,
+  useSetJoinCode,
   useUpdateCompany,
 } from "@/features/companies/companies-api";
 import type {
@@ -40,6 +42,7 @@ import type {
 } from "@/features/companies/companies-api";
 import { CompanyFormSheet } from "@/features/companies/company-form-sheet";
 import { PaymentMethodsSection } from "@/features/companies/payment-methods-section";
+import { formatJoinCode } from "@/lib/companies/join-code";
 import { formatDate } from "@/lib/format/date";
 import { ApiError } from "@/lib/query/api-error";
 
@@ -54,6 +57,8 @@ export default function CompanyManageScreen() {
   const company = useCompany(companyId);
   const users = useAttachedUsers(companyId);
   const update = useUpdateCompany();
+  const setJoinCode = useSetJoinCode();
+  const revokeJoinCode = useRevokeJoinCode();
   const remove = useDeleteCompany();
   const generate = useGenerateInviteToken();
   const revoke = useRevokeInviteToken();
@@ -169,6 +174,87 @@ export default function CompanyManageScreen() {
 
         {tab === "invites" ? (
           <View>
+            <Card className="mb-4">
+              <Text className="font-sans-semibold text-[14px] text-ink">
+                {t("companies.admin.manage.joinCode.title")}
+              </Text>
+              <Text className="mb-3 mt-1 text-xs text-muted-foreground">
+                {t("companies.admin.manage.joinCode.description")}
+              </Text>
+              {data?.join_code ? (
+                <Pressable
+                  testID="join-code-share"
+                  accessibilityRole="button"
+                  onPress={() =>
+                    void Share.share({
+                      message: t(
+                        "companies.admin.manage.joinCode.shareMessage",
+                        {
+                          company: data.legal_name,
+                          code: formatJoinCode(data.join_code ?? ""),
+                        },
+                      ),
+                    })
+                  }
+                  className="mb-3 items-center rounded-[10px] border border-line-2 bg-paper-2 py-3 active:opacity-70"
+                >
+                  <Text
+                    testID="join-code-value"
+                    className="font-mono-bold text-[26px] tracking-[4px] text-ink"
+                  >
+                    {formatJoinCode(data.join_code)}
+                  </Text>
+                  <Text className="mt-1 font-sans text-[11px] text-muted">
+                    {t("companies.admin.manage.joinCode.tapToShare")}
+                  </Text>
+                </Pressable>
+              ) : (
+                <Text className="mb-3 font-sans text-[13px] text-muted">
+                  {t("companies.admin.manage.joinCode.none")}
+                </Text>
+              )}
+              <View className="flex-row flex-wrap gap-2">
+                <Button
+                  testID="join-code-create"
+                  label={
+                    data?.join_code
+                      ? t("companies.admin.manage.joinCode.renew")
+                      : t("companies.admin.manage.joinCode.create")
+                  }
+                  size="sm"
+                  loading={setJoinCode.isPending}
+                  onPress={() =>
+                    data?.join_code
+                      ? setConfirm({
+                          title: t(
+                            "companies.admin.manage.joinCode.renewConfirm",
+                          ),
+                          run: () =>
+                            companyId && setJoinCode.mutate({ companyId }),
+                        })
+                      : companyId && setJoinCode.mutate({ companyId })
+                  }
+                />
+                {data?.join_code ? (
+                  <Button
+                    testID="join-code-revoke"
+                    label={t("companies.admin.manage.joinCode.revoke")}
+                    size="sm"
+                    variant="danger"
+                    loading={revokeJoinCode.isPending}
+                    onPress={() =>
+                      setConfirm({
+                        title: t(
+                          "companies.admin.manage.joinCode.revokeConfirm",
+                        ),
+                        run: () =>
+                          companyId && revokeJoinCode.mutate({ companyId }),
+                      })
+                    }
+                  />
+                ) : null}
+              </View>
+            </Card>
             <Text className="mb-3 text-xs text-muted-foreground">
               {t("companies.admin.manage.invites.description")}
             </Text>

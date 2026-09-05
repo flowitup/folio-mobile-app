@@ -10,7 +10,8 @@
     "delete": "Xoá",
     "ok": "OK",
     "saved": "Đã lưu.",
-    "edit": "Sửa"
+    "edit": "Sửa",
+    "back": "Quay lại"
   },
   "login": {
     "title": "Đăng nhập Folio",
@@ -35,7 +36,9 @@
     "verify": "Đăng nhập",
     "resend": "Gửi lại",
     "resendIn": "Gửi lại sau {{seconds}} giây",
-    "changePhone": "Đổi số"
+    "changePhone": "Đổi số",
+    "noAccount": "Chưa có tài khoản?",
+    "createAccount": "Tạo tài khoản"
   },
   "home": {
     "welcome": "Đã đăng nhập: {{email}}",
@@ -126,7 +129,8 @@
     "manage": "Quản lý",
     "role": "Vai trò: {{role}}",
     "usersAdmin": "Người dùng (admin)",
-    "title": "Cài đặt"
+    "title": "Cài đặt",
+    "joinCompany": "Tham gia công ty khác"
   },
   "members": {
     "title": "Thành viên ({{count}})",
@@ -957,7 +961,21 @@
           "deletedToast": "Đã xóa công ty."
         },
         "paymentsLoading": "Đang tải phương thức thanh toán…",
-        "paymentsLoadError": "Không tải được phương thức thanh toán"
+        "paymentsLoadError": "Không tải được phương thức thanh toán",
+        "joinCode": {
+          "title": "Mã công ty",
+          "description": "Ai nhập mã này trong app sẽ tham gia công ty với vai trò thành viên. Tạo mã mới để chặn người còn giữ mã cũ.",
+          "none": "Chưa có mã.",
+          "create": "Tạo mã",
+          "renew": "Mã mới",
+          "renewConfirm": "Người còn giữ mã hiện tại sẽ không tham gia được nữa. Tiếp tục?",
+          "revoke": "Thu hồi",
+          "revokeConfirm": "Sẽ không ai tham gia được bằng mã hiện tại. Tiếp tục?",
+          "tapToShare": "Chạm để chia sẻ",
+          "shareMessage": "Tham gia {{company}} trên Folio: tạo hồ sơ trong app rồi nhập mã công ty {{code}}.",
+          "createdToast": "Đã tạo mã công ty.",
+          "revokedToast": "Đã thu hồi mã công ty."
+        }
       }
     },
     "form": {
@@ -1065,6 +1083,15 @@
       "attached": "Đã gắn công ty.",
       "tokenRevoked": "Đã thu hồi mã mời.",
       "removed": "Đã gỡ người dùng."
+    },
+    "join": {
+      "title": "Tham gia vào công ty",
+      "subtitle": "Nhập mã công ty đã gửi cho bạn để tham gia.",
+      "subtitleAnother": "Nhập mã của công ty khác mà bạn muốn tham gia.",
+      "codeLabel": "Mã công ty",
+      "hint": "8 ký tự, do quản trị viên công ty cung cấp.",
+      "submit": "Tham gia",
+      "successToast": "Bạn đã tham gia công ty."
     }
   },
   "paymentMethods": {
@@ -1373,5 +1400,19 @@
     "disabled": "Máy chủ này chưa bật trò chuyện.",
     "permissionDenied": "Không được phép truy cập ảnh.",
     "seenBy": "{{names}} đã xem"
+  },
+  "signup": {
+    "title": "Tạo hồ sơ của bạn",
+    "subtitle": {
+      "phone": "Số điện thoại là tên đăng nhập của bạn. Chúng tôi sẽ gửi mã 6 số qua SMS.",
+      "code": "Nhập mã bạn nhận được qua SMS.",
+      "name": "Đồng đội sẽ thấy bạn với tên nào?"
+    },
+    "next": "Tiếp tục",
+    "nameLabel": "Tên của bạn",
+    "namePlaceholder": "VD: Nguyễn Văn A",
+    "nameHint": "Hiển thị cho công ty và trên các công trình bạn làm.",
+    "create": "Tạo hồ sơ",
+    "haveAccount": "Đã có tài khoản? Đăng nhập"
   }
 }

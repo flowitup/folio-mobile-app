@@ -47,6 +47,11 @@ export default function SettingsHub() {
       label: t("settings.personsMerge"),
       path: "/settings/persons-merge",
     },
+    {
+      key: "join-company",
+      label: t("settings.joinCompany"),
+      path: "/join-company?another=1",
+    },
     ...(superadmin
       ? [
           {
