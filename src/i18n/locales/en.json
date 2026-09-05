@@ -10,7 +10,8 @@
     "delete": "Delete",
     "ok": "OK",
     "saved": "Saved.",
-    "edit": "Edit"
+    "edit": "Edit",
+    "back": "Back"
   },
   "login": {
     "title": "Sign in to Folio",
@@ -35,7 +36,9 @@
     "verify": "Sign in",
     "resend": "Send again",
     "resendIn": "Send again in {{seconds}} s",
-    "changePhone": "Change number"
+    "changePhone": "Change number",
+    "noAccount": "No account yet?",
+    "createAccount": "Create an account"
   },
   "home": {
     "welcome": "Signed in as {{email}}",
@@ -126,7 +129,8 @@
     "manage": "Manage",
     "role": "Role: {{role}}",
     "usersAdmin": "Users (admin)",
-    "title": "Settings"
+    "title": "Settings",
+    "joinCompany": "Join another company"
   },
   "members": {
     "title": "Members ({{count}})",
@@ -957,7 +961,21 @@
           "deletedToast": "Company deleted."
         },
         "paymentsLoading": "Loading payment methods…",
-        "paymentsLoadError": "Failed to load payment methods"
+        "paymentsLoadError": "Failed to load payment methods",
+        "joinCode": {
+          "title": "Company code",
+          "description": "Anyone who types this code in the app joins the company as a member. Renew it to cut off people who still have the old one.",
+          "none": "No code yet.",
+          "create": "Create a code",
+          "renew": "New code",
+          "renewConfirm": "People who still have the current code will no longer be able to join. Continue?",
+          "revoke": "Revoke",
+          "revokeConfirm": "Nobody will be able to join with the current code. Continue?",
+          "tapToShare": "Tap to share",
+          "shareMessage": "Join {{company}} on Folio: create your profile in the app, then enter the company code {{code}}.",
+          "createdToast": "Company code ready.",
+          "revokedToast": "Company code revoked."
+        }
       }
     },
     "form": {
@@ -1065,6 +1083,15 @@
       "attached": "Company attached.",
       "tokenRevoked": "Invite token revoked.",
       "removed": "User removed."
+    },
+    "join": {
+      "title": "Join a company",
+      "subtitle": "Type the code your company gave you to join it.",
+      "subtitleAnother": "Type the code of the other company you want to join.",
+      "codeLabel": "Company code",
+      "hint": "8 characters, given by the company administrator.",
+      "submit": "Join",
+      "successToast": "You joined the company."
     }
   },
   "paymentMethods": {
@@ -1373,5 +1400,19 @@
     "disabled": "Chat is not enabled on this server.",
     "permissionDenied": "Photo access was denied.",
     "seenBy": "Seen by {{names}}"
+  },
+  "signup": {
+    "title": "Create your profile",
+    "subtitle": {
+      "phone": "Your phone number is your sign-in. We text you a 6-digit code.",
+      "code": "Enter the code you received by SMS.",
+      "name": "How should your team see you?"
+    },
+    "next": "Continue",
+    "nameLabel": "Your name",
+    "namePlaceholder": "e.g. Nguyen Van A",
+    "nameHint": "Shown to your company and on the sites you work on.",
+    "create": "Create my profile",
+    "haveAccount": "Already have an account? Sign in"
   }
 }

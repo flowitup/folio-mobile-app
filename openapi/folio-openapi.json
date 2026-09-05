@@ -143,9 +143,10 @@
         "description": "GET /auth/config \u2014 what this deployment offers, read by the apps before sign-in.",
         "properties": {
           "login_mode": { "title": "Login Mode", "type": "string" },
-          "session": { "title": "Session", "type": "string" }
+          "session": { "title": "Session", "type": "string" },
+          "signup": { "title": "Signup", "type": "boolean" }
         },
-        "required": ["login_mode", "session"],
+        "required": ["login_mode", "session", "signup"],
         "title": "AuthConfigResponse",
         "type": "object"
       },
@@ -1199,6 +1200,31 @@
         "title": "ItemSchema",
         "type": "object"
       },
+      "JoinCodeResponse": {
+        "additionalProperties": false,
+        "description": "Response of POST /companies/<id>/join-code.",
+        "properties": {
+          "join_code": { "title": "Join Code", "type": "string" }
+        },
+        "required": ["join_code"],
+        "title": "JoinCodeResponse",
+        "type": "object"
+      },
+      "JoinCompanyRequest": {
+        "additionalProperties": false,
+        "description": "Request body for POST /companies/join (shared join code, member role).",
+        "properties": {
+          "code": {
+            "maxLength": 32,
+            "minLength": 4,
+            "title": "Code",
+            "type": "string"
+          }
+        },
+        "required": ["code"],
+        "title": "JoinCompanyRequest",
+        "type": "object"
+      },
       "LaborPaymentsMonthSchema": {
         "description": "One (service_month) bucket of the labor-payments summary response.\n\nyear/month are both null for the no-service_month bucket, always last.",
         "properties": {
@@ -1758,6 +1784,45 @@
         },
         "required": ["company_id"],
         "title": "SetPrimaryCompanyRequest",
+        "type": "object"
+      },
+      "SignupRequestBody": {
+        "description": "POST /auth/signup/request \u2014 text a sign-up code to a phone without an account.",
+        "properties": {
+          "phone": {
+            "maxLength": 32,
+            "minLength": 6,
+            "title": "Phone",
+            "type": "string"
+          }
+        },
+        "required": ["phone"],
+        "title": "SignupRequestBody",
+        "type": "object"
+      },
+      "SignupVerifyBody": {
+        "description": "POST /auth/signup/verify \u2014 create the account and sign in.",
+        "properties": {
+          "code": {
+            "pattern": "^\\s*\\d{6}\\s*$",
+            "title": "Code",
+            "type": "string"
+          },
+          "display_name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 32,
+            "minLength": 6,
+            "title": "Phone",
+            "type": "string"
+          }
+        },
+        "required": ["phone", "code", "display_name"],
+        "title": "SignupVerifyBody",
         "type": "object"
       },
       "TagCreateBody": {
@@ -2548,7 +2613,7 @@
       }
     }
   },
-  "info": { "title": "Folio API", "version": "0.2.116" },
+  "info": { "title": "Folio API", "version": "0.2.118" },
   "openapi": "3.1.0",
   "paths": {
     "/api/v1/admin/users": {
@@ -2790,6 +2855,54 @@
           }
         },
         "summary": "Refresh access token using refresh token",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/signup/request": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SignupRequestBody" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OtpRequestResponse" }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "summary": "Text a sign-up code to a phone number that has no account yet",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/signup/verify": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SignupVerifyBody" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+              }
+            },
+            "description": "Created"
+          }
+        },
+        "summary": "Create an account from a phone number + sign-up code + display name",
         "tags": ["auth"]
       }
     },
@@ -3448,6 +3561,22 @@
         "tags": ["companies"]
       }
     },
+    "/api/v1/companies/join": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/JoinCompanyRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Join a company as member with its join code",
+        "tags": ["companies"]
+      }
+    },
     "/api/v1/companies/{company_id}": {
       "delete": {
         "parameters": [
@@ -3605,6 +3734,45 @@
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
         "summary": "Revoke the active invite token for a company (admin only)",
+        "tags": ["companies"]
+      }
+    },
+    "/api/v1/companies/{company_id}/join-code": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Revoke the company's join code (admin only)",
+        "tags": ["companies"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JoinCodeResponse" }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create or renew the company's join code (admin only)",
         "tags": ["companies"]
       }
     },

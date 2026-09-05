@@ -490,6 +490,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/signup/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Text a sign-up code to a phone number that has no account yet */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SignupRequestBody"];
+                };
+            };
+            responses: {
+                /** @description Response */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OtpRequestResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/signup/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an account from a phone number + sign-up code + display name */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SignupVerifyBody"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LoginResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/bibliotheque/categories": {
         parameters: {
             query?: never;
@@ -1718,6 +1798,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/companies/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Join a company as member with its join code */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["JoinCompanyRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/companies/{company_id}": {
         parameters: {
             query?: never;
@@ -1991,6 +2109,64 @@ export interface paths {
         put?: never;
         post?: never;
         /** Revoke the active invite token for a company (admin only) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{company_id}/join-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create or renew the company's join code (admin only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    company_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JoinCodeResponse"];
+                    };
+                };
+            };
+        };
+        /** Revoke the company's join code (admin only) */
         delete: {
             parameters: {
                 query?: never;
@@ -6451,6 +6627,8 @@ export interface components {
             login_mode: string;
             /** Session */
             session: string;
+            /** Signup */
+            signup: boolean;
         };
         /**
          * BulkAddRequest
@@ -7156,6 +7334,22 @@ export interface components {
             vat_rate: number | string;
         };
         /**
+         * JoinCodeResponse
+         * @description Response of POST /companies/<id>/join-code.
+         */
+        JoinCodeResponse: {
+            /** Join Code */
+            join_code: string;
+        };
+        /**
+         * JoinCompanyRequest
+         * @description Request body for POST /companies/join (shared join code, member role).
+         */
+        JoinCompanyRequest: {
+            /** Code */
+            code: string;
+        };
+        /**
          * LaborPaymentsMonthSchema
          * @description One (service_month) bucket of the labor-payments summary response.
          *
@@ -7577,6 +7771,26 @@ export interface components {
              * Format: uuid
              */
             company_id: string;
+        };
+        /**
+         * SignupRequestBody
+         * @description POST /auth/signup/request — text a sign-up code to a phone without an account.
+         */
+        SignupRequestBody: {
+            /** Phone */
+            phone: string;
+        };
+        /**
+         * SignupVerifyBody
+         * @description POST /auth/signup/verify — create the account and sign in.
+         */
+        SignupVerifyBody: {
+            /** Code */
+            code: string;
+            /** Display Name */
+            display_name: string;
+            /** Phone */
+            phone: string;
         };
         /**
          * TagCreateBody

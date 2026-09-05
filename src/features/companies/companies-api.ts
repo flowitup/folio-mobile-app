@@ -17,6 +17,8 @@ export interface Company {
   logo_url: string | null;
   default_payment_terms: string | null;
   prefix_override: string | null;
+  /** Shared join code (superadmin responses only); null when none is active. */
+  join_code?: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -308,5 +310,48 @@ export function useBootAttachedUser() {
       ),
     invalidates: [companyKeys.all],
     successMessage: t("companies.toast.removed"),
+  });
+}
+
+/** Superadmin: issue (or renew) the company's shared join code. */
+export function useSetJoinCode() {
+  const { t } = useTranslation();
+  return useApiMutation<{ companyId: string }, { join_code: string }>({
+    mutationFn: async ({ companyId }) =>
+      unwrapAs<{ join_code: string }>(
+        await api.POST("/api/v1/companies/{company_id}/join-code", {
+          params: { path: { company_id: companyId } },
+        }),
+      ),
+    invalidates: [companyKeys.all],
+    successMessage: t("companies.admin.manage.joinCode.createdToast"),
+  });
+}
+
+/** Superadmin: revoke the company's shared join code. */
+export function useRevokeJoinCode() {
+  const { t } = useTranslation();
+  return useApiMutation<{ companyId: string }>({
+    mutationFn: async ({ companyId }) =>
+      unwrapVoid(
+        await api.DELETE("/api/v1/companies/{company_id}/join-code", {
+          params: { path: { company_id: companyId } },
+        }),
+      ),
+    invalidates: [companyKeys.all],
+    successMessage: t("companies.admin.manage.joinCode.revokedToast"),
+  });
+}
+
+/** Join a company as member with its shared code (onboarding + "join another company"). */
+export function useJoinCompanyByCode() {
+  const { t } = useTranslation();
+  return useApiMutation<{ code: string }, Company>({
+    mutationFn: async ({ code }) =>
+      unwrapAs<Company>(
+        await api.POST("/api/v1/companies/join", { body: { code } }),
+      ),
+    invalidates: [companyKeys.all],
+    successMessage: t("companies.join.successToast"),
   });
 }

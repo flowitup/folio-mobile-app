@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -37,6 +38,8 @@ export default function LoginScreen() {
   );
   const [chosen, setChosen] = useState<Mode>("phone");
   const mode: Mode = modes.includes(chosen) ? chosen : modes[0];
+  const router = useRouter();
+  const signup = config.data?.signup === true;
 
   return (
     <SafeAreaView className="flex-1 bg-paper">
@@ -69,6 +72,23 @@ export default function LoginScreen() {
         ) : null}
 
         {mode === "phone" ? <PhoneForm /> : <EmailForm />}
+
+        {signup ? (
+          <Pressable
+            testID="login-signup"
+            accessibilityRole="button"
+            onPress={() => router.push("/signup")}
+            className="mt-6 items-center"
+            hitSlop={8}
+          >
+            <Text className="font-sans text-[14px] text-ink">
+              {t("login.noAccount")}{" "}
+              <Text className="font-sans-semibold underline">
+                {t("login.createAccount")}
+              </Text>
+            </Text>
+          </Pressable>
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

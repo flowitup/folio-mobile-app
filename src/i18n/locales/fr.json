@@ -10,7 +10,8 @@
     "delete": "Supprimer",
     "ok": "OK",
     "saved": "Enregistré.",
-    "edit": "Modifier"
+    "edit": "Modifier",
+    "back": "Retour"
   },
   "login": {
     "title": "Connexion à Folio",
@@ -35,7 +36,9 @@
     "verify": "Se connecter",
     "resend": "Renvoyer",
     "resendIn": "Renvoyer dans {{seconds}} s",
-    "changePhone": "Changer de numéro"
+    "changePhone": "Changer de numéro",
+    "noAccount": "Pas encore de compte ?",
+    "createAccount": "Créer un compte"
   },
   "home": {
     "welcome": "Connecté en tant que {{email}}",
@@ -126,7 +129,8 @@
     "manage": "Gérer",
     "role": "Rôle : {{role}}",
     "usersAdmin": "Utilisateurs (admin)",
-    "title": "Paramètres"
+    "title": "Paramètres",
+    "joinCompany": "Rejoindre une autre société"
   },
   "members": {
     "title": "Membres ({{count}})",
@@ -957,7 +961,21 @@
           "deletedToast": "Société supprimée."
         },
         "paymentsLoading": "Chargement des moyens de paiement…",
-        "paymentsLoadError": "Échec du chargement des moyens de paiement"
+        "paymentsLoadError": "Échec du chargement des moyens de paiement",
+        "joinCode": {
+          "title": "Code société",
+          "description": "Toute personne qui saisit ce code dans l'app rejoint la société comme membre. Renouvelez-le pour couper l'accès à ceux qui ont encore l'ancien.",
+          "none": "Pas encore de code.",
+          "create": "Créer un code",
+          "renew": "Nouveau code",
+          "renewConfirm": "Les personnes qui ont encore le code actuel ne pourront plus rejoindre. Continuer ?",
+          "revoke": "Révoquer",
+          "revokeConfirm": "Plus personne ne pourra rejoindre avec le code actuel. Continuer ?",
+          "tapToShare": "Touchez pour partager",
+          "shareMessage": "Rejoignez {{company}} sur Folio : créez votre profil dans l'app puis saisissez le code société {{code}}.",
+          "createdToast": "Code société prêt.",
+          "revokedToast": "Code société révoqué."
+        }
       }
     },
     "form": {
@@ -1065,6 +1083,15 @@
       "attached": "Société rattachée avec succès.",
       "tokenRevoked": "Jeton d'invitation révoqué.",
       "removed": "Utilisateur retiré."
+    },
+    "join": {
+      "title": "Rejoindre une société",
+      "subtitle": "Saisissez le code fourni par votre société pour la rejoindre.",
+      "subtitleAnother": "Saisissez le code de l'autre société à rejoindre.",
+      "codeLabel": "Code société",
+      "hint": "8 caractères, fournis par l'administrateur de la société.",
+      "submit": "Rejoindre",
+      "successToast": "Vous avez rejoint la société."
     }
   },
   "paymentMethods": {
@@ -1373,5 +1400,19 @@
     "disabled": "La discussion n'est pas activée sur ce serveur.",
     "permissionDenied": "Accès aux photos refusé.",
     "seenBy": "Vu par {{names}}"
+  },
+  "signup": {
+    "title": "Créez votre profil",
+    "subtitle": {
+      "phone": "Votre numéro de téléphone sert d'identifiant. Nous vous envoyons un code à 6 chiffres.",
+      "code": "Saisissez le code reçu par SMS.",
+      "name": "Comment votre équipe doit-elle vous voir ?"
+    },
+    "next": "Continuer",
+    "nameLabel": "Votre nom",
+    "namePlaceholder": "ex. Nguyen Van A",
+    "nameHint": "Affiché à votre société et sur les chantiers où vous travaillez.",
+    "create": "Créer mon profil",
+    "haveAccount": "Déjà un compte ? Se connecter"
   }
 }
