@@ -27,7 +27,7 @@
       "email": "Email"
     },
     "phone": "Số điện thoại",
-    "phoneHint": "VD: 0912 345 678 hoặc +33 6 12 34 56 78",
+    "phoneHint": "VD: 06 12 34 56 78, số Việt Nam nhập +84 912 345 678",
     "invalidPhone": "Nhập số điện thoại hợp lệ.",
     "sendCode": "Gửi mã",
     "codeSentTo": "Mã 6 số đã gửi tới {{phone}}.",
