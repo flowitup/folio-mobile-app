@@ -43,6 +43,7 @@ export const memberKeys = {
 export function useMembers(projectId: string) {
   return useQuery({
     queryKey: memberKeys.members(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () => {
       const data = unwrapAs<{ members?: ProjectMember[] }>(
         await api.GET("/api/v1/projects/{project_id}/members", {
@@ -98,6 +99,7 @@ export function useRemoveMember(projectId: string) {
 export function useInvitations(projectId: string) {
   return useQuery({
     queryKey: memberKeys.invitations(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () => {
       const data = unwrapAs<{ items?: Invitation[] }>(
         await api.GET("/api/v1/invitations/projects/{project_id}/invitations", {

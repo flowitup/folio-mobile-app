@@ -67,6 +67,7 @@ function laborInvalidations(projectId: string) {
 export function useWorkers(projectId: string) {
   return useQuery({
     queryKey: laborKeys.workers(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<{ workers?: Worker[] }>(
         await api.GET("/api/v1/projects/{project_id}/workers", {
@@ -209,6 +210,7 @@ export function useDeleteRateChange(projectId: string) {
 export function useLaborEntries(projectId: string, from?: string, to?: string) {
   return useQuery({
     queryKey: laborKeys.entries(projectId, from, to),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<{ entries?: LaborEntry[] }>(
         await api.GET("/api/v1/projects/{project_id}/labor-entries", {
@@ -323,6 +325,7 @@ export function useSetDayTag(projectId: string) {
 export function useActivities(projectId: string) {
   return useQuery({
     queryKey: laborKeys.activities(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<{ activities?: LaborActivity[] }>(
         await api.GET("/api/v1/projects/{project_id}/labor-activities", {
@@ -383,6 +386,7 @@ export function useDeleteActivity(projectId: string) {
 export function useDayDescriptions(projectId: string) {
   return useQuery({
     queryKey: laborKeys.dayDescriptions(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<{ day_descriptions?: LaborDayDescription[] }>(
         await api.GET("/api/v1/projects/{project_id}/labor-day-descriptions", {
@@ -411,6 +415,7 @@ export function useSetDayDescription(projectId: string) {
 export function useLaborSummary(projectId: string, from?: string, to?: string) {
   return useQuery({
     queryKey: laborKeys.summary(projectId, from, to),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<LaborSummaryResponse>(
         await api.GET("/api/v1/projects/{project_id}/labor-summary", {
@@ -426,6 +431,7 @@ export function useLaborSummary(projectId: string, from?: string, to?: string) {
 export function useLaborMonthlySummary(projectId: string) {
   return useQuery({
     queryKey: laborKeys.monthly(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<LaborMonthlySummaryResponse>(
         await api.GET("/api/v1/projects/{project_id}/labor-monthly-summary", {

@@ -77,6 +77,7 @@ export function useDocuments(
 ) {
   return useQuery({
     queryKey: documentKeys.list(projectId, params),
+    enabled: Boolean(projectId),
     queryFn: async () => {
       const response = await authedFetch(
         `${API_BASE_URL}/api/v1/projects/${encodeURIComponent(projectId)}/documents?${documentsQuery(params)}`,
@@ -90,6 +91,7 @@ export function useDocuments(
 export function useDocumentTags(projectId: string) {
   return useQuery({
     queryKey: documentKeys.tags(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<{ tags?: string[] }>(
         await api.GET("/api/v1/projects/{project_id}/documents/tags", {

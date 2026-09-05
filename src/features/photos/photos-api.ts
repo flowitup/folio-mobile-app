@@ -42,6 +42,7 @@ export const isVideo = (photo: Pick<ProjectPhoto, "content_type">) =>
 export function useProjectPhotos(projectId: string, page = 1, perPage = 100) {
   return useQuery({
     queryKey: photoKeys.list(projectId, page),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<PhotosPage>(
         await api.GET("/api/v1/projects/{project_id}/photos", {

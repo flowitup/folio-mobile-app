@@ -5,24 +5,25 @@ import type { ImageErrorEvent, ImageProps } from "react-native";
 import { authedFetch } from "@/api/authed-fetch";
 import { getStoredTokens } from "@/auth/token-storage";
 import { API_BASE_URL } from "@/config/env";
+import { bytesToBase64 } from "@/lib/files/base64";
 
 type Props = Omit<ImageProps, "source"> & {
   /** API path (`/api/v1/...`) or absolute URL. */
   path: string;
 };
 
-/** Downloads the image through the token-refreshing fetch and returns it as a data URI. */
+/**
+ * Downloads the image through the token-refreshing fetch and returns it as a data URI.
+ * Reads the bytes with `arrayBuffer()` rather than `blob()`: Expo's fetch warns (LogBox) on
+ * every `Response.blob()` call unless the native `expo-blob` module is installed.
+ */
 async function fetchAsDataUri(uri: string): Promise<string | null> {
   const response = await authedFetch(uri);
   if (!response.ok) return null;
-  const blob = await response.blob();
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () =>
-      resolve(typeof reader.result === "string" ? reader.result : null);
-    reader.onerror = () => resolve(null);
-    reader.readAsDataURL(blob);
-  });
+  const type =
+    response.headers.get("content-type") ?? "application/octet-stream";
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  return `data:${type};base64,${bytesToBase64(bytes)}`;
 }
 
 /**
