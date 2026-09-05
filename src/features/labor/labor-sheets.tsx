@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
+import { useMembers } from "@/features/projects/members-api";
 import type { Tag } from "@/features/projects/tags-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
@@ -45,14 +46,22 @@ type WorkerFormProps = {
   worker?: Worker;
   submitting: boolean;
   onSubmit: (values: CreateWorkerPayload | UpdateWorkerPayload) => void;
+  /** When set, the sheet offers to link a project member's app account (worker mode / self-log). */
+  projectId?: string;
 };
 
-/** Add / edit worker — name, daily rate (create only; later via rate changes), phone, role. */
+const NO_ACCOUNT = "__none__";
+
+/** Add / edit worker — name, daily rate (create only; later via rate changes), phone, role, linked account. */
 export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
-  function WorkerFormSheet({ worker, submitting, onSubmit }, ref) {
+  function WorkerFormSheet({ worker, submitting, onSubmit, projectId }, ref) {
     const { t } = useTranslation();
     const sheet = useRef<BottomSheetModal>(null);
     const roles = useLaborRoles();
+    const members = useMembers(projectId ?? "");
+    const [userId, setUserId] = useState<string | null>(
+      worker?.user_id ?? null,
+    );
     const [name, setName] = useState(worker?.name ?? "");
     const [rate, setRate] = useState(worker ? String(worker.daily_rate) : "");
     const [phone, setPhone] = useState(worker?.phone ?? "");
@@ -67,6 +76,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         setRate(worker ? String(worker.daily_rate) : "");
         setPhone(worker?.phone ?? "");
         setRoleId(worker?.role_id ?? null);
+        setUserId(worker?.user_id ?? null);
         setError(null);
         sheet.current?.present();
       },
@@ -80,6 +90,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
           name: name.trim(),
           phone: phone.trim() || undefined,
           role_id: roleId,
+          user_id: userId,
         });
       const dailyRate = parseMoneyInput(rate);
       if (!dailyRate || dailyRate <= 0)
@@ -89,6 +100,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         daily_rate: dailyRate,
         phone: phone.trim() || undefined,
         role_id: roleId ?? undefined,
+        user_id: userId ?? undefined,
       });
     }
 
@@ -134,6 +146,26 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
             }))}
             onChange={setRoleId}
           />
+          {projectId ? (
+            <Select
+              testID="worker-account"
+              label={t("labor.workers.account")}
+              placeholder={t("labor.workers.accountNone")}
+              value={userId ?? NO_ACCOUNT}
+              options={[
+                { value: NO_ACCOUNT, label: t("labor.workers.accountNone") },
+                ...(members.data ?? []).map((member) => ({
+                  value: member.user_id,
+                  label: member.display_name
+                    ? `${member.display_name} · ${member.email}`
+                    : member.email,
+                })),
+              ]}
+              onChange={(value) =>
+                setUserId(value === NO_ACCOUNT ? null : value)
+              }
+            />
+          ) : null}
           <Button
             testID="worker-submit"
             label={t("common.save")}

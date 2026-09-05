@@ -53,7 +53,9 @@
     "labor": "Main-d'œuvre",
     "planning": "Planning",
     "menu": "Menu",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "attendance": "Présence",
+    "salary": "Salaire"
   },
   "project": {
     "budget": "Budget",
@@ -333,7 +335,9 @@
       "deleteHint": "Son historique de présence reste sur le chantier.",
       "inactive": "inactif",
       "day": "jour",
-      "perDay": "par jour · {{count}} jours"
+      "perDay": "par jour · {{count}} jours",
+      "account": "Compte appli",
+      "accountNone": "Non relié"
     },
     "rates": {
       "link": "Taux",
@@ -477,7 +481,15 @@
     "title": "Rappels ({{count}})",
     "none": "Aucun rappel en attente.",
     "due": "Échéance {{date}}",
-    "dismiss": "Ignorer"
+    "dismiss": "Ignorer",
+    "attendance": {
+      "title": "Pointages à valider ({{count}})",
+      "validate": "Valider",
+      "reject": "Refuser",
+      "rejectConfirm": "Refuser le pointage de {{worker}} du {{date}} ? La ligne sera supprimée.",
+      "validatedToast": "Pointage validé.",
+      "rejectedToast": "Pointage refusé."
+    }
   },
   "tasks": {
     "create": "Nouvelle tâche",
@@ -1414,5 +1426,27 @@
     "nameHint": "Affiché à votre société et sur les chantiers où vous travaillez.",
     "create": "Créer mon profil",
     "haveAccount": "Déjà un compte ? Se connecter"
+  },
+  "worker": {
+    "attendanceTitle": "Ma présence",
+    "salaryTitle": "Mon salaire",
+    "salarySub": "Jours travaillés, ce que vous avez gagné et ce qui a été payé.",
+    "logToday": "Pointer aujourd'hui",
+    "logDay": "Pointer le {{date}}",
+    "submit": "Pointer ce jour",
+    "futureDay": "Vous ne pouvez pointer qu'aujourd'hui ou hier.",
+    "logged": "Pointage envoyé — en attente de validation par votre responsable.",
+    "notLinked": "Votre compte n'est pas encore relié à un ouvrier sur ce chantier. Demandez à votre responsable.",
+    "monthList": "Jours ce mois-ci",
+    "empty": "Aucune présence ce mois-ci.",
+    "kpi": {
+      "days": "Jours",
+      "earned": "Gagné",
+      "pending": "En attente"
+    },
+    "status": {
+      "pending": "En attente",
+      "validated": "Validé"
+    }
   }
 }

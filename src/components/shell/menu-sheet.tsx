@@ -17,6 +17,7 @@ import {
   useBillingAccess,
   useMyCompanies,
 } from "@/features/companies/companies-api";
+import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useProducts, useSuppliers } from "@/features/library/library-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useTokens } from "@/theme/tokens";
@@ -91,6 +92,7 @@ export function MenuSheet() {
   const { height } = useWindowDimensions();
   const { sheet, closeSheet } = useShell();
   const { projectId } = useSelectedProject();
+  const { workerMode } = useWorkerMode();
   const billing = useBillingAccess();
   const companies = useMyCompanies();
   const companyId = companies.data?.[0]?.id ?? null;
@@ -138,7 +140,7 @@ export function MenuSheet() {
             last
           />
         </View>
-        {projectId ? (
+        {projectId && !workerMode ? (
           <>
             <Eyebrow className="mb-2 mt-4">
               {t("shell.projectSections")}

@@ -13,6 +13,8 @@ import {
 } from "@/features/dashboard/overview-cards";
 import type { Figure } from "@/features/dashboard/overview-cards";
 import { useInvoices } from "@/features/invoices/invoices-api";
+import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
+import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useTasks } from "@/features/tasks/tasks-api";
 import { computeBankReleaseMetrics } from "@/lib/dashboard/bank-release-metrics";
@@ -30,7 +32,7 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
 
 /** Tổng quan: headline remaining, figures, spend by type (6 months), this week's agenda. */
-export default function OverviewTab() {
+function OverviewTabContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const tokens = useTokens();
@@ -168,4 +170,10 @@ export default function OverviewTab() {
       </ScrollView>
     </View>
   );
+}
+
+/** Worker mode (no project:manage_labor) replaces this tab with the worker's own view. */
+export default function OverviewTab() {
+  const { workerMode } = useWorkerMode();
+  return workerMode ? <WorkerAttendanceTab /> : <OverviewTabContent />;
 }

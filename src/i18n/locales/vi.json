@@ -53,7 +53,9 @@
     "labor": "Nhân công",
     "planning": "Kế hoạch",
     "menu": "Menu",
-    "settings": "Cài đặt"
+    "settings": "Cài đặt",
+    "attendance": "Chấm công",
+    "salary": "Lương"
   },
   "project": {
     "budget": "Ngân sách",
@@ -333,7 +335,9 @@
       "deleteHint": "Lịch sử chấm công vẫn được giữ.",
       "inactive": "ngừng",
       "day": "ngày",
-      "perDay": "mỗi ngày · {{count}} ngày"
+      "perDay": "mỗi ngày · {{count}} ngày",
+      "account": "Tài khoản app",
+      "accountNone": "Không gắn"
     },
     "rates": {
       "link": "Đơn giá",
@@ -477,7 +481,15 @@
     "title": "Nhắc nhở ({{count}})",
     "none": "Không có nhắc nhở.",
     "due": "Đến hạn {{date}}",
-    "dismiss": "Bỏ qua"
+    "dismiss": "Bỏ qua",
+    "attendance": {
+      "title": "Chấm công chờ duyệt ({{count}})",
+      "validate": "Duyệt",
+      "reject": "Từ chối",
+      "rejectConfirm": "Từ chối chấm công của {{worker}} ngày {{date}}? Bản ghi sẽ bị xoá.",
+      "validatedToast": "Đã duyệt chấm công.",
+      "rejectedToast": "Đã từ chối chấm công."
+    }
   },
   "tasks": {
     "create": "Công việc mới",
@@ -1414,5 +1426,27 @@
     "nameHint": "Hiển thị cho công ty và trên các công trình bạn làm.",
     "create": "Tạo hồ sơ",
     "haveAccount": "Đã có tài khoản? Đăng nhập"
+  },
+  "worker": {
+    "attendanceTitle": "Chấm công của tôi",
+    "salaryTitle": "Lương của tôi",
+    "salarySub": "Ngày công, số tiền kiếm được và đã nhận.",
+    "logToday": "Chấm công hôm nay",
+    "logDay": "Chấm công ngày {{date}}",
+    "submit": "Chấm ngày này",
+    "futureDay": "Chỉ chấm được hôm nay hoặc hôm qua.",
+    "logged": "Đã gửi chấm công, chờ quản lý duyệt.",
+    "notLinked": "Tài khoản của bạn chưa được gắn với nhân công nào ở công trình này. Hãy hỏi quản lý.",
+    "monthList": "Ngày công trong tháng",
+    "empty": "Chưa có ngày công trong tháng này.",
+    "kpi": {
+      "days": "Ngày công",
+      "earned": "Đã kiếm",
+      "pending": "Chờ duyệt"
+    },
+    "status": {
+      "pending": "Chờ duyệt",
+      "validated": "Đã duyệt"
+    }
   }
 }

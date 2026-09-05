@@ -66,6 +66,8 @@ import type {
   Worker,
 } from "@/features/labor/labor-types";
 import { projectCan, useProject } from "@/features/projects/projects-api";
+import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
+import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useTags } from "@/features/projects/tags-api";
 import {
@@ -75,6 +77,7 @@ import {
   toIsoDate,
 } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
+import { monthRange } from "@/lib/labor/month-range";
 import { ApiError } from "@/lib/query/api-error";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
@@ -82,16 +85,8 @@ import { useTokens, workerColor } from "@/theme/tokens";
 type Segment = "calendar" | "workers" | "payments";
 const SEGMENTS: Segment[] = ["calendar", "workers", "payments"];
 
-function monthRange(month: string): { from: string; to: string } {
-  const [y, m] = month.split("-").map(Number);
-  return {
-    from: `${month}-01`,
-    to: `${month}-${String(new Date(y, m, 0).getDate()).padStart(2, "0")}`,
-  };
-}
-
 /** Nhân công: month stepper, segmented Chấm công / Nhân công / Thanh toán, calendar + day card, worker and payment cards. */
-export default function LaborTab() {
+function LaborTabContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const tokens = useTokens();
@@ -478,6 +473,7 @@ export default function LaborTab() {
       />
       <WorkerFormSheet
         ref={workerForm}
+        projectId={id}
         worker={editingWorker}
         submitting={createWorker.isPending || updateWorker.isPending}
         onSubmit={(values) =>
@@ -564,4 +560,10 @@ export default function LaborTab() {
       />
     </View>
   );
+}
+
+/** Worker mode (no project:manage_labor) replaces this tab with the worker's own view. */
+export default function LaborTab() {
+  const { workerMode } = useWorkerMode();
+  return workerMode ? <WorkerAttendanceTab /> : <LaborTabContent />;
 }

@@ -21,6 +21,7 @@ import type {
   LaborMonthlySummaryResponse,
   LaborSummaryResponse,
   LogAttendancePayload,
+  SelfLogInput,
   UpdateAttendancePayload,
   UpdateWorkerPayload,
   Worker,
@@ -33,6 +34,9 @@ export type LaborRole = {
   color: string;
   created_at?: string;
 };
+
+/** Bell query key (owned by the notifications feature); mutations that change pending entries refresh it. */
+const NOTIFICATIONS_KEY = ["notifications"] as const;
 
 export const laborKeys = {
   workers: (p: string) => ["projects", p, "workers"] as const,
@@ -237,6 +241,54 @@ export function useLogAttendance(projectId: string) {
 }
 
 /** Bulk log; a 409 with `conflicts` in the body is surfaced to the caller through `onError`. */
+/** Worker mode: log my own attendance for a day (pending until a manager validates). */
+export function useSelfLogAttendance(projectId: string) {
+  const { t } = useTranslation();
+  return useApiMutation<SelfLogInput, LaborEntry>({
+    mutationFn: async (body) =>
+      unwrapAs<LaborEntry>(
+        await api.POST("/api/v1/projects/{project_id}/labor-entries/self", {
+          params: { path: { project_id: projectId } },
+          body: { supplement_hours: 0, note: null, ...body },
+        }),
+      ),
+    invalidates: [
+      laborKeys.entriesAll(projectId),
+      laborKeys.summaryAll(projectId),
+      laborKeys.monthly(projectId),
+    ],
+    successMessage: t("worker.logged"),
+  });
+}
+
+/** Manager: accept a pending entry — it then counts in summaries and pay. */
+export function useValidateAttendance() {
+  return useApiMutation<{ projectId: string; entryId: string }, LaborEntry>({
+    mutationFn: async ({ projectId, entryId }) =>
+      unwrapAs<LaborEntry>(
+        await api.POST(
+          "/api/v1/projects/{project_id}/labor-entries/{entry_id}/validate",
+          { params: { path: { project_id: projectId, entry_id: entryId } } },
+        ),
+      ),
+    invalidates: [["projects"], NOTIFICATIONS_KEY],
+  });
+}
+
+/** Manager: reject a pending entry — the row is deleted so the worker can log again. */
+export function useRejectAttendance() {
+  return useApiMutation<{ projectId: string; entryId: string }, void>({
+    mutationFn: async ({ projectId, entryId }) =>
+      unwrapVoid(
+        await api.POST(
+          "/api/v1/projects/{project_id}/labor-entries/{entry_id}/reject",
+          { params: { path: { project_id: projectId, entry_id: entryId } } },
+        ),
+      ),
+    invalidates: [["projects"], NOTIFICATIONS_KEY],
+  });
+}
+
 export function useBulkLog(projectId: string) {
   const { t } = useTranslation();
   return useApiMutation<BulkLogPayload, BulkLogResponse>({

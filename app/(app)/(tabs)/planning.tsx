@@ -14,6 +14,8 @@ import { Icon } from "@/components/ui/icon";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenTitle } from "@/components/ui/typography";
 import { shortDayMonth } from "@/features/dashboard/overview-cards";
+import { WorkerSalaryTab } from "@/features/labor/worker-salary-tab";
+import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { TaskFormSheet } from "@/features/tasks/task-form-sheet";
 import type { TaskFormSheetHandle } from "@/features/tasks/task-form-sheet";
@@ -37,7 +39,7 @@ const PRIORITY_CLASS = {
 } as const;
 
 /** Kế hoạch: lane tabs (underline + mono count), task list card, create / edit / move / delete. */
-export default function PlanningTab() {
+function PlanningTabContent() {
   const { t } = useTranslation();
   const tokens = useTokens();
   const { projectId, project } = useSelectedProject();
@@ -254,4 +256,10 @@ export default function PlanningTab() {
       />
     </View>
   );
+}
+
+/** Worker mode (no project:manage_labor) replaces this tab with the worker's own view. */
+export default function PlanningTab() {
+  const { workerMode } = useWorkerMode();
+  return workerMode ? <WorkerSalaryTab /> : <PlanningTabContent />;
 }

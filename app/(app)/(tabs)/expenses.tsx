@@ -26,6 +26,8 @@ import {
 import { InvoiceExportSheet } from "@/features/invoices/invoice-export-sheet";
 import type { InvoiceType } from "@/features/invoices/invoice-types";
 import { useInvoices } from "@/features/invoices/invoices-api";
+import { WorkerSalaryTab } from "@/features/labor/worker-salary-tab";
+import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useTags } from "@/features/projects/tags-api";
 import { currentMonth, formatMonth } from "@/lib/format/date";
@@ -45,7 +47,7 @@ const FILTERS: Filter[] = [
 ];
 
 /** Chi phí: month header, type chips, purse cards, pending refunds, month cards, export. */
-export default function ExpensesTab() {
+function ExpensesTabContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const tokens = useTokens();
@@ -256,4 +258,10 @@ export default function ExpensesTab() {
       </Sheet>
     </View>
   );
+}
+
+/** Worker mode (no project:manage_labor) replaces this tab with the worker's own view. */
+export default function ExpensesTab() {
+  const { workerMode } = useWorkerMode();
+  return workerMode ? <WorkerSalaryTab /> : <ExpensesTabContent />;
 }

@@ -53,7 +53,9 @@
     "labor": "Labor",
     "planning": "Planning",
     "menu": "Menu",
-    "settings": "Settings"
+    "settings": "Settings",
+    "attendance": "Attendance",
+    "salary": "Salary"
   },
   "project": {
     "budget": "Budget",
@@ -333,7 +335,9 @@
       "deleteHint": "Their attendance history stays on the project.",
       "inactive": "inactive",
       "day": "day",
-      "perDay": "per day · {{count}} days"
+      "perDay": "per day · {{count}} days",
+      "account": "App account",
+      "accountNone": "Not linked"
     },
     "rates": {
       "link": "Rates",
@@ -477,7 +481,15 @@
     "title": "Reminders ({{count}})",
     "none": "No reminders due.",
     "due": "Due {{date}}",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "attendance": {
+      "title": "Attendance to validate ({{count}})",
+      "validate": "Validate",
+      "reject": "Reject",
+      "rejectConfirm": "Reject {{worker}}'s attendance for {{date}}? The entry will be deleted.",
+      "validatedToast": "Attendance validated.",
+      "rejectedToast": "Attendance rejected."
+    }
   },
   "tasks": {
     "create": "New task",
@@ -1414,5 +1426,27 @@
     "nameHint": "Shown to your company and on the sites you work on.",
     "create": "Create my profile",
     "haveAccount": "Already have an account? Sign in"
+  },
+  "worker": {
+    "attendanceTitle": "My attendance",
+    "salaryTitle": "My salary",
+    "salarySub": "Days worked, what you earned and what has been paid.",
+    "logToday": "Log today",
+    "logDay": "Log {{date}}",
+    "submit": "Log this day",
+    "futureDay": "You can only log today or yesterday.",
+    "logged": "Attendance sent — waiting for your manager to validate.",
+    "notLinked": "Your account is not linked to a worker on this site yet. Ask your manager.",
+    "monthList": "Days this month",
+    "empty": "No attendance this month.",
+    "kpi": {
+      "days": "Days",
+      "earned": "Earned",
+      "pending": "Pending"
+    },
+    "status": {
+      "pending": "Pending",
+      "validated": "Validated"
+    }
   }
 }
