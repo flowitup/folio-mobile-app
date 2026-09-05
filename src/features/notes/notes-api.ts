@@ -55,6 +55,7 @@ export const noteKeys = {
 export function useNotes(projectId: string) {
   return useQuery({
     queryKey: noteKeys.list(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<{ items?: Note[] }>(
         await api.GET("/api/v1/projects/{project_id}/notes", {

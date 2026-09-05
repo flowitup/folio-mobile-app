@@ -80,6 +80,7 @@ export function useInvoices(
 ) {
   return useQuery({
     queryKey: invoiceKeys.list(projectId, filters),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<InvoiceListResponse>(
         await api.GET("/api/v1/projects/{project_id}/invoices", {
@@ -328,6 +329,7 @@ export function usePaymentMethods(companyId: string | null | undefined) {
 export function useWorkers(projectId: string) {
   return useQuery({
     queryKey: invoiceKeys.workers(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () => {
       const data = unwrapAs<{ workers?: Worker[] }>(
         await api.GET("/api/v1/projects/{project_id}/workers", {

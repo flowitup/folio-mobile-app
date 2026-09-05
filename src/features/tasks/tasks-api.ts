@@ -54,6 +54,7 @@ export const taskKeys = {
 export function useTasks(projectId: string) {
   return useQuery({
     queryKey: taskKeys.list(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<{ tasks?: Task[] }>(
         await api.GET("/api/v1/projects/{project_id}/tasks", {

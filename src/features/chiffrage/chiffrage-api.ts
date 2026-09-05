@@ -51,6 +51,7 @@ const base = "/api/v1/projects/{project_id}/chiffrage" as const;
 export function useChiffrage(projectId: string) {
   return useQuery({
     queryKey: chiffrageKeys.tree(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<ChiffrageTree>(
         await api.GET(base, { params: { path: { project_id: projectId } } }),
@@ -61,6 +62,7 @@ export function useChiffrage(projectId: string) {
 export function useChiffrageUnits(projectId: string) {
   return useQuery({
     queryKey: chiffrageKeys.units(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<ChiffrageUnit[]>(
         await api.GET(`${base}/units`, {

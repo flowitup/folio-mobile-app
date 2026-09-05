@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -204,10 +203,8 @@ export default function ChatScreen() {
         })}
       </ScrollView>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1"
-      >
+      {/* Android renders edge-to-edge (no window resize on keyboard), so pad on both platforms. */}
+      <KeyboardAvoidingView behavior="padding" className="flex-1">
         <ScrollView
           ref={scrollRef}
           className="flex-1"

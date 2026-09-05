@@ -49,6 +49,7 @@ export function useAnalyses(
 ) {
   return useQuery({
     queryKey: analysisKeys.list(projectId, params),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<{ items?: Analysis[]; total?: number }>(
         await api.GET("/api/v1/projects/{project_id}/analyses", {
@@ -70,6 +71,7 @@ export function useAnalyses(
 export function useAnalysisTags(projectId: string) {
   return useQuery({
     queryKey: analysisKeys.tags(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () =>
       unwrapAs<{ tags?: string[] } | string[]>(
         await api.GET("/api/v1/projects/{project_id}/analyses/tags", {

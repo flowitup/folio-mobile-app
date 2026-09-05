@@ -37,6 +37,7 @@ export const tagKeys = {
 export function useTags(projectId: string) {
   return useQuery({
     queryKey: tagKeys.list(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () => {
       const data = unwrapAs<{ items?: Tag[] }>(
         await api.GET("/api/v1/projects/{project_id}/tags", {
@@ -51,6 +52,7 @@ export function useTags(projectId: string) {
 export function useTagSummary(projectId: string) {
   return useQuery({
     queryKey: tagKeys.summary(projectId),
+    enabled: Boolean(projectId),
     queryFn: async () => {
       const data = unwrapAs<{ rows?: TagSummaryRow[] }>(
         await api.GET("/api/v1/projects/{project_id}/tag-summary", {
