@@ -47,9 +47,15 @@ const STATUS_TONE = {
  * Salaries: one worker at a time, every month with work or a payment, earned vs paid, and
  * (admin / manager) mark a month paid — records a labor payment — or unpaid — removes them.
  */
-export default function ProjectSalariesSection() {
+export default function ProjectSalariesSection({
+  projectId,
+}: {
+  /** Worker mode renders this section as a tab for the selected project instead of a route. */
+  projectId?: string;
+}) {
   const { t } = useTranslation();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = projectId ?? params.id;
   const { user } = useAuth();
   const project = useProject(id);
   const workers = useWorkers(id);

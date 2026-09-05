@@ -26,6 +26,8 @@ export interface Worker {
   // Rate in effect today: latest rate_change with effective_date <= today,
   // else the base daily_rate. Optional for back-compat with older API responses.
   current_daily_rate?: number;
+  // App account linked to this worker (self-logged attendance, worker mode).
+  user_id?: string | null;
 }
 
 export interface WorkerListResponse {
@@ -37,6 +39,8 @@ export interface CreateWorkerPayload {
   name: string;
   daily_rate: number;
   phone?: string;
+  /** App account that may self-log for this worker. */
+  user_id?: string;
   // When set, link the new Worker to an existing Person picked via the
   // PersonTypeahead (cook 1d-ii-b). Server skips inline Person creation
   // and uses this id instead. When omitted, the BE creates a Person
@@ -49,6 +53,8 @@ export interface UpdateWorkerPayload {
   name?: string;
   phone?: string;
   role_id?: string | null;
+  /** Link (or unlink with null) the app account that may self-log for this worker. */
+  user_id?: string | null;
 }
 
 export interface LaborEntry {
@@ -64,7 +70,14 @@ export interface LaborEntry {
   created_at: string;
   role_color?: string | null;
   tag_id?: string | null;
+  /** Worker-submitted rows stay `pending` (unpriced) until a manager validates them. */
+  status?: AttendanceStatus;
+  submitted_by_user_id?: string | null;
+  validated_by_user_id?: string | null;
+  validated_at?: string | null;
 }
+
+export type AttendanceStatus = "pending" | "validated";
 
 export interface LaborEntryListResponse {
   entries: LaborEntry[];
@@ -344,4 +357,12 @@ export interface LaborPaymentsSummaryResponse {
    * service_month.
    */
   months: LaborPaymentsMonthBucket[];
+}
+
+/** Body of POST /labor-entries/self — the worker picks a day and a shift. */
+export interface SelfLogInput {
+  date: string;
+  shift_type: ShiftType | null;
+  supplement_hours?: number;
+  note?: string | null;
 }

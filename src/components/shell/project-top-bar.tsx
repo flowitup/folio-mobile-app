@@ -22,9 +22,9 @@ export function ProjectTopBar() {
   const { project, isPending } = useSelectedProject();
   const { openSheet } = useShell();
   const notifications = useNotifications();
-  const pendingCount = (notifications.data ?? []).filter(
-    (item) => !item.dismissed,
-  ).length;
+  const pendingCount =
+    (notifications.data?.items ?? []).filter((item) => !item.dismissed).length +
+    (notifications.data?.attendance_pending.length ?? 0);
 
   return (
     <View

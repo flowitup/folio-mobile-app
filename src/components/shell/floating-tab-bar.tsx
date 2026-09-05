@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useShell } from "@/components/shell/shell-context";
+import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { Icon } from "@/components/ui/icon";
 import type { IconName } from "@/components/ui/icon";
 import { useTokens } from "@/theme/tokens";
@@ -12,6 +13,8 @@ import { useTokens } from "@/theme/tokens";
 /** The four project tabs, in tab-bar order; every other route in the navigator is a hidden Menu screen. */
 export const PROJECT_TABS = ["index", "expenses", "labor", "planning"] as const;
 export type ProjectTab = (typeof PROJECT_TABS)[number];
+/** Worker mode: the same navigator, but only two routes (own attendance / own salary) and no Menu. */
+export const WORKER_TABS = ["index", "expenses"] as const;
 
 /** Props expo-router hands to a custom `tabBar` (react-navigation BottomTabBarProps). */
 type TabBarProps = Parameters<
@@ -34,6 +37,15 @@ const TAB_LABEL_KEYS: Record<ProjectTab | "menu", string> = {
   menu: "tabs.menu",
 };
 
+const WORKER_TAB_ICONS: Record<(typeof WORKER_TABS)[number], IconName> = {
+  index: "calendar",
+  expenses: "credit-card",
+};
+const WORKER_TAB_LABEL_KEYS: Record<(typeof WORKER_TABS)[number], string> = {
+  index: "tabs.attendance",
+  expenses: "tabs.salary",
+};
+
 /**
  * 2a floating tab bar: positive pill, 48px items, active item white with icon + 12/600 label
  * (flex 2.4 vs 1). The Menu item toggles the Menu sheet instead of navigating and stays active
@@ -44,19 +56,27 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
   const tokens = useTokens();
   const insets = useSafeAreaInsets();
   const { sheet, toggleSheet, closeSheet, setTabBarHeight } = useShell();
+  const { workerMode } = useWorkerMode();
 
   const currentName = state.routes[state.index]?.name ?? "index";
-  const onProjectTab = (PROJECT_TABS as readonly string[]).includes(
-    currentName,
-  );
+  const tabs: readonly ProjectTab[] = workerMode ? WORKER_TABS : PROJECT_TABS;
+  const onProjectTab = (tabs as readonly string[]).includes(currentName);
   const menuActive = sheet === "menu" || !onProjectTab;
+  const iconOf = (key: ProjectTab | "menu"): IconName =>
+    workerMode && key in WORKER_TAB_ICONS
+      ? WORKER_TAB_ICONS[key as keyof typeof WORKER_TAB_ICONS]
+      : TAB_ICONS[key];
+  const labelOf = (key: ProjectTab | "menu"): string =>
+    workerMode && key in WORKER_TAB_LABEL_KEYS
+      ? WORKER_TAB_LABEL_KEYS[key as keyof typeof WORKER_TAB_LABEL_KEYS]
+      : TAB_LABEL_KEYS[key];
 
   const items: {
     key: ProjectTab | "menu";
     active: boolean;
     onPress: () => void;
   }[] = [
-    ...PROJECT_TABS.map((name) => ({
+    ...tabs.map((name) => ({
       key: name,
       active: onProjectTab && currentName === name && sheet !== "menu",
       onPress: () => {
@@ -71,11 +91,16 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
         if (!event.defaultPrevented) navigation.navigate(name);
       },
     })),
-    {
-      key: "menu" as const,
-      active: menuActive,
-      onPress: () => toggleSheet("menu"),
-    },
+    // Workers have nothing behind the Menu (no library, no project sections).
+    ...(workerMode
+      ? []
+      : [
+          {
+            key: "menu" as const,
+            active: menuActive,
+            onPress: () => toggleSheet("menu"),
+          },
+        ]),
   ];
 
   return (
@@ -95,13 +120,13 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
             testID={`tab-${item.key}`}
             accessibilityRole="tab"
             accessibilityState={{ selected: item.active }}
-            accessibilityLabel={t(TAB_LABEL_KEYS[item.key])}
+            accessibilityLabel={t(labelOf(item.key))}
             onPress={item.onPress}
             className={`h-12 min-w-0 flex-row items-center justify-center gap-1.5 rounded-full px-1.5 ${item.active ? "bg-white" : ""}`}
             style={{ flex: item.active ? 2.4 : 1 }}
           >
             <Icon
-              name={TAB_ICONS[item.key]}
+              name={iconOf(item.key)}
               size={22}
               color={item.active ? tokens.positive : "rgba(255,255,255,0.78)"}
             />
@@ -110,7 +135,7 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
                 className="font-sans-semibold text-xs text-positive"
                 numberOfLines={1}
               >
-                {t(TAB_LABEL_KEYS[item.key])}
+                {t(labelOf(item.key))}
               </Text>
             ) : null}
           </Pressable>

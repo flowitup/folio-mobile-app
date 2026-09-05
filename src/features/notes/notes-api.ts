@@ -47,6 +47,27 @@ export type DueNotification = {
   dismissed: boolean;
 };
 
+/** A worker-submitted attendance entry waiting for the caller (a manager) to validate. */
+export type AttendancePending = {
+  kind: "attendance_pending";
+  entry_id: string;
+  project_id: string;
+  project_name: string;
+  worker_id: string;
+  worker_name: string;
+  date: string;
+  shift_type: "full" | "half" | "overtime" | null;
+  supplement_hours: number;
+  note: string | null;
+  submitted_at: string;
+};
+
+export type NotificationsResponse = {
+  items: DueNotification[];
+  attendance_pending: AttendancePending[];
+  count: number;
+};
+
 export const noteKeys = {
   list: (p: string) => ["projects", p, "notes"] as const,
   notifications: ["notifications"] as const,
@@ -112,10 +133,18 @@ export function useDeleteNote(projectId: string) {
 export function useNotifications() {
   return useQuery({
     queryKey: noteKeys.notifications,
-    queryFn: async () =>
-      unwrapAs<{ items?: DueNotification[] }>(
+    // Pending attendance arrives while the app is open; poll so the bell dot shows up.
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const body = unwrapAs<Partial<NotificationsResponse>>(
         await api.GET("/api/v1/notifications"),
-      ).items ?? [],
+      );
+      return {
+        items: body.items ?? [],
+        attendance_pending: body.attendance_pending ?? [],
+        count: body.count ?? 0,
+      } satisfies NotificationsResponse;
+    },
   });
 }
 

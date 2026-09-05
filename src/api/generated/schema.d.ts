@@ -5061,6 +5061,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/labor-entries/self": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log my own attendance for a day (pending until a manager validates) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SelfLogAttendanceRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SelfLoggedEntryResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{project_id}/labor-entries/{entry_id}": {
         parameters: {
             query?: never;
@@ -5118,6 +5160,82 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-entries/{entry_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject a pending attendance entry (deletes it; 409 once validated) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    entry_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-entries/{entry_id}/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate a worker-submitted attendance entry (idempotent) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    entry_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidatedEntryResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -7177,6 +7295,11 @@ export interface components {
              * @default null
              */
             role_id: string | null;
+            /**
+             * User Id
+             * @default null
+             */
+            user_id: string | null;
         };
         /**
          * DayTagRequest
@@ -7739,6 +7862,61 @@ export interface components {
             token_type: string;
         };
         /**
+         * SelfLogAttendanceRequest
+         * @description Request body for POST /labor-entries/self — a worker logging their own day.
+         *
+         *     No worker_id (resolved from the caller's account), no amount_override and no
+         *     tag_id (manager-only fields). Same non-empty rule as LogAttendanceRequest.
+         */
+        SelfLogAttendanceRequest: {
+            /** Date */
+            date: string;
+            /**
+             * Note
+             * @default null
+             */
+            note: string | null;
+            /**
+             * Shift Type
+             * @default null
+             */
+            shift_type: ("full" | "half" | "overtime") | null;
+            /**
+             * Supplement Hours
+             * @default 0
+             */
+            supplement_hours: number;
+        };
+        /**
+         * SelfLoggedEntryResponse
+         * @description Response for POST /labor-entries/self (201).
+         */
+        SelfLoggedEntryResponse: {
+            /** Created At */
+            created_at: string;
+            /** Date */
+            date: string;
+            /** Id */
+            id: string;
+            /** Note */
+            note: string | null;
+            /** Shift Type */
+            shift_type: ("full" | "half" | "overtime") | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "validated";
+            /** Submitted By User Id */
+            submitted_by_user_id: string;
+            /** Supplement Hours */
+            supplement_hours: number;
+            /** Worker Id */
+            worker_id: string;
+            /** Worker Name */
+            worker_name: string;
+        };
+        /**
          * SendMessageBody
          * @description JSON body of POST /chat/channels/<key>/messages (text-only messages).
          *
@@ -8251,6 +8429,11 @@ export interface components {
              * @default null
              */
             role_id: string | null;
+            /**
+             * User Id
+             * @default null
+             */
+            user_id: string | null;
         };
         /**
          * UserResponse
@@ -8273,6 +8456,33 @@ export interface components {
             phone: string | null;
             /** Roles */
             roles: string[];
+        };
+        /**
+         * ValidatedEntryResponse
+         * @description Response for POST /labor-entries/<id>/validate (200).
+         */
+        ValidatedEntryResponse: {
+            /** Date */
+            date: string;
+            /** Id */
+            id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "validated";
+            /**
+             * Validated At
+             * @default null
+             */
+            validated_at: string | null;
+            /**
+             * Validated By User Id
+             * @default null
+             */
+            validated_by_user_id: string | null;
+            /** Worker Id */
+            worker_id: string;
         };
         /**
          * VerifyInviteResponse
@@ -8360,6 +8570,11 @@ export interface components {
              * @default null
              */
             role_name: string | null;
+            /**
+             * User Id
+             * @default null
+             */
+            user_id: string | null;
         };
     };
     responses: never;
