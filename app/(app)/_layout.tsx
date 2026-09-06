@@ -3,10 +3,12 @@ import { useEffect } from "react";
 
 import { useAuth } from "@/auth/auth-context";
 import { useMyCompanies } from "@/features/companies/companies-api";
+import { usePushNotifications } from "@/features/push/use-push-notifications";
 
 // Signed-in area: everything lives under the project-first tab shell (see (tabs)/_layout.tsx).
 export default function AppLayout() {
   useCompanyGate();
+  usePushNotifications();
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />

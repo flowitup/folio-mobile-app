@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -22,8 +23,27 @@ type ShellValue = {
 
 const ShellContext = createContext<ShellValue | null>(null);
 
+// A sheet asked for from outside the shell (a tapped push): consumed by the next ShellProvider
+// mount, or applied immediately when one is already mounted.
+let pendingSheet: ShellSheet | null = null;
+let mountedSetter: ((sheet: ShellSheet | null) => void) | null = null;
+export function requestShellSheet(sheet: ShellSheet): void {
+  if (mountedSetter) mountedSetter(sheet);
+  else pendingSheet = sheet;
+}
+
 export function ShellProvider({ children }: PropsWithChildren) {
-  const [sheet, setSheet] = useState<ShellSheet | null>(null);
+  const [sheet, setSheet] = useState<ShellSheet | null>(() => {
+    const initial = pendingSheet;
+    pendingSheet = null;
+    return initial;
+  });
+  useEffect(() => {
+    mountedSetter = setSheet;
+    return () => {
+      mountedSetter = null;
+    };
+  }, []);
   const [tabBarHeight, setTabBarHeight] = useState(0);
 
   const openSheet = useCallback((next: ShellSheet) => setSheet(next), []);

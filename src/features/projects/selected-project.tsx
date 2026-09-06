@@ -28,6 +28,14 @@ type SelectedProjectValue = {
 
 const SelectedProjectContext = createContext<SelectedProjectValue | null>(null);
 
+// Project chosen from outside the shell (a tapped push names its project).
+let pendingProjectId: string | null = null;
+let mountedSelect: ((id: string) => void) | null = null;
+export function selectProjectOnNextShell(id: string): void {
+  if (mountedSelect) mountedSelect(id);
+  else pendingProjectId = id;
+}
+
 /**
  * The project the shell is showing: picked in the top-bar switcher, persisted across launches,
  * falls back to the first project of the list. Every tab reads it instead of a route param.
@@ -35,7 +43,12 @@ const SelectedProjectContext = createContext<SelectedProjectValue | null>(null);
 export function SelectedProjectProvider({ children }: PropsWithChildren) {
   const projects = useProjects();
   const [stored, setStored] = useState<string | null>(null);
-  const [chosen, setChosen] = useState<string | null>(null);
+  // A project asked for before the shell mounted (tapped push) wins over the stored one.
+  const [chosen, setChosen] = useState<string | null>(() => {
+    const initial = pendingProjectId;
+    pendingProjectId = null;
+    return initial;
+  });
 
   useEffect(() => {
     SecureStore.getItemAsync(PROJECT_KEY)
@@ -47,6 +60,12 @@ export function SelectedProjectProvider({ children }: PropsWithChildren) {
     setChosen(id);
     void SecureStore.setItemAsync(PROJECT_KEY, id).catch(() => undefined);
   }, []);
+  useEffect(() => {
+    mountedSelect = select;
+    return () => {
+      mountedSelect = null;
+    };
+  }, [select]);
 
   const list = useMemo(() => projects.data?.projects ?? [], [projects.data]);
   const project =
