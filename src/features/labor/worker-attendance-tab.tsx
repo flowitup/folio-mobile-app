@@ -6,11 +6,13 @@ import { useAuth } from "@/auth/auth-context";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
+import { Input } from "@/components/ui/input";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Badge, Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenTitle } from "@/components/ui/typography";
 import { AttendanceCalendar } from "@/features/labor/attendance-calendar";
 import {
+  useEditOwnAttendance,
   useLaborEntries,
   useLaborSummary,
   useSelfLogAttendance,
@@ -56,6 +58,12 @@ export function WorkerAttendanceTab() {
   const entries = useLaborEntries(projectId, range.from, range.to);
   const summary = useLaborSummary(projectId, range.from, range.to);
   const selfLog = useSelfLogAttendance(projectId);
+  const editOwn = useEditOwnAttendance(projectId);
+  // Inline "edit this day" form for the selected, already-logged day.
+  const [editing, setEditing] = useState(false);
+  const [editShift, setEditShift] = useState<ShiftType>("full");
+  const [editHours, setEditHours] = useState("0");
+  const [editNote, setEditNote] = useState("");
   useRefetchOnFocus(entries.refetch);
   useRefetchOnFocus(summary.refetch);
 
@@ -72,6 +80,33 @@ export function WorkerAttendanceTab() {
   const selectedEntry = monthEntries.find((e) => e.date === selectedDay);
   const canLogSelected = selectedDay <= today && !selectedEntry;
   const colorOf = () => tokens.positive;
+
+  function selectDay(iso: string) {
+    setSelectedDay(iso);
+    setEditing(false);
+  }
+
+  function startEdit(entry: LaborEntry) {
+    setEditShift(entry.proposed_shift_type ?? entry.shift_type ?? "full");
+    setEditHours(
+      String(entry.proposed_supplement_hours ?? entry.supplement_hours ?? 0),
+    );
+    setEditNote(entry.proposed_note ?? entry.note ?? "");
+    setEditing(true);
+  }
+
+  function submitEdit(entry: LaborEntry) {
+    const hours = Math.max(0, Math.min(12, Number(editHours) || 0));
+    editOwn.mutate(
+      {
+        entryId: entry.id,
+        shift_type: editShift,
+        supplement_hours: hours,
+        note: editNote.trim() || null,
+      },
+      { onSuccess: () => setEditing(false) },
+    );
+  }
 
   if (!projectPending && !project)
     return (
@@ -125,20 +160,101 @@ export function WorkerAttendanceTab() {
                 : t("worker.logDay", { date: formatDate(selectedDay) })}
             </Text>
             {selectedEntry ? (
-              <View className="mt-2 flex-row items-center gap-2">
-                <Badge
-                  testID="worker-selected-status"
-                  label={t(
-                    `worker.status.${selectedEntry.status ?? "validated"}`,
-                  )}
-                  tone={
-                    selectedEntry.status === "pending" ? "warning" : "success"
-                  }
-                />
-                <Text className="font-sans text-[12.5px] text-muted">
-                  {t(`labor.shift.${selectedEntry.shift_type ?? "none"}`)}
-                </Text>
-              </View>
+              <>
+                <View className="mt-2 flex-row flex-wrap items-center gap-2">
+                  <Badge
+                    testID="worker-selected-status"
+                    label={t(
+                      `worker.status.${selectedEntry.status ?? "validated"}`,
+                    )}
+                    tone={
+                      selectedEntry.status === "pending" ? "warning" : "success"
+                    }
+                  />
+                  {selectedEntry.change_requested_at ? (
+                    <Badge
+                      testID="worker-selected-change"
+                      label={t("worker.changeRequested")}
+                      tone="warning"
+                    />
+                  ) : null}
+                  <Text className="font-sans text-[12.5px] text-muted">
+                    {shiftLabel(
+                      t,
+                      selectedEntry.shift_type,
+                      selectedEntry.supplement_hours,
+                    )}
+                  </Text>
+                </View>
+                {selectedEntry.change_requested_at && !editing ? (
+                  <Text className="mt-1 font-sans text-[12px] text-muted">
+                    {t("worker.proposedLine", {
+                      value: shiftLabel(
+                        t,
+                        selectedEntry.proposed_shift_type ?? null,
+                        selectedEntry.proposed_supplement_hours ?? 0,
+                      ),
+                    })}
+                  </Text>
+                ) : null}
+                {editing ? (
+                  <View className="mt-3 gap-3">
+                    <Segmented<ShiftType>
+                      testID="worker-edit-shift"
+                      value={editShift}
+                      onChange={setEditShift}
+                      options={SHIFTS.map((value) => ({
+                        value,
+                        label: t(`labor.shift.${value}`),
+                      }))}
+                    />
+                    <Input
+                      testID="worker-edit-hours"
+                      label={t("worker.supplement")}
+                      value={editHours}
+                      onChangeText={setEditHours}
+                      keyboardType="number-pad"
+                    />
+                    <Input
+                      testID="worker-edit-note"
+                      label={t("worker.note")}
+                      value={editNote}
+                      onChangeText={setEditNote}
+                    />
+                    <View className="flex-row gap-2">
+                      <View className="flex-1">
+                        <Button
+                          testID="worker-edit-cancel"
+                          label={t("common.cancel")}
+                          variant="secondary"
+                          onPress={() => setEditing(false)}
+                        />
+                      </View>
+                      <View className="flex-1">
+                        <Button
+                          testID="worker-edit-submit"
+                          label={
+                            selectedEntry.status === "pending"
+                              ? t("common.save")
+                              : t("worker.editSubmit")
+                          }
+                          loading={editOwn.isPending}
+                          onPress={() => submitEdit(selectedEntry)}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <View className="mt-3">
+                    <Button
+                      testID="worker-edit-open"
+                      label={t("worker.edit")}
+                      variant="secondary"
+                      onPress={() => startEdit(selectedEntry)}
+                    />
+                  </View>
+                )}
+              </>
             ) : (
               <>
                 <View className="mt-3">
@@ -200,7 +316,7 @@ export function WorkerAttendanceTab() {
             entries={monthEntries}
             colorOf={colorOf}
             selected={selectedDay}
-            onSelectDay={setSelectedDay}
+            onSelectDay={selectDay}
           />
         )}
 
@@ -218,6 +334,16 @@ export function WorkerAttendanceTab() {
       </ScrollView>
     </View>
   );
+}
+
+/** "Cả ngày · +2 h" style label for a shift + extra hours. */
+function shiftLabel(
+  t: (key: string) => string,
+  shift: ShiftType | null | undefined,
+  hours: number | null | undefined,
+): string {
+  const base = t(`labor.shift.${shift ?? "none"}`);
+  return hours && hours > 0 ? `${base} · +${hours} h` : base;
 }
 
 function Kpi({
@@ -265,8 +391,12 @@ function EntryRow({ entry }: { entry: LaborEntry }) {
         </Text>
       </View>
       <Badge
-        label={t(`worker.status.${pending ? "pending" : "validated"}`)}
-        tone={pending ? "warning" : "success"}
+        label={
+          entry.change_requested_at
+            ? t("worker.changeRequested")
+            : t(`worker.status.${pending ? "pending" : "validated"}`)
+        }
+        tone={pending || entry.change_requested_at ? "warning" : "success"}
       />
     </View>
   );

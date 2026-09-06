@@ -75,6 +75,11 @@ export interface LaborEntry {
   submitted_by_user_id?: string | null;
   validated_by_user_id?: string | null;
   validated_at?: string | null;
+  /** Open worker change request on a validated day (values above stay priced until settled). */
+  change_requested_at?: string | null;
+  proposed_shift_type?: ShiftType | null;
+  proposed_supplement_hours?: number | null;
+  proposed_note?: string | null;
 }
 
 export type AttendanceStatus = "pending" | "validated";
@@ -362,6 +367,13 @@ export interface LaborPaymentsSummaryResponse {
 /** Body of POST /labor-entries/self — the worker picks a day and a shift. */
 export interface SelfLogInput {
   date: string;
+  shift_type: ShiftType | null;
+  supplement_hours?: number;
+  note?: string | null;
+}
+
+/** Body of PUT /labor-entries/{id}/self — the worker corrects one of their own days. */
+export interface SelfEditInput {
   shift_type: ShiftType | null;
   supplement_hours?: number;
   note?: string | null;

@@ -488,7 +488,14 @@
       "reject": "Reject",
       "rejectConfirm": "Reject {{worker}}'s attendance for {{date}}? The entry will be deleted.",
       "validatedToast": "Attendance validated.",
-      "rejectedToast": "Attendance rejected."
+      "rejectedToast": "Attendance rejected.",
+      "changeTitle": "Change request",
+      "changeLine": "{{from}} → {{to}}",
+      "validateChange": "Apply",
+      "rejectChange": "Refuse",
+      "rejectChangeConfirm": "Refuse {{worker}}'s change for {{date}}? The day stays as validated.",
+      "validatedChangeToast": "Change applied.",
+      "rejectedChangeToast": "Change refused."
     }
   },
   "tasks": {
@@ -1447,6 +1454,13 @@
     "status": {
       "pending": "Pending",
       "validated": "Validated"
-    }
+    },
+    "edit": "Edit this day",
+    "editSubmit": "Send change request",
+    "editSent": "Change request sent — waiting for a manager.",
+    "supplement": "Extra hours",
+    "note": "Note",
+    "changeRequested": "Change requested",
+    "proposedLine": "Requested: {{value}}"
   }
 }

@@ -488,7 +488,14 @@
       "reject": "Từ chối",
       "rejectConfirm": "Từ chối chấm công của {{worker}} ngày {{date}}? Bản ghi sẽ bị xoá.",
       "validatedToast": "Đã duyệt chấm công.",
-      "rejectedToast": "Đã từ chối chấm công."
+      "rejectedToast": "Đã từ chối chấm công.",
+      "changeTitle": "Yêu cầu sửa",
+      "changeLine": "{{from}} → {{to}}",
+      "validateChange": "Áp dụng",
+      "rejectChange": "Từ chối",
+      "rejectChangeConfirm": "Từ chối yêu cầu sửa của {{worker}} ngày {{date}}? Ngày công giữ nguyên như đã duyệt.",
+      "validatedChangeToast": "Đã áp dụng yêu cầu sửa.",
+      "rejectedChangeToast": "Đã từ chối yêu cầu sửa."
     }
   },
   "tasks": {
@@ -1447,6 +1454,13 @@
     "status": {
       "pending": "Chờ duyệt",
       "validated": "Đã duyệt"
-    }
+    },
+    "edit": "Sửa ngày này",
+    "editSubmit": "Gửi yêu cầu sửa",
+    "editSent": "Đã gửi yêu cầu sửa, chờ quản lý duyệt.",
+    "supplement": "Giờ thêm",
+    "note": "Ghi chú",
+    "changeRequested": "Chờ duyệt sửa",
+    "proposedLine": "Yêu cầu: {{value}}"
   }
 }

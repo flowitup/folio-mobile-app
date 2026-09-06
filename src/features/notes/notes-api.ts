@@ -49,7 +49,11 @@ export type DueNotification = {
 
 /** A worker-submitted attendance entry waiting for the caller (a manager) to validate. */
 export type AttendancePending = {
-  kind: "attendance_pending";
+  /** A new worker-logged day, or a proposed edit on an already validated day. */
+  kind: "attendance_pending" | "attendance_change";
+  proposed_shift_type?: "full" | "half" | "overtime" | null;
+  proposed_supplement_hours?: number | null;
+  proposed_note?: string | null;
   entry_id: string;
   project_id: string;
   project_name: string;

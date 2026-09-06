@@ -5165,6 +5165,84 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/labor-entries/{entry_id}/change/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Drop a worker's change request; the validated day stays as it is (409 when none is open) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    entry_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OwnAttendanceEntryResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-entries/{entry_id}/change/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply a worker's change request to the day (409 when none is open) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    entry_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OwnAttendanceEntryResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{project_id}/labor-entries/{entry_id}/reject": {
         parameters: {
             query?: never;
@@ -5196,6 +5274,49 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/labor-entries/{entry_id}/self": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit one of my own days: a pending day is updated, a validated day gets a change request */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    project_id: string;
+                    entry_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SelfEditAttendanceRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OwnAttendanceEntryResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7756,6 +7877,51 @@ export interface components {
             phone: string;
         };
         /**
+         * OwnAttendanceEntryResponse
+         * @description Response for PUT /labor-entries/<id>/self and the change validate / reject routes.
+         */
+        OwnAttendanceEntryResponse: {
+            /** Change Pending */
+            change_pending: boolean;
+            /**
+             * Change Requested At
+             * @default null
+             */
+            change_requested_at: string | null;
+            /** Date */
+            date: string;
+            /** Id */
+            id: string;
+            /** Note */
+            note: string | null;
+            /**
+             * Proposed Note
+             * @default null
+             */
+            proposed_note: string | null;
+            /**
+             * Proposed Shift Type
+             * @default null
+             */
+            proposed_shift_type: ("full" | "half" | "overtime") | null;
+            /**
+             * Proposed Supplement Hours
+             * @default null
+             */
+            proposed_supplement_hours: number | null;
+            /** Shift Type */
+            shift_type: ("full" | "half" | "overtime") | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "validated";
+            /** Supplement Hours */
+            supplement_hours: number;
+            /** Worker Id */
+            worker_id: string;
+        };
+        /**
          * ProjectResponse
          * @description Single project response.
          */
@@ -7860,6 +8026,29 @@ export interface components {
              * @default Bearer
              */
             token_type: string;
+        };
+        /**
+         * SelfEditAttendanceRequest
+         * @description Request body for PUT /labor-entries/<id>/self — a worker correcting one of their days.
+         *
+         *     Same fields and non-empty rule as SelfLogAttendanceRequest; the date is fixed by the entry.
+         */
+        SelfEditAttendanceRequest: {
+            /**
+             * Note
+             * @default null
+             */
+            note: string | null;
+            /**
+             * Shift Type
+             * @default null
+             */
+            shift_type: ("full" | "half" | "overtime") | null;
+            /**
+             * Supplement Hours
+             * @default 0
+             */
+            supplement_hours: number;
         };
         /**
          * SelfLogAttendanceRequest

@@ -21,6 +21,7 @@ import type {
   LaborMonthlySummaryResponse,
   LaborSummaryResponse,
   LogAttendancePayload,
+  SelfEditInput,
   SelfLogInput,
   UpdateAttendancePayload,
   UpdateWorkerPayload,
@@ -258,6 +259,51 @@ export function useSelfLogAttendance(projectId: string) {
       laborKeys.monthly(projectId),
     ],
     successMessage: t("worker.logged"),
+  });
+}
+
+/**
+ * Worker mode: correct one of my own days. A pending day is updated in place; a validated
+ * day becomes a change request the managers settle from their bell.
+ */
+export function useEditOwnAttendance(projectId: string) {
+  const { t } = useTranslation();
+  return useApiMutation<{ entryId: string } & SelfEditInput, LaborEntry>({
+    mutationFn: async ({ entryId, ...body }) =>
+      unwrapAs<LaborEntry>(
+        await api.PUT(
+          "/api/v1/projects/{project_id}/labor-entries/{entry_id}/self",
+          {
+            params: { path: { project_id: projectId, entry_id: entryId } },
+            body: { supplement_hours: 0, note: null, ...body },
+          },
+        ),
+      ),
+    invalidates: [
+      laborKeys.entriesAll(projectId),
+      laborKeys.summaryAll(projectId),
+      laborKeys.monthly(projectId),
+    ],
+    successMessage: t("worker.editSent"),
+  });
+}
+
+/** Manager: apply (approve) or drop a worker's change request on a validated day. */
+export function useDecideAttendanceChange() {
+  return useApiMutation<
+    { projectId: string; entryId: string; approve: boolean },
+    LaborEntry
+  >({
+    mutationFn: async ({ projectId, entryId, approve }) =>
+      unwrapAs<LaborEntry>(
+        await api.POST(
+          approve
+            ? "/api/v1/projects/{project_id}/labor-entries/{entry_id}/change/validate"
+            : "/api/v1/projects/{project_id}/labor-entries/{entry_id}/change/reject",
+          { params: { path: { project_id: projectId, entry_id: entryId } } },
+        ),
+      ),
+    invalidates: [["projects"], NOTIFICATIONS_KEY],
   });
 }
 

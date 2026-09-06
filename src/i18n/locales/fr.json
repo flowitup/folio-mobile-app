@@ -488,7 +488,14 @@
       "reject": "Refuser",
       "rejectConfirm": "Refuser le pointage de {{worker}} du {{date}} ? La ligne sera supprimée.",
       "validatedToast": "Pointage validé.",
-      "rejectedToast": "Pointage refusé."
+      "rejectedToast": "Pointage refusé.",
+      "changeTitle": "Demande de modification",
+      "changeLine": "{{from}} → {{to}}",
+      "validateChange": "Appliquer",
+      "rejectChange": "Refuser",
+      "rejectChangeConfirm": "Refuser la modification de {{worker}} pour le {{date}} ? Le jour reste tel que validé.",
+      "validatedChangeToast": "Modification appliquée.",
+      "rejectedChangeToast": "Modification refusée."
     }
   },
   "tasks": {
@@ -1447,6 +1454,13 @@
     "status": {
       "pending": "En attente",
       "validated": "Validé"
-    }
+    },
+    "edit": "Modifier ce jour",
+    "editSubmit": "Envoyer la demande",
+    "editSent": "Demande de modification envoyée — en attente d'un responsable.",
+    "supplement": "Heures sup.",
+    "note": "Note",
+    "changeRequested": "Modification demandée",
+    "proposedLine": "Demandé : {{value}}"
   }
 }
