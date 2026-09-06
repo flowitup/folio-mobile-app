@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { showToast } from "@/components/ui/toast";
@@ -82,7 +82,7 @@ export function AttendanceRequestsSection({
         {t("notifications.attendance.title", { count: items.length })}
       </Eyebrow>
       <View className="mb-4 overflow-hidden rounded-xl border border-line bg-card">
-        <ScrollView style={{ maxHeight: 260 }} bounces={false}>
+        <View>
           {items.map((item) => (
             <View
               key={item.entry_id}
@@ -145,7 +145,7 @@ export function AttendanceRequestsSection({
               </View>
             </View>
           ))}
-        </ScrollView>
+        </View>
       </View>
       <ConfirmDialog
         visible={rejecting !== null}

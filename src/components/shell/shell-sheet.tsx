@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import type { PropsWithChildren } from "react";
-import { Animated, Easing, Pressable, View } from "react-native";
+import {
+  Animated,
+  Easing,
+  Pressable,
+  ScrollView,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
 import { useShell } from "@/components/shell/shell-context";
 
@@ -15,8 +22,15 @@ export function ShellSheet({
   open,
   children,
   testID,
-}: PropsWithChildren<{ open: boolean; testID?: string }>) {
+  scroll = false,
+}: PropsWithChildren<{
+  open: boolean;
+  testID?: string;
+  /** Long content (the bell): the panel caps at ~72% of the screen and scrolls as one list. */
+  scroll?: boolean;
+}>) {
   const { tabBarHeight, closeSheet } = useShell();
+  const { height: windowHeight } = useWindowDimensions();
   const [mounted, setMounted] = useState(open);
   // Lazily created once; kept in state (not a ref) so reading it during render is lint-clean.
   const [progress] = useState(() => new Animated.Value(open ? 1 : 0));
@@ -74,7 +88,20 @@ export function ShellSheet({
         }}
       >
         <View className="mb-3.5 h-1 w-9 self-center rounded-sm bg-line-2" />
-        {children}
+        {scroll ? (
+          <ScrollView
+            style={{ maxHeight: Math.round(windowHeight * 0.72) }}
+            bounces={false}
+            showsVerticalScrollIndicator
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
+            testID={testID ? `${testID}-scroll` : undefined}
+          >
+            {children}
+          </ScrollView>
+        ) : (
+          children
+        )}
       </Animated.View>
     </View>
   );

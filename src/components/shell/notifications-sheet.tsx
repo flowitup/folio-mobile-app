@@ -1,12 +1,6 @@
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import { useShell } from "@/components/shell/shell-context";
 import { ShellSheet } from "@/components/shell/shell-sheet";
@@ -37,7 +31,11 @@ export function NotificationsSheet() {
   const attendance = notifications.data?.attendance_pending ?? [];
 
   return (
-    <ShellSheet open={sheet === "notifications"} testID="notifications-sheet">
+    <ShellSheet
+      open={sheet === "notifications"}
+      testID="notifications-sheet"
+      scroll
+    >
       <AttendanceRequestsSection items={attendance} />
       <Eyebrow className="mb-2">
         {t("notifications.title", { count: pending.length })}
@@ -51,7 +49,7 @@ export function NotificationsSheet() {
             {t("notifications.none")}
           </Text>
         ) : null}
-        <ScrollView style={{ maxHeight: 360 }} bounces={false}>
+        <View>
           {pending.map(({ note }) => (
             <View
               key={note.id}
@@ -96,7 +94,7 @@ export function NotificationsSheet() {
               </Pressable>
             </View>
           ))}
-        </ScrollView>
+        </View>
       </View>
     </ShellSheet>
   );
