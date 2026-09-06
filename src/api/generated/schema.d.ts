@@ -6469,6 +6469,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/push/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register this device's push token for the signed-in user */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RegisterPushDeviceRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        /** Forget this device's push token (sign-out) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UnregisterPushDeviceRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/roles": {
         parameters: {
             query?: never;
@@ -8027,6 +8087,16 @@ export interface components {
              */
             token_type: string;
         };
+        /** RegisterPushDeviceRequest */
+        RegisterPushDeviceRequest: {
+            /**
+             * Platform
+             * @enum {string}
+             */
+            platform: "ios" | "android";
+            /** Token */
+            token: string;
+        };
         /**
          * SelfEditAttendanceRequest
          * @description Request body for PUT /labor-entries/<id>/self — a worker correcting one of their days.
@@ -8184,6 +8254,11 @@ export interface components {
              * @default null
              */
             name: string | null;
+        };
+        /** UnregisterPushDeviceRequest */
+        UnregisterPushDeviceRequest: {
+            /** Token */
+            token: string;
         };
         /** UpdateActivitySchema */
         UpdateActivitySchema: {

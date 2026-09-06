@@ -9,6 +9,7 @@ import {
 import type { PropsWithChildren } from "react";
 
 import { api, setSessionExpiredHandler } from "@/api/client";
+import { unregisterPushDevice } from "@/features/push/push-device-registration";
 import {
   clearStoredTokens,
   getStoredTokens,
@@ -145,6 +146,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signOut = useCallback(async () => {
     // Best effort server-side revocation (access + refresh); local sign-out must succeed even offline.
+    await unregisterPushDevice();
     const { refreshToken } = await getStoredTokens();
     await api
       .POST("/api/v1/auth/logout", {
