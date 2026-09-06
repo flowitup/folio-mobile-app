@@ -1439,6 +1439,8 @@
     "edit": "Sửa ngày này",
     "editSubmit": "Gửi yêu cầu sửa",
     "editSent": "Đã gửi yêu cầu sửa, chờ quản lý duyệt.",
+    "editUnchanged": "Không có gì thay đổi: ngày này đã có đúng các giá trị đó.",
+    "editDuplicate": "Yêu cầu sửa này đã được gửi và đang chờ quản lý duyệt.",
     "supplement": "Giờ thêm",
     "note": "Ghi chú",
     "changeRequested": "Chờ duyệt sửa",

@@ -9,6 +9,7 @@ import { Segmented } from "@/components/ui/chip";
 import { Input } from "@/components/ui/input";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import { showToast } from "@/components/ui/toast";
 import { ScreenTitle } from "@/components/ui/typography";
 import { AttendanceCalendar } from "@/features/labor/attendance-calendar";
 import {
@@ -28,6 +29,7 @@ import {
 } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { monthRange } from "@/lib/labor/month-range";
+import { classifyOwnEdit } from "@/lib/labor/own-attendance-edit";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
 
@@ -97,13 +99,26 @@ export function WorkerAttendanceTab() {
 
   function submitEdit(entry: LaborEntry) {
     const hours = Math.max(0, Math.min(12, Number(editHours) || 0));
+    const proposal = {
+      shift_type: editShift,
+      supplement_hours: hours,
+      note: editNote.trim() || null,
+    };
+    // Refuse a request identical to the validated day or to the one already waiting.
+    const verdict = classifyOwnEdit(entry, proposal);
+    if (verdict !== "ok") {
+      showToast(
+        t(
+          verdict === "unchanged"
+            ? "worker.editUnchanged"
+            : "worker.editDuplicate",
+        ),
+        "info",
+      );
+      return;
+    }
     editOwn.mutate(
-      {
-        entryId: entry.id,
-        shift_type: editShift,
-        supplement_hours: hours,
-        note: editNote.trim() || null,
-      },
+      { entryId: entry.id, ...proposal },
       { onSuccess: () => setEditing(false) },
     );
   }

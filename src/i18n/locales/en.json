@@ -1439,6 +1439,8 @@
     "edit": "Edit this day",
     "editSubmit": "Send change request",
     "editSent": "Change request sent — waiting for a manager.",
+    "editUnchanged": "Nothing changed — this day already has these values.",
+    "editDuplicate": "This change request is already waiting for a manager.",
     "supplement": "Extra hours",
     "note": "Note",
     "changeRequested": "Change requested",
