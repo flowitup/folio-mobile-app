@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
-import type { Tag } from "@/features/projects/tags-api";
 import { toIsoDate } from "@/lib/format/date";
 
 import type {
@@ -35,18 +34,16 @@ type Props = {
   entries: LaborEntry[];
   activities: LaborActivity[];
   dayDescriptions: LaborDayDescription[];
-  tags: Tag[];
   selected: string | null;
   onSelectDay: (iso: string) => void;
 };
 
-/** Month grid: per day the worker chips (shift glyph + role color), activity marker, description marker, tag dots. */
+/** Month grid: per day the worker chips (shift glyph + role color), activity marker, description marker. */
 export function CalendarMonthGrid({
   month,
   entries,
   activities,
   dayDescriptions,
-  tags,
   selected,
   onSelectDay,
 }: Props) {
@@ -70,10 +67,6 @@ export function CalendarMonthGrid({
   const descriptionDays = useMemo(
     () => new Set(dayDescriptions.map((d) => d.date)),
     [dayDescriptions],
-  );
-  const tagColor = useMemo(
-    () => new Map(tags.map((tag) => [tag.id, tag.color])),
-    [tags],
   );
 
   const weekdays = t("labor.calendar.weekdays", {
@@ -104,13 +97,6 @@ export function CalendarMonthGrid({
                 />
               );
             const dayEntries = byDay.get(iso) ?? [];
-            const dotColors = Array.from(
-              new Set(
-                dayEntries
-                  .map((e) => e.tag_id && tagColor.get(e.tag_id))
-                  .filter(Boolean) as string[],
-              ),
-            );
             const isSelected = iso === selected;
             return (
               <Pressable
@@ -150,17 +136,6 @@ export function CalendarMonthGrid({
                   <Text className="text-[10px] text-muted-foreground">
                     +{dayEntries.length - 3}
                   </Text>
-                ) : null}
-                {dotColors.length > 0 ? (
-                  <View className="mt-0.5 flex-row">
-                    {dotColors.slice(0, 3).map((color) => (
-                      <View
-                        key={color}
-                        className="mr-0.5 h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </View>
                 ) : null}
               </Pressable>
             );

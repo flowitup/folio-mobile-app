@@ -14,22 +14,14 @@ describe("buildMonthCells", () => {
 
 describe("buildBulkEntries", () => {
   it("emits only checked tiles, with supplement and tag when set", () => {
-    const entries = buildBulkEntries(
-      {
-        a: { checked: true, shift_type: "full", supplement_hours: 2 },
-        b: { checked: false, shift_type: "half", supplement_hours: 0 },
-        c: { checked: true, shift_type: "overtime", supplement_hours: 0 },
-      },
-      "tag-1",
-    );
+    const entries = buildBulkEntries({
+      a: { checked: true, shift_type: "full", supplement_hours: 2 },
+      b: { checked: false, shift_type: "half", supplement_hours: 0 },
+      c: { checked: true, shift_type: "overtime", supplement_hours: 0 },
+    });
     expect(entries).toEqual([
-      {
-        worker_id: "a",
-        shift_type: "full",
-        supplement_hours: 2,
-        tag_id: "tag-1",
-      },
-      { worker_id: "c", shift_type: "overtime", tag_id: "tag-1" },
+      { worker_id: "a", shift_type: "full", supplement_hours: 2 },
+      { worker_id: "c", shift_type: "overtime" },
     ]);
   });
 });

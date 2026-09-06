@@ -70,7 +70,6 @@
       "chiffrage": "Chiffrage",
       "analyses": "Analyses",
       "members": "Members",
-      "tags": "Tags",
       "settings": "Settings",
       "salaries": "Salaries"
     },
@@ -153,27 +152,12 @@
     "revoke": "Revoke",
     "invitationRevoked": "Invitation revoked."
   },
-  "tags": {
-    "create": "New tag",
-    "edit": "Edit tag",
-    "name": "Name",
-    "nameRequired": "Name is required.",
-    "color": "Color",
-    "none": "No tags yet.",
-    "deleted": "Tag deleted.",
-    "deleteConfirm": "Delete tag {{name}}?",
-    "deleteHint": "Entries and invoices keep their data but lose this tag.",
-    "summary": "Cost by tag",
-    "untagged": "Untagged",
-    "summaryLine": "Labor {{labor}} ({{entries}} entries) · Expenses {{expenses}} ({{invoices}} invoices)"
-  },
   "invoices": {
     "all": "All",
     "none": "No invoices yet.",
     "created": "Invoice created.",
     "deleted": "Invoice deleted.",
     "deleteConfirm": "Delete invoice {{number}}?",
-    "allTags": "All tags",
     "types": {
       "released_funds": "Released funds",
       "labor": "Labor",
@@ -248,8 +232,6 @@
       "serviceMonthRequired": "Service month is required for labor.",
       "paymentMethod": "Payment method",
       "paymentMethodNone": "None",
-      "tag": "Tag",
-      "tagNone": "No tag",
       "refundHint": "A return nets against expenses. Link the materials & services invoice it refunds.",
       "refundsInvoice": "Refunds invoice",
       "refundsInvoiceNone": "Not linked",
@@ -360,7 +342,6 @@
       "amountOverrideHint": "Replaces the computed cost for this day.",
       "note": "Note",
       "effectiveCost": "Current cost: {{amount}}",
-      "dayTag": "Tag for the whole day",
       "conflictTitle": "Already logged elsewhere",
       "conflictGeneric": "Some workers are logged on another project the same day.",
       "conflictConfirm": "Log anyway"

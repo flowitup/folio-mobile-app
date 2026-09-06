@@ -15,7 +15,6 @@ import { ChipRow } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { shortMonthLabel } from "@/components/ui/month-picker";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
-import { Sheet } from "@/components/ui/sheet";
 import { ScreenTitle } from "@/components/ui/typography";
 import { useBillingAccess } from "@/features/companies/companies-api";
 import {
@@ -29,7 +28,6 @@ import { useInvoices } from "@/features/invoices/invoices-api";
 import { WorkerSalaryTab } from "@/features/labor/worker-salary-tab";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
-import { useTags } from "@/features/projects/tags-api";
 import { currentMonth, formatMonth } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { buildPursesSummary } from "@/lib/invoices/expense-purses";
@@ -53,13 +51,10 @@ function ExpensesTabContent() {
   const tokens = useTokens();
   const { projectId, project } = useSelectedProject();
   const [filter, setFilter] = useState<Filter>("all");
-  const [tagId, setTagId] = useState<string | null>(null);
-  const invoices = useInvoices(projectId, { tagId });
-  const tags = useTags(projectId);
+  const invoices = useInvoices(projectId);
   const billing = useBillingAccess();
   useRefetchOnFocus(invoices.refetch);
   const exportSheet = useRef<BottomSheetModal>(null);
-  const tagSheet = useRef<BottomSheetModal>(null);
 
   const rows = useMemo(() => invoices.data?.invoices ?? [], [invoices.data]);
   // Type filtering is client-side (README "Chi phí"): one list fetch, chips just narrow it.
@@ -89,7 +84,6 @@ function ExpensesTabContent() {
   const releasedCompany =
     meta?.funds_released_company_total ??
     (meta?.funds_released_total ?? 0) - releasedPersonal;
-  const tagLabel = tags.data?.find((tag) => tag.id === tagId)?.name;
 
   return (
     <View className="flex-1 bg-paper">
@@ -138,27 +132,6 @@ function ExpensesTabContent() {
           }))}
           value={filter}
           onChange={setFilter}
-          trailing={
-            (tags.data ?? []).length > 0 ? (
-              <Pressable
-                testID="invoices-tag-filter"
-                accessibilityRole="button"
-                onPress={() => tagSheet.current?.present()}
-                className={`h-[34px] flex-row items-center gap-1 rounded-full border px-[13px] active:opacity-70 ${tagId ? "border-ink bg-ink" : "border-line-2"}`}
-              >
-                <Icon
-                  name="tag"
-                  size={12}
-                  color={tagId ? tokens.onInk : tokens.ink}
-                />
-                <Text
-                  className={`font-sans-medium text-[13px] ${tagId ? "text-on-ink" : "text-ink"}`}
-                >
-                  {tagLabel ?? t("invoices.allTags")}
-                </Text>
-              </Pressable>
-            ) : null
-          }
         />
 
         {invoices.isPending ? (
@@ -172,7 +145,7 @@ function ExpensesTabContent() {
           />
         ) : null}
 
-        {meta && !tagId ? (
+        {meta ? (
           <View className="flex-row gap-2.5">
             <PurseCard
               testID="expenses-purse-company"
@@ -190,7 +163,7 @@ function ExpensesTabContent() {
             />
           </View>
         ) : null}
-        {meta && !tagId && summary.refundable.count > 0 ? (
+        {meta && summary.refundable.count > 0 ? (
           <PendingRefundBanner
             count={summary.refundable.count}
             total={summary.refundable.total}
@@ -234,28 +207,6 @@ function ExpensesTabContent() {
       </ScrollView>
 
       <InvoiceExportSheet ref={exportSheet} projectId={projectId} />
-      <Sheet ref={tagSheet} title={t("invoices.allTags")} snapPoints={["50%"]}>
-        {[{ id: null, name: t("invoices.allTags") }, ...(tags.data ?? [])].map(
-          (tag) => (
-            <Pressable
-              key={tag.id ?? "__all__"}
-              testID={`invoices-tag-filter-option-${tag.id ?? "__all__"}`}
-              onPress={() => {
-                setTagId(tag.id);
-                tagSheet.current?.dismiss();
-              }}
-              className={`flex-row items-center border-b border-line px-4 py-3 ${tag.id === tagId ? "bg-paper-2" : ""}`}
-            >
-              <Text className="flex-1 font-sans text-base text-ink">
-                {tag.name}
-              </Text>
-              {tag.id === tagId ? (
-                <Icon name="check" size={16} color={tokens.ink} />
-              ) : null}
-            </Pressable>
-          ),
-        )}
-      </Sheet>
     </View>
   );
 }

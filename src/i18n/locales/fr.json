@@ -70,7 +70,6 @@
       "chiffrage": "Chiffrage",
       "analyses": "Analyses",
       "members": "Membres",
-      "tags": "Étiquettes",
       "settings": "Réglages",
       "salaries": "Salaires"
     },
@@ -153,27 +152,12 @@
     "revoke": "Révoquer",
     "invitationRevoked": "Invitation révoquée."
   },
-  "tags": {
-    "create": "Nouvelle étiquette",
-    "edit": "Modifier l'étiquette",
-    "name": "Nom",
-    "nameRequired": "Le nom est obligatoire.",
-    "color": "Couleur",
-    "none": "Aucune étiquette.",
-    "deleted": "Étiquette supprimée.",
-    "deleteConfirm": "Supprimer l'étiquette {{name}} ?",
-    "deleteHint": "Les saisies et factures gardent leurs données mais perdent cette étiquette.",
-    "summary": "Coût par étiquette",
-    "untagged": "Sans étiquette",
-    "summaryLine": "Main-d'œuvre {{labor}} ({{entries}} saisies) · Dépenses {{expenses}} ({{invoices}} factures)"
-  },
   "invoices": {
     "all": "Tout",
     "none": "Aucune facture.",
     "created": "Facture créée.",
     "deleted": "Facture supprimée.",
     "deleteConfirm": "Supprimer la facture {{number}} ?",
-    "allTags": "Toutes les étiquettes",
     "types": {
       "released_funds": "Fonds débloqués",
       "labor": "Main-d'œuvre",
@@ -248,8 +232,6 @@
       "serviceMonthRequired": "Le mois de prestation est obligatoire.",
       "paymentMethod": "Moyen de paiement",
       "paymentMethodNone": "Aucun",
-      "tag": "Étiquette",
-      "tagNone": "Sans étiquette",
       "refundHint": "Un retour vient en déduction. Liez la facture matériaux & services remboursée.",
       "refundsInvoice": "Facture remboursée",
       "refundsInvoiceNone": "Non liée",
@@ -360,7 +342,6 @@
       "amountOverrideHint": "Remplace le coût calculé pour ce jour.",
       "note": "Note",
       "effectiveCost": "Coût actuel : {{amount}}",
-      "dayTag": "Étiquette de la journée",
       "conflictTitle": "Déjà saisi ailleurs",
       "conflictGeneric": "Certains ouvriers sont saisis sur un autre chantier le même jour.",
       "conflictConfirm": "Saisir quand même"
