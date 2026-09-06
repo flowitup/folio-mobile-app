@@ -16,7 +16,6 @@ import { Card } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { useMembers } from "@/features/projects/members-api";
-import type { Tag } from "@/features/projects/tags-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 
@@ -279,7 +278,6 @@ export type TileState = {
 /** Mirrors the web `buildBulkPayload`: checked tiles become bulk entries. */
 export function buildBulkEntries(
   states: Record<string, TileState>,
-  tagId: string | null,
 ): BulkLogEntry[] {
   return Object.entries(states)
     .filter(([, state]) => state.checked)
@@ -289,7 +287,6 @@ export function buildBulkEntries(
       ...(state.supplement_hours > 0
         ? { supplement_hours: state.supplement_hours }
         : {}),
-      ...(tagId ? { tag_id: tagId } : {}),
     }));
 }
 
@@ -298,7 +295,6 @@ type LogDayProps = {
   workers: Worker[];
   loggedWorkerIds: Set<string>;
   lastDayEntries: LaborEntry[];
-  tags: Tag[];
   submitting: boolean;
   onSubmit: (entries: BulkLogEntry[]) => void;
 };
@@ -306,21 +302,12 @@ type LogDayProps = {
 /** Worker tiles for one day: tap toggles, shift chip cycles full → half → overtime, supplement stepper. */
 export const LogDaySheet = forwardRef<SheetHandle, LogDayProps>(
   function LogDaySheet(
-    {
-      date,
-      workers,
-      loggedWorkerIds,
-      lastDayEntries,
-      tags,
-      submitting,
-      onSubmit,
-    },
+    { date, workers, loggedWorkerIds, lastDayEntries, submitting, onSubmit },
     ref,
   ) {
     const { t } = useTranslation();
     const sheet = useRef<BottomSheetModal>(null);
     const [states, setStates] = useState<Record<string, TileState>>({});
-    const [tagId, setTagId] = useState<string | null>(null);
 
     useEffect(() => {
       const next: Record<string, TileState> = {};
@@ -482,22 +469,12 @@ export const LogDaySheet = forwardRef<SheetHandle, LogDayProps>(
               </Card>
             );
           })}
-          {tags.length > 0 ? (
-            <Select
-              testID="log-day-tag"
-              label={t("invoices.form.tag")}
-              placeholder={t("invoices.form.tagNone")}
-              value={tagId}
-              options={tags.map((tag) => ({ value: tag.id, label: tag.name }))}
-              onChange={setTagId}
-            />
-          ) : null}
           <Button
             testID="log-day-submit"
             label={t("labor.log.submit", { count: selectedCount })}
             disabled={selectedCount === 0}
             loading={submitting}
-            onPress={() => onSubmit(buildBulkEntries(states, tagId))}
+            onPress={() => onSubmit(buildBulkEntries(states))}
           />
         </View>
       </Sheet>
@@ -509,25 +486,20 @@ export const LogDaySheet = forwardRef<SheetHandle, LogDayProps>(
 
 type EditEntryProps = {
   entry: LaborEntry | null;
-  tags: Tag[];
   submitting: boolean;
   onSubmit: (values: UpdateAttendancePayload) => void;
   onDelete: () => void;
 };
 
-/** Edit one attendance row: shift, supplement, override, note, tag; delete. */
+/** Edit one attendance row: shift, supplement, override, note; delete. */
 export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
-  function EditEntrySheet(
-    { entry, tags, submitting, onSubmit, onDelete },
-    ref,
-  ) {
+  function EditEntrySheet({ entry, submitting, onSubmit, onDelete }, ref) {
     const { t } = useTranslation();
     const sheet = useRef<BottomSheetModal>(null);
     const [shift, setShift] = useState<ShiftType | "none">("full");
     const [supplement, setSupplement] = useState("0");
     const [override, setOverride] = useState("");
     const [note, setNote] = useState("");
-    const [tagId, setTagId] = useState<string | null>(null);
 
     useEffect(() => {
       setShift(entry?.shift_type ?? "none");
@@ -536,7 +508,6 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
         entry?.amount_override != null ? String(entry.amount_override) : "",
       );
       setNote(entry?.note ?? "");
-      setTagId(entry?.tag_id ?? null);
     }, [entry]);
 
     useImperativeHandle(ref, () => ({
@@ -586,16 +557,6 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
             onChangeText={setNote}
             multiline
           />
-          {tags.length > 0 ? (
-            <Select
-              testID="entry-tag"
-              label={t("invoices.form.tag")}
-              placeholder={t("invoices.form.tagNone")}
-              value={tagId}
-              options={tags.map((tag) => ({ value: tag.id, label: tag.name }))}
-              onChange={setTagId}
-            />
-          ) : null}
           <Text className="mb-3 text-sm text-muted-foreground">
             {t("labor.log.effectiveCost", {
               amount: formatMoney(entry?.effective_cost ?? 0),
@@ -617,7 +578,6 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
                   ? parseMoneyInput(override)
                   : null,
                 note: note.trim() || null,
-                tag_id: tagId,
               })
             }
           />

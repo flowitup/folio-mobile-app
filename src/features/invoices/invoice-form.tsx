@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Card } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
-import { useTags } from "@/features/projects/tags-api";
 import { currentMonth, toIsoDate } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import { HIGHLIGHT_COLORS, invoiceTotals } from "@/lib/invoices/invoice-totals";
@@ -92,7 +91,6 @@ export function InvoiceForm({
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(
     initial?.payment_method_id ?? null,
   );
-  const [tagId, setTagId] = useState<string | null>(initial?.tag_id ?? null);
   const [serviceMonth, setServiceMonth] = useState<string>(
     initial?.service_month?.slice(0, 7) ?? currentMonth(),
   );
@@ -115,7 +113,6 @@ export function InvoiceForm({
   const [error, setError] = useState<string | null>(null);
 
   const paymentMethods = usePaymentMethods(companyId);
-  const tags = useTags(projectId);
   const workers = useWorkers(projectId);
   // Return links: refunds an M&S invoice; an avoir can be applied to any non-return, non-release invoice.
   const materialsInvoices = useInvoices(projectId, {
@@ -165,7 +162,6 @@ export function InvoiceForm({
       notes: notes.trim() || undefined,
       items,
       payment_method_id: paymentMethodId,
-      tag_id: tagId,
       highlight_color: highlight,
       ...(type === "return"
         ? {
@@ -264,17 +260,6 @@ export function InvoiceForm({
           onChange={setPaymentMethodId}
         />
       ) : null}
-      <Select
-        testID="invoice-tag"
-        label={t("invoices.form.tag")}
-        placeholder={t("invoices.form.tagNone")}
-        value={tagId}
-        options={(tags.data ?? []).map((tag) => ({
-          value: tag.id,
-          label: tag.name,
-        }))}
-        onChange={setTagId}
-      />
 
       {type === "return" ? (
         <Card className="mb-4">

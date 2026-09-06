@@ -403,21 +403,6 @@ export async function fetchConflicts(
   );
 }
 
-export function useSetDayTag(projectId: string) {
-  const { t } = useTranslation();
-  return useApiMutation<{ date: string; tagId: string | null }>({
-    mutationFn: async ({ date, tagId }) =>
-      unwrapAs<unknown>(
-        await api.PUT("/api/v1/projects/{project_id}/labor-entries/day-tag", {
-          params: { path: { project_id: projectId } },
-          body: { date, tag_id: tagId } as never,
-        }),
-      ),
-    invalidates: laborInvalidations(projectId),
-    successMessage: t("common.saved"),
-  });
-}
-
 // ---- activities & day descriptions -----------------------------------------
 
 export function useActivities(projectId: string) {

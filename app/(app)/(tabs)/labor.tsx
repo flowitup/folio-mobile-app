@@ -69,7 +69,6 @@ import { projectCan, useProject } from "@/features/projects/projects-api";
 import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
-import { useTags } from "@/features/projects/tags-api";
 import {
   currentMonth,
   formatMonth,
@@ -109,7 +108,6 @@ function LaborTabContent() {
 
   const project = useProject(id);
   const workers = useWorkers(id);
-  const tags = useTags(id);
   const entries = useLaborEntries(id, range.from, range.to);
   const activities = useActivities(id);
   const dayDescriptions = useDayDescriptions(id);
@@ -433,14 +431,12 @@ function LaborTabContent() {
         workers={workers.data ?? []}
         loggedWorkerIds={new Set(dayEntries.map((e) => e.worker_id))}
         lastDayEntries={lastDayEntries}
-        tags={tags.data ?? []}
         submitting={bulkLog.isPending}
         onSubmit={(bulkEntries) => void submitBulk(bulkEntries)}
       />
       <EditEntrySheet
         ref={entrySheet}
         entry={editingEntry}
-        tags={tags.data ?? []}
         submitting={updateEntry.isPending}
         onSubmit={(values) =>
           editingEntry &&
@@ -469,7 +465,6 @@ function LaborTabContent() {
           dayDescriptions.data?.find((d) => d.date === selectedDay)
             ?.description ?? ""
         }
-        tags={tags.data ?? []}
       />
       <WorkerFormSheet
         ref={workerForm}

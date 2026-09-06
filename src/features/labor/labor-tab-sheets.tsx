@@ -22,7 +22,6 @@ import {
   useCreateActivity,
   useDeleteActivity,
   useSetDayDescription,
-  useSetDayTag,
 } from "@/features/labor/labor-api";
 import type { PaymentRow } from "@/features/labor/labor-panels";
 import type {
@@ -30,7 +29,6 @@ import type {
   LaborEntry,
   Worker,
 } from "@/features/labor/labor-types";
-import type { Tag } from "@/features/projects/tags-api";
 import { currentMonth, formatMonth } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import { useTokens } from "@/theme/tokens";
@@ -110,17 +108,15 @@ export const DayDetailsSheet = forwardRef<
     entries: LaborEntry[];
     activities: LaborActivity[];
     description: string;
-    tags: Tag[];
   }
 >(function DayDetailsSheet(
-  { projectId, date, entries, activities, description, tags },
+  { projectId, date, entries, activities, description },
   ref,
 ) {
   const { t } = useTranslation();
   const createActivity = useCreateActivity(projectId);
   const deleteActivity = useDeleteActivity(projectId);
   const setDayDescription = useSetDayDescription(projectId);
-  const setDayTag = useSetDayTag(projectId);
   const [activityTitle, setActivityTitle] = useState("");
   const [draft, setDraft] = useState(description);
   // A new day (or a fresh server value) resets the description draft.
@@ -139,16 +135,6 @@ export const DayDetailsSheet = forwardRef<
   return (
     <Sheet ref={ref} title={t("labor.calendar.details")} snapPoints={["75%"]}>
       <View className="p-4">
-        {entries.length > 0 && tags.length > 0 ? (
-          <Select
-            testID="day-tag"
-            label={t("labor.log.dayTag")}
-            placeholder={t("invoices.form.tagNone")}
-            value={entries[0]?.tag_id ?? null}
-            options={tags.map((tag) => ({ value: tag.id, label: tag.name }))}
-            onChange={(tagId) => setDayTag.mutate({ date, tagId })}
-          />
-        ) : null}
         <Eyebrow className="mb-1.5">{t("labor.activities.title")}</Eyebrow>
         {activities.map((activity) => (
           <Card

@@ -12,7 +12,6 @@ export const PROJECT_SECTIONS = [
   "chiffrage",
   "analyses",
   "members",
-  "tags",
   "settings",
 ] as const;
 

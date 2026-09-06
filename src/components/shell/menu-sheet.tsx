@@ -31,7 +31,6 @@ const MENU_PROJECT_SECTIONS: { key: string; icon: IconName }[] = [
   { key: "chiffrage", icon: "clipboard" },
   { key: "analyses", icon: "bar-chart-2" },
   { key: "members", icon: "user-plus" },
-  { key: "tags", icon: "tag" },
   { key: "settings", icon: "settings" },
 ];
 
