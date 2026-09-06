@@ -1439,6 +1439,8 @@
     "edit": "Modifier ce jour",
     "editSubmit": "Envoyer la demande",
     "editSent": "Demande de modification envoyée — en attente d'un responsable.",
+    "editUnchanged": "Aucune modification : ce jour a déjà ces valeurs.",
+    "editDuplicate": "Cette demande de modification est déjà en attente d'un responsable.",
     "supplement": "Heures sup.",
     "note": "Note",
     "changeRequested": "Modification demandée",
