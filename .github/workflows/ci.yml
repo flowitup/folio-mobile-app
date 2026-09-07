@@ -219,6 +219,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [lint, type-check]
+    # Explicit result checks: the default success() also inspects transitive
+    # ancestors, and version-bump is skipped on pushes to master.
+    if: always() && needs.lint.result == 'success' && needs.type-check.result == 'success'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -264,8 +267,8 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: [test]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.test.result == 'success'
     steps:
       - uses: actions/checkout@v6
         with:
