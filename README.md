@@ -14,7 +14,7 @@ It is a second client of the existing Folio backend: same API, same users, same 
 | Auth             | Bearer JWT from `POST /api/v1/auth/login`; tokens in `expo-secure-store`; single-flight refresh on 401                                                  |
 | i18n             | i18next, locales `en` / `fr` / `vi` (device language, English fallback); a Jest test enforces key parity                                                |
 | Sheets / pickers | `@gorhom/bottom-sheet`, `@react-native-community/datetimepicker`, expo-image-picker / expo-file-system for uploads                                      |
-| Quality          | ESLint 9 (expo config), TypeScript strict, Jest (`jest-expo` + RNTL 14), GitHub Actions CI (`lint`, `type-check`, `test`)                               |
+| Quality          | ESLint 9 (expo config), TypeScript strict, Jest (`jest-expo` + RNTL 14), GitHub Actions CI/CD (see Releases below)                                      |
 
 ## App shell (design 2a, "project first")
 
@@ -100,6 +100,19 @@ Once the dev client is installed, later runs only need Metro (`npm start`) and o
 
 Before every commit: `npx prettier --write`, `npm run lint`, `npm run type-check`, `npx jest --ci` —
 all four green, zero warnings (CI runs the last three).
+
+## Releases (CI/CD)
+
+`.github/workflows/ci.yml` mirrors the web repos:
+
+- **Pull request to `master`** — the `version-bump` job reads the PR labels and commits the bump to
+  `package.json`, `package-lock.json` and `app.json` (`expo.version`) on the PR branch:
+  `version:major` / `version:minor` / `version:patch` (default when unlabeled) / `version:none` (no bump,
+  no release). Then `lint`, `type-check` and `test` run against the bumped commit.
+- **Push to `master`** (squash merge) — the `release` job tags `v<version>` and publishes a GitHub Release
+  with generated notes; it is skipped when the tag already exists.
+
+App binaries are not built by CI: EAS builds and dev clients are cut separately.
 
 ## Refreshing the API types
 
