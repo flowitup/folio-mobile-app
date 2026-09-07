@@ -131,7 +131,9 @@
     "role": "Rôle : {{role}}",
     "usersAdmin": "Utilisateurs (admin)",
     "title": "Paramètres",
-    "joinCompany": "Rejoindre une autre société"
+    "joinCompany": "Rejoindre une autre société",
+    "about": "À propos",
+    "version": "Version"
   },
   "members": {
     "title": "Membres ({{count}})",
@@ -292,7 +294,8 @@
       "weekdays": ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"],
       "empty": "Aucun pointage",
       "logDay": "Pointer ce jour",
-      "details": "Activités & notes"
+      "details": "Activités & notes",
+      "listEmpty": "Aucun pointage ce mois-ci."
     },
     "shift": {
       "full": "Journée",
@@ -394,6 +397,24 @@
     "kpi": {
       "cost": "Coût",
       "unpaid": "Impayé"
+    },
+    "holidays": {
+      "publicHoliday": "jour férié",
+      "newYear": "Jour de l'An",
+      "easterMonday": "Lundi de Pâques",
+      "labourDay": "Fête du Travail",
+      "victory1945": "Victoire 1945",
+      "ascension": "Ascension",
+      "pentecostMonday": "Lundi de Pentecôte",
+      "bastilleDay": "Fête Nationale",
+      "assumption": "Assomption",
+      "allSaints": "Toussaint",
+      "armistice1918": "Armistice 1918",
+      "christmas": "Noël"
+    },
+    "view": {
+      "calendar": "Calendrier",
+      "list": "Liste"
     }
   },
   "documents": {
@@ -1306,6 +1327,25 @@
       "budgetCredit": "Budget / crédit",
       "bankRemaining": "Crédit bancaire restant",
       "pendingCompany": "En attente de remboursement société ({{count}})"
+    },
+    "today": {
+      "title": "Aujourd'hui sur site",
+      "workers_zero": "aucun ouvrier sur site",
+      "workers_one": "{{count}} ouvrier sur site",
+      "workers_other": "{{count}} ouvriers sur site",
+      "noAddress": "Ajoutez une adresse au projet pour voir la météo",
+      "unavailable": "Météo indisponible",
+      "conditions": {
+        "clear": "dégagé",
+        "partlyCloudy": "partiellement nuageux",
+        "cloudy": "nuageux",
+        "fog": "brouillard",
+        "drizzle": "bruine",
+        "rain": "pluie",
+        "snow": "neige",
+        "showers": "averses",
+        "thunderstorm": "orage"
+      }
     }
   },
   "salaries": {

@@ -23,6 +23,7 @@ import {
   useLaborPaymentsSummary,
 } from "@/features/invoices/invoices-api";
 import { AttendanceCalendar } from "@/features/labor/attendance-calendar";
+import { AttendanceList } from "@/features/labor/attendance-list";
 import {
   exportLabor,
   fetchConflicts,
@@ -78,11 +79,15 @@ import {
 import { formatMoney } from "@/lib/format/money";
 import { monthRange } from "@/lib/labor/month-range";
 import { ApiError } from "@/lib/query/api-error";
+import { frenchHolidayKeyForIso } from "@/lib/labor/french-holidays";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
 
 type Segment = "calendar" | "workers" | "payments";
 const SEGMENTS: Segment[] = ["calendar", "workers", "payments"];
+/** Attendance segment view (web ViewToggle): month grid + day card, or the flat day list. */
+type AttendanceView = "calendar" | "list";
+const ATTENDANCE_VIEWS: AttendanceView[] = ["calendar", "list"];
 
 /** Nhân công: month stepper, segmented Chấm công / Nhân công / Thanh toán, calendar + day card, worker and payment cards. */
 function LaborTabContent() {
@@ -94,10 +99,13 @@ function LaborTabContent() {
   const { projectId, project: selected } = useSelectedProject();
   const id = projectId;
   const [segment, setSegment] = useState<Segment>("calendar");
+  const [attendanceView, setAttendanceView] =
+    useState<AttendanceView>("calendar");
   const [month, setMonth] = useState(currentMonth());
   const range = useMemo(() => monthRange(month), [month]);
   const today = useMemo(() => toIsoDate(new Date()), []);
   const [selectedDay, setSelectedDay] = useState<string>(today);
+  const selectedHoliday = frenchHolidayKeyForIso(selectedDay);
 
   // "Trả ›" on the overview lands on the payments segment.
   useEffect(() => {
@@ -315,8 +323,28 @@ function LaborTabContent() {
               cost={summary.data?.total_cost ?? 0}
               unpaid={unpaid}
             />
+            <Segmented<AttendanceView>
+              testID="attendance-view"
+              size="sm"
+              value={attendanceView}
+              onChange={setAttendanceView}
+              options={ATTENDANCE_VIEWS.map((value) => ({
+                value,
+                label: t(`labor.view.${value}`),
+              }))}
+            />
             {entries.isPending ? (
               <ActivityIndicator className="my-6" color={tokens.ink} />
+            ) : attendanceView === "list" ? (
+              <AttendanceList
+                entries={entries.data ?? []}
+                colorOf={colorOf}
+                roleOf={roleOf}
+                onEntry={(entry) => {
+                  setEditingEntry(entry);
+                  setTimeout(() => entrySheet.current?.open(), 0);
+                }}
+              />
             ) : (
               <AttendanceCalendar
                 month={month}
@@ -328,6 +356,11 @@ function LaborTabContent() {
             )}
             <LaborDayCard
               title={dayCardTitle(selectedDay, localeTag())}
+              subtitle={
+                selectedHoliday
+                  ? `${t(`labor.holidays.${selectedHoliday}`)} · ${t("labor.holidays.publicHoliday")}`
+                  : null
+              }
               entries={dayEntries}
               colorOf={colorOf}
               roleOf={roleOf}

@@ -1,3 +1,4 @@
+import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
@@ -10,7 +11,7 @@ import { useMyCompanies } from "@/features/companies/companies-api";
 import { usePaymentMethods } from "@/features/invoices/invoices-api";
 import { useLaborRoles } from "@/features/labor/labor-api";
 
-/** Cài đặt hub: list card with a value column (company name, counts) and chevrons; outline sign-out. */
+/** Cài đặt hub: list card with a value column (company name, counts) and chevrons; About card; outline sign-out. */
 export default function SettingsHub() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function SettingsHub() {
   const primary = companies.data?.[0];
   const paymentMethods = usePaymentMethods(primary?.id);
   const roles = useLaborRoles();
+  const appVersion = Constants.expoConfig?.version ?? "—";
 
   const rows: { key: string; label: string; value?: string; path: string }[] = [
     {
@@ -87,6 +89,19 @@ export default function SettingsHub() {
               onPress={() => router.push(row.path)}
             />
           ))}
+        </Card>
+        <Card
+          padded={false}
+          className="overflow-hidden"
+          testID="settings-about"
+        >
+          <ListRow
+            title={t("settings.about")}
+            subtitle={t("settings.version")}
+            value={`v${appVersion}`}
+            grouped
+            testID="settings-version"
+          />
         </Card>
         <Button
           label={t("home.signOut")}

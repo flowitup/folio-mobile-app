@@ -12,12 +12,15 @@ import {
   SpendByTypeCard,
 } from "@/features/dashboard/overview-cards";
 import type { Figure } from "@/features/dashboard/overview-cards";
+import { TodayOnSiteCard } from "@/features/dashboard/today-on-site-card";
 import { useInvoices } from "@/features/invoices/invoices-api";
+import { useLaborEntries } from "@/features/labor/labor-api";
 import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useTasks } from "@/features/tasks/tasks-api";
 import { computeBankReleaseMetrics } from "@/lib/dashboard/bank-release-metrics";
+import { countWorkersOnSite } from "@/lib/dashboard/weather";
 import { groupAgendaTasks } from "@/lib/dashboard/overview-agenda";
 import {
   buildMonthlySpendSeries,
@@ -27,11 +30,12 @@ import {
   computePendingRefunds,
   computeSpentTotal,
 } from "@/lib/dashboard/overview-metrics";
+import { toIsoDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
 
-/** Tổng quan: headline remaining, figures, spend by type (6 months), this week's agenda. */
+/** Tổng quan: headline remaining, figures, spend by type (6 months), this week's agenda, today on site. */
 function OverviewTabContent() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -44,6 +48,13 @@ function OverviewTabContent() {
   useRefetchOnFocus(tasks.refetch);
 
   const referenceDate = useMemo(() => new Date(), []);
+  const todayIso = useMemo(() => toIsoDate(referenceDate), [referenceDate]);
+  const todayEntries = useLaborEntries(projectId, todayIso, todayIso);
+  useRefetchOnFocus(todayEntries.refetch);
+  const workersOnSite = useMemo(
+    () => countWorkersOnSite(todayEntries.data, todayIso),
+    [todayEntries.data, todayIso],
+  );
   const rows = useMemo(() => invoices.data?.invoices ?? [], [invoices.data]);
   const fundsReleased = invoices.data?.funds_released_total ?? 0;
   const budgetValue = project?.budget == null ? null : Number(project.budget);
@@ -164,6 +175,10 @@ function OverviewTabContent() {
             <AgendaCard
               groups={agenda}
               onOpenPlanning={() => router.navigate("/(app)/(tabs)/planning")}
+            />
+            <TodayOnSiteCard
+              address={project.address}
+              workersOnSite={workersOnSite}
             />
           </>
         ) : null}

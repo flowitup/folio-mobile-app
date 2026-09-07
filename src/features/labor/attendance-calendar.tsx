@@ -4,8 +4,10 @@ import { Pressable, Text, View } from "react-native";
 
 import { Card } from "@/components/ui/primitives";
 import { buildMonthCells } from "@/features/labor/calendar-month-grid";
+import { dayCardTitle } from "@/features/labor/labor-panels";
 import type { LaborEntry } from "@/features/labor/labor-types";
-import { toIsoDate } from "@/lib/format/date";
+import { localeTag, toIsoDate } from "@/lib/format/date";
+import { frenchHolidayKeyForIso } from "@/lib/labor/french-holidays";
 import { useTokens } from "@/theme/tokens";
 
 type Props = {
@@ -19,7 +21,8 @@ type Props = {
 
 /**
  * 2a attendance calendar: T2…CN header, 48px r12 cells with a mono day number and up to four
- * 5px worker dots; today on paper-2 (bold), selected on ink, future days muted-2.
+ * 5px worker dots; today on paper-2 (bold), selected on ink, future days muted-2, French
+ * public holidays on accent tint with the holiday name as accessibility label.
  */
 export function AttendanceCalendar({
   month,
@@ -75,6 +78,7 @@ export function AttendanceCalendar({
             const isSelected = iso === selected;
             const isToday = iso === today;
             const future = iso > today;
+            const holidayKey = frenchHolidayKeyForIso(iso);
             const workerIds = Array.from(
               new Set(dayEntries.map((e) => e.worker_id)),
             ).slice(0, 4);
@@ -84,17 +88,24 @@ export function AttendanceCalendar({
                 testID={`calendar-day-${iso}`}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={
+                  holidayKey
+                    ? `${dayCardTitle(iso, localeTag())} — ${t(`labor.holidays.${holidayKey}`)} (${t("labor.holidays.publicHoliday")})`
+                    : dayCardTitle(iso, localeTag())
+                }
                 onPress={() => onSelectDay(iso)}
-                className={`h-12 flex-1 items-center justify-center gap-1 rounded-xl active:opacity-70 ${isSelected ? "bg-ink" : isToday ? "bg-paper-2" : ""}`}
+                className={`h-12 flex-1 items-center justify-center gap-1 rounded-xl active:opacity-70 ${isSelected ? "bg-ink" : isToday ? "bg-paper-2" : holidayKey ? "bg-accent-tint" : ""}`}
               >
                 <Text
                   className={`text-[13px] ${isToday || isSelected ? "font-mono-bold" : "font-mono-regular"}`}
                   style={{
                     color: isSelected
                       ? tokens.onInk
-                      : future
-                        ? tokens.muted2
-                        : tokens.ink,
+                      : holidayKey
+                        ? tokens.accentInk
+                        : future
+                          ? tokens.muted2
+                          : tokens.ink,
                   }}
                 >
                   {Number(iso.slice(8, 10))}
