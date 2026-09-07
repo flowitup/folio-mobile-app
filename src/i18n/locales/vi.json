@@ -131,7 +131,9 @@
     "role": "Vai trò: {{role}}",
     "usersAdmin": "Người dùng (admin)",
     "title": "Cài đặt",
-    "joinCompany": "Tham gia công ty khác"
+    "joinCompany": "Tham gia công ty khác",
+    "about": "Giới thiệu",
+    "version": "Phiên bản"
   },
   "members": {
     "title": "Thành viên ({{count}})",
@@ -292,7 +294,8 @@
       "weekdays": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
       "empty": "Chưa chấm công",
       "logDay": "Chấm công ngày này",
-      "details": "Hoạt động & ghi chú"
+      "details": "Hoạt động & ghi chú",
+      "listEmpty": "Chưa có chấm công tháng này."
     },
     "shift": {
       "full": "Cả ngày",
@@ -394,6 +397,24 @@
     "kpi": {
       "cost": "Chi phí",
       "unpaid": "Chưa trả"
+    },
+    "holidays": {
+      "publicHoliday": "ngày lễ",
+      "newYear": "Tết Dương lịch",
+      "easterMonday": "Thứ Hai Phục Sinh",
+      "labourDay": "Ngày Quốc tế Lao động",
+      "victory1945": "Ngày Chiến thắng 1945",
+      "ascension": "Lễ Thăng Thiên",
+      "pentecostMonday": "Thứ Hai Lễ Ngũ Tuần",
+      "bastilleDay": "Quốc khánh Pháp",
+      "assumption": "Lễ Đức Mẹ Lên Trời",
+      "allSaints": "Lễ Các Thánh",
+      "armistice1918": "Ngày Đình chiến 1918",
+      "christmas": "Lễ Giáng Sinh"
+    },
+    "view": {
+      "calendar": "Lịch",
+      "list": "Danh sách"
     }
   },
   "documents": {
@@ -1306,6 +1327,25 @@
       "budgetCredit": "Ngân sách / tín dụng",
       "bankRemaining": "Tín dụng NH còn lại",
       "pendingCompany": "Chờ công ty hoàn ({{count}})"
+    },
+    "today": {
+      "title": "Hôm nay tại công trường",
+      "workers_zero": "không có công nhân tại công trường",
+      "workers_one": "{{count}} công nhân tại công trường",
+      "workers_other": "{{count}} công nhân tại công trường",
+      "noAddress": "Thêm địa chỉ dự án để xem thời tiết",
+      "unavailable": "Không lấy được thời tiết",
+      "conditions": {
+        "clear": "trời quang",
+        "partlyCloudy": "ít mây",
+        "cloudy": "nhiều mây",
+        "fog": "sương mù",
+        "drizzle": "mưa phùn",
+        "rain": "mưa",
+        "snow": "tuyết",
+        "showers": "mưa rào",
+        "thunderstorm": "dông"
+      }
     }
   },
   "salaries": {

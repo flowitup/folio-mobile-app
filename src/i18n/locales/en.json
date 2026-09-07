@@ -131,7 +131,9 @@
     "role": "Role: {{role}}",
     "usersAdmin": "Users (admin)",
     "title": "Settings",
-    "joinCompany": "Join another company"
+    "joinCompany": "Join another company",
+    "about": "About",
+    "version": "Version"
   },
   "members": {
     "title": "Members ({{count}})",
@@ -292,7 +294,8 @@
       "weekdays": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
       "empty": "No attendance yet",
       "logDay": "Log this day",
-      "details": "Activities & notes"
+      "details": "Activities & notes",
+      "listEmpty": "No attendance this month."
     },
     "shift": {
       "full": "Full day",
@@ -394,6 +397,24 @@
     "kpi": {
       "cost": "Cost",
       "unpaid": "Unpaid"
+    },
+    "holidays": {
+      "publicHoliday": "public holiday",
+      "newYear": "New Year's Day",
+      "easterMonday": "Easter Monday",
+      "labourDay": "Labour Day",
+      "victory1945": "Victory Day 1945",
+      "ascension": "Ascension Day",
+      "pentecostMonday": "Whit Monday",
+      "bastilleDay": "Bastille Day",
+      "assumption": "Assumption of Mary",
+      "allSaints": "All Saints' Day",
+      "armistice1918": "Armistice Day 1918",
+      "christmas": "Christmas Day"
+    },
+    "view": {
+      "calendar": "Calendar",
+      "list": "List"
     }
   },
   "documents": {
@@ -1306,6 +1327,25 @@
       "budgetCredit": "Budget / credit",
       "bankRemaining": "Bank credit left",
       "pendingCompany": "Awaiting company refund ({{count}})"
+    },
+    "today": {
+      "title": "Today on site",
+      "workers_zero": "no workers on site",
+      "workers_one": "{{count}} worker on site",
+      "workers_other": "{{count}} workers on site",
+      "noAddress": "Add a project address to see the weather",
+      "unavailable": "Weather unavailable",
+      "conditions": {
+        "clear": "clear",
+        "partlyCloudy": "partly cloudy",
+        "cloudy": "cloudy",
+        "fog": "fog",
+        "drizzle": "drizzle",
+        "rain": "rain",
+        "snow": "snow",
+        "showers": "showers",
+        "thunderstorm": "thunderstorm"
+      }
     }
   },
   "salaries": {

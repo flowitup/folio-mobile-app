@@ -20,7 +20,8 @@ export function dayCardTitle(iso: string, localeTag: string): string {
   return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${d}/${m}`;
 }
 
-function shiftChip(entry: LaborEntry, t: (key: string) => string) {
+/** Shift badge label + tone for an entry; shared with the attendance list view. */
+export function shiftChip(entry: LaborEntry, t: (key: string) => string) {
   if (entry.shift_type === "full")
     return { label: t("labor.shift.full"), tone: "success" as const };
   if (entry.shift_type === "half")
@@ -80,8 +81,57 @@ export function LaborKpis({ days, cost, unpaid }: KpiProps) {
   );
 }
 
+type EntryRowProps = {
+  entry: LaborEntry;
+  color: string;
+  role: string | null;
+  onPress: (entry: LaborEntry) => void;
+  testID?: string;
+  size?: 32 | 36;
+};
+
+/** One attendance entry: avatar, name, role · cost, shift badge. Shared by the day card and the list view. */
+export function LaborEntryRow({
+  entry,
+  color,
+  role,
+  onPress,
+  testID,
+  size = 36,
+}: EntryRowProps) {
+  const { t } = useTranslation();
+  const chip = shiftChip(entry, t);
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      onPress={() => onPress(entry)}
+      className="flex-row items-center gap-3 active:opacity-70"
+    >
+      <Avatar name={entry.worker_name} size={size} color={color} />
+      <View className="min-w-0 flex-1">
+        <Text
+          className="font-sans-medium text-[14px] text-ink"
+          numberOfLines={1}
+        >
+          {entry.worker_name}
+        </Text>
+        <Text className="font-sans text-[11.5px] text-muted" numberOfLines={1}>
+          {role ?? "—"} ·{" "}
+          <Text className="font-mono-regular">
+            {formatMoney(entry.effective_cost)}
+          </Text>
+        </Text>
+      </View>
+      <Badge label={chip.label} tone={chip.tone} />
+    </Pressable>
+  );
+}
+
 type DayCardProps = {
   title: string;
+  /** Secondary line under the title, e.g. the public-holiday name. */
+  subtitle?: string | null;
   entries: LaborEntry[];
   colorOf: (workerId: string) => string;
   roleOf: (workerId: string) => string | null;
@@ -93,6 +143,7 @@ type DayCardProps = {
 /** Selected-day card: title + mono total, worker rows with shift chips, "✓ Chấm công ngày này" CTA. */
 export function LaborDayCard({
   title,
+  subtitle,
   entries,
   colorOf,
   roleOf,
@@ -106,7 +157,19 @@ export function LaborDayCard({
   return (
     <Card radius={16} elevated testID="labor-day-card">
       <View className="flex-row items-center justify-between">
-        <Text className="font-sans-semibold text-[15px] text-ink">{title}</Text>
+        <View className="min-w-0 flex-1">
+          <Text className="font-sans-semibold text-[15px] text-ink">
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text
+              className="font-sans text-[11.5px] text-accent-ink"
+              testID="labor-day-holiday"
+            >
+              {subtitle}
+            </Text>
+          ) : null}
+        </View>
         <Text
           className="font-mono text-[13px] text-muted"
           testID="labor-day-total"
@@ -115,42 +178,16 @@ export function LaborDayCard({
         </Text>
       </View>
       <View className="mt-3 gap-2.5">
-        {entries.map((entry) => {
-          const chip = shiftChip(entry, t);
-          return (
-            <Pressable
-              key={entry.id}
-              testID={`day-entry-${entry.id}`}
-              accessibilityRole="button"
-              onPress={() => onEntry(entry)}
-              className="flex-row items-center gap-3 active:opacity-70"
-            >
-              <Avatar
-                name={entry.worker_name}
-                size={36}
-                color={colorOf(entry.worker_id)}
-              />
-              <View className="min-w-0 flex-1">
-                <Text
-                  className="font-sans-medium text-[14px] text-ink"
-                  numberOfLines={1}
-                >
-                  {entry.worker_name}
-                </Text>
-                <Text
-                  className="font-sans text-[11.5px] text-muted"
-                  numberOfLines={1}
-                >
-                  {roleOf(entry.worker_id) ?? "—"} ·{" "}
-                  <Text className="font-mono-regular">
-                    {formatMoney(entry.effective_cost)}
-                  </Text>
-                </Text>
-              </View>
-              <Badge label={chip.label} tone={chip.tone} />
-            </Pressable>
-          );
-        })}
+        {entries.map((entry) => (
+          <LaborEntryRow
+            key={entry.id}
+            entry={entry}
+            color={colorOf(entry.worker_id)}
+            role={roleOf(entry.worker_id)}
+            onPress={onEntry}
+            testID={`day-entry-${entry.id}`}
+          />
+        ))}
       </View>
       <Pressable
         testID="day-log"
