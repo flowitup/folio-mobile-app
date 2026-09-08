@@ -89,10 +89,11 @@ export function useUnassignMember(projectId: string) {
   });
 }
 
-export function useInvitations(projectId: string) {
+/** Pending e-mail invitations; the list needs `project:invite` since back-end Phase 3, so callers pass `enabled`. */
+export function useInvitations(projectId: string, enabled = true) {
   return useQuery({
     queryKey: memberKeys.invitations(projectId),
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId) && enabled,
     queryFn: async () => {
       const data = unwrapAs<{ items?: Invitation[] }>(
         await api.GET("/api/v1/invitations/projects/{project_id}/invitations", {

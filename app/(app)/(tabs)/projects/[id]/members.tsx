@@ -33,7 +33,10 @@ export default function ProjectMembersSection() {
   const { user } = useAuth();
   const project = useProject(id);
   const members = useMembers(id);
-  const invitations = useInvitations(id);
+  const invitations = useInvitations(
+    id,
+    projectCan(project.data, "project:invite", user?.permissions),
+  );
   const unassign = useUnassignMember(id);
   const revoke = useRevokeInvitation(id);
   useRefetchOnFocus(members.refetch);
