@@ -5875,7 +5875,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** Change a project member's role */
+    /** Change a project member's role (deprecated: role_id is ignored) */
     patch: {
       parameters: {
         query?: never;
@@ -9068,6 +9068,11 @@ export interface components {
     /**
      * UserResponse
      * @description User info response.
+     *
+     *     `permissions` is resolved from the caller's company role (primary company)
+     *     for client-side UI gating only — the server re-resolves on every route.
+     *     `roles` is deprecated: global roles are gone, so it is always empty except
+     *     for platform ops, and it disappears with the legacy role tables.
      */
     UserResponse: {
       /**
@@ -9082,6 +9087,11 @@ export interface components {
        * Format: uuid
        */
       id: string;
+      /**
+       * Is Platform Ops
+       * @default false
+       */
+      is_platform_ops: boolean;
       /** Permissions */
       permissions: string[];
       /**
