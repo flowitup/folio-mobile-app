@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { can } from "@/auth/permissions";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
@@ -12,6 +13,7 @@ import { Badge, Card, EmptyState } from "@/components/ui/primitives";
 import { showToast } from "@/components/ui/toast";
 import { ScreenTitle } from "@/components/ui/typography";
 import { AttendanceCalendar } from "@/features/labor/attendance-calendar";
+import { DayRoster } from "@/features/labor/day-roster";
 import {
   useEditOwnAttendance,
   useLaborEntries,
@@ -20,6 +22,7 @@ import {
   useWorkers,
 } from "@/features/labor/labor-api";
 import type { LaborEntry, ShiftType } from "@/features/labor/labor-types";
+import { useRoster } from "@/features/labor/roster-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import {
   currentMonth,
@@ -59,6 +62,22 @@ export function WorkerAttendanceTab() {
   const workers = useWorkers(projectId);
   const entries = useLaborEntries(projectId, range.from, range.to);
   const summary = useLaborSummary(projectId, range.from, range.to);
+  const roster = useRoster(projectId, selectedDay);
+  // `project:view_pay` gates seeing anyone else's rate/cost (D3) — the roster endpoint itself
+  // never returns it, so pay comes from a single-day labor-summary call, fetched only when the
+  // caller actually holds the permission (never issued otherwise).
+  const canViewPay = can(user, "project:view_pay", project?.my_permissions);
+  const dayPaySummary = useLaborSummary(
+    canViewPay ? projectId : "",
+    selectedDay,
+    selectedDay,
+  );
+  const payByWorkerId = useMemo(() => {
+    if (!canViewPay || !dayPaySummary.data) return undefined;
+    return Object.fromEntries(
+      dayPaySummary.data.rows.map((row) => [row.worker_id, row.total_cost]),
+    );
+  }, [canViewPay, dayPaySummary.data]);
   const selfLog = useSelfLogAttendance(projectId);
   const editOwn = useEditOwnAttendance(projectId);
   // Inline "edit this day" form for the selected, already-logged day.
@@ -303,6 +322,22 @@ export function WorkerAttendanceTab() {
             )}
           </Card>
         ) : null}
+
+        <View className="gap-2">
+          <Text className="font-sans-medium text-[11px] uppercase tracking-[1.1px] text-muted">
+            {t("worker.roster.title", { date: formatDate(selectedDay) })}
+          </Text>
+          {/* D3: names, presence, hours, day type — never money (the roster endpoint never
+              returns rate/cost, whatever the caller's permissions); pay is layered in
+              separately via `payByWorkerId`, only fetched for a caller with view_pay. */}
+          <DayRoster
+            rows={roster.data}
+            loading={roster.isPending}
+            error={roster.isError}
+            onRetry={() => void roster.refetch()}
+            payByWorkerId={payByWorkerId}
+          />
+        </View>
 
         <View className="flex-row gap-2">
           <Kpi

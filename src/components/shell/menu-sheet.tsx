@@ -8,6 +8,8 @@ import {
   useWindowDimensions,
 } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdminAnywhere } from "@/auth/permissions";
 import { useShell } from "@/components/shell/shell-context";
 import { ShellSheet } from "@/components/shell/shell-sheet";
 import { Icon } from "@/components/ui/icon";
@@ -92,7 +94,9 @@ export function MenuSheet() {
   const { sheet, closeSheet } = useShell();
   const { projectId } = useSelectedProject();
   const { workerMode } = useWorkerMode();
+  const { user } = useAuth();
   const billing = useBillingAccess();
+  const companyAdmin = isCompanyAdminAnywhere(user);
   const companies = useMyCompanies();
   const companyId = companies.data?.[0]?.id ?? null;
   const products = useProducts(companyId, {
@@ -136,8 +140,17 @@ export function MenuSheet() {
             title={t("library.title")}
             subtitle={librarySub}
             onPress={() => go("/library")}
-            last
+            last={!companyAdmin}
           />
+          {companyAdmin ? (
+            <MenuRow
+              testID="menu-company-members"
+              icon="user-plus"
+              title={t("companies.members.title")}
+              onPress={() => go("/company/members")}
+              last
+            />
+          ) : null}
         </View>
         {projectId && !workerMode ? (
           <>

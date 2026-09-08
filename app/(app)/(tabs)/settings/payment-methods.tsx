@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { isPlatformOps } from "@/auth/permissions";
 import { EmptyState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
@@ -18,8 +19,7 @@ export default function PaymentMethodsScreen() {
   const selected =
     (companies.data ?? []).find((c) => c.id === companyId) ??
     companies.data?.[0];
-  const canManage =
-    (user?.permissions.includes("*:*") ?? false) || selected?.role === "admin";
+  const canManage = isPlatformOps(user) || selected?.role === "admin";
 
   return (
     <View className="flex-1 bg-paper">

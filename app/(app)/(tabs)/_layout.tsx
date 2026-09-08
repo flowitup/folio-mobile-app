@@ -16,6 +16,7 @@ const HIDDEN_ROUTES = [
   "billing",
   "library",
   "settings",
+  "company",
   "projects/[id]",
 ] as const;
 

@@ -18,6 +18,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { useMembers } from "@/features/projects/members-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { laborRoleLabel } from "@/lib/labor/labor-role-label";
 
 import {
   useCreateRateChange,
@@ -141,7 +142,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
             value={roleId}
             options={(roles.data?.roles ?? []).map((role) => ({
               value: role.id,
-              label: role.name,
+              label: laborRoleLabel(role, t),
             }))}
             onChange={setRoleId}
           />

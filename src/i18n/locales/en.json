@@ -11,7 +11,8 @@
     "ok": "OK",
     "saved": "Saved.",
     "edit": "Edit",
-    "back": "Back"
+    "back": "Back",
+    "remove": "Remove"
   },
   "login": {
     "title": "Sign in to Folio",
@@ -123,8 +124,6 @@
     "personsMerge": "Merge persons",
     "adminCompanies": "All companies (admin)",
     "users": {
-      "title": "Users & Roles",
-      "description": "Assign roles to existing users across one or more projects.",
       "permissionDenied": "You don't have authorization to change roles of users."
     },
     "manage": "Manage",
@@ -138,13 +137,7 @@
   "members": {
     "title": "Members ({{count}})",
     "none": "No members yet.",
-    "invite": "Invite a member",
-    "sendInvite": "Send invitation",
     "inviteSent": "Invitation sent.",
-    "invalidEmail": "Enter a valid email.",
-    "roleRequired": "Choose a role.",
-    "role": "Role",
-    "changeRole": "Change role…",
     "remove": "Remove",
     "removed": "Member removed.",
     "removeConfirm": "Remove {{email}} from this project?",
@@ -152,7 +145,17 @@
     "pendingInvitations": "Pending invitations",
     "expires": "expires {{date}}",
     "revoke": "Revoke",
-    "invitationRevoked": "Invitation revoked."
+    "invitationRevoked": "Invitation revoked.",
+    "assign": {
+      "title": "Assign a member",
+      "personLabel": "Company member",
+      "personPlaceholder": "Choose a member",
+      "roleLabel": "Role",
+      "submit": "Assign",
+      "empty": "Every company member is already assigned, or none are linked to an account yet.",
+      "noCompany": "This project has no company yet.",
+      "loadError": "Could not load the company directory."
+    }
   },
   "invoices": {
     "all": "All",
@@ -415,6 +418,10 @@
     "view": {
       "calendar": "Calendar",
       "list": "List"
+    },
+    "roles": {
+      "tho_chinh": "Lead worker",
+      "tho_phu": "Assistant worker"
     }
   },
   "documents": {
@@ -498,6 +505,10 @@
       "rejectChangeConfirm": "Refuse {{worker}}'s change for {{date}}? The day stays as validated.",
       "validatedChangeToast": "Change applied.",
       "rejectedChangeToast": "Change refused."
+    },
+    "newMembers": {
+      "title": "New members ({{count}})",
+      "unassigned": "Not assigned yet"
     }
   },
   "tasks": {
@@ -969,10 +980,6 @@
           "countSingular": "user",
           "countPlural": "users",
           "roleColumn": "Role",
-          "roleAdmin": "Admin",
-          "roleMember": "Member",
-          "makeAdmin": "Make admin",
-          "makeMember": "Make member",
           "roleUpdatedToast": "Role updated"
         },
         "delete": {
@@ -1094,7 +1101,8 @@
       "primary": "Primary",
       "member": "Member",
       "admin": "Admin",
-      "deleteConfirm": "Delete company {{name}}? This cannot be undone."
+      "deleteConfirm": "Delete company {{name}}? This cannot be undone.",
+      "manager": "Manager"
     },
     "toast": {
       "created": "Company created.",
@@ -1113,6 +1121,53 @@
       "hint": "8 characters, given by the company administrator.",
       "submit": "Join",
       "successToast": "You joined the company."
+    },
+    "members": {
+      "title": "Company members",
+      "companyLabel": "Company",
+      "listTitle": "Members ({{count}})",
+      "addByPhone": {
+        "title": "Add by phone",
+        "phoneLabel": "Phone number",
+        "nameLabel": "Name (optional)",
+        "submit": "Add member",
+        "conflictHint": "Several people match this phone number — pick the right one.",
+        "conflict": "Several people match this phone number.",
+        "successToast": "Member added."
+      },
+      "import": {
+        "title": "Import from another company",
+        "sourceLabel": "Source company",
+        "sourcePlaceholder": "Choose a company",
+        "noSource": "You are admin of no other company.",
+        "empty": "This company's directory is empty.",
+        "selectedCount": "{{count}} selected",
+        "submit": "Import selected",
+        "successToast": "Members imported."
+      },
+      "grants": {
+        "open": "Custom permissions",
+        "title": "Custom permissions — {{name}}",
+        "none": "No custom grant or deny yet.",
+        "addTitle": "Add a grant or deny",
+        "permissionLabel": "Permission",
+        "permissionPlaceholder": "Choose a permission",
+        "effectLabel": "Effect",
+        "effect": {
+          "grant": "Grant",
+          "deny": "Deny"
+        },
+        "scopeLabel": "Scope",
+        "companyWide": "Company-wide",
+        "removedToast": "Removed.",
+        "projectUnknown": "Unknown project",
+        "removeConfirm": "Remove the custom permission \"{{permission}}\"?"
+      },
+      "pending": {
+        "title": "Pending profiles ({{count}})",
+        "empty": "No pending profiles — everyone added by phone has signed in.",
+        "badge": "Pending"
+      }
     }
   },
   "paymentMethods": {
@@ -1156,47 +1211,15 @@
   },
   "admin": {
     "bulkAdd": {
-      "title": "Add a user to multiple projects",
-      "subtitle": "Find an existing user, pick projects, and assign one role to all of them.",
+      "title": "Search & edit users",
+      "subtitle": "Find an existing user by email or name, then edit their name, email or phone.",
       "userSearch": {
-        "label": "Search for a user",
         "placeholder": "Type at least 3 characters of an email or name",
         "minChars": "Type at least 3 characters to search",
         "empty": "No users match your search",
-        "searching": "Searching…",
         "selected": "Selected: {{email}}",
-        "clear": "Clear",
+        "nameLabel": "Name",
         "phone": "Phone (SMS sign-in)"
-      },
-      "projects": {
-        "label": "Projects",
-        "placeholder": "Filter projects...",
-        "empty": "No projects available",
-        "selectedCount": "{{count}} selected",
-        "maxReached": "Up to 50 projects per request"
-      },
-      "role": {
-        "label": "Role",
-        "placeholder": "Select a role"
-      },
-      "submit": "Add to selected projects",
-      "submitting": "Adding...",
-      "errors": {
-        "userRequired": "Select a user first",
-        "projectsRequired": "Select at least one project",
-        "roleRequired": "Select a role",
-        "generic": "Something went wrong. Please try again.",
-        "forbidden": "You don't have permission to perform this action",
-        "userNotFound": "User not found",
-        "roleNotFound": "Role not found",
-        "tooMany": "Too many projects (max 50 per request)",
-        "rateLimited": "Too many bulk operations. Try again in an hour."
-      },
-      "toast": {
-        "added": "Added user to {{count}} project(s)",
-        "alreadyMember": "{{count}} project(s) skipped — user already a member",
-        "differentRole": "{{count}} project(s) skipped — user has a different role there",
-        "notFound": "{{count}} project(s) not found"
       }
     }
   },
@@ -1474,7 +1497,8 @@
     },
     "status": {
       "pending": "Pending",
-      "validated": "Validated"
+      "validated": "Validated",
+      "absent": "Absent"
     },
     "edit": "Edit this day",
     "editSubmit": "Send change request",
@@ -1484,6 +1508,33 @@
     "supplement": "Extra hours",
     "note": "Note",
     "changeRequested": "Change requested",
-    "proposedLine": "Requested: {{value}}"
+    "proposedLine": "Requested: {{value}}",
+    "roster": {
+      "title": "Team on site — {{date}}",
+      "empty": "No one is scheduled today.",
+      "loadError": "Could not load today's roster."
+    }
+  },
+  "onboarding": {
+    "title": "Welcome to Folio",
+    "subtitle": "Create your company or join one with an admin's code.",
+    "chooseLabel": "Get started",
+    "createOption": "Create a company",
+    "joinOption": "Join with a code",
+    "createSubtitle": "You'll be its admin — add the rest of the details later from Settings.",
+    "waiting": {
+      "title": "Almost there",
+      "subtitle": "An admin needs to assign you to a project before you can start logging attendance."
+    }
+  },
+  "permissions": {
+    "project_update": "Edit project details",
+    "project_invite": "Invite members",
+    "project_manage_users": "Manage members",
+    "project_manage_labor": "Manage attendance & pay",
+    "project_manage_invoices": "Manage invoices",
+    "project_log_own_attendance": "Log own attendance",
+    "bibliotheque_manage": "Manage the product library",
+    "project_view_pay": "View others' pay"
   }
 }

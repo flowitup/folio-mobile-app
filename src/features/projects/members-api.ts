@@ -17,8 +17,6 @@ export type ProjectMember = {
   joined_at: string | null;
 };
 
-export type Role = { id: string; name: string; description: string };
-
 export type Invitation = {
   id: string;
   email: string;
@@ -37,7 +35,6 @@ export const memberKeys = {
   members: (projectId: string) => ["projects", projectId, "members"] as const,
   invitations: (projectId: string) =>
     ["projects", projectId, "invitations"] as const,
-  roles: ["roles"] as const,
 };
 
 export function useMembers(projectId: string) {
@@ -55,41 +52,37 @@ export function useMembers(projectId: string) {
   });
 }
 
-/** Assignable roles; superadmin is never offered (the API rejects it). */
-export function useRoles() {
-  return useQuery({
-    queryKey: memberKeys.roles,
-    staleTime: 10 * 60_000,
-    queryFn: async () => {
-      const data = unwrapAs<{ roles?: Role[] }>(await api.GET("/api/v1/roles"));
-      return (data.roles ?? []).filter((role) => role.name !== "superadmin");
-    },
-  });
-}
+export type AssignmentRole = "member" | "manager";
 
-export function useUpdateMemberRole(projectId: string) {
+/**
+ * Assign an existing company member to the project (admin: any role; manager: member only).
+ * Idempotent: re-assigning with a different role changes it — this is the only "role picker",
+ * offered once at assignment time, not a standing per-member role dropdown.
+ */
+export function useAssignMember(projectId: string) {
   const { t } = useTranslation();
-  return useApiMutation<{ userId: string; roleId: string }>({
-    mutationFn: async ({ userId, roleId }) =>
-      unwrap(
-        await api.PATCH("/api/v1/projects/{project_id}/members/{user_id}", {
+  return useApiMutation<{ userId: string; role: AssignmentRole }>({
+    mutationFn: async ({ userId, role }) =>
+      unwrapVoid(
+        await api.PUT("/api/v1/projects/{project_id}/assignments/{user_id}", {
           params: { path: { project_id: projectId, user_id: userId } },
-          body: { role_id: roleId } as never,
+          body: { role } as never,
         }),
       ),
-    invalidates: [memberKeys.members(projectId)],
+    invalidates: [memberKeys.members(projectId), ["projects", projectId]],
     successMessage: t("common.saved"),
   });
 }
 
-export function useRemoveMember(projectId: string) {
+export function useUnassignMember(projectId: string) {
   const { t } = useTranslation();
   return useApiMutation<{ userId: string }>({
     mutationFn: async ({ userId }) =>
       unwrapVoid(
-        await api.DELETE("/api/v1/projects/{project_id}/users/{user_id}", {
-          params: { path: { project_id: projectId, user_id: userId } },
-        }),
+        await api.DELETE(
+          "/api/v1/projects/{project_id}/assignments/{user_id}",
+          { params: { path: { project_id: projectId, user_id: userId } } },
+        ),
       ),
     invalidates: [memberKeys.members(projectId), ["projects", projectId]],
     successMessage: t("members.removed"),

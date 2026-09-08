@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
+import { can } from "@/auth/permissions";
 import { unwrap, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
@@ -91,16 +92,19 @@ export function useDeleteProject(projectId: string) {
   });
 }
 
-/** Project-scoped permission check with the JWT-wide list as fallback (same strings as the web). */
+/**
+ * Project-scoped permission check. Delegates to `can` — `project.my_permissions` is
+ * authoritative when present, the JWT-wide `globalPermissions` list is only used as a
+ * fallback when the project has not loaded `my_permissions` yet.
+ */
 export function projectCan(
   project: Project | undefined,
   permission: string,
   globalPermissions: string[] = [],
 ): boolean {
-  const scoped = project?.my_permissions ?? [];
-  const matches = (list: string[]) =>
-    list.includes(permission) ||
-    list.includes("*:*") ||
-    list.includes(`${permission.split(":")[0]}:*`);
-  return matches(scoped) || matches(globalPermissions);
+  return can(
+    { permissions: globalPermissions },
+    permission,
+    project?.my_permissions,
+  );
 }

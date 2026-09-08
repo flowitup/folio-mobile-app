@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { Card, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
@@ -16,7 +17,7 @@ export default function SettingsHub() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user, signOut } = useAuth();
-  const superadmin = user?.permissions.includes("*:*") ?? false;
+  const superadmin = isPlatformOps(user);
   const companies = useMyCompanies();
   const primary = companies.data?.[0];
   const paymentMethods = usePaymentMethods(primary?.id);

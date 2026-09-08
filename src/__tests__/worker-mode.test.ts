@@ -1,6 +1,6 @@
 import { isWorkerMode } from "@/lib/labor/worker-mode";
 
-const project = { owner_id: "owner", my_permissions: ["project:read"] };
+const project = { my_permissions: ["project:read"] };
 
 describe("isWorkerMode", () => {
   it("is off while the project or user is unknown", () => {
@@ -14,17 +14,13 @@ describe("isWorkerMode", () => {
     ).toBe(true);
   });
 
-  it("keeps the full view for the owner, superadmins and labor managers", () => {
-    expect(isWorkerMode(project, { id: "owner", permissions: [] })).toBe(false);
-    expect(isWorkerMode(project, { id: "u", permissions: ["*:*"] })).toBe(
-      false,
-    );
-    expect(isWorkerMode(project, { id: "u", permissions: ["project:*"] })).toBe(
-      false,
-    );
+  it("no longer exempts a project owner without manage_labor (D6: owner bypass removed)", () => {
     expect(
-      isWorkerMode(project, { id: "u", permissions: ["project:manage_labor"] }),
-    ).toBe(false);
+      isWorkerMode(project, { id: "owner", permissions: ["project:read"] }),
+    ).toBe(true);
+  });
+
+  it("keeps the full view when my_permissions grants manage_labor", () => {
     expect(
       isWorkerMode(
         {
@@ -34,5 +30,22 @@ describe("isWorkerMode", () => {
         { id: "u", permissions: ["project:read"] },
       ),
     ).toBe(false);
+  });
+
+  it("does not restore a D8 deny of manage_labor removed from my_permissions via the JWT claim", () => {
+    expect(isWorkerMode(project, { id: "u", permissions: ["*:*"] })).toBe(true);
+    expect(
+      isWorkerMode(project, { id: "u", permissions: ["project:manage_labor"] }),
+    ).toBe(true);
+  });
+
+  it("falls back to the JWT-wide list only when my_permissions has not loaded yet", () => {
+    expect(
+      isWorkerMode(
+        { my_permissions: undefined },
+        { id: "u", permissions: ["project:manage_labor"] },
+      ),
+    ).toBe(false);
+    expect(isWorkerMode({}, { id: "u", permissions: ["*:*"] })).toBe(false);
   });
 });

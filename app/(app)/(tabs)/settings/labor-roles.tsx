@@ -22,6 +22,7 @@ import {
   useUpdateLaborRole,
 } from "@/features/labor/labor-api";
 import type { LaborRole } from "@/features/labor/labor-api";
+import { laborRoleLabel } from "@/lib/labor/labor-role-label";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 /** Labor roles: list with colour swatches, create from the suggested palette, rename / recolour, delete. */
@@ -80,7 +81,7 @@ export default function LaborRolesScreen() {
           <Pressable key={role.id} onLongPress={() => setDeleting(role)}>
             <ListRow
               testID={`role-${role.id}`}
-              title={role.name}
+              title={laborRoleLabel(role, t)}
               subtitle={role.color}
               right={
                 <View
@@ -163,7 +164,9 @@ export default function LaborRolesScreen() {
       </Sheet>
       <ConfirmDialog
         visible={deleting !== null}
-        title={t("laborRoles.deleteConfirm", { name: deleting?.name ?? "" })}
+        title={t("laborRoles.deleteConfirm", {
+          name: deleting ? laborRoleLabel(deleting, t) : "",
+        })}
         confirmLabel={t("common.delete")}
         cancelLabel={t("common.cancel")}
         destructive

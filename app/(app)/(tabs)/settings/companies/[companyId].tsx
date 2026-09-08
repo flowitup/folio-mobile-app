@@ -24,7 +24,6 @@ import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { ToastViewport } from "@/components/ui/toast";
 import {
-  useAttachedUsers,
   useBootAttachedUser,
   useCompany,
   useDeleteCompany,
@@ -36,18 +35,21 @@ import {
   useUpdateCompany,
 } from "@/features/companies/companies-api";
 import type {
-  AttachedUser,
   CompanyInviteTokenGenerated,
   CompanyRole,
 } from "@/features/companies/companies-api";
+import { useAttachedUsers } from "@/features/companies/company-members-api";
+import type { AttachedUser } from "@/features/companies/company-members-api";
 import { CompanyFormSheet } from "@/features/companies/company-form-sheet";
 import { PaymentMethodsSection } from "@/features/companies/payment-methods-section";
 import { formatJoinCode } from "@/lib/companies/join-code";
+import { memberDisplayName } from "@/lib/companies/member-display";
 import { formatDate } from "@/lib/format/date";
 import { ApiError } from "@/lib/query/api-error";
 
 type Tab = "edit" | "invites" | "users" | "payments" | "delete";
 const TABS: Tab[] = ["edit", "invites", "users", "payments", "delete"];
+const ROLE_OPTIONS: CompanyRole[] = ["admin", "manager", "member"];
 
 /** Company manage page: edit, invite tokens (one-shot display), attached users, payment methods, delete. */
 export default function CompanyManageScreen() {
@@ -328,12 +330,10 @@ export default function CompanyManageScreen() {
                     className="flex-1 pr-2 text-base text-primary"
                     numberOfLines={1}
                   >
-                    {member.display_name ?? member.email ?? member.user_id}
+                    {memberDisplayName(member)}
                   </Text>
                   <Badge
-                    label={t(
-                      `companies.admin.manage.attached.role${member.role === "admin" ? "Admin" : "Member"}`,
-                    )}
+                    label={t(`companies.x.${member.role}`)}
                     tone={member.role === "admin" ? "success" : "neutral"}
                   />
                 </View>
@@ -345,26 +345,26 @@ export default function CompanyManageScreen() {
                     ? ` · ${t("companies.admin.manage.attached.primaryBadge")}`
                     : ""}
                 </Text>
-                <View className="mt-2 flex-row gap-2">
-                  <Button
-                    testID={`member-role-${member.user_id}`}
-                    label={t(
-                      member.role === "admin"
-                        ? "companies.admin.manage.attached.makeMember"
-                        : "companies.admin.manage.attached.makeAdmin",
-                    )}
-                    size="sm"
-                    variant="secondary"
-                    loading={setRole.isPending}
-                    onPress={() =>
-                      companyId &&
-                      setRole.mutate({
-                        companyId,
-                        userId: member.user_id,
-                        role: member.role === "admin" ? "member" : "admin",
-                      })
-                    }
-                  />
+                <View className="mt-2 flex-row items-center gap-2">
+                  <View className="flex-1">
+                    <Select<CompanyRole>
+                      testID={`member-role-${member.user_id}`}
+                      value={member.role}
+                      options={ROLE_OPTIONS.map((role) => ({
+                        value: role,
+                        label: t(`companies.x.${role}`),
+                      }))}
+                      onChange={(role) =>
+                        companyId &&
+                        role !== member.role &&
+                        setRole.mutate({
+                          companyId,
+                          userId: member.user_id,
+                          role,
+                        })
+                      }
+                    />
+                  </View>
                   <Button
                     testID={`member-boot-${member.user_id}`}
                     label={t("companies.admin.manage.attached.boot")}
@@ -475,7 +475,7 @@ export default function CompanyManageScreen() {
       <ConfirmDialog
         visible={booting !== null}
         title={t("companies.admin.manage.attached.bootConfirm", {
-          name: booting?.display_name ?? booting?.email ?? "",
+          name: booting ? memberDisplayName(booting) : "",
         })}
         confirmLabel={t("companies.admin.manage.attached.boot")}
         cancelLabel={t("common.cancel")}
