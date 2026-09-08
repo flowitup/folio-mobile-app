@@ -38,7 +38,7 @@ export function usePushNotifications(): void {
       if (route.projectId) selectProjectOnNextShell(route.projectId);
       if (route.sheet) requestShellSheet(route.sheet);
       void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
-      router.navigate("/(app)/(tabs)");
+      router.navigate(route.path ?? "/(app)/(tabs)");
     };
 
     const received = Notifications.addNotificationReceivedListener(() => {
