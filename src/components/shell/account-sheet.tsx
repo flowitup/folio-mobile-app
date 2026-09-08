@@ -42,7 +42,12 @@ export function AccountSheet() {
             {user?.email}
           </Text>
           <Text className="font-sans text-xs text-muted" numberOfLines={1}>
-            {(user?.roles ?? []).join(" · ")}
+            {(user?.companies ?? [])
+              .map(
+                (c) =>
+                  `${c.legal_name} · ${t(`companies.x.${c.role}`, { defaultValue: c.role })}`,
+              )
+              .join("\n")}
           </Text>
         </View>
       </View>
