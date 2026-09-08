@@ -86,4 +86,91 @@ describe("routeForNotification", () => {
       path: null,
     });
   });
+
+  it("opens the chat channel for a chat push, selecting the project behind a project channel", () => {
+    expect(
+      routeForNotification({ kind: "chat_message", channel_key: "project:p5" }),
+    ).toEqual({
+      projectId: "p5",
+      sheet: null,
+      path: "/chat?channel=project%3Ap5",
+    });
+    expect(
+      routeForNotification({ kind: "chat_message", channel_key: "company:c1" }),
+    ).toEqual({
+      projectId: null,
+      sheet: null,
+      path: "/chat?channel=company%3Ac1",
+    });
+  });
+
+  it("opens the planning tab on the project for task pushes", () => {
+    for (const kind of ["task_assigned", "task_moved"]) {
+      expect(
+        routeForNotification({ kind, project_id: "p6", task_id: "t1" }),
+      ).toEqual({
+        projectId: "p6",
+        sheet: null,
+        path: "/(app)/(tabs)/planning",
+      });
+    }
+  });
+
+  it("selects the project when added to it, and only opens the app when removed", () => {
+    expect(
+      routeForNotification({ kind: "project_member_added", project_id: "p7" }),
+    ).toEqual({ projectId: "p7", sheet: null, path: null });
+    expect(
+      routeForNotification({
+        kind: "project_member_removed",
+        project_id: "p7",
+      }),
+    ).toEqual({ projectId: null, sheet: null, path: null });
+    expect(
+      routeForNotification({
+        kind: "company_member_removed",
+        company_id: "c1",
+      }),
+    ).toEqual({ projectId: null, sheet: null, path: null });
+  });
+
+  it("opens the company members screen for role and permission changes", () => {
+    for (const kind of [
+      "company_member_role_changed",
+      "company_member_grants_changed",
+    ]) {
+      expect(routeForNotification({ kind, company_id: "c2" })).toEqual({
+        projectId: null,
+        sheet: null,
+        path: "/company/members",
+      });
+    }
+  });
+
+  it("opens the expense itself for a refund push, the expenses tab without an invoice id", () => {
+    expect(
+      routeForNotification({
+        kind: "refund_completed",
+        project_id: "p8",
+        invoice_id: "i1",
+      }),
+    ).toEqual({
+      projectId: "p8",
+      sheet: null,
+      path: "/projects/p8/invoices/i1",
+    });
+    expect(
+      routeForNotification({ kind: "refund_requested", project_id: "p8" }),
+    ).toEqual({ projectId: "p8", sheet: null, path: "/(app)/(tabs)/expenses" });
+  });
+
+  it("opens the billing document for a status push", () => {
+    expect(
+      routeForNotification({
+        kind: "billing_status",
+        document_id: "d1",
+        status: "paid",
+      }),
+    ).toEqual({ projectId: null, sheet: null, path: "/billing/documents/d1" });
+  });
 });

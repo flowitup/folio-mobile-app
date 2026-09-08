@@ -132,7 +132,26 @@
     "title": "Settings",
     "joinCompany": "Join another company",
     "about": "About",
-    "version": "Version"
+    "version": "Version",
+    "notificationPrefs": {
+      "title": "Notifications",
+      "intro": "Choose which pushes reach this phone.",
+      "pushEnabled": "Push notifications",
+      "pushEnabledDesc": "Master switch — off silences everything below",
+      "loadError": "Could not load your notification settings.",
+      "categories": {
+        "chat": "Team chat",
+        "chatDesc": "New messages in your company and project channels",
+        "attendance": "Attendance",
+        "attendanceDesc": "Days to validate, validation decisions and change requests",
+        "tasks": "Tasks",
+        "tasksDesc": "Tasks assigned to you or moved to another column",
+        "membership": "Team & access",
+        "membershipDesc": "Added to a project or company, role and permission changes, accepted invitations",
+        "billing": "Money",
+        "billingDesc": "Refunds on your expenses, quote and invoice status changes"
+      }
+    }
   },
   "members": {
     "title": "Members ({{count}})",

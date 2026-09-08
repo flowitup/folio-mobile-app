@@ -78,7 +78,7 @@
       },
       "AnalysisUpdateBody": {
         "additionalProperties": false,
-        "description": "Request body for PATCH /api/v1/projects/<id>/analyses/<id>.\n\nEvery field is optional \u2014 the route only forwards fields present in the\nraw JSON payload (via ``model_fields_set``) so an omitted field leaves the\ncorresponding entity attribute untouched (see UpdateProjectAnalysisUseCase\ndocstring for the landmine this avoids).",
+        "description": "Request body for PATCH /api/v1/projects/<id>/analyses/<id>.\n\nEvery field is optional — the route only forwards fields present in the\nraw JSON payload (via ``model_fields_set``) so an omitted field leaves the\ncorresponding entity attribute untouched (see UpdateProjectAnalysisUseCase\ndocstring for the landmine this avoids).",
         "properties": {
           "source_url": {
             "anyOf": [
@@ -231,6 +231,19 @@
         "title": "ApplyTemplateRequest",
         "type": "object"
       },
+      "AssignMemberRequest": {
+        "description": "PUT /projects/<id>/assignments/<user_id> body.\n\n`role` is COMPANY-WIDE, not per project: `manager` raises the target's\ncompany role to manager (company admins only), which grants manager\npermissions on every project they are assigned to in that company.\n`member` is the default and never demotes anyone.",
+        "properties": {
+          "role": {
+            "default": "member",
+            "pattern": "^(member|manager)$",
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "title": "AssignMemberRequest",
+        "type": "object"
+      },
       "AttachedUserRow": {
         "additionalProperties": false,
         "description": "One row of GET /companies/<id>/attached-users.\n\nAccess fields come from the use case; `email` / `display_name` / `phone`\nare joined from `users` so clients can render the member list directly.",
@@ -348,7 +361,7 @@
         "type": "object"
       },
       "AuthConfigResponse": {
-        "description": "GET /auth/config \u2014 what this deployment offers, read by the apps before sign-in.",
+        "description": "GET /auth/config — what this deployment offers, read by the apps before sign-in.",
         "properties": {
           "login_mode": {
             "title": "Login Mode",
@@ -613,7 +626,7 @@
       },
       "ConvertRequest": {
         "additionalProperties": false,
-        "description": "Optional body for POST /billing-documents/<id>/convert-to-facture.\n\nBoth fields are optional \u2014 empty body {} is accepted.",
+        "description": "Optional body for POST /billing-documents/<id>/convert-to-facture.\n\nBoth fields are optional — empty body {} is accepted.",
         "properties": {
           "company_id": {
             "anyOf": [
@@ -982,7 +995,7 @@
         "type": "object"
       },
       "CreateInviteResponse": {
-        "description": "POST /invitations response body.\n\nSECURITY/UX NOTE \u2014 kind discriminator leak (H3 from code-review):\n``kind`` reveals whether the supplied email belongs to an existing user\n(``direct_added``) or not (``invitation_sent``). Accepted within the admin\ntrust boundary because ``project:invite`` callers can already enumerate\nusers via /projects/<id>/members. Do NOT echo this discriminator on any\npublic-facing endpoint.",
+        "description": "POST /invitations response body.\n\nSECURITY/UX NOTE — kind discriminator leak (H3 from code-review):\n``kind`` reveals whether the supplied email belongs to an existing user\n(``direct_added``) or not (``invitation_sent``). Accepted within the admin\ntrust boundary because ``project:invite`` callers can already enumerate\nusers via /projects/<id>/members. Do NOT echo this discriminator on any\npublic-facing endpoint.",
         "properties": {
           "expires_at": {
             "anyOf": [
@@ -1034,7 +1047,7 @@
         "type": "object"
       },
       "CreateInvoiceSchema": {
-        "description": "Request body for creating an invoice.\n\nrefunds_invoice_id is optional; only valid when type='return'. When provided,\nthe use-case validates that the target is a same-project materials_services invoice\nand enforces the cap (cumulative returns may not exceed the source total).\nMixed-sign unit_price is allowed for materials_services and return types.\nservice_month is optional; only valid when type='labor'. The use-case normalizes\nany day-of-month to day=1.\nsettled_via/applied_to_invoice_id are optional; only valid when type='return'.\napplied_to_invoice_id additionally requires settled_via='avoir' \u2014 the use-case\nvalidates the target and enforces the applied-amount cap, then auto-aligns the\nreturn's payment_method_id to the target's.\nworker_id is optional; only valid when type='labor'. The use-case validates the\nworker belongs to this project and overrides recipient_name with a server-side\nsnapshot of the worker's display name.",
+        "description": "Request body for creating an invoice.\n\nrefunds_invoice_id is optional; only valid when type='return'. When provided,\nthe use-case validates that the target is a same-project materials_services invoice\nand enforces the cap (cumulative returns may not exceed the source total).\nMixed-sign unit_price is allowed for materials_services and return types.\nservice_month is optional; only valid when type='labor'. The use-case normalizes\nany day-of-month to day=1.\nsettled_via/applied_to_invoice_id are optional; only valid when type='return'.\napplied_to_invoice_id additionally requires settled_via='avoir' — the use-case\nvalidates the target and enforces the applied-amount cap, then auto-aligns the\nreturn's payment_method_id to the target's.\nworker_id is optional; only valid when type='labor'. The use-case validates the\nworker belongs to this project and overrides recipient_name with a server-side\nsnapshot of the worker's display name.",
         "properties": {
           "applied_to_invoice_id": {
             "anyOf": [
@@ -1443,7 +1456,7 @@
         "type": "object"
       },
       "CreateWorkerRequest": {
-        "description": "Request body for creating a worker.\n\n``person_id`` (cook 1d-ii-b) lets the caller link this Worker to an\nexisting Person picked via the PersonTypeahead. When omitted, the\nlegacy flow runs: name + phone create a fresh Person via the\nCreateWorkerUseCase before linking. Either path produces a Worker\nwith a non-null person_id once Phase 1c backfill has completed.\n\nPhase 2 onboarding (\"workers from person\"): when ``person_id`` refers\nto a person with a company profile (``company_persons``) on this\nproject's company, ``name``/``daily_rate`` become optional here \u2014 the\nuse case fills them from that profile. The use case still rejects the\nrequest if neither the body nor the profile can supply them.",
+        "description": "Request body for creating a worker.\n\n``person_id`` (cook 1d-ii-b) lets the caller link this Worker to an\nexisting Person picked via the PersonTypeahead. When omitted, the\nlegacy flow runs: name + phone create a fresh Person via the\nCreateWorkerUseCase before linking. Either path produces a Worker\nwith a non-null person_id once Phase 1c backfill has completed.\n\nPhase 2 onboarding (\"workers from person\"): when ``person_id`` refers\nto a person with a company profile (``company_persons``) on this\nproject's company, ``name``/``daily_rate`` become optional here — the\nuse case fills them from that profile. The use case still rejects the\nrequest if neither the body nor the profile can supply them.",
         "properties": {
           "daily_rate": {
             "anyOf": [
@@ -1775,7 +1788,7 @@
         "type": "object"
       },
       "InvoiceItemSchema": {
-        "description": "A single line item on an invoice.\n\nunit_price carries no ge=0 bound \u2014 sign validation is type-dependent and\nenforced in the use-case (mixed-sign allowed for materials_services + return).\nquantity must be > 0; vat_rate is 0\u2013100.",
+        "description": "A single line item on an invoice.\n\nunit_price carries no ge=0 bound — sign validation is type-dependent and\nenforced in the use-case (mixed-sign allowed for materials_services + return).\nquantity must be > 0; vat_rate is 0–100.",
         "properties": {
           "description": {
             "maxLength": 500,
@@ -2484,8 +2497,47 @@
         "title": "NoteUpdateBody",
         "type": "object"
       },
+      "NotificationPreferencesResponse": {
+        "description": "Current opt-outs. Every field is present; a user with no stored row reads all true.",
+        "properties": {
+          "attendance": {
+            "title": "Attendance",
+            "type": "boolean"
+          },
+          "billing": {
+            "title": "Billing",
+            "type": "boolean"
+          },
+          "chat": {
+            "title": "Chat",
+            "type": "boolean"
+          },
+          "membership": {
+            "title": "Membership",
+            "type": "boolean"
+          },
+          "push_enabled": {
+            "title": "Push Enabled",
+            "type": "boolean"
+          },
+          "tasks": {
+            "title": "Tasks",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "push_enabled",
+          "chat",
+          "attendance",
+          "tasks",
+          "membership",
+          "billing"
+        ],
+        "title": "NotificationPreferencesResponse",
+        "type": "object"
+      },
       "OtpRequestBody": {
-        "description": "POST /auth/otp/request \u2014 ask for a 6-digit code by SMS.",
+        "description": "POST /auth/otp/request — ask for a 6-digit code by SMS.",
         "properties": {
           "phone": {
             "maxLength": 32,
@@ -2511,7 +2563,7 @@
         "type": "object"
       },
       "OtpVerifyBody": {
-        "description": "POST /auth/otp/verify \u2014 exchange phone + code for tokens.",
+        "description": "POST /auth/otp/verify — exchange phone + code for tokens.",
         "properties": {
           "code": {
             "pattern": "^\\s*\\d{6}\\s*$",
@@ -2883,7 +2935,7 @@
         "type": "object"
       },
       "RosterRowResponse": {
-        "description": "One worker's day \u2014 the D3 whitelist. Never rate/cost/amount/total.",
+        "description": "One worker's day — the D3 whitelist. Never rate/cost/amount/total.",
         "properties": {
           "day_type": {
             "anyOf": [
@@ -2920,7 +2972,7 @@
         "type": "object"
       },
       "SelfEditAttendanceRequest": {
-        "description": "Request body for PUT /labor-entries/<id>/self \u2014 a worker correcting one of their days.\n\nSame fields and non-empty rule as SelfLogAttendanceRequest; the date is fixed by the entry.",
+        "description": "Request body for PUT /labor-entries/<id>/self — a worker correcting one of their days.\n\nSame fields and non-empty rule as SelfLogAttendanceRequest; the date is fixed by the entry.",
         "properties": {
           "note": {
             "anyOf": [
@@ -2960,7 +3012,7 @@
         "type": "object"
       },
       "SelfLogAttendanceRequest": {
-        "description": "Request body for POST /labor-entries/self \u2014 a worker logging their own day.\n\nNo worker_id (resolved from the caller's account) and no amount_override\n(manager-only field). Same non-empty rule as LogAttendanceRequest.",
+        "description": "Request body for POST /labor-entries/self — a worker logging their own day.\n\nNo worker_id (resolved from the caller's account) and no amount_override\n(manager-only field). Same non-empty rule as LogAttendanceRequest.",
         "properties": {
           "date": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
@@ -3096,7 +3148,7 @@
         "type": "object"
       },
       "SetDayDescriptionSchema": {
-        "description": "Request body for PUT /labor-day-descriptions.\n\ndescription may be empty/blank \u2014 the server will delete the row in that case.\nNo min_length constraint here so callers can explicitly clear with \"\".",
+        "description": "Request body for PUT /labor-day-descriptions.\n\ndescription may be empty/blank — the server will delete the row in that case.\nNo min_length constraint here so callers can explicitly clear with \"\".",
         "properties": {
           "date": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
@@ -3161,7 +3213,7 @@
         "type": "object"
       },
       "SignupRequestBody": {
-        "description": "POST /auth/signup/request \u2014 text a sign-up code to a phone without an account.",
+        "description": "POST /auth/signup/request — text a sign-up code to a phone without an account.",
         "properties": {
           "phone": {
             "maxLength": 32,
@@ -3175,7 +3227,7 @@
         "type": "object"
       },
       "SignupVerifyBody": {
-        "description": "POST /auth/signup/verify \u2014 create the account and sign in.",
+        "description": "POST /auth/signup/verify — create the account and sign in.",
         "properties": {
           "code": {
             "pattern": "^\\s*\\d{6}\\s*$",
@@ -3601,7 +3653,7 @@
         "type": "object"
       },
       "UpdateInvoiceSchema": {
-        "description": "Request body for partially updating an invoice.\n\npayment_method_id, refunds_invoice_id, service_month, settled_via,\napplied_to_invoice_id, and worker_id use exclude_unset semantics:\n  - field absent  \u2192 do not touch that field\n  - field = null  \u2192 clear the field\n  - field = value \u2192 set to that value\nMixed-sign unit_price is allowed for materials_services and return types.",
+        "description": "Request body for partially updating an invoice.\n\npayment_method_id, refunds_invoice_id, service_month, settled_via,\napplied_to_invoice_id, and worker_id use exclude_unset semantics:\n  - field absent  → do not touch that field\n  - field = null  → clear the field\n  - field = value → set to that value\nMixed-sign unit_price is allowed for materials_services and return types.",
         "properties": {
           "applied_to_invoice_id": {
             "anyOf": [
@@ -3825,6 +3877,86 @@
         "title": "UpdateLaborRoleRequest",
         "type": "object"
       },
+      "UpdateNotificationPreferencesRequest": {
+        "additionalProperties": false,
+        "description": "Partial update — omitted fields keep their current value.\n\n`extra=\"forbid\"` so a typo'd category is a 422 rather than a silently ignored setting\nthe user believes they changed.",
+        "properties": {
+          "attendance": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Attendance"
+          },
+          "billing": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Billing"
+          },
+          "chat": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Chat"
+          },
+          "membership": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Membership"
+          },
+          "push_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Push Enabled"
+          },
+          "tasks": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Tasks"
+          }
+        },
+        "title": "UpdateNotificationPreferencesRequest",
+        "type": "object"
+      },
       "UpdatePaymentMethodRequest": {
         "additionalProperties": false,
         "description": "Request body for PATCH /companies/<id>/payment-methods/<id>.\n\nAt least one of label, is_active, is_company_payment, or is_personal_payment\nmust be provided.",
@@ -3984,7 +4116,7 @@
         "type": "object"
       },
       "UpdateTaskSchema": {
-        "description": "All fields optional \u2014 partial update.",
+        "description": "All fields optional — partial update.",
         "properties": {
           "assignee_id": {
             "anyOf": [
@@ -4212,7 +4344,7 @@
         "type": "object"
       },
       "UserCompanySummary": {
-        "description": "One company the user is attached to \u2014 company role, not global RBAC.",
+        "description": "One company the user is attached to — company role, not global RBAC.",
         "properties": {
           "id": {
             "format": "uuid",
@@ -4237,7 +4369,7 @@
         "type": "object"
       },
       "UserResponse": {
-        "description": "User info response.\n\n`permissions` is resolved from the caller's company role (primary company)\nfor client-side UI gating only \u2014 the server re-resolves on every route.",
+        "description": "User info response.\n\n`permissions` is resolved from the caller's company role (primary company)\nfor client-side UI gating only — the server re-resolves on every route.",
         "properties": {
           "companies": {
             "default": [],
@@ -4371,7 +4503,7 @@
         "type": "object"
       },
       "WorkerResponse": {
-        "description": "Single worker response.\n\nperson_id / person_name / person_phone surface the joined Person identity\nintroduced by plan 260512-2341-labor-calendar-and-bulk-log (cook 1d-ii-a).\nThey are additive \u2014 the legacy ``name`` and ``phone`` fields remain\npopulated from the workers table for back-compat with FE callers that\nhaven't migrated yet. A follow-up release tightens the contract to\nrequire person_id and ultimately drops the inline name/phone columns.\n\nrole_id / role_name / role_color surface the joined LaborRole identity.\nNullable for workers without a role assignment.",
+        "description": "Single worker response.\n\nperson_id / person_name / person_phone surface the joined Person identity\nintroduced by plan 260512-2341-labor-calendar-and-bulk-log (cook 1d-ii-a).\nThey are additive — the legacy ``name`` and ``phone`` fields remain\npopulated from the workers table for back-compat with FE callers that\nhaven't migrated yet. A follow-up release tightens the contract to\nrequire person_id and ultimately drops the inline name/phone columns.\n\nrole_id / role_name / role_color surface the joined LaborRole identity.\nNullable for workers without a role assignment.",
         "properties": {
           "created_at": {
             "title": "Created At",
@@ -4521,7 +4653,7 @@
   },
   "info": {
     "title": "Folio API",
-    "version": "0.2.132"
+    "version": "0.2.134"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -5929,7 +6061,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Create a new company (self-service \u2014 any authenticated user)",
+        "summary": "Create a new company (self-service — any authenticated user)",
         "tags": ["companies"]
       }
     },
@@ -6959,6 +7091,60 @@
         "tags": ["notifications"]
       }
     },
+    "/api/v1/notifications/preferences": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferencesResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read the caller's push notification preferences",
+        "tags": ["notifications"]
+      },
+      "put": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationPreferencesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferencesResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update the caller's push notification preferences (partial)",
+        "tags": ["notifications"]
+      }
+    },
     "/api/v1/notifications/{note_id}/dismiss": {
       "post": {
         "parameters": [
@@ -7540,6 +7726,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignMemberRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Success"
@@ -8632,7 +8828,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Confirm a presigned upload \u2014 verify S3 object exists and persist DB row",
+        "summary": "Confirm a presigned upload — verify S3 object exists and persist DB row",
         "tags": ["project_documents"]
       }
     },
@@ -8884,7 +9080,7 @@
                 }
               ],
               "default": null,
-              "description": "Exact service_month match (labor invoices only). Format: YYYY-MM or YYYY-MM-DD \u2014 a day suffix is tolerated and normalized to the month, matching the YYYY-MM-01 convention the FE uses for the entity field.",
+              "description": "Exact service_month match (labor invoices only). Format: YYYY-MM or YYYY-MM-DD — a day suffix is tolerated and normalized to the month, matching the YYYY-MM-01 convention the FE uses for the entity field.",
               "title": "Service Month"
             }
           },
@@ -10523,7 +10719,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "DEPRECATED \u2014 invite-only signup is the only membership-creation path",
+        "summary": "DEPRECATED — invite-only signup is the only membership-creation path",
         "tags": ["projects"]
       }
     },

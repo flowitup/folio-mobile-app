@@ -132,7 +132,26 @@
     "title": "Paramètres",
     "joinCompany": "Rejoindre une autre société",
     "about": "À propos",
-    "version": "Version"
+    "version": "Version",
+    "notificationPrefs": {
+      "title": "Notifications",
+      "intro": "Choisissez les notifications qui arrivent sur ce téléphone.",
+      "pushEnabled": "Notifications push",
+      "pushEnabledDesc": "Interrupteur général — désactivé, tout ce qui suit est silencieux",
+      "loadError": "Impossible de charger vos réglages de notification.",
+      "categories": {
+        "chat": "Discussion d’équipe",
+        "chatDesc": "Nouveaux messages dans vos canaux d’entreprise et de chantier",
+        "attendance": "Présences",
+        "attendanceDesc": "Journées à valider, décisions de validation et demandes de modification",
+        "tasks": "Tâches",
+        "tasksDesc": "Tâches qui vous sont attribuées ou déplacées dans une autre colonne",
+        "membership": "Équipe et accès",
+        "membershipDesc": "Ajout à un chantier ou une entreprise, changements de rôle et de permissions, invitations acceptées",
+        "billing": "Argent",
+        "billingDesc": "Remboursements de vos dépenses, changements de statut des devis et factures"
+      }
+    }
   },
   "members": {
     "title": "Membres ({{count}})",

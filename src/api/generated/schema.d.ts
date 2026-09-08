@@ -2900,6 +2900,66 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/notifications/preferences": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read the caller's push notification preferences */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["NotificationPreferencesResponse"];
+          };
+        };
+      };
+    };
+    /** Update the caller's push notification preferences (partial) */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateNotificationPreferencesRequest"];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["NotificationPreferencesResponse"];
+          };
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/notifications/{note_id}/dismiss": {
     parameters: {
       query?: never;
@@ -3400,7 +3460,11 @@ export interface paths {
         };
         cookie?: never;
       };
-      requestBody?: never;
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["AssignMemberRequest"];
+        };
+      };
       responses: {
         /** @description Success */
         200: {
@@ -6982,6 +7046,22 @@ export interface components {
       recipient_siret: string | null;
     };
     /**
+     * AssignMemberRequest
+     * @description PUT /projects/<id>/assignments/<user_id> body.
+     *
+     *     `role` is COMPANY-WIDE, not per project: `manager` raises the target's
+     *     company role to manager (company admins only), which grants manager
+     *     permissions on every project they are assigned to in that company.
+     *     `member` is the default and never demotes anyone.
+     */
+    AssignMemberRequest: {
+      /**
+       * Role
+       * @default member
+       */
+      role: string;
+    };
+    /**
      * AttachedUserRow
      * @description One row of GET /companies/<id>/attached-users.
      *
@@ -8081,6 +8161,24 @@ export interface components {
       title: string | null;
     };
     /**
+     * NotificationPreferencesResponse
+     * @description Current opt-outs. Every field is present; a user with no stored row reads all true.
+     */
+    NotificationPreferencesResponse: {
+      /** Attendance */
+      attendance: boolean;
+      /** Billing */
+      billing: boolean;
+      /** Chat */
+      chat: boolean;
+      /** Membership */
+      membership: boolean;
+      /** Push Enabled */
+      push_enabled: boolean;
+      /** Tasks */
+      tasks: boolean;
+    };
+    /**
      * OtpRequestBody
      * @description POST /auth/otp/request — ask for a 6-digit code by SMS.
      */
@@ -8735,6 +8833,45 @@ export interface components {
        * @default null
        */
       name: string | null;
+    };
+    /**
+     * UpdateNotificationPreferencesRequest
+     * @description Partial update — omitted fields keep their current value.
+     *
+     *     `extra="forbid"` so a typo'd category is a 422 rather than a silently ignored setting
+     *     the user believes they changed.
+     */
+    UpdateNotificationPreferencesRequest: {
+      /**
+       * Attendance
+       * @default null
+       */
+      attendance: boolean | null;
+      /**
+       * Billing
+       * @default null
+       */
+      billing: boolean | null;
+      /**
+       * Chat
+       * @default null
+       */
+      chat: boolean | null;
+      /**
+       * Membership
+       * @default null
+       */
+      membership: boolean | null;
+      /**
+       * Push Enabled
+       * @default null
+       */
+      push_enabled: boolean | null;
+      /**
+       * Tasks
+       * @default null
+       */
+      tasks: boolean | null;
     };
     /**
      * UpdatePaymentMethodRequest

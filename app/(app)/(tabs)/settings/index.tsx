@@ -46,6 +46,11 @@ export default function SettingsHub() {
       path: "/settings/labor-roles",
     },
     {
+      key: "notifications",
+      label: t("settings.notificationPrefs.title"),
+      path: "/settings/notifications",
+    },
+    {
       key: "persons-merge",
       label: t("settings.personsMerge"),
       path: "/settings/persons-merge",
