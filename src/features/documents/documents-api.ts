@@ -71,13 +71,15 @@ function documentsQuery(params: DocumentListParams): string {
   return query.toString();
 }
 
+/** `enabled` is false for a caller without `project:update`: the whole area is closed to them. */
 export function useDocuments(
   projectId: string,
   params: DocumentListParams = {},
+  enabled = true,
 ) {
   return useQuery({
     queryKey: documentKeys.list(projectId, params),
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId) && enabled,
     queryFn: async () => {
       const response = await authedFetch(
         `${API_BASE_URL}/api/v1/projects/${encodeURIComponent(projectId)}/documents?${documentsQuery(params)}`,
@@ -88,10 +90,10 @@ export function useDocuments(
   });
 }
 
-export function useDocumentTags(projectId: string) {
+export function useDocumentTags(projectId: string, enabled = true) {
   return useQuery({
     queryKey: documentKeys.tags(projectId),
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId) && enabled,
     queryFn: async () =>
       unwrapAs<{ tags?: string[] }>(
         await api.GET("/api/v1/projects/{project_id}/documents/tags", {

@@ -36,11 +36,19 @@ import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { useMembers } from "@/features/projects/members-api";
+import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 const SORTS: DocumentSort[] = ["created_at", "name", "size", "uploader"];
 
-/** Project documents: kind chips + tag filter + sort, upload from camera/library/files, open, rename, tags, delete. */
+/** Focus refetch target while the caller may not read documents — the query stays disabled. */
+const noRefetch = () => undefined;
+
+/**
+ * Project documents: kind chips + tag filter + sort, upload from camera/library/files, open,
+ * rename, tags, delete. The whole area — reading included — needs `project:update`, so a caller
+ * without it lands on an empty state and no document request is made.
+ */
 export default function ProjectDocumentsSection() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -50,15 +58,20 @@ export default function ProjectDocumentsSection() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<DocumentSort>("created_at");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const documents = useDocuments(id, {
-    kinds: kinds.length ? kinds : undefined,
-    tags: selectedTags.length ? selectedTags : undefined,
-    uploaderId: uploader,
-    sort,
-    order,
-    page,
-  });
-  const members = useMembers(id);
+  const canAccess = useProjectCan(id, "project:update");
+  const documents = useDocuments(
+    id,
+    {
+      kinds: kinds.length ? kinds : undefined,
+      tags: selectedTags.length ? selectedTags : undefined,
+      uploaderId: uploader,
+      sort,
+      order,
+      page,
+    },
+    canAccess,
+  );
+  const members = useMembers(id, canAccess);
   const totalPages = Math.max(
     1,
     Math.ceil((documents.data?.total ?? 0) / (documents.data?.per_page ?? 25)),
@@ -69,12 +82,12 @@ export default function ProjectDocumentsSection() {
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
     );
   };
-  const tags = useDocumentTags(id);
+  const tags = useDocumentTags(id, canAccess);
   const upload = useUploadDocument(id);
   const rename = useRenameDocument(id);
   const setTags = useSetDocumentTags(id);
   const remove = useDeleteDocument(id);
-  useRefetchOnFocus(documents.refetch);
+  useRefetchOnFocus(canAccess ? documents.refetch : noRefetch);
 
   const addSheet = useRef<BottomSheetModal>(null);
   const editSheet = useRef<BottomSheetModal>(null);
@@ -106,6 +119,13 @@ export default function ProjectDocumentsSection() {
         : [...current, kind],
     );
   const items = documents.data?.items ?? [];
+
+  if (!canAccess)
+    return (
+      <View className="flex-1 bg-paper">
+        <EmptyState message={t("documents.restricted")} />
+      </View>
+    );
 
   return (
     <View className="flex-1 bg-paper">

@@ -428,6 +428,7 @@
     "add": "Thêm tài liệu",
     "edit": "Sửa tài liệu",
     "none": "Chưa có tài liệu.",
+    "restricted": "Tài liệu chỉ dành cho người quản lý công trình.",
     "uploaded": "Đã tải tài liệu.",
     "deleted": "Đã xoá tài liệu.",
     "deleteConfirm": "Xoá {{name}}?",

@@ -22,11 +22,20 @@ import {
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useProducts, useSuppliers } from "@/features/library/library-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
+import { useProjectCan } from "@/features/projects/use-project-can";
 import { useTokens } from "@/theme/tokens";
 
-/** Project sections that live behind the Menu (the four tabs cover overview / invoices / labor / planning). */
-const MENU_PROJECT_SECTIONS: { key: string; icon: IconName }[] = [
-  { key: "documents", icon: "folder" },
+/**
+ * Project sections that live behind the Menu (the four tabs cover overview / invoices / labor /
+ * planning). `documents` is reserved to callers who may write the project: the whole documents
+ * area — listing included — requires `project:update`.
+ */
+const MENU_PROJECT_SECTIONS: {
+  key: string;
+  icon: IconName;
+  requiresUpdate?: boolean;
+}[] = [
+  { key: "documents", icon: "folder", requiresUpdate: true },
   { key: "photos", icon: "image" },
   { key: "notes", icon: "edit-3" },
   { key: "salaries", icon: "credit-card" },
@@ -93,6 +102,7 @@ export function MenuSheet() {
   const { height } = useWindowDimensions();
   const { sheet, closeSheet } = useShell();
   const { projectId } = useSelectedProject();
+  const canUpdateProject = useProjectCan(projectId, "project:update");
   const { workerMode } = useWorkerMode();
   const { user } = useAuth();
   const billing = useBillingAccess();
@@ -111,6 +121,10 @@ export function MenuSheet() {
     closeSheet();
     router.push(path);
   };
+
+  const projectSections = MENU_PROJECT_SECTIONS.filter(
+    (section) => !section.requiresUpdate || canUpdateProject,
+  );
 
   const librarySub =
     products.data && suppliers.data
@@ -158,14 +172,14 @@ export function MenuSheet() {
               {t("shell.projectSections")}
             </Eyebrow>
             <View className="mb-1 overflow-hidden rounded-xl border border-line bg-card">
-              {MENU_PROJECT_SECTIONS.map((section, index) => (
+              {projectSections.map((section, index) => (
                 <MenuRow
                   key={section.key}
                   testID={`menu-section-${section.key}`}
                   icon={section.icon}
                   title={t(`project.sections.${section.key}`)}
                   onPress={() => go(`/projects/${projectId}/${section.key}`)}
-                  last={index === MENU_PROJECT_SECTIONS.length - 1}
+                  last={index === projectSections.length - 1}
                 />
               ))}
             </View>

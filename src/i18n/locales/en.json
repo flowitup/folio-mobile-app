@@ -428,6 +428,7 @@
     "add": "Add a document",
     "edit": "Edit document",
     "none": "No documents yet.",
+    "restricted": "Documents are reserved for the project managers.",
     "uploaded": "Document uploaded.",
     "deleted": "Document deleted.",
     "deleteConfirm": "Delete {{name}}?",
