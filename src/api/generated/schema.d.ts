@@ -4,39 +4,6 @@
  */
 
 export interface paths {
-  "/api/v1/__test__/last-email": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/admin/users": {
     parameters: {
       query?: never;
@@ -44,7 +11,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Search users by email or display name (superadmin only) */
+    /** Search users by email or display name (platform ops only) */
     get: {
       parameters: {
         query?: never;
@@ -84,7 +51,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** Update a user's email / display name (superadmin only) */
+    /** Update a user's email / display name (platform ops only) */
     patch: {
       parameters: {
         query?: never;
@@ -3422,7 +3389,7 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
-    /** Assign a company member to a project (admin: any role; manager: member only) */
+    /** Assign a company member to a project; a company admin may pass role=manager to promote the target */
     put: {
       parameters: {
         query?: never;
@@ -3433,11 +3400,7 @@ export interface paths {
         };
         cookie?: never;
       };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["AssignMemberRequest"];
-        };
-      };
+      requestBody?: never;
       responses: {
         /** @description Success */
         200: {
@@ -5833,7 +5796,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Return project members with role and join date */
+    /** Return the people assigned to a project with their company role */
     get: {
       parameters: {
         query?: never;
@@ -5860,43 +5823,6 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{project_id}/members/{user_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Change a project member's role (deprecated: role_id is ignored) */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          project_id: string;
-          user_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
     trace?: never;
   };
   "/api/v1/projects/{project_id}/notes": {
@@ -6685,39 +6611,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/roles": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/tasks/{task_id}": {
     parameters: {
       query?: never;
@@ -7089,17 +6982,6 @@ export interface components {
       recipient_siret: string | null;
     };
     /**
-     * AssignMemberRequest
-     * @description PUT /projects/<id>/assignments/<user_id> body.
-     */
-    AssignMemberRequest: {
-      /**
-       * Role
-       * @default member
-       */
-      role: string;
-    };
-    /**
      * AttachedUserRow
      * @description One row of GET /companies/<id>/attached-users.
      *
@@ -7179,11 +7061,6 @@ export interface components {
     BulkAddRequest: {
       /** Project Ids */
       project_ids: string[];
-      /**
-       * Role Id
-       * Format: uuid
-       */
-      role_id: string;
     };
     /**
      * BulkAddResponse
@@ -7209,11 +7086,7 @@ export interface components {
        * Status
        * @enum {string}
        */
-      status:
-        | "added"
-        | "already_member_same_role"
-        | "already_member_different_role"
-        | "project_not_found";
+      status: "added" | "already_member" | "project_not_found";
     };
     /**
      * BulkLogAttendanceEntry
@@ -7465,11 +7338,6 @@ export interface components {
        * Format: uuid
        */
       project_id: string;
-      /**
-       * Role Id
-       * Format: uuid
-       */
-      role_id: string;
     };
     /**
      * CreateInviteResponse
@@ -9071,8 +8939,6 @@ export interface components {
      *
      *     `permissions` is resolved from the caller's company role (primary company)
      *     for client-side UI gating only — the server re-resolves on every route.
-     *     `roles` is deprecated: global roles are gone, so it is always empty except
-     *     for platform ops, and it disappears with the legacy role tables.
      */
     UserResponse: {
       /**
@@ -9099,8 +8965,6 @@ export interface components {
        * @default null
        */
       phone: string | null;
-      /** Roles */
-      roles: string[];
     };
     /**
      * ValidatedEntryResponse

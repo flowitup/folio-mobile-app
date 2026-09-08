@@ -231,19 +231,6 @@
         "title": "ApplyTemplateRequest",
         "type": "object"
       },
-      "AssignMemberRequest": {
-        "description": "PUT /projects/<id>/assignments/<user_id> body.",
-        "properties": {
-          "role": {
-            "default": "member",
-            "pattern": "^(member|manager)$",
-            "title": "Role",
-            "type": "string"
-          }
-        },
-        "title": "AssignMemberRequest",
-        "type": "object"
-      },
       "AttachedUserRow": {
         "additionalProperties": false,
         "description": "One row of GET /companies/<id>/attached-users.\n\nAccess fields come from the use case; `email` / `display_name` / `phone`\nare joined from `users` so clients can render the member list directly.",
@@ -392,14 +379,9 @@
             "minItems": 1,
             "title": "Project Ids",
             "type": "array"
-          },
-          "role_id": {
-            "format": "uuid",
-            "title": "Role Id",
-            "type": "string"
           }
         },
-        "required": ["project_ids", "role_id"],
+        "required": ["project_ids"],
         "title": "BulkAddRequest",
         "type": "object"
       },
@@ -438,12 +420,7 @@
             "title": "Project Name"
           },
           "status": {
-            "enum": [
-              "added",
-              "already_member_same_role",
-              "already_member_different_role",
-              "project_not_found"
-            ],
+            "enum": ["added", "already_member", "project_not_found"],
             "title": "Status",
             "type": "string"
           }
@@ -998,14 +975,9 @@
             "format": "uuid",
             "title": "Project Id",
             "type": "string"
-          },
-          "role_id": {
-            "format": "uuid",
-            "title": "Role Id",
-            "type": "string"
           }
         },
-        "required": ["project_id", "email", "role_id"],
+        "required": ["project_id", "email"],
         "title": "CreateInviteRequest",
         "type": "object"
       },
@@ -4265,7 +4237,7 @@
         "type": "object"
       },
       "UserResponse": {
-        "description": "User info response.\n\n`permissions` is resolved from the caller's company role (primary company)\nfor client-side UI gating only \u2014 the server re-resolves on every route.\n`roles` is deprecated: global roles are gone, so it is always empty except\nfor platform ops, and it disappears with the legacy role tables.",
+        "description": "User info response.\n\n`permissions` is resolved from the caller's company role (primary company)\nfor client-side UI gating only \u2014 the server re-resolves on every route.",
         "properties": {
           "companies": {
             "default": [],
@@ -4307,16 +4279,9 @@
             ],
             "default": null,
             "title": "Phone"
-          },
-          "roles": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Roles",
-            "type": "array"
           }
         },
-        "required": ["id", "email", "permissions", "roles"],
+        "required": ["id", "email", "permissions"],
         "title": "UserResponse",
         "type": "object"
       },
@@ -4556,25 +4521,10 @@
   },
   "info": {
     "title": "Folio API",
-    "version": "0.2.131"
+    "version": "0.2.132"
   },
   "openapi": "3.1.0",
   "paths": {
-    "/api/v1/__test__/last-email": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "tags": ["test_only"]
-      }
-    },
     "/api/v1/admin/users": {
       "get": {
         "responses": {
@@ -4587,7 +4537,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Search users by email or display name (superadmin only)",
+        "summary": "Search users by email or display name (platform ops only)",
         "tags": ["admin"]
       }
     },
@@ -4613,7 +4563,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Update a user's email / display name (superadmin only)",
+        "summary": "Update a user's email / display name (platform ops only)",
         "tags": ["admin"]
       }
     },
@@ -7590,16 +7540,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssignMemberRequest"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "description": "Success"
@@ -7610,7 +7550,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Assign a company member to a project (admin: any role; manager: member only)",
+        "summary": "Assign a company member to a project; a company admin may pass role=manager to promote the target",
         "tags": ["projects"]
       }
     },
@@ -10123,41 +10063,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Return project members with role and join date",
-        "tags": ["projects"]
-      }
-    },
-    "/api/v1/projects/{project_id}/members/{user_id}": {
-      "patch": {
-        "parameters": [
-          {
-            "in": "path",
-            "name": "project_id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "user_id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Change a project member's role (deprecated: role_id is ignored)",
+        "summary": "Return the people assigned to a project with their company role",
         "tags": ["projects"]
       }
     },
@@ -11025,21 +10931,6 @@
         ],
         "summary": "Register this device's push token for the signed-in user",
         "tags": ["push"]
-      }
-    },
-    "/api/v1/roles": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "tags": ["roles"]
       }
     },
     "/api/v1/tasks/{task_id}": {
