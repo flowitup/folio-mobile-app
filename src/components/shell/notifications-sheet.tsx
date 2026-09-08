@@ -29,6 +29,7 @@ export function NotificationsSheet() {
     (item) => !item.dismissed,
   );
   const attendance = notifications.data?.attendance_pending ?? [];
+  const companyEvents = notifications.data?.company_events ?? [];
 
   return (
     <ShellSheet
@@ -37,6 +38,43 @@ export function NotificationsSheet() {
       scroll
     >
       <AttendanceRequestsSection items={attendance} />
+      {companyEvents.length > 0 ? (
+        <View className="mb-4">
+          <Eyebrow className="mb-2">
+            {t("notifications.newMembers.title", {
+              count: companyEvents.length,
+            })}
+          </Eyebrow>
+          <View className="overflow-hidden rounded-xl border border-line bg-card">
+            {companyEvents.map((event, index) => (
+              <Pressable
+                key={`${event.company_id}-${event.user_id}`}
+                testID={`notification-new-member-${event.user_id}`}
+                accessibilityRole="button"
+                onPress={() => {
+                  closeSheet();
+                  router.push("/company/members");
+                }}
+                className={`flex-row items-center justify-between px-3.5 py-3 active:opacity-70 ${
+                  index === companyEvents.length - 1
+                    ? ""
+                    : "border-b border-line"
+                }`}
+              >
+                <Text
+                  className="font-sans-medium text-[14px] text-ink"
+                  numberOfLines={1}
+                >
+                  {event.display_name}
+                </Text>
+                <Text className="font-sans text-[11.5px] text-muted">
+                  {t("notifications.newMembers.unassigned")}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
       <Eyebrow className="mb-2">
         {t("notifications.title", { count: pending.length })}
       </Eyebrow>

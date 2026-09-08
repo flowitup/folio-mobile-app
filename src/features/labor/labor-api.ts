@@ -34,6 +34,8 @@ export type LaborRole = {
   name: string;
   color: string;
   created_at?: string;
+  /** Set on the two backend-seeded roles (`tho_chinh`/`tho_phu`); null/absent on a custom one. */
+  slug?: string | null;
 };
 
 /** Bell query key (owned by the notifications feature); mutations that change pending entries refresh it. */

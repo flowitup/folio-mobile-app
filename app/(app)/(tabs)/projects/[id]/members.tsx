@@ -2,36 +2,31 @@ import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
 import { Badge, Card, EmptyState } from "@/components/ui/primitives";
-import { Select } from "@/components/ui/select";
-import { Sheet } from "@/components/ui/sheet";
+import { AssignMemberSheet } from "@/features/projects/assign-member-sheet";
 import {
   useInvitations,
-  useInviteMember,
   useMembers,
-  useRemoveMember,
   useRevokeInvitation,
-  useRoles,
-  useUpdateMemberRole,
+  useUnassignMember,
 } from "@/features/projects/members-api";
 import type { ProjectMember } from "@/features/projects/members-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
-/** Members + pending invitations, mirroring the web MembersTable and invite dialog. */
+/**
+ * Members: manager/member assignments (D1 — no role picker, assigned once from the company
+ * directory). Admin is implicit on every company project and never listed here. Someone not yet
+ * a company member is onboarded from the company members screen ("add by phone", D1) first;
+ * outstanding legacy email invitations stay visible here to revoke, but the mobile app no longer
+ * creates new ones — that flow needs a legacy project role id this redesign is retiring.
+ */
 export default function ProjectMembersSection() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,57 +34,27 @@ export default function ProjectMembersSection() {
   const project = useProject(id);
   const members = useMembers(id);
   const invitations = useInvitations(id);
-  const roles = useRoles();
-  const updateRole = useUpdateMemberRole(id);
-  const removeMember = useRemoveMember(id);
-  const invite = useInviteMember(id);
+  const unassign = useUnassignMember(id);
   const revoke = useRevokeInvitation(id);
   useRefetchOnFocus(members.refetch);
 
-  const inviteSheet = useRef<BottomSheetModal>(null);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRoleId, setInviteRoleId] = useState<string | null>(null);
-  const [inviteError, setInviteError] = useState<string | null>(null);
+  const assignSheet = useRef<BottomSheetModal>(null);
   const [removing, setRemoving] = useState<ProjectMember | null>(null);
 
   const canManage =
     projectCan(project.data, "project:manage_users", user?.permissions) ||
-    project.data?.owner_id === user?.id;
-  const canInvite =
-    canManage || projectCan(project.data, "project:invite", user?.permissions);
-  const roleOptions = (roles.data ?? []).map((role) => ({
-    value: role.id,
-    label: role.name,
-    description: role.description,
-  }));
-
-  function submitInvite() {
-    const email = inviteEmail.trim().toLowerCase();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
-      return setInviteError(t("members.invalidEmail"));
-    if (!inviteRoleId) return setInviteError(t("members.roleRequired"));
-    setInviteError(null);
-    invite.mutate(
-      { email, role_id: inviteRoleId },
-      {
-        onSuccess: () => {
-          inviteSheet.current?.dismiss();
-          setInviteEmail("");
-        },
-      },
-    );
-  }
+    projectCan(project.data, "project:invite", user?.permissions);
 
   if (members.isPending) return <ActivityIndicator className="mt-8" />;
 
   return (
     <ScrollView className="flex-1 bg-paper" contentContainerClassName="p-4">
-      {canInvite ? (
+      {canManage ? (
         <Button
-          testID="members-invite"
-          label={t("members.invite")}
+          testID="members-assign"
+          label={t("members.assign.title")}
           className="mb-4"
-          onPress={() => inviteSheet.current?.present()}
+          onPress={() => assignSheet.current?.present()}
         />
       ) : null}
 
@@ -118,28 +83,21 @@ export default function ProjectMembersSection() {
                 </Text>
               ) : null}
             </View>
-            <Badge label={member.role_name} />
+            <Badge
+              label={t(`companies.x.${member.role_name}`, {
+                defaultValue: member.role_name,
+              })}
+            />
           </View>
           {canManage && member.user_id !== user?.id ? (
-            <View className="mt-3">
-              <Select
-                testID={`member-role-${member.user_id}`}
-                value={member.role_id}
-                options={roleOptions}
-                placeholder={t("members.changeRole")}
-                onChange={(roleId) =>
-                  updateRole.mutate({ userId: member.user_id, roleId })
-                }
-              />
-              <Pressable
-                testID={`member-remove-${member.user_id}`}
-                onPress={() => setRemoving(member)}
-              >
-                <Text className="text-sm text-danger">
-                  {t("members.remove")}
-                </Text>
-              </Pressable>
-            </View>
+            <Button
+              testID={`member-remove-${member.user_id}`}
+              label={t("members.remove")}
+              variant="secondary"
+              size="sm"
+              className="mt-2"
+              onPress={() => setRemoving(member)}
+            />
           ) : null}
         </Card>
       ))}
@@ -157,7 +115,6 @@ export default function ProjectMembersSection() {
                     {invitation.email}
                   </Text>
                   <Text className="text-xs text-muted-foreground">
-                    {invitation.role_name} ·{" "}
                     {t("members.expires", {
                       date: formatDate(invitation.expires_at),
                     })}
@@ -182,32 +139,12 @@ export default function ProjectMembersSection() {
         </>
       ) : null}
 
-      <Sheet ref={inviteSheet} title={t("members.invite")} snapPoints={["60%"]}>
-        <View className="p-4">
-          <Input
-            testID="invite-email"
-            label={t("login.email")}
-            value={inviteEmail}
-            onChangeText={setInviteEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            error={inviteError}
-          />
-          <Select
-            testID="invite-role"
-            label={t("members.role")}
-            value={inviteRoleId}
-            options={roleOptions}
-            onChange={setInviteRoleId}
-          />
-          <Button
-            testID="invite-submit"
-            label={t("members.sendInvite")}
-            loading={invite.isPending}
-            onPress={submitInvite}
-          />
-        </View>
-      </Sheet>
+      <AssignMemberSheet
+        ref={assignSheet}
+        projectId={id}
+        companyId={project.data?.company_id}
+        members={members.data ?? []}
+      />
 
       <ConfirmDialog
         visible={removing !== null}
@@ -215,11 +152,11 @@ export default function ProjectMembersSection() {
         confirmLabel={t("members.remove")}
         cancelLabel={t("common.cancel")}
         destructive
-        loading={removeMember.isPending}
+        loading={unassign.isPending}
         onCancel={() => setRemoving(null)}
         onConfirm={() =>
           removing &&
-          removeMember.mutate(
+          unassign.mutate(
             { userId: removing.user_id },
             { onSettled: () => setRemoving(null) },
           )

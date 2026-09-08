@@ -11,7 +11,8 @@
     "ok": "OK",
     "saved": "Đã lưu.",
     "edit": "Sửa",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "remove": "Gỡ"
   },
   "login": {
     "title": "Đăng nhập Folio",
@@ -123,8 +124,6 @@
     "personsMerge": "Gộp người",
     "adminCompanies": "Tất cả công ty (admin)",
     "users": {
-      "title": "Người dùng & vai trò",
-      "description": "Gán vai trò cho người dùng hiện có trên một hoặc nhiều dự án.",
       "permissionDenied": "Bạn không có quyền thay đổi vai trò của người dùng."
     },
     "manage": "Quản lý",
@@ -138,13 +137,7 @@
   "members": {
     "title": "Thành viên ({{count}})",
     "none": "Chưa có thành viên.",
-    "invite": "Mời thành viên",
-    "sendInvite": "Gửi lời mời",
     "inviteSent": "Đã gửi lời mời.",
-    "invalidEmail": "Nhập email hợp lệ.",
-    "roleRequired": "Chọn vai trò.",
-    "role": "Vai trò",
-    "changeRole": "Đổi vai trò…",
     "remove": "Gỡ",
     "removed": "Đã gỡ thành viên.",
     "removeConfirm": "Gỡ {{email}} khỏi công trình này?",
@@ -152,7 +145,17 @@
     "pendingInvitations": "Lời mời đang chờ",
     "expires": "hết hạn {{date}}",
     "revoke": "Thu hồi",
-    "invitationRevoked": "Đã thu hồi lời mời."
+    "invitationRevoked": "Đã thu hồi lời mời.",
+    "assign": {
+      "title": "Phân công thành viên",
+      "personLabel": "Thành viên công ty",
+      "personPlaceholder": "Chọn một thành viên",
+      "roleLabel": "Vai trò",
+      "submit": "Phân công",
+      "empty": "Mọi thành viên công ty đã được phân công, hoặc chưa có ai liên kết tài khoản.",
+      "noCompany": "Công trình này chưa có công ty.",
+      "loadError": "Không thể tải danh bạ công ty."
+    }
   },
   "invoices": {
     "all": "Tất cả",
@@ -415,6 +418,10 @@
     "view": {
       "calendar": "Lịch",
       "list": "Danh sách"
+    },
+    "roles": {
+      "tho_chinh": "Thợ chính",
+      "tho_phu": "Thợ phụ"
     }
   },
   "documents": {
@@ -498,6 +505,10 @@
       "rejectChangeConfirm": "Từ chối yêu cầu sửa của {{worker}} ngày {{date}}? Ngày công giữ nguyên như đã duyệt.",
       "validatedChangeToast": "Đã áp dụng yêu cầu sửa.",
       "rejectedChangeToast": "Đã từ chối yêu cầu sửa."
+    },
+    "newMembers": {
+      "title": "Thành viên mới ({{count}})",
+      "unassigned": "Chưa được phân công"
     }
   },
   "tasks": {
@@ -969,10 +980,6 @@
           "countSingular": "người dùng",
           "countPlural": "người dùng",
           "roleColumn": "Vai trò",
-          "roleAdmin": "Quản trị",
-          "roleMember": "Thành viên",
-          "makeAdmin": "Đặt làm quản trị",
-          "makeMember": "Đặt làm thành viên",
           "roleUpdatedToast": "Đã cập nhật vai trò"
         },
         "delete": {
@@ -1094,7 +1101,8 @@
       "primary": "Chính",
       "member": "Thành viên",
       "admin": "Admin",
-      "deleteConfirm": "Xóa công ty {{name}}? Không thể hoàn tác."
+      "deleteConfirm": "Xóa công ty {{name}}? Không thể hoàn tác.",
+      "manager": "Quản lý"
     },
     "toast": {
       "created": "Đã tạo công ty.",
@@ -1113,6 +1121,53 @@
       "hint": "8 ký tự, do quản trị viên công ty cung cấp.",
       "submit": "Tham gia",
       "successToast": "Bạn đã tham gia công ty."
+    },
+    "members": {
+      "title": "Thành viên công ty",
+      "companyLabel": "Công ty",
+      "listTitle": "Thành viên ({{count}})",
+      "addByPhone": {
+        "title": "Thêm bằng số điện thoại",
+        "phoneLabel": "Số điện thoại",
+        "nameLabel": "Tên (không bắt buộc)",
+        "submit": "Thêm thành viên",
+        "conflictHint": "Có nhiều người trùng số điện thoại này — hãy chọn đúng người.",
+        "conflict": "Có nhiều người trùng số điện thoại này.",
+        "successToast": "Đã thêm thành viên."
+      },
+      "import": {
+        "title": "Nhập từ công ty khác",
+        "sourceLabel": "Công ty nguồn",
+        "sourcePlaceholder": "Chọn một công ty",
+        "noSource": "Bạn không phải quản trị viên của công ty nào khác.",
+        "empty": "Danh bạ của công ty này đang trống.",
+        "selectedCount": "Đã chọn {{count}}",
+        "submit": "Nhập mục đã chọn",
+        "successToast": "Đã nhập thành viên."
+      },
+      "grants": {
+        "open": "Quyền tuỳ chỉnh",
+        "title": "Quyền tuỳ chỉnh — {{name}}",
+        "none": "Chưa có quyền cấp hay từ chối nào.",
+        "addTitle": "Thêm quyền cấp hoặc từ chối",
+        "permissionLabel": "Quyền",
+        "permissionPlaceholder": "Chọn một quyền",
+        "effectLabel": "Hiệu lực",
+        "effect": {
+          "grant": "Cấp quyền",
+          "deny": "Từ chối"
+        },
+        "scopeLabel": "Phạm vi",
+        "companyWide": "Toàn công ty",
+        "removedToast": "Đã xoá.",
+        "projectUnknown": "Dự án không xác định",
+        "removeConfirm": "Xoá quyền tuỳ chỉnh \"{{permission}}\"?"
+      },
+      "pending": {
+        "title": "Hồ sơ chờ ({{count}})",
+        "empty": "Không có hồ sơ chờ — mọi người được thêm bằng số điện thoại đã đăng nhập.",
+        "badge": "Chờ"
+      }
     }
   },
   "paymentMethods": {
@@ -1156,47 +1211,15 @@
   },
   "admin": {
     "bulkAdd": {
-      "title": "Thêm người dùng vào nhiều dự án",
-      "subtitle": "Tìm một người dùng hiện có, chọn các dự án và gán một vai trò cho tất cả.",
+      "title": "Tìm kiếm và chỉnh sửa người dùng",
+      "subtitle": "Tìm một người dùng hiện có theo email hoặc tên, sau đó chỉnh sửa tên, email hoặc số điện thoại.",
       "userSearch": {
-        "label": "Tìm người dùng",
         "placeholder": "Nhập ít nhất 3 ký tự của email hoặc tên",
         "minChars": "Nhập ít nhất 3 ký tự để tìm kiếm",
         "empty": "Không tìm thấy người dùng phù hợp",
-        "searching": "Đang tìm…",
         "selected": "Đã chọn: {{email}}",
-        "clear": "Xoá",
+        "nameLabel": "Tên",
         "phone": "Số điện thoại (đăng nhập SMS)"
-      },
-      "projects": {
-        "label": "Dự án",
-        "placeholder": "Lọc dự án...",
-        "empty": "Không có dự án nào",
-        "selectedCount": "Đã chọn {{count}}",
-        "maxReached": "Tối đa 50 dự án mỗi lần"
-      },
-      "role": {
-        "label": "Vai trò",
-        "placeholder": "Chọn vai trò"
-      },
-      "submit": "Thêm vào các dự án đã chọn",
-      "submitting": "Đang thêm...",
-      "errors": {
-        "userRequired": "Hãy chọn một người dùng trước",
-        "projectsRequired": "Chọn ít nhất một dự án",
-        "roleRequired": "Chọn một vai trò",
-        "generic": "Đã có lỗi xảy ra. Vui lòng thử lại.",
-        "forbidden": "Bạn không có quyền thực hiện thao tác này",
-        "userNotFound": "Không tìm thấy người dùng",
-        "roleNotFound": "Không tìm thấy vai trò",
-        "tooMany": "Quá nhiều dự án (tối đa 50 mỗi lần)",
-        "rateLimited": "Quá nhiều thao tác hàng loạt. Hãy thử lại sau một giờ."
-      },
-      "toast": {
-        "added": "Đã thêm người dùng vào {{count}} dự án",
-        "alreadyMember": "{{count}} dự án đã bỏ qua — người dùng đã là thành viên",
-        "differentRole": "{{count}} dự án đã bỏ qua — người dùng đang có vai trò khác",
-        "notFound": "{{count}} dự án không tồn tại"
       }
     }
   },
@@ -1474,7 +1497,8 @@
     },
     "status": {
       "pending": "Chờ duyệt",
-      "validated": "Đã duyệt"
+      "validated": "Đã duyệt",
+      "absent": "Vắng mặt"
     },
     "edit": "Sửa ngày này",
     "editSubmit": "Gửi yêu cầu sửa",
@@ -1484,6 +1508,33 @@
     "supplement": "Giờ thêm",
     "note": "Ghi chú",
     "changeRequested": "Chờ duyệt sửa",
-    "proposedLine": "Yêu cầu: {{value}}"
+    "proposedLine": "Yêu cầu: {{value}}",
+    "roster": {
+      "title": "Đội trên công trình — {{date}}",
+      "empty": "Hôm nay chưa có ai được xếp lịch.",
+      "loadError": "Không thể tải danh sách hôm nay."
+    }
+  },
+  "onboarding": {
+    "title": "Chào mừng đến với Folio",
+    "subtitle": "Tạo công ty của bạn hoặc tham gia bằng mã của quản trị viên.",
+    "chooseLabel": "Bắt đầu",
+    "createOption": "Tạo công ty",
+    "joinOption": "Nhập mã tham gia",
+    "createSubtitle": "Bạn sẽ là quản trị viên — bổ sung thông tin còn lại sau trong Cài đặt.",
+    "waiting": {
+      "title": "Sắp xong rồi",
+      "subtitle": "Quản trị viên cần phân công bạn vào một công trình trước khi bạn có thể chấm công."
+    }
+  },
+  "permissions": {
+    "project_update": "Sửa thông tin công trình",
+    "project_invite": "Mời thành viên",
+    "project_manage_users": "Quản lý thành viên",
+    "project_manage_labor": "Quản lý chấm công & lương",
+    "project_manage_invoices": "Quản lý hoá đơn",
+    "project_log_own_attendance": "Tự chấm công",
+    "bibliotheque_manage": "Quản lý thư viện sản phẩm",
+    "project_view_pay": "Xem lương người khác"
   }
 }

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { EmptyState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
@@ -21,7 +22,7 @@ export default function AdminCompaniesScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
-  const superadmin = user?.permissions.includes("*:*") ?? false;
+  const superadmin = isPlatformOps(user);
   const companies = useAllCompanies(superadmin);
   useRefetchOnFocus(companies.refetch);
   const create = useCreateCompany();

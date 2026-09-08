@@ -11,7 +11,8 @@
     "ok": "OK",
     "saved": "Enregistré.",
     "edit": "Modifier",
-    "back": "Retour"
+    "back": "Retour",
+    "remove": "Retirer"
   },
   "login": {
     "title": "Connexion à Folio",
@@ -123,8 +124,6 @@
     "personsMerge": "Fusionner des personnes",
     "adminCompanies": "Toutes les sociétés (admin)",
     "users": {
-      "title": "Utilisateurs et rôles",
-      "description": "Attribuer des rôles aux utilisateurs existants sur un ou plusieurs projets.",
       "permissionDenied": "Vous n'avez pas l'autorisation de modifier les rôles des utilisateurs."
     },
     "manage": "Gérer",
@@ -138,13 +137,7 @@
   "members": {
     "title": "Membres ({{count}})",
     "none": "Aucun membre.",
-    "invite": "Inviter un membre",
-    "sendInvite": "Envoyer l'invitation",
     "inviteSent": "Invitation envoyée.",
-    "invalidEmail": "Saisissez un e-mail valide.",
-    "roleRequired": "Choisissez un rôle.",
-    "role": "Rôle",
-    "changeRole": "Changer le rôle…",
     "remove": "Retirer",
     "removed": "Membre retiré.",
     "removeConfirm": "Retirer {{email}} de ce chantier ?",
@@ -152,7 +145,17 @@
     "pendingInvitations": "Invitations en attente",
     "expires": "expire le {{date}}",
     "revoke": "Révoquer",
-    "invitationRevoked": "Invitation révoquée."
+    "invitationRevoked": "Invitation révoquée.",
+    "assign": {
+      "title": "Affecter un membre",
+      "personLabel": "Membre de l'entreprise",
+      "personPlaceholder": "Choisir un membre",
+      "roleLabel": "Rôle",
+      "submit": "Affecter",
+      "empty": "Tous les membres de l'entreprise sont déjà affectés, ou aucun n'a encore de compte lié.",
+      "noCompany": "Ce chantier n'a pas encore d'entreprise.",
+      "loadError": "Impossible de charger l'annuaire de l'entreprise."
+    }
   },
   "invoices": {
     "all": "Tout",
@@ -415,6 +418,10 @@
     "view": {
       "calendar": "Calendrier",
       "list": "Liste"
+    },
+    "roles": {
+      "tho_chinh": "Ouvrier principal",
+      "tho_phu": "Ouvrier auxiliaire"
     }
   },
   "documents": {
@@ -498,6 +505,10 @@
       "rejectChangeConfirm": "Refuser la modification de {{worker}} pour le {{date}} ? Le jour reste tel que validé.",
       "validatedChangeToast": "Modification appliquée.",
       "rejectedChangeToast": "Modification refusée."
+    },
+    "newMembers": {
+      "title": "Nouveaux membres ({{count}})",
+      "unassigned": "Pas encore affecté"
     }
   },
   "tasks": {
@@ -969,10 +980,6 @@
           "countSingular": "utilisateur",
           "countPlural": "utilisateurs",
           "roleColumn": "Rôle",
-          "roleAdmin": "Admin",
-          "roleMember": "Membre",
-          "makeAdmin": "Promouvoir admin",
-          "makeMember": "Rétrograder membre",
           "roleUpdatedToast": "Rôle mis à jour"
         },
         "delete": {
@@ -1094,7 +1101,8 @@
       "primary": "Principale",
       "member": "Membre",
       "admin": "Admin",
-      "deleteConfirm": "Supprimer la société {{name}} ? Irréversible."
+      "deleteConfirm": "Supprimer la société {{name}} ? Irréversible.",
+      "manager": "Responsable"
     },
     "toast": {
       "created": "Société créée.",
@@ -1113,6 +1121,53 @@
       "hint": "8 caractères, fournis par l'administrateur de la société.",
       "submit": "Rejoindre",
       "successToast": "Vous avez rejoint la société."
+    },
+    "members": {
+      "title": "Membres de l'entreprise",
+      "companyLabel": "Entreprise",
+      "listTitle": "Membres ({{count}})",
+      "addByPhone": {
+        "title": "Ajouter par téléphone",
+        "phoneLabel": "Numéro de téléphone",
+        "nameLabel": "Nom (facultatif)",
+        "submit": "Ajouter le membre",
+        "conflictHint": "Plusieurs personnes correspondent à ce numéro — choisissez la bonne.",
+        "conflict": "Plusieurs personnes correspondent à ce numéro.",
+        "successToast": "Membre ajouté."
+      },
+      "import": {
+        "title": "Importer d'une autre entreprise",
+        "sourceLabel": "Entreprise source",
+        "sourcePlaceholder": "Choisir une entreprise",
+        "noSource": "Vous n'êtes administrateur d'aucune autre entreprise.",
+        "empty": "L'annuaire de cette entreprise est vide.",
+        "selectedCount": "{{count}} sélectionné(s)",
+        "submit": "Importer la sélection",
+        "successToast": "Membres importés."
+      },
+      "grants": {
+        "open": "Permissions personnalisées",
+        "title": "Permissions personnalisées — {{name}}",
+        "none": "Aucune autorisation personnalisée pour l'instant.",
+        "addTitle": "Ajouter une autorisation ou un refus",
+        "permissionLabel": "Permission",
+        "permissionPlaceholder": "Choisir une permission",
+        "effectLabel": "Effet",
+        "effect": {
+          "grant": "Autoriser",
+          "deny": "Refuser"
+        },
+        "scopeLabel": "Portée",
+        "companyWide": "Toute l'entreprise",
+        "removedToast": "Supprimé.",
+        "projectUnknown": "Projet inconnu",
+        "removeConfirm": "Supprimer la permission personnalisée « {{permission}} » ?"
+      },
+      "pending": {
+        "title": "Profils en attente ({{count}})",
+        "empty": "Aucun profil en attente — toutes les personnes ajoutées par téléphone se sont connectées.",
+        "badge": "En attente"
+      }
     }
   },
   "paymentMethods": {
@@ -1156,47 +1211,15 @@
   },
   "admin": {
     "bulkAdd": {
-      "title": "Ajouter un utilisateur à plusieurs projets",
-      "subtitle": "Recherchez un utilisateur existant, choisissez les projets, puis attribuez un rôle pour tous.",
+      "title": "Rechercher et modifier des utilisateurs",
+      "subtitle": "Recherchez un utilisateur existant par e-mail ou nom, puis modifiez son nom, son e-mail ou son téléphone.",
       "userSearch": {
-        "label": "Rechercher un utilisateur",
         "placeholder": "Tapez au moins 3 caractères d'un e-mail ou d'un nom",
         "minChars": "Tapez au moins 3 caractères pour lancer la recherche",
         "empty": "Aucun utilisateur ne correspond à votre recherche",
-        "searching": "Recherche en cours…",
         "selected": "Sélectionné : {{email}}",
-        "clear": "Effacer",
+        "nameLabel": "Nom",
         "phone": "Téléphone (connexion par SMS)"
-      },
-      "projects": {
-        "label": "Projets",
-        "placeholder": "Filtrer les projets...",
-        "empty": "Aucun projet disponible",
-        "selectedCount": "{{count}} sélectionné(s)",
-        "maxReached": "Jusqu'à 50 projets par requête"
-      },
-      "role": {
-        "label": "Rôle",
-        "placeholder": "Sélectionnez un rôle"
-      },
-      "submit": "Ajouter aux projets sélectionnés",
-      "submitting": "Ajout en cours...",
-      "errors": {
-        "userRequired": "Sélectionnez d'abord un utilisateur",
-        "projectsRequired": "Sélectionnez au moins un projet",
-        "roleRequired": "Sélectionnez un rôle",
-        "generic": "Une erreur est survenue. Veuillez réessayer.",
-        "forbidden": "Vous n'avez pas la permission d'effectuer cette action",
-        "userNotFound": "Utilisateur introuvable",
-        "roleNotFound": "Rôle introuvable",
-        "tooMany": "Trop de projets (50 maximum par requête)",
-        "rateLimited": "Trop d'opérations en bloc. Réessayez dans une heure."
-      },
-      "toast": {
-        "added": "Utilisateur ajouté à {{count}} projet(s)",
-        "alreadyMember": "{{count}} projet(s) ignoré(s) — l'utilisateur en est déjà membre",
-        "differentRole": "{{count}} projet(s) ignoré(s) — l'utilisateur y a un rôle différent",
-        "notFound": "{{count}} projet(s) introuvable(s)"
       }
     }
   },
@@ -1474,7 +1497,8 @@
     },
     "status": {
       "pending": "En attente",
-      "validated": "Validé"
+      "validated": "Validé",
+      "absent": "Absent"
     },
     "edit": "Modifier ce jour",
     "editSubmit": "Envoyer la demande",
@@ -1484,6 +1508,33 @@
     "supplement": "Heures sup.",
     "note": "Note",
     "changeRequested": "Modification demandée",
-    "proposedLine": "Demandé : {{value}}"
+    "proposedLine": "Demandé : {{value}}",
+    "roster": {
+      "title": "Équipe sur place — {{date}}",
+      "empty": "Personne n'est prévu aujourd'hui.",
+      "loadError": "Impossible de charger l'effectif du jour."
+    }
+  },
+  "onboarding": {
+    "title": "Bienvenue sur Folio",
+    "subtitle": "Créez votre entreprise ou rejoignez-en une avec le code d'un administrateur.",
+    "chooseLabel": "Pour commencer",
+    "createOption": "Créer une entreprise",
+    "joinOption": "Rejoindre avec un code",
+    "createSubtitle": "Vous en serez l'administrateur — complétez le reste plus tard depuis les réglages.",
+    "waiting": {
+      "title": "Presque prêt",
+      "subtitle": "Un administrateur doit vous affecter à un chantier avant que vous puissiez pointer."
+    }
+  },
+  "permissions": {
+    "project_update": "Modifier les infos du chantier",
+    "project_invite": "Inviter des membres",
+    "project_manage_users": "Gérer les membres",
+    "project_manage_labor": "Gérer la présence et la paie",
+    "project_manage_invoices": "Gérer les factures",
+    "project_log_own_attendance": "Pointer sa propre présence",
+    "bibliotheque_manage": "Gérer la bibliothèque produits",
+    "project_view_pay": "Voir la paie des autres"
   }
 }

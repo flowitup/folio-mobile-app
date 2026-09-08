@@ -66,9 +66,19 @@ export type AttendancePending = {
   submitted_at: string;
 };
 
+/** A company member attached in the last 7 days with no project assignment yet (admins only). */
+export type CompanyEvent = {
+  user_id: string;
+  display_name: string;
+  company_id: string;
+  attached_at: string;
+};
+
 export type NotificationsResponse = {
   items: DueNotification[];
   attendance_pending: AttendancePending[];
+  /** Derived, not stored (D1) — excluded from `count` until both clients ship (Phase 2). */
+  company_events: CompanyEvent[];
   count: number;
 };
 
@@ -146,6 +156,7 @@ export function useNotifications() {
       return {
         items: body.items ?? [],
         attendance_pending: body.attendance_pending ?? [],
+        company_events: body.company_events ?? [],
         count: body.count ?? 0,
       } satisfies NotificationsResponse;
     },

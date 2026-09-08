@@ -1,25 +1,22 @@
+import { can } from "@/auth/permissions";
+
 /**
  * Worker mode — who gets the restricted shell.
  *
- * A signed-in user on a project is either a *manager* (project owner, superadmin, or holder
- * of `project:manage_labor` globally or through their membership role) or a *worker*. The
- * backend narrows every labor/pay endpoint for workers to their own linked worker; the app
- * mirrors that by showing only two tabs: their attendance and their salary.
+ * A signed-in user on a project is either a *manager* (holder of `project:manage_labor`,
+ * through their assignment's scoped permissions or a company-wide/D8-granted permission) or a
+ * *worker*. The backend already narrows every labor/pay endpoint for workers to their own
+ * linked worker; the app mirrors that by showing only two tabs: their attendance and their
+ * salary. The former project-owner bypass is gone (D6: the resolver no longer grants it) — an
+ * admin still lands here as a manager because the matrix gives `admin` `manage_labor` on every
+ * company project.
  */
 
-type ProjectLike = { owner_id?: string; my_permissions?: string[] };
+type ProjectLike = { my_permissions?: string[] };
+// `id` is accepted (unused) so callers do not need to strip it from the auth user object.
 type UserLike = { id?: string; permissions?: string[] };
 
 const MANAGE_LABOR = "project:manage_labor";
-
-function grants(list: string[] | undefined, permission: string): boolean {
-  if (!list) return false;
-  return (
-    list.includes(permission) ||
-    list.includes("*:*") ||
-    list.includes(`${permission.split(":")[0]}:*`)
-  );
-}
 
 /** True when the user must see only their own attendance and pay on this project. */
 export function isWorkerMode(
@@ -27,9 +24,9 @@ export function isWorkerMode(
   user: UserLike | null | undefined,
 ): boolean {
   if (!project || !user) return false;
-  if (project.owner_id && project.owner_id === user.id) return false;
-  return (
-    !grants(project.my_permissions, MANAGE_LABOR) &&
-    !grants(user.permissions, MANAGE_LABOR)
+  return !can(
+    { permissions: user.permissions ?? [] },
+    MANAGE_LABOR,
+    project.my_permissions,
   );
 }

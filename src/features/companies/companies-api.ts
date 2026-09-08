@@ -3,8 +3,13 @@ import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
 import { useAuth } from "@/auth/auth-context";
+import { isPlatformOps } from "@/auth/permissions";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
+
+// Companies, the caller's attachment to them, join code and access management. See
+// `company-members-api.ts` (directory, add-by-phone, import, attached users) and
+// `member-grants-api.ts` (D8 per-member grant/deny) for the rest of this domain.
 
 export interface Company {
   id: string;
@@ -17,14 +22,14 @@ export interface Company {
   logo_url: string | null;
   default_payment_terms: string | null;
   prefix_override: string | null;
-  /** Shared join code (superadmin responses only); null when none is active. */
+  /** Shared join code, exposed to the company's admins (D1); null when none is active. */
   join_code?: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
 }
 
-export type CompanyRole = "admin" | "member";
+export type CompanyRole = "admin" | "manager" | "member";
 
 /** A company as seen through the caller's attachment row. */
 export interface MyCompany extends Company {
@@ -71,7 +76,7 @@ export function useMyCompanies() {
 export function useBillingAccess() {
   const { user } = useAuth();
   const companies = useMyCompanies();
-  const superadmin = user?.permissions.includes("*:*") ?? false;
+  const superadmin = isPlatformOps(user);
   const adminSomewhere = (companies.data ?? []).some((c) => c.role === "admin");
   return {
     allowed: superadmin || adminSomewhere,
@@ -95,16 +100,6 @@ export interface CreateCompanyPayload {
 }
 export type UpdateCompanyPayload = Partial<CreateCompanyPayload>;
 
-/** `email` / `display_name` are absent on older API versions: fall back to the user id. */
-export interface AttachedUser {
-  user_id: string;
-  email?: string | null;
-  display_name?: string | null;
-  is_primary: boolean;
-  attached_at: string;
-  role: CompanyRole;
-}
-
 /** Plaintext `token` is only exposed at generation time: show it once, never store it. */
 export interface CompanyInviteTokenGenerated {
   token: string;
@@ -114,8 +109,6 @@ export interface CompanyInviteTokenGenerated {
 
 export const companyAdminKeys = {
   allCompanies: ["companies", "all"] as const,
-  attachedUsers: (companyId: string) =>
-    ["companies", companyId, "attached-users"] as const,
 };
 
 /** Superadmin view of every company (`?scope=all`). */
@@ -142,19 +135,6 @@ export function useCompany(companyId: string | undefined) {
           params: { path: { company_id: companyId! } },
         }),
       ),
-  });
-}
-
-export function useAttachedUsers(companyId: string | undefined) {
-  return useQuery({
-    queryKey: companyAdminKeys.attachedUsers(companyId ?? ""),
-    enabled: Boolean(companyId),
-    queryFn: async () =>
-      unwrapAs<{ items?: AttachedUser[] }>(
-        await api.GET("/api/v1/companies/{company_id}/attached-users", {
-          params: { path: { company_id: companyId! } },
-        }),
-      ).items ?? [],
   });
 }
 
@@ -313,7 +293,7 @@ export function useBootAttachedUser() {
   });
 }
 
-/** Superadmin: issue (or renew) the company's shared join code. */
+/** Company admin (D1): issue (or renew) the shared join code. */
 export function useSetJoinCode() {
   const { t } = useTranslation();
   return useApiMutation<{ companyId: string }, { join_code: string }>({
@@ -328,7 +308,7 @@ export function useSetJoinCode() {
   });
 }
 
-/** Superadmin: revoke the company's shared join code. */
+/** Company admin (D1): revoke the shared join code. */
 export function useRevokeJoinCode() {
   const { t } = useTranslation();
   return useApiMutation<{ companyId: string }>({

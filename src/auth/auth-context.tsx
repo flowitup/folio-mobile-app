@@ -1,14 +1,22 @@
+import { focusManager } from "@tanstack/react-query";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { PropsWithChildren } from "react";
+import { AppState } from "react-native";
+import type { AppStateStatus } from "react-native";
 
-import { api, setSessionExpiredHandler } from "@/api/client";
+import {
+  api,
+  refreshAccessToken,
+  setSessionExpiredHandler,
+} from "@/api/client";
 import { unregisterPushDevice } from "@/features/push/push-device-registration";
 import {
   clearStoredTokens,
@@ -18,7 +26,12 @@ import {
 
 import type { components } from "@/api/generated/schema";
 
-export type AuthUser = components["schemas"]["UserResponse"];
+// `is_platform_ops` (D5) is not on the generated `UserResponse` yet — the backend ships it in
+// a later phase of the roles/permissions redesign. Declared optional here so the app reads it
+// as soon as it appears without another codegen round; see `src/auth/permissions.ts`.
+export type AuthUser = components["schemas"]["UserResponse"] & {
+  is_platform_ops?: boolean;
+};
 // Session lifetime is a backend setting (REFRESH_TOKEN_POLICY): "persistent" deployments
 // return a never-expiring refresh token, so the app stays signed in until sign-out;
 // "expiring" ones return the 7-day token. Sign-out hands the refresh token back so the
@@ -41,6 +54,8 @@ type AuthContextValue = {
     displayName: string,
   ) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Re-fetches `/auth/me` (role/grant changes apply without re-login); no-op when signed out. */
+  refreshUser: () => Promise<void>;
 };
 
 type LoginPayload = components["schemas"]["LoginResponse"];
@@ -81,11 +96,59 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return () => setSessionExpiredHandler(null);
   }, [signOutLocally]);
 
-  const completeSignIn = useCallback(async (data: LoginPayload) => {
+  // Shared post-login step for both the password and OTP flows. The login/OTP responses embed
+  // a `user` snapshot that carries `companies` in normal operation; only fall back to a
+  // `/auth/me` round trip when a payload omits it (older backend build).
+  const applyLoginPayload = useCallback(async (data: LoginPayload) => {
     await setStoredTokens(data.access_token, data.refresh_token);
-    setUser(data.user);
+    if (data.user.companies) {
+      setUser(data.user);
+    } else {
+      const { data: me } = await api.GET("/api/v1/auth/me");
+      setUser(me ?? data.user);
+    }
     setStatus("signedIn");
   }, []);
+
+  // Role/grant changes apply on the backend's next request but the app caches `user` in
+  // memory — refresh it whenever the app comes back to the foreground so a company admin's
+  // change (role, D8 grant, new assignment) shows up without a re-login. Mints a fresh access
+  // token first (`/auth/refresh` recomputes the JWT permission claim) so the `/auth/me` read
+  // that follows reflects it.
+  const refreshInFlight = useRef(false);
+  const statusRef = useRef(status);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+  const refreshUser = useCallback(async () => {
+    if (refreshInFlight.current || statusRef.current !== "signedIn") return;
+    const { refreshToken } = await getStoredTokens();
+    if (!refreshToken) return;
+    refreshInFlight.current = true;
+    try {
+      await refreshAccessToken();
+      const { data } = await api.GET("/api/v1/auth/me");
+      if (data) setUser(data);
+    } finally {
+      refreshInFlight.current = false;
+    }
+  }, []);
+
+  // Foreground/background also drives TanStack Query's focus manager directly (React Native has
+  // no `visibilitychange` event, so the default browser-only detection never fires) — this makes
+  // `useMyCompanies`/`useProjects`/directory queries refetch on foreground alongside the
+  // `refreshUser` call above.
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      "change",
+      (next: AppStateStatus) => {
+        const focused = next === "active";
+        focusManager.setFocused(focused);
+        if (focused) void refreshUser();
+      },
+    );
+    return () => subscription.remove();
+  }, [refreshUser]);
 
   const requestOtp = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
@@ -103,9 +166,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
         { body: { phone, code } },
       );
       if (!data) throw new Error(errorMessage(error, response));
-      await completeSignIn(data);
+      await applyLoginPayload(data);
     },
-    [completeSignIn],
+    [applyLoginPayload],
   );
 
   const requestSignupOtp = useCallback(async (phone: string) => {
@@ -124,25 +187,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
         { body: { phone, code, display_name: displayName } },
       );
       if (!data) throw new Error(errorMessage(error, response));
-      await completeSignIn(data);
+      await applyLoginPayload(data);
     },
-    [completeSignIn],
+    [applyLoginPayload],
   );
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { data, error, response } = await api.POST("/api/v1/auth/login", {
-      body: { email, password },
-    });
-    if (!data) {
-      const message =
-        (error as { message?: string } | undefined)?.message ??
-        `HTTP ${response.status}`;
-      throw new Error(message);
-    }
-    await setStoredTokens(data.access_token, data.refresh_token);
-    setUser(data.user);
-    setStatus("signedIn");
-  }, []);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const { data, error, response } = await api.POST("/api/v1/auth/login", {
+        body: { email, password },
+      });
+      if (!data) throw new Error(errorMessage(error, response));
+      await applyLoginPayload(data);
+    },
+    [applyLoginPayload],
+  );
 
   const signOut = useCallback(async () => {
     // Best effort server-side revocation (access + refresh); local sign-out must succeed even offline.
@@ -166,6 +225,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       requestSignupOtp,
       signUpWithOtp,
       signOut,
+      refreshUser,
     }),
     [
       status,
@@ -176,6 +236,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       requestSignupOtp,
       signUpWithOtp,
       signOut,
+      refreshUser,
     ],
   );
 

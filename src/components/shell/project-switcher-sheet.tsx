@@ -3,13 +3,15 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { can, isCompanyAdminAnywhere } from "@/auth/permissions";
 import { useShell } from "@/components/shell/shell-context";
 import { ShellSheet } from "@/components/shell/shell-sheet";
 import { Avatar } from "@/components/ui/avatar";
 import { Eyebrow } from "@/components/ui/typography";
+import { useMyCompanies } from "@/features/companies/companies-api";
 import { ProjectFormSheet } from "@/features/projects/project-form-sheet";
 import type { ProjectFormSheetHandle } from "@/features/projects/project-form-sheet";
-import { projectCan, useCreateProject } from "@/features/projects/projects-api";
+import { useCreateProject } from "@/features/projects/projects-api";
 import type { Project } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatMoney } from "@/lib/format/money";
@@ -75,8 +77,21 @@ export function ProjectSwitcherSheet() {
   const { sheet, closeSheet } = useShell();
   const { projects, projectId, select } = useSelectedProject();
   const createProject = useCreateProject();
+  const companies = useMyCompanies();
   const form = useRef<ProjectFormSheetHandle>(null);
-  const canCreate = projectCan(undefined, "project:create", user?.permissions);
+  // `project:create` is not project-scoped (there is no project yet), so this checks the
+  // JWT-wide permission directly; a company admin without that legacy permission on the JWT
+  // can still create a project (D8 company-scoped grant), hence the `isCompanyAdminAnywhere`
+  // fallback.
+  const canCreate = can(user, "project:create") || isCompanyAdminAnywhere(user);
+  // The matrix only grants `project:create` to a company admin — a new project is created
+  // inside that company (creator auto-assigned manager, D6). Falls back to the primary
+  // attached company when the admin belongs to several.
+  const ownerCompanyId =
+    (companies.data ?? []).find((c) => c.role === "admin" && c.is_primary)
+      ?.id ??
+    (companies.data ?? []).find((c) => c.role === "admin")?.id ??
+    null;
 
   return (
     <>
@@ -157,6 +172,7 @@ export function ProjectSwitcherSheet() {
               address: values.address,
               budget: values.budget,
               budget_source: values.budget_source,
+              company_id: ownerCompanyId,
             },
             {
               onSuccess: (created) => {
