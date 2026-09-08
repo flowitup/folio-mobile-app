@@ -25,13 +25,19 @@ import {
   useUpdateNote,
 } from "@/features/notes/notes-api";
 import type { Note, NoteCategory } from "@/features/notes/notes-api";
+import { useProjectCan } from "@/features/projects/use-project-can";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
-/** Project journal: category chips + search, date-grouped cards, open/done toggle, create/edit/delete. */
+/**
+ * Project journal: category chips + search, date-grouped cards, open/done toggle,
+ * create/edit/delete. Reading is open to every member; writing needs `project:update`, so the
+ * create button, the card actions and the form sheet are hidden without it.
+ */
 export default function ProjectNotesSection() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const canWrite = useProjectCan(id, "project:update");
   const notes = useNotes(id);
   const create = useCreateNote(id);
   const update = useUpdateNote(id);
@@ -136,12 +142,14 @@ export default function ProjectNotesSection() {
             value={search}
             onChangeText={setSearch}
           />
-          <Button
-            testID="notes-create"
-            label="＋"
-            size="sm"
-            onPress={() => openForm(null)}
-          />
+          {canWrite ? (
+            <Button
+              testID="notes-create"
+              label="＋"
+              size="sm"
+              onPress={() => openForm(null)}
+            />
+          ) : null}
         </View>
         {notes.isPending ? <ActivityIndicator className="mt-8" /> : null}
         {!notes.isPending && sections.length === 0 ? (
@@ -156,7 +164,7 @@ export default function ProjectNotesSection() {
               <Pressable
                 key={note.id}
                 testID={`note-${note.id}`}
-                onPress={() => openForm(note)}
+                onPress={canWrite ? () => openForm(note) : undefined}
               >
                 <Card
                   className={`mb-2 ${note.status === "done" ? "opacity-60" : ""}`}
@@ -174,31 +182,33 @@ export default function ProjectNotesSection() {
                       {note.description}
                     </Text>
                   ) : null}
-                  <View className="mt-2 flex-row gap-4">
-                    <Pressable
-                      testID={`note-toggle-${note.id}`}
-                      onPress={() =>
-                        update.mutate({
-                          noteId: note.id,
-                          status: note.status === "done" ? "open" : "done",
-                        })
-                      }
-                    >
-                      <Text className="text-sm text-primary">
-                        {note.status === "done"
-                          ? t("notes.reopen")
-                          : t("notes.markDone")}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      testID={`note-delete-${note.id}`}
-                      onPress={() => setDeleting(note)}
-                    >
-                      <Text className="text-sm text-danger">
-                        {t("common.delete")}
-                      </Text>
-                    </Pressable>
-                  </View>
+                  {canWrite ? (
+                    <View className="mt-2 flex-row gap-4">
+                      <Pressable
+                        testID={`note-toggle-${note.id}`}
+                        onPress={() =>
+                          update.mutate({
+                            noteId: note.id,
+                            status: note.status === "done" ? "open" : "done",
+                          })
+                        }
+                      >
+                        <Text className="text-sm text-primary">
+                          {note.status === "done"
+                            ? t("notes.reopen")
+                            : t("notes.markDone")}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        testID={`note-delete-${note.id}`}
+                        onPress={() => setDeleting(note)}
+                      >
+                        <Text className="text-sm text-danger">
+                          {t("common.delete")}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  ) : null}
                 </Card>
               </Pressable>
             ))}
@@ -206,58 +216,62 @@ export default function ProjectNotesSection() {
         ))}
       </ScrollView>
 
-      <Sheet
-        ref={sheet}
-        title={editing ? t("notes.edit") : t("notes.create")}
-        snapPoints={["75%"]}
-      >
-        <View className="p-4">
-          <Input
-            testID="note-title"
-            label={t("notes.title")}
-            value={title}
-            onChangeText={setTitle}
-            error={titleError}
-            autoFocus
+      {canWrite ? (
+        <>
+          <Sheet
+            ref={sheet}
+            title={editing ? t("notes.edit") : t("notes.create")}
+            snapPoints={["75%"]}
+          >
+            <View className="p-4">
+              <Input
+                testID="note-title"
+                label={t("notes.title")}
+                value={title}
+                onChangeText={setTitle}
+                error={titleError}
+                autoFocus
+              />
+              <Input
+                testID="note-description"
+                label={t("notes.description")}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+              />
+              <Select<NoteCategory>
+                testID="note-category"
+                label={t("notes.category")}
+                value={draftCategory}
+                options={categoryOptions}
+                onChange={setDraftCategory}
+              />
+              <Button
+                testID="note-submit"
+                label={t("common.save")}
+                loading={create.isPending || update.isPending}
+                onPress={submit}
+              />
+            </View>
+          </Sheet>
+          <ConfirmDialog
+            visible={deleting !== null}
+            title={t("notes.deleteConfirm", { title: deleting?.title ?? "" })}
+            confirmLabel={t("common.delete")}
+            cancelLabel={t("common.cancel")}
+            destructive
+            loading={remove.isPending}
+            onCancel={() => setDeleting(null)}
+            onConfirm={() =>
+              deleting &&
+              remove.mutate(
+                { noteId: deleting.id },
+                { onSettled: () => setDeleting(null) },
+              )
+            }
           />
-          <Input
-            testID="note-description"
-            label={t("notes.description")}
-            value={description}
-            onChangeText={setDescription}
-            multiline
-          />
-          <Select<NoteCategory>
-            testID="note-category"
-            label={t("notes.category")}
-            value={draftCategory}
-            options={categoryOptions}
-            onChange={setDraftCategory}
-          />
-          <Button
-            testID="note-submit"
-            label={t("common.save")}
-            loading={create.isPending || update.isPending}
-            onPress={submit}
-          />
-        </View>
-      </Sheet>
-      <ConfirmDialog
-        visible={deleting !== null}
-        title={t("notes.deleteConfirm", { title: deleting?.title ?? "" })}
-        confirmLabel={t("common.delete")}
-        cancelLabel={t("common.cancel")}
-        destructive
-        loading={remove.isPending}
-        onCancel={() => setDeleting(null)}
-        onConfirm={() =>
-          deleting &&
-          remove.mutate(
-            { noteId: deleting.id },
-            { onSettled: () => setDeleting(null) },
-          )
-        }
-      />
+        </>
+      ) : null}
     </View>
   );
 }

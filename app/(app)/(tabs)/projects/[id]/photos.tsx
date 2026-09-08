@@ -28,16 +28,22 @@ import {
   useUploadPhoto,
 } from "@/features/photos/photos-api";
 import type { ProjectPhoto } from "@/features/photos/photos-api";
+import { useProjectCan } from "@/features/projects/use-project-can";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
-/** Site photos: date-grouped thumbnail grid, camera / library upload, lightbox with caption edit, share, delete. */
+/**
+ * Site photos: date-grouped thumbnail grid, camera / library upload, lightbox with caption edit,
+ * share, delete. Every member may look at the grid and the lightbox; upload, caption edit and
+ * delete need `project:update`.
+ */
 export default function ProjectPhotosSection() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
+  const canWrite = useProjectCan(id, "project:update");
   const photos = useProjectPhotosInfinite(id);
   const upload = useUploadPhoto(id);
   const update = useUpdatePhoto(id);
@@ -73,13 +79,15 @@ export default function ProjectPhotosSection() {
   return (
     <View className="flex-1 bg-paper">
       <ScrollView contentContainerClassName="p-4 pb-12">
-        <Button
-          testID="photos-add"
-          label={t("photos.add")}
-          className="mb-4"
-          loading={upload.isPending}
-          onPress={() => addSheet.current?.present()}
-        />
+        {canWrite ? (
+          <Button
+            testID="photos-add"
+            label={t("photos.add")}
+            className="mb-4"
+            loading={upload.isPending}
+            onPress={() => addSheet.current?.present()}
+          />
+        ) : null}
         {photos.isPending ? <ActivityIndicator className="mt-8" /> : null}
         {!photos.isPending && groups.length === 0 ? (
           <EmptyState message={t("photos.none")} />
@@ -127,22 +135,24 @@ export default function ProjectPhotosSection() {
         ) : null}
       </ScrollView>
 
-      <Sheet ref={addSheet} title={t("photos.add")} snapPoints={["30%"]}>
-        <View className="gap-3 p-4">
-          <Button
-            testID="photos-camera"
-            label={t("invoices.attachments.camera")}
-            variant="secondary"
-            onPress={() => captureImage().then(handlePick)}
-          />
-          <Button
-            testID="photos-library"
-            label={t("invoices.attachments.library")}
-            variant="secondary"
-            onPress={() => pickImages(true, true).then(handlePick)}
-          />
-        </View>
-      </Sheet>
+      {canWrite ? (
+        <Sheet ref={addSheet} title={t("photos.add")} snapPoints={["30%"]}>
+          <View className="gap-3 p-4">
+            <Button
+              testID="photos-camera"
+              label={t("invoices.attachments.camera")}
+              variant="secondary"
+              onPress={() => captureImage().then(handlePick)}
+            />
+            <Button
+              testID="photos-library"
+              label={t("invoices.attachments.library")}
+              variant="secondary"
+              onPress={() => pickImages(true, true).then(handlePick)}
+            />
+          </View>
+        </Sheet>
+      ) : null}
 
       {/* Lightbox: original (or video poster via thumbnail), caption edit, share, delete */}
       <Modal
@@ -173,29 +183,37 @@ export default function ProjectPhotosSection() {
               <Text className="mb-2 text-xs text-muted-foreground">
                 {formatDate(open.captured_at)} · {open.filename}
               </Text>
-              <Input
-                testID="photo-caption"
-                label={t("photos.caption")}
-                value={captionDraft}
-                onChangeText={setCaptionDraft}
-              />
-              <View className="flex-row gap-2">
-                <Button
-                  testID="photo-caption-save"
-                  label={t("common.save")}
-                  size="sm"
-                  loading={update.isPending}
-                  disabled={captionDraft === (open.caption ?? "")}
-                  onPress={() =>
-                    update.mutate(
-                      {
-                        photoId: open.id,
-                        caption: captionDraft.trim() || null,
-                      },
-                      { onSuccess: (updated) => setOpen(updated) },
-                    )
-                  }
+              {canWrite ? (
+                <Input
+                  testID="photo-caption"
+                  label={t("photos.caption")}
+                  value={captionDraft}
+                  onChangeText={setCaptionDraft}
                 />
+              ) : open.caption ? (
+                <Text className="mb-3 text-base text-primary">
+                  {open.caption}
+                </Text>
+              ) : null}
+              <View className="flex-row gap-2">
+                {canWrite ? (
+                  <Button
+                    testID="photo-caption-save"
+                    label={t("common.save")}
+                    size="sm"
+                    loading={update.isPending}
+                    disabled={captionDraft === (open.caption ?? "")}
+                    onPress={() =>
+                      update.mutate(
+                        {
+                          photoId: open.id,
+                          caption: captionDraft.trim() || null,
+                        },
+                        { onSuccess: (updated) => setOpen(updated) },
+                      )
+                    }
+                  />
+                ) : null}
                 <Button
                   testID="photo-share"
                   label={t("photos.share")}
@@ -207,13 +225,15 @@ export default function ProjectPhotosSection() {
                     )
                   }
                 />
-                <Button
-                  testID="photo-delete"
-                  label={t("common.delete")}
-                  variant="danger"
-                  size="sm"
-                  onPress={() => setConfirmDelete(true)}
-                />
+                {canWrite ? (
+                  <Button
+                    testID="photo-delete"
+                    label={t("common.delete")}
+                    variant="danger"
+                    size="sm"
+                    onPress={() => setConfirmDelete(true)}
+                  />
+                ) : null}
               </View>
             </View>
             <ConfirmDialog

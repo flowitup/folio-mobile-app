@@ -37,10 +37,10 @@ export const memberKeys = {
     ["projects", projectId, "invitations"] as const,
 };
 
-export function useMembers(projectId: string) {
+export function useMembers(projectId: string, enabled = true) {
   return useQuery({
     queryKey: memberKeys.members(projectId),
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId) && enabled,
     queryFn: async () => {
       const data = unwrapAs<{ members?: ProjectMember[] }>(
         await api.GET("/api/v1/projects/{project_id}/members", {

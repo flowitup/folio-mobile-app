@@ -29,6 +29,7 @@ import {
   useUploadAnalysis,
 } from "@/features/analyses/analyses-api";
 import type { Analysis } from "@/features/analyses/analyses-api";
+import { useProjectCan } from "@/features/projects/use-project-can";
 import { pickDocuments } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
@@ -44,12 +45,16 @@ function withMobileViewport(html: string): string {
     : `${meta}${html}`;
 }
 
-/** Stored HTML analysis reports: search + tag filter, upload with metadata, inline viewer, edit, delete. */
+/**
+ * Stored HTML analysis reports: search + tag filter, upload with metadata, inline viewer, edit,
+ * delete. Members read the list and the viewer; upload, edit and delete need `project:update`.
+ */
 export default function ProjectAnalysesSection() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState<string | null>(null);
+  const canWrite = useProjectCan(id, "project:update");
   const analyses = useAnalyses(id, { q: search.trim() || undefined, tag });
   const tags = useAnalysisTags(id);
   const upload = useUploadAnalysis(id);
@@ -127,12 +132,14 @@ export default function ProjectAnalysesSection() {
             value={search}
             onChangeText={setSearch}
           />
-          <Button
-            testID="analyses-create"
-            label="＋"
-            size="sm"
-            onPress={() => openForm(null)}
-          />
+          {canWrite ? (
+            <Button
+              testID="analyses-create"
+              label="＋"
+              size="sm"
+              onPress={() => openForm(null)}
+            />
+          ) : null}
         </View>
         <Select
           testID="analyses-tag"
@@ -175,95 +182,101 @@ export default function ProjectAnalysesSection() {
                 ))}
               </View>
             ) : null}
-            <View className="mt-2 flex-row gap-4">
-              <Pressable
-                testID={`analysis-edit-${analysis.id}`}
-                onPress={() => openForm(analysis)}
-              >
-                <Text className="text-sm text-primary">{t("common.edit")}</Text>
-              </Pressable>
-              <Pressable
-                testID={`analysis-delete-${analysis.id}`}
-                onPress={() => setDeleting(analysis)}
-              >
-                <Text className="text-sm text-danger">
-                  {t("common.delete")}
-                </Text>
-              </Pressable>
-            </View>
+            {canWrite ? (
+              <View className="mt-2 flex-row gap-4">
+                <Pressable
+                  testID={`analysis-edit-${analysis.id}`}
+                  onPress={() => openForm(analysis)}
+                >
+                  <Text className="text-sm text-primary">
+                    {t("common.edit")}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  testID={`analysis-delete-${analysis.id}`}
+                  onPress={() => setDeleting(analysis)}
+                >
+                  <Text className="text-sm text-danger">
+                    {t("common.delete")}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
           </Card>
         ))}
       </ScrollView>
 
-      <Sheet
-        ref={formSheet}
-        title={editing ? t("analyses.edit") : t("analyses.upload")}
-        snapPoints={["85%"]}
-      >
-        <ScrollView
-          contentContainerClassName="p-4"
-          keyboardShouldPersistTaps="handled"
+      {canWrite ? (
+        <Sheet
+          ref={formSheet}
+          title={editing ? t("analyses.edit") : t("analyses.upload")}
+          snapPoints={["85%"]}
         >
-          {!editing ? (
-            <Button
-              testID="analysis-pick-file"
-              label={file ? file.name : t("analyses.pickFile")}
-              variant="secondary"
-              className="mb-4"
-              onPress={() =>
-                pickDocuments(false, [
-                  "text/html",
-                  "application/xhtml+xml",
-                  "*/*",
-                ]).then((result) => {
-                  if (result.status === "picked") setFile(result.files[0]);
-                  else if (result.status === "denied")
-                    showToast(
-                      t("invoices.attachments.permissionDenied"),
-                      "error",
-                    );
-                })
-              }
+          <ScrollView
+            contentContainerClassName="p-4"
+            keyboardShouldPersistTaps="handled"
+          >
+            {!editing ? (
+              <Button
+                testID="analysis-pick-file"
+                label={file ? file.name : t("analyses.pickFile")}
+                variant="secondary"
+                className="mb-4"
+                onPress={() =>
+                  pickDocuments(false, [
+                    "text/html",
+                    "application/xhtml+xml",
+                    "*/*",
+                  ]).then((result) => {
+                    if (result.status === "picked") setFile(result.files[0]);
+                    else if (result.status === "denied")
+                      showToast(
+                        t("invoices.attachments.permissionDenied"),
+                        "error",
+                      );
+                  })
+                }
+              />
+            ) : null}
+            <Input
+              testID="analysis-title"
+              label={t("analyses.title")}
+              value={title}
+              onChangeText={setTitle}
+              error={error}
             />
-          ) : null}
-          <Input
-            testID="analysis-title"
-            label={t("analyses.title")}
-            value={title}
-            onChangeText={setTitle}
-            error={error}
-          />
-          <Input
-            testID="analysis-summary"
-            label={t("analyses.summary")}
-            value={summary}
-            onChangeText={setSummary}
-            multiline
-          />
-          <Input
-            testID="analysis-source"
-            label={t("analyses.sourceUrl")}
-            value={sourceUrl}
-            onChangeText={setSourceUrl}
-            autoCapitalize="none"
-            keyboardType="url"
-          />
-          <Input
-            testID="analysis-tags"
-            label={t("documents.tags")}
-            value={tagsDraft}
-            onChangeText={setTagsDraft}
-            hint={t("documents.tagsHint")}
-            autoCapitalize="none"
-          />
-          <Button
-            testID="analysis-submit"
-            label={t("common.save")}
-            loading={upload.isPending || update.isPending}
-            onPress={submit}
-          />
-        </ScrollView>
-      </Sheet>
+            <Input
+              testID="analysis-summary"
+              label={t("analyses.summary")}
+              value={summary}
+              onChangeText={setSummary}
+              multiline
+            />
+            <Input
+              testID="analysis-source"
+              label={t("analyses.sourceUrl")}
+              value={sourceUrl}
+              onChangeText={setSourceUrl}
+              autoCapitalize="none"
+              keyboardType="url"
+            />
+            <Input
+              testID="analysis-tags"
+              label={t("documents.tags")}
+              value={tagsDraft}
+              onChangeText={setTagsDraft}
+              hint={t("documents.tagsHint")}
+              autoCapitalize="none"
+            />
+            <Button
+              testID="analysis-submit"
+              label={t("common.save")}
+              loading={upload.isPending || update.isPending}
+              onPress={submit}
+            />
+          </ScrollView>
+        </Sheet>
+      ) : null}
 
       <Modal
         visible={viewing !== null}
@@ -302,22 +315,24 @@ export default function ProjectAnalysesSection() {
           </View>
         ) : null}
       </Modal>
-      <ConfirmDialog
-        visible={deleting !== null}
-        title={t("analyses.deleteConfirm", { title: deleting?.title ?? "" })}
-        confirmLabel={t("common.delete")}
-        cancelLabel={t("common.cancel")}
-        destructive
-        loading={remove.isPending}
-        onCancel={() => setDeleting(null)}
-        onConfirm={() =>
-          deleting &&
-          remove.mutate(
-            { analysisId: deleting.id },
-            { onSettled: () => setDeleting(null) },
-          )
-        }
-      />
+      {canWrite ? (
+        <ConfirmDialog
+          visible={deleting !== null}
+          title={t("analyses.deleteConfirm", { title: deleting?.title ?? "" })}
+          confirmLabel={t("common.delete")}
+          cancelLabel={t("common.cancel")}
+          destructive
+          loading={remove.isPending}
+          onCancel={() => setDeleting(null)}
+          onConfirm={() =>
+            deleting &&
+            remove.mutate(
+              { analysisId: deleting.id },
+              { onSettled: () => setDeleting(null) },
+            )
+          }
+        />
+      ) : null}
     </View>
   );
 }

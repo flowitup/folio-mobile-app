@@ -428,6 +428,7 @@
     "add": "Ajouter un document",
     "edit": "Modifier le document",
     "none": "Aucun document.",
+    "restricted": "Les documents sont réservés aux responsables du chantier.",
     "uploaded": "Document ajouté.",
     "deleted": "Document supprimé.",
     "deleteConfirm": "Supprimer {{name}} ?",
