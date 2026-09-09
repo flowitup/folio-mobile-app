@@ -8,14 +8,14 @@ import {
   View,
 } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenTitle } from "@/components/ui/typography";
 import { shortDayMonth } from "@/features/dashboard/overview-cards";
-import { WorkerSalaryTab } from "@/features/labor/worker-salary-tab";
-import { useWorkerMode } from "@/features/labor/use-worker-mode";
+import { projectCan } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { TaskFormSheet } from "@/features/tasks/task-form-sheet";
 import type { TaskFormSheetHandle } from "@/features/tasks/task-form-sheet";
@@ -38,11 +38,18 @@ const PRIORITY_CLASS = {
   low: "text-muted",
 } as const;
 
-/** Kế hoạch: lane tabs (underline + mono count), task list card, create / edit / move / delete. */
-function PlanningTabContent() {
+/**
+ * Kế hoạch: lane tabs (underline + mono count), task list card, create / edit / move / delete.
+ * Every company role gets this board (the backend gates list / create / edit / move on
+ * `project:read`); only Delete needs `project:update`, so a member in worker mode sees the
+ * same screen without that button.
+ */
+export default function PlanningTab() {
   const { t } = useTranslation();
   const tokens = useTokens();
   const { projectId, project } = useSelectedProject();
+  const { user } = useAuth();
+  const canDelete = projectCan(project, "project:update", user?.permissions);
   const tasks = useTasks(projectId);
   const create = useCreateTask(projectId);
   const update = useUpdateTask(projectId);
@@ -206,6 +213,7 @@ function PlanningTabContent() {
       <TaskFormSheet
         ref={form}
         submitting={create.isPending || update.isPending}
+        canDelete={canDelete}
         canMoveUp={(task) => indexOf(task) > 0}
         canMoveDown={(task) =>
           indexOf(task) < (byLane.get(task.status)?.length ?? 0) - 1
@@ -256,10 +264,4 @@ function PlanningTabContent() {
       />
     </View>
   );
-}
-
-/** Worker mode (no project:manage_labor) replaces this tab with the worker's own view. */
-export default function PlanningTab() {
-  const { workerMode } = useWorkerMode();
-  return workerMode ? <WorkerSalaryTab /> : <PlanningTabContent />;
 }

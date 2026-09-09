@@ -13,8 +13,8 @@ import { useTokens } from "@/theme/tokens";
 /** The four project tabs, in tab-bar order; every other route in the navigator is a hidden Menu screen. */
 export const PROJECT_TABS = ["index", "expenses", "labor", "planning"] as const;
 export type ProjectTab = (typeof PROJECT_TABS)[number];
-/** Worker mode: the same navigator, but three routes (own attendance / own salary / own profile) and no Menu. */
-export const WORKER_TABS = ["index", "expenses", "labor"] as const;
+/** Worker mode: the same navigator, but four routes (own attendance / own salary / own profile / planning) and no Menu. */
+export const WORKER_TABS = ["index", "expenses", "labor", "planning"] as const;
 
 /** Props expo-router hands to a custom `tabBar` (react-navigation BottomTabBarProps). */
 type TabBarProps = Parameters<
@@ -41,11 +41,13 @@ const WORKER_TAB_ICONS: Record<(typeof WORKER_TABS)[number], IconName> = {
   index: "calendar",
   expenses: "credit-card",
   labor: "user",
+  planning: "check-square",
 };
 const WORKER_TAB_LABEL_KEYS: Record<(typeof WORKER_TABS)[number], string> = {
   index: "tabs.attendance",
   expenses: "tabs.salary",
   labor: "tabs.profile",
+  planning: "tabs.planning",
 };
 
 /**

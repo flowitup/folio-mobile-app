@@ -32,6 +32,8 @@ export type TaskFormSheetHandle = {
 
 type Props = {
   submitting: boolean;
+  /** Shows the Delete button while editing; `DELETE /tasks/{id}` needs `project:update`. */
+  canDelete: boolean;
   onSubmit: (values: TaskFormValues, editing: Task | null) => void;
   onMove: (task: Task, direction: -1 | 1) => void;
   onDelete: (task: Task) => void;
@@ -42,7 +44,15 @@ type Props = {
 /** Task create / edit sheet; editing also offers reorder (↑ ↓) and delete. */
 export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
   function TaskFormSheet(
-    { submitting, onSubmit, onMove, onDelete, canMoveUp, canMoveDown },
+    {
+      submitting,
+      canDelete,
+      onSubmit,
+      onMove,
+      onDelete,
+      canMoveUp,
+      canMoveDown,
+    },
     ref,
   ) {
     const { t } = useTranslation();
@@ -179,17 +189,19 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
                 disabled={!canMoveDown(editing)}
                 onPress={() => onMove(editing, 1)}
               />
-              <Button
-                testID={`task-delete-${editing.id}`}
-                label={t("common.delete")}
-                variant="danger"
-                size="sm"
-                className="flex-1"
-                onPress={() => {
-                  sheet.current?.dismiss();
-                  onDelete(editing);
-                }}
-              />
+              {canDelete ? (
+                <Button
+                  testID={`task-delete-${editing.id}`}
+                  label={t("common.delete")}
+                  variant="danger"
+                  size="sm"
+                  className="flex-1"
+                  onPress={() => {
+                    sheet.current?.dismiss();
+                    onDelete(editing);
+                  }}
+                />
+              ) : null}
             </View>
           ) : null}
         </ScrollView>

@@ -174,7 +174,7 @@ beforeEach(() => {
 });
 
 describe("worker profile tab", () => {
-  it("is the third worker-mode tab, in the Labor slot, and the Menu item is gone", async () => {
+  it("is the third worker-mode tab, in the Labor slot, next to Planning, and the Menu item is gone", async () => {
     const routes = ["index", "expenses", "labor", "planning"].map((name) => ({
       key: `${name}-key`,
       name,
@@ -195,7 +195,12 @@ describe("worker profile tab", () => {
     const tabs = screen
       .getAllByRole("tab")
       .map((node) => node.props.testID as string);
-    expect(tabs).toEqual(["tab-index", "tab-expenses", "tab-labor"]);
+    expect(tabs).toEqual([
+      "tab-index",
+      "tab-expenses",
+      "tab-labor",
+      "tab-planning",
+    ]);
     expect(screen.getByTestId("tab-labor").props.accessibilityLabel).toBe(
       i18n.t("tabs.profile"),
     );
