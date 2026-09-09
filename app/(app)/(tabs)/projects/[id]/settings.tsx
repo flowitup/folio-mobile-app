@@ -19,6 +19,7 @@ import {
   useUpdateProject,
 } from "@/features/projects/projects-api";
 import { formatMoney } from "@/lib/format/money";
+import { projectDisplayName } from "@/lib/projects/project-display-name";
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
@@ -100,7 +101,9 @@ export default function ProjectSettingsSection() {
       />
       <ConfirmDialog
         visible={confirmDelete}
-        title={t("project.deleteConfirmTitle", { name: data.name })}
+        title={t("project.deleteConfirmTitle", {
+          name: projectDisplayName(data),
+        })}
         message={t("project.deleteConfirmMessage")}
         confirmLabel={t("common.delete")}
         cancelLabel={t("common.cancel")}

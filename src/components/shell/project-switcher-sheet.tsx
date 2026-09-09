@@ -15,9 +15,11 @@ import { useCreateProject } from "@/features/projects/projects-api";
 import type { Project } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatMoney } from "@/lib/format/money";
+import { projectDisplayName } from "@/lib/projects/project-display-name";
 
 /**
- * Second line of a switcher row: address · members · budget state (README "Đổi công trình").
+ * Second line of a switcher row: members · budget state (README "Đổi công trình"); the
+ * address is the row title, so it is not repeated here.
  * "Remaining" is budget − spent, the same figure as the overview headline.
  */
 export function projectRowMeta(
@@ -31,10 +33,9 @@ export function projectRowMeta(
 } {
   const budget = project.budget ?? 0;
   const spent = project.spent ?? 0;
-  const parts = [
-    project.address,
-    t("shell.membersCount", { count: project.user_count ?? 0 }),
-  ].filter(Boolean) as string[];
+  // The row title already shows the address (the project label), so the meta
+  // line only carries the member count and budget state.
+  const parts = [t("shell.membersCount", { count: project.user_count ?? 0 })];
   if (budget <= 0) {
     parts.push(t("shell.noBudget"));
     return {
@@ -116,14 +117,14 @@ export function ProjectSwitcherSheet() {
                   }}
                   className={`flex-row items-center gap-3 border-b border-line px-3.5 py-3 active:opacity-70 ${current ? "bg-paper-2" : ""}`}
                 >
-                  <Avatar name={project.name} size={34} square />
+                  <Avatar name={projectDisplayName(project)} size={34} square />
                   <View className="min-w-0 flex-1">
                     <View className="flex-row items-center justify-between">
                       <Text
                         className="min-w-0 flex-1 font-sans-medium text-[14px] text-ink"
                         numberOfLines={1}
                       >
-                        {project.name}
+                        {projectDisplayName(project)}
                       </Text>
                       <Text
                         className={`ml-2 font-mono text-[14px] ${REMAIN_CLASS[row.tone]}`}

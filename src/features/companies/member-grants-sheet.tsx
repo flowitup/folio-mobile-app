@@ -28,6 +28,7 @@ import type {
 } from "@/features/companies/member-grants-api";
 import { useProjects } from "@/features/projects/projects-api";
 import { memberDisplayName } from "@/lib/companies/member-display";
+import { projectDisplayName } from "@/lib/projects/project-display-name";
 
 const COMPANY_WIDE = "__company_wide__";
 
@@ -124,8 +125,9 @@ export const MemberGrantsSheet = forwardRef<BottomSheetModal, Props>(
                         visible to this caller) must say so, not silently read as company-wide. */}
                       {row.project_id === null
                         ? t("companies.members.grants.companyWide")
-                        : (project?.name ??
-                          t("companies.members.grants.projectUnknown"))}
+                        : project
+                          ? projectDisplayName(project)
+                          : t("companies.members.grants.projectUnknown")}
                     </Text>
                   </View>
                   <Badge
@@ -205,7 +207,7 @@ export const MemberGrantsSheet = forwardRef<BottomSheetModal, Props>(
                 },
                 ...companyProjects.map((project) => ({
                   value: project.id,
-                  label: project.name,
+                  label: projectDisplayName(project),
                 })),
               ]}
               onChange={setScope}

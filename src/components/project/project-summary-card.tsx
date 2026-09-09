@@ -3,6 +3,7 @@ import { Text, View } from "react-native";
 
 import { Card } from "@/components/ui/primitives";
 import { formatMoney } from "@/lib/format/money";
+import { projectDisplayName } from "@/lib/projects/project-display-name";
 
 import type { Project } from "@/features/projects/projects-api";
 
@@ -34,16 +35,11 @@ export function ProjectSummaryCard({ project }: { project: Project }) {
   return (
     <Card>
       <Text
-        className="text-lg font-semibold text-primary"
+        className="mb-2 text-lg font-semibold text-primary"
         testID="project-overview-name"
       >
-        {project.name}
+        {projectDisplayName(project)}
       </Text>
-      {project.address ? (
-        <Text className="mb-2 text-sm text-muted-foreground">
-          {project.address}
-        </Text>
-      ) : null}
       <Row
         label={t("project.budget")}
         value={project.budget != null ? formatMoney(project.budget) : "—"}

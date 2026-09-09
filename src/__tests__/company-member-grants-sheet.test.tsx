@@ -152,7 +152,12 @@ describe("MemberGrantsSheet", () => {
       return Promise.resolve({
         data: {
           projects: [
-            { id: "p1", name: "Chantier A", company_id: "c1" },
+            {
+              id: "p1",
+              name: "Chantier A",
+              address: "1 rue des Chantiers",
+              company_id: "c1",
+            },
             { id: "p2", name: "Chantier B", company_id: "c1" },
           ],
           total: 2,
@@ -183,6 +188,10 @@ describe("MemberGrantsSheet", () => {
       expect(screen.getByTestId("grant-scope-option-p1")).toBeTruthy(),
     );
     await fireEvent.press(screen.getByTestId("grant-scope"));
+    // Scope options are labelled by address (falling back to the name).
+    expect(screen.getByText("1 rue des Chantiers")).toBeTruthy();
+    expect(screen.getByText("Chantier B")).toBeTruthy();
+    expect(screen.queryByText("Chantier A")).toBeNull();
     await fireEvent.press(screen.getByTestId("grant-scope-option-p1"));
 
     await fireEvent.press(screen.getByTestId("grant-submit"));

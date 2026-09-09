@@ -12,6 +12,7 @@ import { useProjects } from "@/features/projects/projects-api";
 import { computeBillingTotals } from "@/lib/billing/billing-totals";
 import { parseIsoDate, toIsoDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
+import { projectDisplayName } from "@/lib/projects/project-display-name";
 
 import {
   BillingItemsEditor,
@@ -217,7 +218,7 @@ export function BillingDocumentForm({
     { value: "__none__", label: t("billing.form.projectNone") },
     ...(projects.data?.projects ?? []).map((p) => ({
       value: p.id,
-      label: p.name,
+      label: projectDisplayName(p),
     })),
   ];
 
