@@ -1,18 +1,18 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import type { Metrics } from "react-native-safe-area-context";
-import type { ComponentProps, ReactElement } from "react";
+import type { QueryClient } from "@tanstack/react-query";
+import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import type { ReactElement } from "react";
 
 import i18n from "@/i18n";
 import PlanningTab from "../../app/(app)/(tabs)/planning";
 import { FloatingTabBar } from "@/components/shell/floating-tab-bar";
 import type { Task } from "@/features/tasks/tasks-api";
+import {
+  MATRIX,
+  callsTo,
+  ok,
+  renderWithProviders as renderShared,
+  tabBarProps,
+} from "./helpers/release-qa-fixtures";
 
 /**
  * Planning per company role. The backend gates list / create / edit / move on `project:read`
@@ -20,26 +20,8 @@ import type { Task } from "@/features/tasks/tasks-api";
  * board as a manager — a third tab next to Attendance / Salary — without the Delete button.
  */
 const PROJECT_ID = "p1";
-const MEMBER_SCOPED = [
-  "project:read",
-  "project:log_own_attendance",
-  "project:view_roster",
-  "user:read",
-];
-const MANAGER_SCOPED = [
-  ...MEMBER_SCOPED,
-  "project:update",
-  "project:invite",
-  "project:manage_users",
-  "project:manage_labor",
-  "project:manage_invoices",
-  "project:view_pay",
-];
-const SAFE_AREA_METRICS: Metrics = {
-  frame: { x: 0, y: 0, width: 390, height: 844 },
-  insets: { top: 0, left: 0, right: 0, bottom: 0 },
-};
-
+const MEMBER_SCOPED = [...MATRIX.member];
+const MANAGER_SCOPED = [...MATRIX.manager];
 let mockScopedPermissions: string[] = MEMBER_SCOPED;
 
 jest.mock("expo-router", () => ({
@@ -109,10 +91,6 @@ jest.mock("@/api/client", () => ({
   },
 }));
 
-function ok(data: unknown) {
-  return { data, response: { status: 200, statusText: "OK" } };
-}
-
 function task(id: string, title: string, position: number): Task {
   return {
     id,
@@ -132,35 +110,12 @@ function task(id: string, title: string, position: number): Task {
 }
 const TASKS = [task("t1", "Poser le carrelage", 1), task("t2", "Joints", 2)];
 
-let queryClient: QueryClient;
+let queryClient: QueryClient | undefined;
+/** The shared render, keeping the client so the gcTime timer can be cleared after each test. */
 async function renderWithProviders(ui: ReactElement) {
-  queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 } },
-  });
-  return await render(
-    <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
-      <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
-    </SafeAreaProvider>,
-  );
-}
-
-/** react-navigation tab-bar props for the project navigator sitting on the first route. */
-function tabBarProps(): ComponentProps<typeof FloatingTabBar> {
-  const routes = ["index", "expenses", "labor", "planning"].map((name) => ({
-    key: `${name}-key`,
-    name,
-  }));
-  return {
-    state: { index: 0, routes },
-    navigation: {
-      emit: jest.fn(() => ({ defaultPrevented: false })),
-      navigate: jest.fn(),
-    },
-  } as unknown as ComponentProps<typeof FloatingTabBar>;
-}
-
-function callsTo(mock: jest.Mock, path: string) {
-  return mock.mock.calls.filter((call) => call[0] === path);
+  const rendered = await renderShared(ui);
+  queryClient = rendered.queryClient;
+  return rendered;
 }
 
 beforeEach(() => {

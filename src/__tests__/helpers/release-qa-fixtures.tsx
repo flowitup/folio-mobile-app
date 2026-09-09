@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react-native";
-import type { ReactElement } from "react";
+import type { ComponentProps, ReactElement } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 
 import type { AuthUser } from "@/auth/auth-context";
+import type { FloatingTabBar } from "@/components/shell/floating-tab-bar";
 import type { Invoice } from "@/features/invoices/invoice-types";
 import type { LaborEntry, Worker } from "@/features/labor/labor-types";
 import type { RosterRow } from "@/features/labor/roster-api";
@@ -382,6 +383,35 @@ export const TASKS: Task[] = [
   },
 ];
 
+/** `GET /projects/{id}/members` — the company people assigned to the QA project. */
+export const MEMBERS = [
+  {
+    user_id: "u-manager",
+    email: "qa.manager@example.com",
+    display_name: "Manager Persona",
+    role_name: "manager",
+    joined_at: "2026-09-01T08:00:00Z",
+  },
+  {
+    user_id: "u-member",
+    email: "qa.member@example.com",
+    display_name: "Minh Worker",
+    role_name: "member",
+    joined_at: "2026-09-02T08:00:00Z",
+  },
+];
+
+/** A legacy email invitation: still revocable from the screen, never created by the app. */
+export const INVITATIONS = [
+  {
+    id: "i1",
+    email: "invited@example.com",
+    status: "pending",
+    created_at: `${MONTH}-02T08:00:00Z`,
+    expires_at: `${MONTH}-09T08:00:00Z`,
+  },
+];
+
 /** The QA project as the backend returns it (list row and detail share the shape). */
 export function project(scoped: string[]): Project {
   return {
@@ -520,6 +550,12 @@ export function answerGet(
         return ok({ activities: [] });
       case "/api/v1/projects/{project_id}/labor-day-descriptions":
         return ok({ descriptions: [] });
+      case "/api/v1/projects/{project_id}/members":
+        return ok({ members: MEMBERS });
+      case "/api/v1/invitations/projects/{project_id}/invitations":
+        return ok({ items: INVITATIONS });
+      case "/api/v1/billing-documents":
+        return ok({ items: [], total: 0 });
       case "/api/v1/labor/roles":
         return ok({ roles: [], palette: [] });
       case "/api/v1/companies/{company_id}/payment-methods":
@@ -530,7 +566,7 @@ export function answerGet(
   };
 }
 
-const SAFE_AREA_METRICS: Metrics = {
+export const SAFE_AREA_METRICS: Metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
@@ -560,4 +596,24 @@ export function containing(text: string): RegExp {
 /** Calls of a jest mock whose first argument (the path template) equals `path`. */
 export function callsTo(mock: jest.Mock, path: string) {
   return mock.mock.calls.filter((call) => call[0] === path);
+}
+
+/**
+ * react-navigation tab-bar props for a project navigator sitting on `routes[index]`.
+ * The shell reads only the route names and the active index to decide which slots to draw.
+ */
+export function tabBarProps(
+  routeNames: string[] = ["index", "expenses", "labor", "planning"],
+  index = 0,
+): ComponentProps<typeof FloatingTabBar> {
+  return {
+    state: {
+      index,
+      routes: routeNames.map((name) => ({ key: `${name}-key`, name })),
+    },
+    navigation: {
+      emit: jest.fn(() => ({ defaultPrevented: false })),
+      navigate: jest.fn(),
+    },
+  } as unknown as ComponentProps<typeof FloatingTabBar>;
 }
