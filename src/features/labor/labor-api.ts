@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
 import { invoiceKeys } from "@/features/invoices/invoices-api";
+import { rosterKeys } from "@/features/labor/roster-api";
 import { downloadAndShare } from "@/lib/files/download";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
@@ -66,6 +67,19 @@ function laborInvalidations(projectId: string) {
     laborKeys.monthly(projectId),
     invoiceKeys.laborPayments(projectId),
     ["projects", projectId],
+  ];
+}
+
+/**
+ * What a worker's own attendance write changes: their month, the summaries, and the day roster
+ * (a self-logged day shows as `pending` on the roster right away, not only after a refocus).
+ */
+function ownAttendanceInvalidations(projectId: string) {
+  return [
+    laborKeys.entriesAll(projectId),
+    laborKeys.summaryAll(projectId),
+    laborKeys.monthly(projectId),
+    rosterKeys.all(projectId),
   ];
 }
 
@@ -255,11 +269,7 @@ export function useSelfLogAttendance(projectId: string) {
           body: { supplement_hours: 0, note: null, ...body },
         }),
       ),
-    invalidates: [
-      laborKeys.entriesAll(projectId),
-      laborKeys.summaryAll(projectId),
-      laborKeys.monthly(projectId),
-    ],
+    invalidates: ownAttendanceInvalidations(projectId),
     successMessage: t("worker.logged"),
   });
 }
@@ -281,11 +291,7 @@ export function useEditOwnAttendance(projectId: string) {
           },
         ),
       ),
-    invalidates: [
-      laborKeys.entriesAll(projectId),
-      laborKeys.summaryAll(projectId),
-      laborKeys.monthly(projectId),
-    ],
+    invalidates: ownAttendanceInvalidations(projectId),
     successMessage: t("worker.editSent"),
   });
 }
