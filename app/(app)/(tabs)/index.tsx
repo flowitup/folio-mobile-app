@@ -1,17 +1,18 @@
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
+import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
+import { useBillingAccess } from "@/features/companies/companies-api";
 import {
   AgendaCard,
-  FiguresCard,
-  HeadlineBlock,
-  SpendByTypeCard,
+  MonthSpendCard,
 } from "@/features/dashboard/overview-cards";
-import type { Figure } from "@/features/dashboard/overview-cards";
+import { OverviewDueTiles } from "@/features/dashboard/overview-due-tiles";
+import { OverviewHero } from "@/features/dashboard/overview-hero";
 import { TodayOnSiteCard } from "@/features/dashboard/today-on-site-card";
 import { useInvoices } from "@/features/invoices/invoices-api";
 import { useLaborEntries } from "@/features/labor/labor-api";
@@ -31,19 +32,21 @@ import {
   computeSpentTotal,
 } from "@/lib/dashboard/overview-metrics";
 import { toIsoDate } from "@/lib/format/date";
-import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
-import { useTokens } from "@/theme/tokens";
+import { INK_BLOCK } from "@/theme/tokens";
 
-/** Tổng quan: headline remaining, figures, spend by type (6 months), this week's agenda, today on site. */
+/**
+ * Tổng quan (design 1b): ink hero — remaining figure, ring gauge, quick actions — then the paper
+ * sheet: due tiles, this month's spend by type, this week's agenda, today on site.
+ */
 function OverviewTabContent() {
   const { t } = useTranslation();
   const router = useRouter();
-  const tokens = useTokens();
   const { project, projectId, isPending, isError, refetch } =
     useSelectedProject();
   const invoices = useInvoices(projectId);
   const tasks = useTasks(projectId);
+  const billing = useBillingAccess();
   useRefetchOnFocus(invoices.refetch);
   useRefetchOnFocus(tasks.refetch);
 
@@ -64,7 +67,6 @@ function OverviewTabContent() {
     return {
       spentTotal,
       budget: computeBudgetMetrics(budgetValue, spentTotal, fundsReleased),
-      series,
       monthDelta: computeMonthDelta(series),
       pendingCompany: computePendingRefunds(rows),
       bank: computeBankReleaseMetrics(budgetValue, fundsReleased),
@@ -76,114 +78,94 @@ function OverviewTabContent() {
     [tasks.data, referenceDate],
   );
 
-  const figures: Figure[] = project
-    ? [
-        {
-          key: "credit",
-          label: t("dashboard.overview.budgetCredit"),
-          value: formatMoney(metrics.budget.denominator),
-        },
-        {
-          key: "spent",
-          label: t("project.spent"),
-          value: formatMoney(metrics.spentTotal),
-        },
-        {
-          key: "credits",
-          label: t("project.spentByCredits"),
-          value: formatMoney(project.spent_by_credits ?? 0),
-        },
-        {
-          key: "personal",
-          label: t("project.spentPersonal"),
-          value: formatMoney(project.spent_personal ?? 0),
-        },
-        {
-          key: "bank",
-          label: t("dashboard.overview.bankRemaining"),
-          value: metrics.bank.hasCredit
-            ? formatMoney(metrics.bank.remaining)
-            : "—",
-        },
-        {
-          key: "pending",
-          label: t("dashboard.overview.pendingCompany", {
-            count: metrics.pendingCompany.count,
-          }),
-          value: formatMoney(metrics.pendingCompany.total),
-          tone: "warning",
-        },
-      ]
-    : [];
+  const ready = Boolean(project && invoices.data);
+  const payLabor = () =>
+    router.navigate({
+      pathname: "/(app)/(tabs)/labor",
+      params: { segment: "payments" },
+    });
 
   return (
-    <View className="flex-1 bg-paper">
-      <ProjectTopBar />
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="px-4 pb-6 pt-5"
-        contentContainerStyle={{ gap: 22 }}
-      >
-        {isPending ? (
-          <ActivityIndicator className="mt-8" color={tokens.ink} />
-        ) : null}
-        {isError ? (
-          <ErrorState
-            message={t("home.loadError")}
-            retryLabel={t("common.retry")}
-            onRetry={refetch}
+    <InkSheetScreen
+      header={<ProjectTopBar tone="ink" />}
+      hero={
+        ready && project ? (
+          <OverviewHero
+            budget={metrics.budget}
+            spentTotal={metrics.spentTotal}
+            spentByCredits={project.spent_by_credits ?? 0}
+            spentPersonal={project.spent_personal ?? 0}
+            bankRemaining={
+              metrics.bank.hasCredit ? metrics.bank.remaining : null
+            }
+            onAddInvoice={() =>
+              router.push(`/projects/${projectId}/invoices/new`)
+            }
+            onAddRelease={() =>
+              router.push({
+                pathname: `/projects/${projectId}/invoices/new`,
+                params: { type: "released_funds" },
+              })
+            }
+            onPayLabor={payLabor}
           />
-        ) : null}
-        {!isPending && !isError && !project ? (
-          <EmptyState message={t("dashboard.noProjects")} />
-        ) : null}
-        {project && invoices.isPending ? (
-          <ActivityIndicator className="my-4" color={tokens.ink} />
-        ) : null}
-        {project && invoices.isError ? (
-          <ErrorState
-            message={t("dashboard.loadError")}
-            retryLabel={t("common.retry")}
-            onRetry={() => void invoices.refetch()}
+        ) : (
+          <View className="h-24 items-center justify-center">
+            {isPending || (project && invoices.isPending) ? (
+              <ActivityIndicator color={INK_BLOCK.text} />
+            ) : null}
+          </View>
+        )
+      }
+    >
+      {isError && !project ? (
+        <ErrorState
+          message={t("home.loadError")}
+          retryLabel={t("common.retry")}
+          onRetry={refetch}
+        />
+      ) : null}
+      {!isPending && !isError && !project ? (
+        <EmptyState message={t("dashboard.noProjects")} />
+      ) : null}
+      {project && invoices.isError && !invoices.data ? (
+        <ErrorState
+          message={t("dashboard.loadError")}
+          retryLabel={t("common.retry")}
+          onRetry={() => void invoices.refetch()}
+        />
+      ) : null}
+      {ready && project ? (
+        <>
+          <OverviewDueTiles
+            laborUnpaid={project.labor_unpaid ?? 0}
+            pendingRefundCount={metrics.pendingCompany.count}
+            pendingRefundTotal={metrics.pendingCompany.total}
+            onPayLabor={payLabor}
+            onOpenRefunds={() =>
+              billing.allowed
+                ? router.push("/billing/refundable")
+                : router.navigate("/(app)/(tabs)/expenses")
+            }
           />
-        ) : null}
-        {project && invoices.data ? (
-          <>
-            <HeadlineBlock
-              budget={metrics.budget}
-              spentTotal={metrics.spentTotal}
-              spentByCredits={project.spent_by_credits ?? 0}
-              spentPersonal={project.spent_personal ?? 0}
-            />
-            <FiguresCard
-              figures={figures}
-              laborUnpaid={project.labor_unpaid ?? 0}
-              onPayLabor={() =>
-                router.navigate({
-                  pathname: "/(app)/(tabs)/labor",
-                  params: { segment: "payments" },
-                })
-              }
-            />
-            <SpendByTypeCard
-              buckets={metrics.buckets}
-              currentMonthKey={metrics.monthDelta.current.key}
-              totalCurrent={metrics.monthDelta.current.total}
-              totalDeltaPct={metrics.monthDelta.deltaPct}
-              onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
-            />
-            <AgendaCard
-              groups={agenda}
-              onOpenPlanning={() => router.navigate("/(app)/(tabs)/planning")}
-            />
-            <TodayOnSiteCard
-              address={project.address}
-              workersOnSite={workersOnSite}
-            />
-          </>
-        ) : null}
-      </ScrollView>
-    </View>
+          <MonthSpendCard
+            buckets={metrics.buckets}
+            currentMonthKey={metrics.monthDelta.current.key}
+            totalCurrent={metrics.monthDelta.current.total}
+            totalDeltaPct={metrics.monthDelta.deltaPct}
+            onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+          />
+          <AgendaCard
+            groups={agenda}
+            onOpenPlanning={() => router.navigate("/(app)/(tabs)/planning")}
+          />
+          <TodayOnSiteCard
+            address={project.address}
+            workersOnSite={workersOnSite}
+          />
+        </>
+      ) : null}
+    </InkSheetScreen>
   );
 }
 

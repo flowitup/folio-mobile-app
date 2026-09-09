@@ -3,13 +3,9 @@ import { Pressable, Text, View } from "react-native";
 
 import { shortMonthLabel } from "@/components/ui/month-picker";
 import { Card } from "@/components/ui/primitives";
-import { Eyebrow, SectionLink } from "@/components/ui/typography";
+import { SectionLink } from "@/components/ui/typography";
 import type { AgendaGroup } from "@/lib/dashboard/overview-agenda";
-import type {
-  BudgetMetrics,
-  MonthlySpendPoint,
-  TypeMonthlyBucket,
-} from "@/lib/dashboard/overview-metrics";
+import type { TypeMonthlyBucket } from "@/lib/dashboard/overview-metrics";
 import { formatMoney } from "@/lib/format/money";
 import { useTokens } from "@/theme/tokens";
 import type { Tokens } from "@/theme/tokens";
@@ -29,169 +25,28 @@ export function formatDelta(deltaPct: number | null): string {
   return "0 %";
 }
 
-function deltaColor(deltaPct: number | null, tokens: Tokens): string {
+/** Spend going up is bad (negative), going down is good (positive), flat is muted. */
+export function deltaColor(deltaPct: number | null, tokens: Tokens): string {
   if (deltaPct == null || deltaPct === 0) return tokens.muted;
   return deltaPct > 0 ? tokens.negative : tokens.positive;
 }
 
-type HeadlineProps = {
-  budget: BudgetMetrics;
-  spentTotal: number;
-  spentByCredits: number;
-  spentPersonal: number;
-};
-
-/** "Còn lại để chi": 38px mono figure, caption, 4px stacked bar (credit spend ink, personal muted-2). */
-export function HeadlineBlock({
-  budget,
-  spentTotal,
-  spentByCredits,
-  spentPersonal,
-}: HeadlineProps) {
-  const { t } = useTranslation();
-  const share = (value: number) =>
-    budget.denominator > 0
-      ? Math.min(100, Math.max(0, (value / budget.denominator) * 100))
-      : 0;
-  return (
-    <View testID="overview-headline">
-      <Eyebrow>{t("dashboard.remainingToSpend")}</Eyebrow>
-      <Text
-        testID="overview-remaining"
-        className={`mt-1 font-mono text-[38px] leading-[42px] tracking-[-0.76px] ${budget.left < 0 ? "text-negative" : "text-ink"}`}
-      >
-        {formatMoney(budget.left)}
-      </Text>
-      <Text className="mt-1 font-sans text-[13px] text-muted">
-        {t("dashboard.overview.pctSpent", { pct: budget.pct })} ·{" "}
-        <Text className="font-mono text-ink">{formatMoney(spentTotal)}</Text>{" "}
-        {t("dashboard.overview.ofCredit")}{" "}
-        <Text className="font-mono">{formatMoney(budget.denominator)}</Text>{" "}
-        {budget.usesBudget
-          ? t("dashboard.overview.creditWord")
-          : t("dashboard.overview.releasedWord")}
-      </Text>
-      <View className="mt-2.5 h-1 flex-row overflow-hidden rounded-sm bg-paper-2">
-        <View
-          className="h-1 bg-ink"
-          style={{ width: `${share(spentByCredits)}%` }}
-        />
-        <View
-          className="h-1 bg-muted-2"
-          style={{ width: `${share(spentPersonal)}%` }}
-        />
-      </View>
-      <View className="mt-1.5 flex-row gap-3.5">
-        <View className="flex-row items-center gap-[5px]">
-          <View className="h-2 w-2 rounded-sm bg-ink" />
-          <Text className="font-sans text-[11px] text-muted">
-            {t("project.spentByCredits")} {formatMoney(spentByCredits)}
-          </Text>
-        </View>
-        <View className="flex-row items-center gap-[5px]">
-          <View className="h-2 w-2 rounded-sm bg-muted-2" />
-          <Text className="font-sans text-[11px] text-muted">
-            {t("dashboard.overview.personal")} {formatMoney(spentPersonal)}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
+/** Expense type colors shared by the 1b bars and rows: materials ink, labor accent, others muted-2. */
+export function expenseTypeColor(tokens: Tokens): Record<string, string> {
+  return {
+    labor: tokens.accent,
+    materials_services: tokens.ink,
+    others: tokens.muted2,
+    released_funds: tokens.positive,
+    return: tokens.negative,
+  };
 }
 
-export type Figure = {
-  key: string;
-  label: string;
-  value: string;
-  tone?: "ink" | "warning";
-};
-
-/** Figures table: label muted / mono value; last row "Nhân công chưa trả · Trả ›" on warning tint. */
-export function FiguresCard({
-  figures,
-  laborUnpaid,
-  onPayLabor,
-}: {
-  figures: Figure[];
-  laborUnpaid: number;
-  onPayLabor: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <Card padded={false} className="overflow-hidden" testID="overview-figures">
-      {figures.map((figure) => (
-        <View
-          key={figure.key}
-          className="flex-row items-center justify-between border-b border-line px-3.5 py-[11px]"
-        >
-          <Text className="font-sans text-[14px] text-muted">
-            {figure.label}
-          </Text>
-          <Text
-            testID={`overview-figure-${figure.key}`}
-            className={`font-mono text-[14px] ${figure.tone === "warning" ? "text-warning" : "text-ink"}`}
-          >
-            {figure.value}
-          </Text>
-        </View>
-      ))}
-      <Pressable
-        testID="overview-labor-unpaid"
-        accessibilityRole="button"
-        onPress={onPayLabor}
-        className="flex-row items-center justify-between bg-warning-tint px-3.5 py-[11px] active:opacity-70"
-      >
-        <Text className="font-sans text-[14px] text-ink">
-          {t("project.laborUnpaid")}
-        </Text>
-        <View className="flex-row items-center gap-2.5">
-          <Text className="font-mono-semibold text-[14px] text-warning">
-            {formatMoney(laborUnpaid)}
-          </Text>
-          <Text className="font-sans text-xs text-muted">
-            {t("dashboard.overview.pay")} ›
-          </Text>
-        </View>
-      </Pressable>
-    </Card>
-  );
-}
-
-const SPARK_HEIGHT = 14;
-
-function Sparkline({
-  points,
-  color,
-}: {
-  points: MonthlySpendPoint[];
-  color: string;
-}) {
-  const max = Math.max(1, ...points.map((p) => Math.max(p.total, 0)));
-  return (
-    <View
-      className="mt-1.5 flex-row items-end gap-0.5"
-      style={{ height: SPARK_HEIGHT }}
-    >
-      {points.map((point, index) => (
-        <View
-          key={point.key}
-          className="flex-1 rounded-[1px]"
-          style={{
-            height: Math.max(
-              SPARK_HEIGHT * 0.08,
-              (Math.max(point.total, 0) / max) * SPARK_HEIGHT,
-            ),
-            backgroundColor: color,
-            opacity: index === points.length - 1 ? 1 : 0.4,
-          }}
-        />
-      ))}
-    </View>
-  );
-}
-
-/** "Chi theo loại · 6 tháng": grid 1fr / 74 / 52, color squares, mono current, colored Δ, sparkline, total row. */
-export function SpendByTypeCard({
+/**
+ * 1b "Chi tháng 9" card (r20, shadow): month total + delta, a 14px stacked bar of the month's
+ * spend by type, then a 3-column grid of type / mono amount / delta. Tapping opens the ledger.
+ */
+export function MonthSpendCard({
   buckets,
   currentMonthKey,
   totalCurrent,
@@ -206,106 +61,100 @@ export function SpendByTypeCard({
 }) {
   const { t } = useTranslation();
   const tokens = useTokens();
-  const typeColor: Record<string, string> = {
-    labor: tokens.accent,
-    materials_services: tokens.ink,
-    others: tokens.muted2,
-  };
+  const colors = expenseTypeColor(tokens);
+  const current = buckets.map((bucket) => ({
+    ...bucket,
+    value: Math.max(0, bucket.monthly[bucket.monthly.length - 1]?.total ?? 0),
+  }));
+  const sum = current.reduce((acc, bucket) => acc + bucket.value, 0);
   return (
-    <View testID="overview-spend-by-type">
-      <View className="mb-2 flex-row items-end justify-between">
-        <Eyebrow>{t("dashboard.overview.spendByType")}</Eyebrow>
-        <SectionLink
-          label={t("dashboard.overview.expensesLink")}
-          onPress={onOpenExpenses}
-          testID="overview-open-expenses"
-        />
-      </View>
-      <Card padded={false} className="overflow-hidden">
-        <View className="flex-row border-b border-line px-3.5 py-2">
-          <Text className="flex-1 font-sans text-[10.5px] uppercase tracking-[0.84px] text-muted">
-            {t("dashboard.overview.typeColumn")}
-          </Text>
-          <Text className="w-[96px] text-right font-sans text-[10.5px] uppercase tracking-[0.84px] text-muted">
-            {shortMonthLabel(currentMonthKey)}
-          </Text>
-          <Text className="w-[46px] text-right font-sans text-[10.5px] uppercase tracking-[0.84px] text-muted">
-            Δ
-          </Text>
-        </View>
-        {buckets.map((bucket) => {
-          const current = bucket.monthly[bucket.monthly.length - 1]?.total ?? 0;
-          return (
-            <View
-              key={bucket.type}
-              className="border-b border-line px-3.5 py-2.5"
-            >
-              <View className="flex-row items-center">
-                <View className="flex-1 flex-row items-center gap-2">
-                  <View
-                    className="h-2 w-2 rounded-sm"
-                    style={{ backgroundColor: typeColor[bucket.type] }}
-                  />
-                  <Text
-                    className="font-sans text-[14px] text-ink"
-                    numberOfLines={1}
-                  >
-                    {t(`invoices.types.${bucket.type}`)}
-                  </Text>
-                </View>
-                <Text
-                  className="w-[96px] text-right font-mono-regular text-[14px] text-ink"
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
-                  {formatMoney(current)}
-                </Text>
-                <Text
-                  className="w-[46px] text-right font-mono-regular text-xs"
-                  style={{ color: deltaColor(bucket.deltaPct, tokens) }}
-                >
-                  {formatDelta(bucket.deltaPct)}
-                </Text>
-              </View>
-              <Sparkline
-                points={bucket.monthly}
-                color={typeColor[bucket.type]}
-              />
-            </View>
-          );
-        })}
-        <View className="flex-row items-center px-3.5 py-2.5">
-          <Text className="flex-1 font-sans-semibold text-[14px] text-ink">
-            {t("dashboard.overview.monthTotal", {
+    <Pressable
+      testID="overview-spend-by-type"
+      accessibilityRole="button"
+      onPress={onOpenExpenses}
+      className="active:opacity-80"
+    >
+      <Card radius={20} elevated>
+        <View className="flex-row items-baseline justify-between">
+          <Text className="font-sans-semibold text-[15px] leading-[18px] text-ink">
+            {t("dashboard.overview.monthSpend", {
               month: shortMonthLabel(currentMonthKey),
             })}
           </Text>
-          <Text
-            className="w-[96px] text-right font-mono-semibold text-[14px] text-ink"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
+          <Text className="font-mono-semibold text-[15px] text-ink">
             {formatMoney(totalCurrent)}
-          </Text>
-          <Text
-            className="w-[46px] text-right font-mono-semibold text-xs"
-            style={{ color: deltaColor(totalDeltaPct, tokens) }}
-          >
-            {formatDelta(totalDeltaPct)}
+            <Text
+              className="font-mono text-xs"
+              style={{ color: deltaColor(totalDeltaPct, tokens) }}
+            >
+              {"  "}
+              {formatDelta(totalDeltaPct)}
+            </Text>
           </Text>
         </View>
+        <View className="mt-3 h-3.5 flex-row gap-0.5 overflow-hidden rounded-[7px]">
+          {sum > 0 ? (
+            current.map((bucket) =>
+              bucket.value > 0 ? (
+                <View
+                  key={bucket.type}
+                  style={{
+                    flex: bucket.value / sum,
+                    backgroundColor: colors[bucket.type],
+                  }}
+                />
+              ) : null,
+            )
+          ) : (
+            <View className="flex-1 bg-paper-2" />
+          )}
+        </View>
+        <View className="mt-3 flex-row gap-2">
+          {current.map((bucket) => (
+            <View key={bucket.type} className="min-w-0 flex-1">
+              <View className="flex-row items-center gap-[5px]">
+                <View
+                  className="h-2 w-2 rounded-sm"
+                  style={{ backgroundColor: colors[bucket.type] }}
+                />
+                <Text
+                  className="min-w-0 flex-1 font-sans text-[11.5px] text-muted"
+                  numberOfLines={1}
+                >
+                  {t(`expenses.filters.${bucket.type}`)}
+                </Text>
+              </View>
+              <Text
+                className="mt-0.5 font-mono text-[14px] text-ink"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                testID={`overview-type-${bucket.type}`}
+              >
+                {formatMoney(bucket.value)}
+              </Text>
+              <Text
+                className="font-mono-regular text-[11px]"
+                style={{ color: deltaColor(bucket.deltaPct, tokens) }}
+              >
+                {formatDelta(bucket.deltaPct)}
+              </Text>
+            </View>
+          ))}
+        </View>
       </Card>
-    </View>
+    </Pressable>
   );
 }
 
-const AGENDA_GROUP_CLASS = {
-  overdue: "text-negative",
-  today: "text-accent-ink",
-  thisWeek: "text-muted",
+const AGENDA_PILL = {
+  overdue: { box: "bg-negative-tint", text: "text-negative" },
+  today: { box: "bg-accent-tint", text: "text-accent-ink" },
 } as const;
 
-/** "Tuần này · N việc": grouped rows with a 16px outline checkbox, title and mono date. */
+/**
+ * 1b "Tuần này · N việc" card (r20): rows with a 20px outline checkbox (negative when overdue),
+ * the title and a status pill — "Quá hạn" / "Hôm nay" — or the mono due date for later days.
+ */
 export function AgendaCard({
   groups,
   onOpenPlanning,
@@ -316,48 +165,65 @@ export function AgendaCard({
   const { t } = useTranslation();
   const count = groups.reduce((sum, group) => sum + group.tasks.length, 0);
   return (
-    <View testID="overview-agenda">
-      <View className="mb-2 flex-row items-end justify-between">
-        <Eyebrow>{t("dashboard.overview.thisWeek", { count })}</Eyebrow>
+    <Card
+      radius={20}
+      elevated
+      padded={false}
+      className="px-4 py-1.5"
+      testID="overview-agenda"
+    >
+      <View className="flex-row items-center justify-between pb-1.5 pt-2.5">
+        <Text className="font-sans-semibold text-[15px] leading-[18px] text-ink">
+          {t("dashboard.agenda.title")}
+          <Text className="font-sans text-muted">
+            {" · "}
+            {t("dashboard.overview.taskCount", { count })}
+          </Text>
+        </Text>
         <SectionLink
           label={t("dashboard.agenda.viewAll")}
           onPress={onOpenPlanning}
           testID="overview-open-planning"
         />
       </View>
-      <Card padded={false} className="overflow-hidden">
-        {groups.length === 0 ? (
-          <Text className="px-3.5 py-3 font-sans text-[14px] text-muted">
-            {t("dashboard.agenda.empty")}
-          </Text>
-        ) : null}
-        {groups.map((group) => (
-          <View key={group.key}>
+      {groups.length === 0 ? (
+        <Text className="border-t border-line py-3 font-sans text-[14px] text-muted">
+          {t("dashboard.agenda.empty")}
+        </Text>
+      ) : null}
+      {groups.flatMap((group) =>
+        group.tasks.map((task) => (
+          <View
+            key={task.id}
+            className="flex-row items-center gap-3 border-t border-line py-2.5"
+          >
+            <View
+              className={`h-5 w-5 rounded-md border-[1.5px] ${group.key === "overdue" ? "border-negative" : "border-line-2"}`}
+            />
             <Text
-              className={`px-3.5 pb-0.5 pt-2 font-sans-medium text-[10.5px] uppercase tracking-[0.84px] ${AGENDA_GROUP_CLASS[group.key]}`}
+              className="min-w-0 flex-1 font-sans text-[14px] leading-[18px] text-ink"
+              numberOfLines={1}
             >
-              {t(`dashboard.agenda.${group.key}`)}
+              {task.title}
             </Text>
-            {group.tasks.map((task) => (
+            {group.key === "thisWeek" ? (
+              <Text className="font-mono-regular text-xs text-muted">
+                {shortDayMonth(task.due_date)}
+              </Text>
+            ) : (
               <View
-                key={task.id}
-                className="flex-row items-center gap-2.5 border-b border-line px-3.5 py-2"
+                className={`rounded-full px-[7px] py-0.5 ${AGENDA_PILL[group.key].box}`}
               >
-                <View className="h-4 w-4 rounded border-[1.5px] border-line-2" />
                 <Text
-                  className="min-w-0 flex-1 font-sans text-[14px] text-ink"
-                  numberOfLines={1}
+                  className={`font-sans-medium text-[11px] ${AGENDA_PILL[group.key].text}`}
                 >
-                  {task.title}
-                </Text>
-                <Text className="font-mono-regular text-xs text-muted">
-                  {shortDayMonth(task.due_date)}
+                  {t(`dashboard.agenda.${group.key}`)}
                 </Text>
               </View>
-            ))}
+            )}
           </View>
-        ))}
-      </Card>
-    </View>
+        )),
+      )}
+    </Card>
   );
 }

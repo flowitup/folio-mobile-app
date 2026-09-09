@@ -7,6 +7,8 @@ type Props = {
   size?: number;
   /** Fill color; defaults to the paper-2 "account" avatar with a 1px line border. */
   color?: string;
+  /** Initial color when `color` is set (white by default). */
+  textColor?: string;
   /** Square tile with the Fraunces initial (project switcher) instead of a round Inter avatar. */
   square?: boolean;
   testID?: string;
@@ -17,12 +19,14 @@ export function Avatar({
   name,
   size = 36,
   color,
+  textColor: textColorProp,
   square = false,
   testID,
 }: Props) {
   const tokens = useTokens();
   const fill = color ?? (square ? tokens.ink : tokens.paper2);
-  const textColor = color ? "#ffffff" : square ? tokens.onInk : tokens.ink;
+  const textColor =
+    textColorProp ?? (color ? "#ffffff" : square ? tokens.onInk : tokens.ink);
   return (
     <View
       testID={testID}

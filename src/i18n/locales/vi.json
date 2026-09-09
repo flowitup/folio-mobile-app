@@ -303,7 +303,19 @@
     "tvaShort": "VAT",
     "invoiceCount_zero": "không có chi phí",
     "invoiceCount_one": "{{n}} chi phí",
-    "invoiceCount_other": "{{n}} chi phí"
+    "invoiceCount_other": "{{n}} chi phí",
+    "detail": {
+      "pdf": "PDF",
+      "attach": "Đính kèm",
+      "open": "Mở",
+      "refundPrompt": "Công ty đã chuyển tiền hoàn?",
+      "refundConfirm": "Đã hoàn",
+      "transferPrompt": "Chi hộ công ty, chờ hoàn lại?",
+      "transferConfirm": "Chuyển",
+      "info": "Thông tin",
+      "noHighlight": "Không tô",
+      "attachmentsEmpty": "Chưa có tệp đính kèm"
+    }
   },
   "labor": {
     "tabs": {
@@ -1369,7 +1381,20 @@
       "thisWeek": "Tuần này · {{count}} việc",
       "budgetCredit": "Ngân sách / tín dụng",
       "bankRemaining": "Tín dụng NH còn lại",
-      "pendingCompany": "Chờ công ty hoàn ({{count}})"
+      "pendingCompany": "Chờ công ty hoàn ({{count}})",
+      "spentOfCredit": "Đã chi {{spent}} trên {{total}} tín dụng",
+      "spentOfReleased": "Đã chi {{spent}} trên {{total}} đã giải ngân",
+      "addInvoice": "Hoá đơn",
+      "addRelease": "Giải ngân",
+      "payLabor": "Trả lương",
+      "unpaid": "Chưa trả",
+      "payNow": "Trả ngay",
+      "awaitingRefund": "Chờ hoàn",
+      "refundItems_one": "{{count}} khoản · công ty",
+      "refundItems_other": "{{count}} khoản · công ty",
+      "monthSpend": "Chi {{month}}",
+      "taskCount_one": "{{count}} việc",
+      "taskCount_other": "{{count}} việc"
     },
     "today": {
       "title": "Hôm nay tại công trường",
@@ -1461,7 +1486,9 @@
       "others": "K",
       "released_funds": "GN",
       "return": "TH"
-    }
+    },
+    "prevMonth": "Tháng trước",
+    "nextMonth": "Tháng sau"
   },
   "planning": {
     "newTask": "Công việc",

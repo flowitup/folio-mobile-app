@@ -8,13 +8,18 @@ import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { useNotifications } from "@/features/notes/notes-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
-import { useTokens } from "@/theme/tokens";
+import { INK_BLOCK, useTokens } from "@/theme/tokens";
+
+type Props = {
+  /** `ink`: the 1b variant on the ink block — paper project tile, on-ink text, no bottom line. */
+  tone?: "paper" | "ink";
+};
 
 /**
  * Top bar of the four project tabs: project switcher (28px ink square + name + "Đổi công trình ▾"),
  * 40px bell with an accent dot when reminders are pending, 36px initials avatar.
  */
-export function ProjectTopBar() {
+export function ProjectTopBar({ tone = "paper" }: Props) {
   const { t } = useTranslation();
   const tokens = useTokens();
   const insets = useSafeAreaInsets();
@@ -25,32 +30,49 @@ export function ProjectTopBar() {
   const pendingCount =
     (notifications.data?.items ?? []).filter((item) => !item.dismissed).length +
     (notifications.data?.attendance_pending.length ?? 0);
+  const ink = tone === "ink";
 
   return (
     <View
       testID="project-top-bar"
-      className="flex-row items-center gap-2 border-b border-line bg-paper px-3 pb-2"
+      className={`flex-row items-center gap-2 ${ink ? "bg-ink-block pl-5 pr-4" : "border-b border-line bg-paper px-3 pb-2"}`}
       style={{ paddingTop: insets.top + 8 }}
     >
       <Pressable
         testID="top-bar-switcher"
         accessibilityRole="button"
         onPress={() => openSheet("switcher")}
-        className="h-10 min-w-0 flex-1 flex-row items-center gap-2 active:opacity-70"
+        className="h-10 min-w-0 flex-1 flex-row items-center gap-2.5 active:opacity-70"
       >
-        <Avatar name={project?.name ?? "F"} size={28} square />
+        {ink ? (
+          <Avatar
+            name={project?.name ?? "F"}
+            size={30}
+            square
+            color={INK_BLOCK.text}
+            textColor={INK_BLOCK.bg}
+          />
+        ) : (
+          <Avatar name={project?.name ?? "F"} size={28} square />
+        )}
         <View className="min-w-0 flex-1">
           <Text
-            className="font-sans-semibold text-[15px] text-ink"
+            className={`font-sans-semibold text-[15px] ${ink ? "text-on-ink-block" : "text-ink"}`}
             numberOfLines={1}
           >
             {project?.name ?? (isPending ? "…" : t("home.noProjects"))}
           </Text>
           <View className="flex-row items-center gap-1">
-            <Text className="font-sans text-[11px] text-muted">
+            <Text
+              className={`font-sans text-[11px] ${ink ? "text-ink-block-muted" : "text-muted"}`}
+            >
               {t("shell.switchProject")}
             </Text>
-            <Icon name="chevron-down" size={10} color={tokens.muted} />
+            <Icon
+              name="chevron-down"
+              size={10}
+              color={ink ? INK_BLOCK.muted : tokens.muted}
+            />
           </View>
         </View>
       </Pressable>
@@ -61,11 +83,11 @@ export function ProjectTopBar() {
         onPress={() => openSheet("notifications")}
         className="h-10 w-10 items-center justify-center active:opacity-70"
       >
-        <Icon name="bell" size={20} color={tokens.ink} />
+        <Icon name="bell" size={20} color={ink ? INK_BLOCK.text : tokens.ink} />
         {pendingCount > 0 ? (
           <View
             testID="top-bar-bell-dot"
-            className="absolute right-2.5 top-[9px] h-2 w-2 rounded-full border-2 border-paper bg-accent"
+            className={`absolute right-2.5 top-[9px] rounded-full border-2 ${ink ? "border-ink-block bg-ink-block-accent" : "border-paper bg-accent"}`}
             style={{ width: 10, height: 10 }}
           />
         ) : null}
@@ -76,7 +98,16 @@ export function ProjectTopBar() {
         onPress={() => openSheet("account")}
         className="active:opacity-70"
       >
-        <Avatar name={user?.email} size={36} />
+        {ink ? (
+          <Avatar
+            name={user?.email}
+            size={36}
+            color={INK_BLOCK.tile}
+            textColor={INK_BLOCK.text}
+          />
+        ) : (
+          <Avatar name={user?.email} size={36} />
+        )}
       </Pressable>
     </View>
   );

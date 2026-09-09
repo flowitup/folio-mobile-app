@@ -26,6 +26,14 @@ module.exports = {
         negative: "var(--negative)",
         "negative-tint": "var(--negative-tint)",
         scrim: "var(--scrim)",
+        // 1b ink block (src/theme/tokens.ts INK_BLOCK): fixed dark values in both schemes.
+        "ink-block": "#1a1a1a",
+        "on-ink-block": "#f1ece3",
+        "on-ink-block-2": "#d9d2c5",
+        "ink-block-muted": "#9c948a",
+        "ink-block-line": "#3d372f",
+        "ink-block-tile": "#2c2a26",
+        "ink-block-accent": "#ee9552",
         // Legacy names still used by screens written before the design pass.
         primary: "var(--ink)",
         "primary-foreground": "var(--on-ink)",

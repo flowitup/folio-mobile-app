@@ -22,6 +22,12 @@ The signed-in app is built around one selected project (`src/features/projects/s
 persisted in secure storage). Four project tabs sit in a floating tab bar; everything else opens from the
 top bar or the menu tab as sheets or hidden stack routes.
 
+The Overview and Expenses tabs and the invoice detail follow design 1b ("Bảng mực"): a fixed ink header, a
+scrolling ink hero with the headline figure (`InkFigure`, ring gauge drawn with Views in
+`src/components/ui/ring-gauge.tsx`) and quick actions, then a paper sheet with 24px rounded corners
+(`src/components/ui/ink-sheet-screen.tsx`). The ink block always uses the dark palette (`INK_BLOCK` in
+`src/theme/tokens.ts`, mirrored as `ink-block*` tailwind colors) so it stays ink in light mode.
+
 | Surface                                                       | Route / component                                                                                    |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | Overview, Expenses, Labor, Planning tabs                      | `app/(app)/(tabs)/{index,expenses,labor,planning}.tsx`                                               |
