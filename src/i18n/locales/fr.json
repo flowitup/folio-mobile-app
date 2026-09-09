@@ -56,7 +56,8 @@
     "menu": "Menu",
     "settings": "Paramètres",
     "attendance": "Présence",
-    "salary": "Salaire"
+    "salary": "Salaire",
+    "profile": "Profil"
   },
   "project": {
     "budget": "Budget",
@@ -1560,6 +1561,26 @@
       "title": "Équipe sur place — {{date}}",
       "empty": "Personne n'est prévu aujourd'hui.",
       "loadError": "Impossible de charger l'effectif du jour."
+    },
+    "profileTitle": "Mon profil",
+    "profileSub": "Votre rôle sur ce chantier, votre taux journalier et son évolution.",
+    "profile": {
+      "noRole": "Aucun rôle attribué",
+      "phone": "Téléphone",
+      "site": "Chantier",
+      "dailyRate": "Taux journalier actuel",
+      "perDay": "par jour travaillé",
+      "history": "Historique du taux",
+      "historyEmpty": "Aucun changement de taux enregistré — votre taux de départ s'applique toujours.",
+      "historyError": "Impossible de charger l'historique de votre taux.",
+      "startingRate": "Taux de départ",
+      "since": "À partir du {{date}}",
+      "joined": "Ajouté au chantier le {{date}}",
+      "upcoming": "Prend effet bientôt",
+      "applied": "Appliqué",
+      "workersError": "Impossible de charger votre profil.",
+      "increase": "Augmentation de {{amount}}",
+      "decrease": "Baisse de {{amount}}"
     }
   },
   "onboarding": {

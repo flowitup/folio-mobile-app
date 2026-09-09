@@ -67,7 +67,7 @@ import type {
   Worker,
 } from "@/features/labor/labor-types";
 import { projectCan, useProject } from "@/features/projects/projects-api";
-import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
+import { WorkerProfileTab } from "@/features/labor/worker-profile-tab";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import {
@@ -590,8 +590,8 @@ function LaborTabContent() {
   );
 }
 
-/** Worker mode (no project:manage_labor) replaces this tab with the worker's own view. */
+/** Worker mode (no project:manage_labor): this tab becomes the worker's own profile (rate + history). */
 export default function LaborTab() {
   const { workerMode } = useWorkerMode();
-  return workerMode ? <WorkerAttendanceTab /> : <LaborTabContent />;
+  return workerMode ? <WorkerProfileTab /> : <LaborTabContent />;
 }

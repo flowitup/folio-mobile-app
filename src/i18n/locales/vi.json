@@ -56,7 +56,8 @@
     "menu": "Menu",
     "settings": "Cài đặt",
     "attendance": "Chấm công",
-    "salary": "Lương"
+    "salary": "Lương",
+    "profile": "Hồ sơ"
   },
   "project": {
     "budget": "Ngân sách",
@@ -1560,6 +1561,26 @@
       "title": "Đội trên công trình — {{date}}",
       "empty": "Hôm nay chưa có ai được xếp lịch.",
       "loadError": "Không thể tải danh sách hôm nay."
+    },
+    "profileTitle": "Hồ sơ của tôi",
+    "profileSub": "Vai trò của bạn ở công trình này, lương ngày và lịch sử thay đổi.",
+    "profile": {
+      "noRole": "Chưa có vai trò",
+      "phone": "Điện thoại",
+      "site": "Công trình",
+      "dailyRate": "Lương ngày hiện tại",
+      "perDay": "mỗi ngày làm",
+      "history": "Lịch sử lương ngày",
+      "historyEmpty": "Chưa có thay đổi lương nào — vẫn áp dụng mức lương ban đầu.",
+      "historyError": "Không tải được lịch sử lương của bạn.",
+      "startingRate": "Mức lương ban đầu",
+      "since": "Từ {{date}}",
+      "joined": "Thêm vào công trình ngày {{date}}",
+      "upcoming": "Sắp có hiệu lực",
+      "applied": "Đã áp dụng",
+      "workersError": "Không tải được hồ sơ của bạn.",
+      "increase": "Tăng {{amount}}",
+      "decrease": "Giảm {{amount}}"
     }
   },
   "onboarding": {

@@ -56,7 +56,8 @@
     "menu": "Menu",
     "settings": "Settings",
     "attendance": "Attendance",
-    "salary": "Salary"
+    "salary": "Salary",
+    "profile": "Profile"
   },
   "project": {
     "budget": "Budget",
@@ -1560,6 +1561,26 @@
       "title": "Team on site — {{date}}",
       "empty": "No one is scheduled today.",
       "loadError": "Could not load today's roster."
+    },
+    "profileTitle": "My profile",
+    "profileSub": "Your role on this site, your daily rate and how it has changed.",
+    "profile": {
+      "noRole": "No role assigned",
+      "phone": "Phone",
+      "site": "Site",
+      "dailyRate": "Daily rate today",
+      "perDay": "per day worked",
+      "history": "Rate history",
+      "historyEmpty": "No rate change recorded yet — your starting rate still applies.",
+      "historyError": "Could not load your rate history.",
+      "startingRate": "Starting rate",
+      "since": "From {{date}}",
+      "joined": "Added to the site on {{date}}",
+      "upcoming": "Takes effect soon",
+      "applied": "Applied",
+      "workersError": "Could not load your profile.",
+      "increase": "Increase of {{amount}}",
+      "decrease": "Decrease of {{amount}}"
     }
   },
   "onboarding": {
