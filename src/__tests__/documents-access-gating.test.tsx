@@ -1,20 +1,14 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import type { Metrics } from "react-native-safe-area-context";
-import type { ReactElement } from "react";
+import { screen, waitFor } from "@testing-library/react-native";
 
 import i18n from "@/i18n";
+import { ok, renderWithProviders } from "./helpers/release-qa-fixtures";
+
 import ProjectDocumentsSection from "../../app/(app)/(tabs)/projects/[id]/documents";
 import { MenuSheet } from "@/components/shell/menu-sheet";
 
 // D9: the documents area of a project — listing included — is closed to a caller without
 // `project:update`. The scoped `my_permissions` of the project answer, not the JWT-wide list.
 const PROJECT_ID = "p1";
-const SAFE_AREA_METRICS: Metrics = {
-  frame: { x: 0, y: 0, width: 390, height: 844 },
-  insets: { top: 0, left: 0, right: 0, bottom: 0 },
-};
 
 let mockScopedPermissions: string[] = [];
 
@@ -73,21 +67,6 @@ const mockAuthedFetch = jest.fn();
 jest.mock("@/api/authed-fetch", () => ({
   authedFetch: (...args: unknown[]) => mockAuthedFetch(...args),
 }));
-
-function ok(data: unknown) {
-  return { data, response: { status: 200, statusText: "OK" } };
-}
-
-async function renderWithProviders(element: ReactElement) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 } },
-  });
-  return await render(
-    <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
-      <QueryClientProvider client={queryClient}>{element}</QueryClientProvider>
-    </SafeAreaProvider>,
-  );
-}
 
 /** Resolves once the projects list (the source of the scoped permissions) has answered. */
 async function projectsListLoaded() {

@@ -1,10 +1,8 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import type { Metrics } from "react-native-safe-area-context";
-import type { ReactElement } from "react";
+import { screen, waitFor } from "@testing-library/react-native";
 
 import "@/i18n";
+import { ok, renderWithProviders } from "./helpers/release-qa-fixtures";
+
 import ProjectAnalysesSection from "../../app/(app)/(tabs)/projects/[id]/analyses";
 import ProjectNotesSection from "../../app/(app)/(tabs)/projects/[id]/notes";
 import ProjectPhotosSection from "../../app/(app)/(tabs)/projects/[id]/photos";
@@ -12,10 +10,6 @@ import ProjectPhotosSection from "../../app/(app)/(tabs)/projects/[id]/photos";
 // D9: notes, analyses and photos stay readable for a member; every write control (create,
 // edit, delete, upload) needs `project:update` on the project.
 const PROJECT_ID = "p1";
-const SAFE_AREA_METRICS: Metrics = {
-  frame: { x: 0, y: 0, width: 390, height: 844 },
-  insets: { top: 0, left: 0, right: 0, bottom: 0 },
-};
 
 const NOTE = {
   id: "n1",
@@ -72,21 +66,6 @@ const mockGet = jest.fn();
 jest.mock("@/api/client", () => ({
   api: { GET: (...args: unknown[]) => mockGet(...args) },
 }));
-
-function ok(data: unknown) {
-  return { data, response: { status: 200, statusText: "OK" } };
-}
-
-async function renderWithProviders(element: ReactElement) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 } },
-  });
-  return await render(
-    <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
-      <QueryClientProvider client={queryClient}>{element}</QueryClientProvider>
-    </SafeAreaProvider>,
-  );
-}
 
 beforeEach(() => {
   mockGet.mockReset();

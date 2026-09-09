@@ -45,8 +45,11 @@ async function fetchPage(query: Record<string, string | number>) {
 export function useBillingDocuments(
   kind: BillingDocumentKind,
   status: BillingDocumentStatus | null,
+  /** Billing is company-admin gated; a denied caller must not ask for a list the API refuses. */
+  enabled = true,
 ) {
   return useInfiniteQuery({
+    enabled,
     queryKey: billingKeys.list(kind, status),
     initialPageParam: 0,
     queryFn: ({ pageParam }) =>

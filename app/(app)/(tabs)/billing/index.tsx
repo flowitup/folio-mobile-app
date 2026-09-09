@@ -57,7 +57,7 @@ export default function BillingHub() {
   const [kind, setKind] = useState<BillingDocumentKind>("devis");
   const [status, setStatus] = useState<BillingDocumentStatus | null>(null);
   const [search, setSearch] = useState("");
-  const list = useBillingDocuments(kind, status);
+  const list = useBillingDocuments(kind, status, access.allowed);
   useRefetchOnFocus(list.refetch);
 
   const documents = useMemo(() => {

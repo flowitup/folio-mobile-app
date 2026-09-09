@@ -4,6 +4,8 @@ import type { RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Text, View } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdmin } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
@@ -26,10 +28,16 @@ type Props = {
  * Assign an existing company member to the project (no invitation, no email round-trip —
  * distinct from the outsider "invite by email" flow above it). Only linked accounts (an
  * un-linked pending profile has no `user_id` to assign) not already on the project are offered.
+ *
+ * `role: "manager"` is not a per-project role: it raises the target's COMPANY role, which the
+ * backend allows to company admins alone (403 + full rollback otherwise). So the role picker is
+ * shown to a company admin only; anyone else assigns plain members.
  */
 export const AssignMemberSheet = forwardRef<BottomSheetModal, Props>(
   function AssignMemberSheet({ projectId, companyId, members }, ref) {
     const { t } = useTranslation();
+    const { user } = useAuth();
+    const canPromote = isCompanyAdmin(user, companyId);
     const directory = useCompanyPersons(companyId ?? undefined);
     const assign = useAssignMember(projectId);
     const [userId, setUserId] = useState<string | null>(null);
@@ -52,7 +60,7 @@ export const AssignMemberSheet = forwardRef<BottomSheetModal, Props>(
     function submit() {
       if (!userId) return;
       assign.mutate(
-        { userId, role },
+        { userId, role: canPromote ? role : "member" },
         {
           onSuccess: () => {
             setUserId(null);
@@ -102,18 +110,22 @@ export const AssignMemberSheet = forwardRef<BottomSheetModal, Props>(
               candidates.length === 0 ? (
                 <EmptyState message={t("members.assign.empty")} />
               ) : null}
-              <Text className="mb-1.5 font-sans text-[12px] text-muted">
-                {t("members.assign.roleLabel")}
-              </Text>
-              <Segmented<AssignmentRole>
-                testID="assign-member-role"
-                value={role}
-                onChange={setRole}
-                options={[
-                  { value: "member", label: t("companies.x.member") },
-                  { value: "manager", label: t("companies.x.manager") },
-                ]}
-              />
+              {canPromote ? (
+                <>
+                  <Text className="mb-1.5 font-sans text-[12px] text-muted">
+                    {t("members.assign.roleLabel")}
+                  </Text>
+                  <Segmented<AssignmentRole>
+                    testID="assign-member-role"
+                    value={role}
+                    onChange={setRole}
+                    options={[
+                      { value: "member", label: t("companies.x.member") },
+                      { value: "manager", label: t("companies.x.manager") },
+                    ]}
+                  />
+                </>
+              ) : null}
               <Button
                 testID="assign-member-submit"
                 label={t("members.assign.submit")}
