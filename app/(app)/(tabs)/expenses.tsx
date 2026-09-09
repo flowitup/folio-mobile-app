@@ -30,6 +30,7 @@ import { useSelectedProject } from "@/features/projects/selected-project";
 import { currentMonth, formatMonth, shiftMonth } from "@/lib/format/date";
 import { buildPursesSummary } from "@/lib/invoices/expense-purses";
 import { groupInvoicesByMonth } from "@/lib/invoices/group-invoices-by-month";
+import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { DARK, INK_BLOCK, useTokens } from "@/theme/tokens";
 
@@ -137,8 +138,11 @@ function ExpensesTabContent() {
                   className="font-sans text-[11px] leading-[14px] text-ink-block-muted"
                   numberOfLines={1}
                 >
-                  {project?.name ??
-                    (projectPending ? "…" : t("home.noProjects"))}
+                  {project
+                    ? projectDisplayName(project)
+                    : projectPending
+                      ? "…"
+                      : t("home.noProjects")}
                 </Text>
                 <Icon name="chevron-down" size={10} color={INK_BLOCK.muted} />
               </View>

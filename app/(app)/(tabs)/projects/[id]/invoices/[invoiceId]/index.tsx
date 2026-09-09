@@ -29,6 +29,7 @@ import {
 } from "@/features/invoices/invoices-api";
 import { useProject } from "@/features/projects/projects-api";
 import { buildInvoicePrintHtml } from "@/lib/invoices/invoice-print-html";
+import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { INK_BLOCK } from "@/theme/tokens";
 
 /**
@@ -62,7 +63,7 @@ export default function InvoiceDetailScreen() {
     try {
       const html = buildInvoicePrintHtml(
         invoice.data,
-        project.data?.name ?? "",
+        project.data ? projectDisplayName(project.data) : "",
         {
           title: t("invoices.print.title"),
           issueDate: t("invoices.form.issueDate"),

@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { useNotifications } from "@/features/notes/notes-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
+import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { INK_BLOCK, useTokens } from "@/theme/tokens";
 
 type Props = {
@@ -46,21 +47,29 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
       >
         {ink ? (
           <Avatar
-            name={project?.name ?? "F"}
+            name={project ? projectDisplayName(project) : "F"}
             size={30}
             square
             color={INK_BLOCK.text}
             textColor={INK_BLOCK.bg}
           />
         ) : (
-          <Avatar name={project?.name ?? "F"} size={28} square />
+          <Avatar
+            name={project ? projectDisplayName(project) : "F"}
+            size={28}
+            square
+          />
         )}
         <View className="min-w-0 flex-1">
           <Text
             className={`font-sans-semibold text-[15px] ${ink ? "text-on-ink-block" : "text-ink"}`}
             numberOfLines={1}
           >
-            {project?.name ?? (isPending ? "…" : t("home.noProjects"))}
+            {project
+              ? projectDisplayName(project)
+              : isPending
+                ? "…"
+                : t("home.noProjects")}
           </Text>
           <View className="flex-row items-center gap-1">
             <Text
