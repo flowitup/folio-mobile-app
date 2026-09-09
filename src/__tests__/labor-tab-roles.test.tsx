@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import "@/i18n";
 import LaborTab from "../../app/(app)/(tabs)/labor";
+import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
 import type { LaborEntry, Worker } from "@/features/labor/labor-types";
 import { formatMoney } from "@/lib/format/money";
 import {
@@ -168,13 +169,15 @@ describe("labor tab · manager denied project:manage_invoices (D8)", () => {
   });
 });
 
+// A member's own attendance lives on the first worker-mode tab (the Labor slot shows their
+// profile), so the worker view is rendered directly rather than through LaborTab.
 describe("labor tab · member (worker mode)", () => {
   beforeEach(() => {
     mockPersona = persona("member");
   });
 
   it("shows only the worker's own view: pending day, KPIs, roster without pay", async () => {
-    await renderWithProviders(<LaborTab />);
+    await renderWithProviders(<WorkerAttendanceTab />);
 
     expect(await screen.findByTestId("worker-attendance-title")).toBeTruthy();
     expect(screen.queryByTestId("labor-title")).toBeNull();
@@ -207,7 +210,7 @@ describe("labor tab · member (worker mode)", () => {
       data: { ...ENTRY_MINH_PENDING },
       response: { status: 201, statusText: "Created" },
     }));
-    await renderWithProviders(<LaborTab />);
+    await renderWithProviders(<WorkerAttendanceTab />);
 
     const submit = await screen.findByTestId("worker-log-submit");
     const entriesCallsBefore = callsTo(
@@ -243,7 +246,7 @@ describe("labor tab · member (worker mode)", () => {
   });
 
   it("refetches the roster when the tab regains focus (a manager's validation shows up)", async () => {
-    await renderWithProviders(<LaborTab />);
+    await renderWithProviders(<WorkerAttendanceTab />);
     await screen.findByText("Tuan Worker");
     const rosterCallsBefore = callsTo(
       mockGet,
@@ -268,7 +271,7 @@ describe("labor tab · member (worker mode)", () => {
   it("tells a member without a linked worker to ask their manager", async () => {
     mockWorkers = [];
     mockEntries = [];
-    await renderWithProviders(<LaborTab />);
+    await renderWithProviders(<WorkerAttendanceTab />);
 
     expect(await screen.findByTestId("worker-not-linked")).toBeTruthy();
     expect(screen.queryByTestId("worker-log-card")).toBeNull();
