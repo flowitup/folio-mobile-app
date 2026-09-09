@@ -87,12 +87,15 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <BottomSheetModalProvider>
-              <ToastProvider>
+            {/* ToastProvider wraps the sheet provider: its viewport renders after the children,
+                so toasts raised while a bottom sheet is open draw above the sheet instead of
+                behind its host. Native Modals still mount their own ToastViewport. */}
+            <ToastProvider>
+              <BottomSheetModalProvider>
                 <StatusBar style="auto" />
                 <RootNavigator fontsReady={fontsReady} />
-              </ToastProvider>
-            </BottomSheetModalProvider>
+              </BottomSheetModalProvider>
+            </ToastProvider>
           </AuthProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
