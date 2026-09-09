@@ -1,4 +1,3 @@
-import { getLocales } from "expo-localization";
 import * as SecureStore from "expo-secure-store";
 import { createInstance } from "i18next";
 import { initReactI18next } from "react-i18next";
@@ -7,9 +6,16 @@ import en from "./locales/en.json";
 import fr from "./locales/fr.json";
 import vi from "./locales/vi.json";
 
-// Same three locales as the web app; device language picks the default, English is the fallback.
+// Same three locales as the web app.
 export const SUPPORTED_LOCALES = ["en", "fr", "vi"] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+
+/**
+ * Language the app starts in, and the fallback for any key a locale is missing.
+ * The device language is deliberately ignored: Vietnamese is the product default
+ * until the user picks another language in Settings.
+ */
+export const DEFAULT_LOCALE: SupportedLocale = "vi";
 
 const LOCALE_STORAGE_KEY = "folio.locale";
 
@@ -25,20 +31,16 @@ function asSupported(code: string | null | undefined): SupportedLocale | null {
     : null;
 }
 
-function detectDeviceLocale(): SupportedLocale {
-  return asSupported(getLocales()[0]?.languageCode) ?? "en";
-}
-
 const i18n = createInstance();
 
 void i18n.use(initReactI18next).init({
   resources,
-  lng: detectDeviceLocale(),
-  fallbackLng: "en",
+  lng: DEFAULT_LOCALE,
+  fallbackLng: DEFAULT_LOCALE,
   interpolation: { escapeValue: false },
 });
 
-// A locale the user picked in Settings wins over the device language on later launches.
+// A locale the user picked in Settings wins over the default on later launches.
 void SecureStore.getItemAsync(LOCALE_STORAGE_KEY)
   .then((stored) => {
     const locale = asSupported(stored);

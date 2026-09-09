@@ -4,7 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 import type { ReactElement } from "react";
 
-import "@/i18n";
+import i18n from "@/i18n";
 import ProjectDocumentsSection from "../../app/(app)/(tabs)/projects/[id]/documents";
 import { MenuSheet } from "@/components/shell/menu-sheet";
 
@@ -133,9 +133,7 @@ describe("documents access (D9)", () => {
       await projectsListLoaded();
 
       expect(screen.getByTestId("empty-state")).toBeTruthy();
-      expect(
-        screen.getByText("Documents are reserved for the project managers."),
-      ).toBeTruthy();
+      expect(screen.getByText(i18n.t("documents.restricted"))).toBeTruthy();
       expect(screen.queryByTestId("documents-add")).toBeNull();
       expect(mockAuthedFetch).not.toHaveBeenCalled();
     });
