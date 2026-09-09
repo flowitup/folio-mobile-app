@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
-import "@/i18n";
+import i18n from "@/i18n";
 import ExpensesTab from "../../app/(app)/(tabs)/expenses";
 import ProjectSalariesSection from "../../app/(app)/(tabs)/projects/[id]/salaries";
 import InvoiceDetailScreen from "../../app/(app)/(tabs)/projects/[id]/invoices/[invoiceId]/index";
@@ -131,9 +131,7 @@ describe("expenses tab · member (worker mode)", () => {
 
     expect(await screen.findByTestId("worker-salary-title")).toBeTruthy();
     expect(await screen.findByTestId("salaries-outstanding")).toBeTruthy();
-    expect(
-      screen.getByText("Only an admin or manager can change the paid status."),
-    ).toBeTruthy();
+    expect(screen.getByText(i18n.t("salaries.readOnly"))).toBeTruthy();
     expect(screen.queryByTestId("invoices-create")).toBeNull();
     expect(screen.queryByTestId("invoices-export")).toBeNull();
     expect(screen.queryByTestId(`salary-pay-${MONTH}`)).toBeNull();
@@ -173,11 +171,7 @@ describe("salaries section · manager", () => {
     // Minh (first worker) earned 150 this month and has no payment → unpaid.
     expect(await screen.findByTestId(`salary-month-${MONTH}`)).toBeTruthy();
     expect(await screen.findByTestId(`salary-pay-${MONTH}`)).toBeTruthy();
-    expect(
-      screen.queryByText(
-        "Only an admin or manager can change the paid status.",
-      ),
-    ).toBeNull();
+    expect(screen.queryByText(i18n.t("salaries.readOnly"))).toBeNull();
   });
 });
 
@@ -199,7 +193,7 @@ describe("new invoice · manager", () => {
     await renderWithProviders(<NewInvoiceScreen />);
 
     expect(await screen.findByTestId("invoice-type")).toHaveTextContent(
-      containing("Released funds"),
+      containing(i18n.t("invoices.types.released_funds")),
     );
     await fireEvent.changeText(
       screen.getByTestId("invoice-recipient"),
