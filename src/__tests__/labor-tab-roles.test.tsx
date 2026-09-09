@@ -1,6 +1,6 @@
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 
-import "@/i18n";
+import i18n from "@/i18n";
 import LaborTab from "../../app/(app)/(tabs)/labor";
 import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
 import type { LaborEntry, Worker } from "@/features/labor/labor-types";
@@ -187,7 +187,7 @@ describe("labor tab · member (worker mode)", () => {
     // Today was self-logged and waits for a manager: badge + edit, no second submit.
     expect(
       await screen.findByTestId("worker-selected-status"),
-    ).toHaveTextContent(containing("Pending"));
+    ).toHaveTextContent(containing(i18n.t("worker.status.pending")));
     expect(screen.getByTestId("worker-edit-open")).toBeTruthy();
     expect(screen.queryByTestId("worker-log-submit")).toBeNull();
     expect(screen.getByTestId("worker-kpi-pending")).toHaveTextContent(

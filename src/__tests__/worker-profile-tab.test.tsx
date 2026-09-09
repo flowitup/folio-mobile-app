@@ -9,7 +9,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 import type { ReactElement } from "react";
 
-import "@/i18n";
+import i18n from "@/i18n";
 import LaborTab from "../../app/(app)/(tabs)/labor";
 import { FloatingTabBar } from "@/components/shell/floating-tab-bar";
 import type { Worker, WorkerRateChange } from "@/features/labor/labor-types";
@@ -127,6 +127,11 @@ jest.mock("@/api/client", () => ({
   },
 }));
 
+/** `toHaveTextContent` with a string is an exact match; this accepts the text anywhere. */
+function containing(text: string): RegExp {
+  return new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+}
+
 function ok(data: unknown) {
   return { data, response: { status: 200, statusText: "OK" } };
 }
@@ -197,7 +202,7 @@ describe("worker profile tab", () => {
       .map((node) => node.props.testID as string);
     expect(tabs).toEqual(["tab-index", "tab-expenses", "tab-labor"]);
     expect(screen.getByTestId("tab-labor").props.accessibilityLabel).toBe(
-      "Profile",
+      i18n.t("tabs.profile"),
     );
     await fireEvent.press(screen.getByTestId("tab-labor"));
     expect(navigation.navigate).toHaveBeenCalledWith("labor");
@@ -272,7 +277,7 @@ describe("worker profile tab", () => {
 
     expect(
       await screen.findByTestId("worker-rate-row-rc-next"),
-    ).toHaveTextContent(/Takes effect soon/);
+    ).toHaveTextContent(containing(i18n.t("worker.profile.upcoming")));
     expect(screen.getByTestId("worker-rate-delta-rc-next")).toHaveTextContent(
       `−${formatMoney(10)}`,
     );
