@@ -11,7 +11,8 @@ import { cardShadow, useTokens } from "@/theme/tokens";
 
 /**
  * White (card) panel, 1px line, r12 by default. `radius` picks the 2a variants: 12 (tables),
- * 14 / 16 (expense and labor cards, which also carry the card shadow when `elevated`).
+ * 14 / 16 (expense and labor cards, which also carry the card shadow when `elevated`), and the
+ * 1b sheet cards at 18 / 20.
  */
 export function Card({
   children,
@@ -24,7 +25,7 @@ export function Card({
 }: PropsWithChildren<{
   className?: string;
   style?: StyleProp<ViewStyle>;
-  radius?: 12 | 14 | 16;
+  radius?: 12 | 14 | 16 | 18 | 20;
   elevated?: boolean;
   padded?: boolean;
   testID?: string;

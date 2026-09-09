@@ -5,7 +5,7 @@ import {
   shiftMonth,
   toIsoDate,
 } from "../lib/format/date";
-import { formatMoney, parseMoneyInput } from "../lib/format/money";
+import { formatMoney, parseMoneyInput, splitMoney } from "../lib/format/money";
 
 describe("date helpers", () => {
   it("round-trips ISO dates through local calendar fields", () => {
@@ -33,6 +33,20 @@ describe("money helpers", () => {
     expect(formatMoney(null)).toBe("");
     expect(formatMoney("abc")).toBe("");
     expect(formatMoney(1234.5).replace(/ /g, " ")).toContain("1,234.50");
+  });
+
+  it("splits the integer part from decimals and currency for headline figures", async () => {
+    await i18n.changeLanguage("vi");
+    const vi = splitMoney(97640);
+    expect(vi.main.replace(/\u00a0/g, " ")).toBe("97.640");
+    expect(vi.rest.replace(/\u00a0/g, " ")).toBe(",00 €");
+    await i18n.changeLanguage("en");
+    const en = splitMoney(1234.5);
+    expect(en.main).toBe("€1,234");
+    expect(en.rest).toBe(".50");
+    expect(splitMoney(-2.5)).toEqual({ main: "-€2", rest: ".50" });
+    expect(splitMoney(0.999)).toEqual({ main: "€1", rest: ".00" });
+    expect(splitMoney(null)).toEqual({ main: "", rest: "" });
   });
 
   it("parses comma and dot decimals", () => {

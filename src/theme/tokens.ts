@@ -57,6 +57,25 @@ export const DARK: Tokens = {
 
 export type Tokens = { [K in keyof typeof LIGHT]: string };
 
+/**
+ * Fixed palette of the 1b "ink block" — the dark hero at the top of the tab screens. It uses the
+ * DARK values in both color schemes so the block stays ink in light mode while the paper sheet
+ * under it follows the scheme. tailwind.config.js mirrors it as static `ink-block*` colors.
+ */
+export const INK_BLOCK = {
+  bg: "#1a1a1a",
+  text: DARK.ink,
+  text2: DARK.ink2,
+  muted: DARK.muted,
+  line: DARK.line2,
+  tile: "#2c2a26",
+  accent: DARK.accent,
+  positive: DARK.positive,
+  positiveTint: DARK.positiveTint,
+  warning: DARK.warning,
+  warningTint: DARK.warningTint,
+} as const;
+
 /** Maps the camelCase token name to the `--kebab` variable declared in global.css. */
 export const CSS_VARIABLE_NAMES: Record<keyof Tokens, string> = {
   paper: "--paper",

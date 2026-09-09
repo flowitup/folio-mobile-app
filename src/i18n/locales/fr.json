@@ -303,7 +303,19 @@
     "tvaShort": "TVA",
     "invoiceCount_zero": "aucune dépense",
     "invoiceCount_one": "1 dépense",
-    "invoiceCount_other": "{{n}} dépenses"
+    "invoiceCount_other": "{{n}} dépenses",
+    "detail": {
+      "pdf": "PDF",
+      "attach": "Joindre",
+      "open": "Ouvrir",
+      "refundPrompt": "La société a-t-elle remboursé ?",
+      "refundConfirm": "Remboursé",
+      "transferPrompt": "Avancé pour la société ?",
+      "transferConfirm": "Transférer",
+      "info": "Détails",
+      "noHighlight": "Sans couleur",
+      "attachmentsEmpty": "Aucune pièce jointe"
+    }
   },
   "labor": {
     "tabs": {
@@ -1369,7 +1381,20 @@
       "thisWeek": "Cette semaine · {{count}} tâches",
       "budgetCredit": "Budget / crédit",
       "bankRemaining": "Crédit bancaire restant",
-      "pendingCompany": "En attente de remboursement société ({{count}})"
+      "pendingCompany": "En attente de remboursement société ({{count}})",
+      "spentOfCredit": "Dépensé {{spent}} sur {{total}} de crédit",
+      "spentOfReleased": "Dépensé {{spent}} sur {{total}} débloqués",
+      "addInvoice": "Facture",
+      "addRelease": "Débloquer",
+      "payLabor": "Payer la MO",
+      "unpaid": "Impayé",
+      "payNow": "Payer",
+      "awaitingRefund": "À rembourser",
+      "refundItems_one": "{{count}} dépense · société",
+      "refundItems_other": "{{count}} dépenses · société",
+      "monthSpend": "Dépenses {{month}}",
+      "taskCount_one": "{{count}} tâche",
+      "taskCount_other": "{{count}} tâches"
     },
     "today": {
       "title": "Aujourd'hui sur site",
@@ -1461,7 +1486,9 @@
       "others": "AU",
       "released_funds": "FD",
       "return": "RE"
-    }
+    },
+    "prevMonth": "Mois précédent",
+    "nextMonth": "Mois suivant"
   },
   "planning": {
     "newTask": "Tâche",

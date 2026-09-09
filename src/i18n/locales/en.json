@@ -303,7 +303,19 @@
     "tvaShort": "VAT",
     "invoiceCount_zero": "no expense",
     "invoiceCount_one": "{{n}} expense",
-    "invoiceCount_other": "{{n}} expenses"
+    "invoiceCount_other": "{{n}} expenses",
+    "detail": {
+      "pdf": "PDF",
+      "attach": "Attach",
+      "open": "Open",
+      "refundPrompt": "Has the company refunded this?",
+      "refundConfirm": "Refunded",
+      "transferPrompt": "Paid on behalf of the company?",
+      "transferConfirm": "Transfer",
+      "info": "Details",
+      "noHighlight": "No highlight",
+      "attachmentsEmpty": "No attachments yet"
+    }
   },
   "labor": {
     "tabs": {
@@ -1369,7 +1381,20 @@
       "thisWeek": "This week · {{count}} tasks",
       "budgetCredit": "Budget / credit",
       "bankRemaining": "Bank credit left",
-      "pendingCompany": "Awaiting company refund ({{count}})"
+      "pendingCompany": "Awaiting company refund ({{count}})",
+      "spentOfCredit": "Spent {{spent}} of {{total}} credit",
+      "spentOfReleased": "Spent {{spent}} of {{total}} released",
+      "addInvoice": "Invoice",
+      "addRelease": "Release funds",
+      "payLabor": "Pay labor",
+      "unpaid": "Unpaid",
+      "payNow": "Pay now",
+      "awaitingRefund": "Awaiting refund",
+      "refundItems_one": "{{count}} item · company",
+      "refundItems_other": "{{count}} items · company",
+      "monthSpend": "Spend {{month}}",
+      "taskCount_one": "{{count}} task",
+      "taskCount_other": "{{count}} tasks"
     },
     "today": {
       "title": "Today on site",
@@ -1461,7 +1486,9 @@
       "others": "OT",
       "released_funds": "RF",
       "return": "RT"
-    }
+    },
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month"
   },
   "planning": {
     "newTask": "Task",

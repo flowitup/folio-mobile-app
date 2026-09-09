@@ -10,15 +10,22 @@ export default function ProjectLayout() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const pathname = usePathname();
-  const section = pathname.slice(`/projects/${id}/`.length).split("/")[0] as
-    ProjectSection | "";
+  const rest = pathname.slice(`/projects/${id}/`.length).split("/");
+  const section = rest[0] as ProjectSection | "";
+  // The invoice detail (design 1b) draws its own ink header; every other section keeps the bar.
+  const ownHeader =
+    section === "invoices" && rest.length === 2 && rest[1] !== "new";
 
   return (
     <>
-      <ScreenHeader
-        title={section ? t(`project.sections.${section}`) : t("tabs.overview")}
-        back
-      />
+      {ownHeader ? null : (
+        <ScreenHeader
+          title={
+            section ? t(`project.sections.${section}`) : t("tabs.overview")
+          }
+          back
+        />
+      )}
       <Stack screenOptions={{ headerShown: false, animation: "none" }} />
     </>
   );

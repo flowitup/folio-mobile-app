@@ -57,6 +57,8 @@ type Props = {
   projectId: string;
   companyId: string | null | undefined;
   initial?: Invoice;
+  /** Type preselected on a new invoice (the overview's "Giải ngân" quick action). */
+  initialType?: InvoiceType;
   submitting: boolean;
   onSubmit: (payload: CreateInvoicePayload) => void;
 };
@@ -69,6 +71,7 @@ export function InvoiceForm({
   projectId,
   companyId,
   initial,
+  initialType,
   submitting,
   onSubmit,
 }: Props) {
@@ -76,7 +79,7 @@ export function InvoiceForm({
   const editing = Boolean(initial);
 
   const [type, setType] = useState<InvoiceType>(
-    initial?.type ?? "materials_services",
+    initial?.type ?? initialType ?? "materials_services",
   );
   const [issueDate, setIssueDate] = useState<string | null>(
     initial?.issue_date ?? toIsoDate(new Date()),

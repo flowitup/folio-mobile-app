@@ -4,10 +4,16 @@ import { join } from "path";
 import {
   CSS_VARIABLE_NAMES,
   DARK,
+  INK_BLOCK,
   LIGHT,
   initialOf,
   workerColor,
 } from "@/theme/tokens";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const tailwind = require("../../tailwind.config.js") as {
+  theme: { extend: { colors: Record<string, string> } };
+};
 
 const css = readFileSync(join(__dirname, "../../global.css"), "utf8");
 
@@ -40,6 +46,17 @@ describe("design tokens", () => {
       if (key === "shadowCard") continue;
       expect(dark[variable]).toBe(DARK[key as keyof typeof DARK]);
     }
+  });
+
+  it("tailwind ink-block colors mirror INK_BLOCK", () => {
+    const colors = tailwind.theme.extend.colors;
+    expect(colors["ink-block"]).toBe(INK_BLOCK.bg);
+    expect(colors["on-ink-block"]).toBe(INK_BLOCK.text);
+    expect(colors["on-ink-block-2"]).toBe(INK_BLOCK.text2);
+    expect(colors["ink-block-muted"]).toBe(INK_BLOCK.muted);
+    expect(colors["ink-block-line"]).toBe(INK_BLOCK.line);
+    expect(colors["ink-block-tile"]).toBe(INK_BLOCK.tile);
+    expect(colors["ink-block-accent"]).toBe(INK_BLOCK.accent);
   });
 
   it("worker colors prefer the role color and cycle the default palette", () => {

@@ -3,8 +3,6 @@ import { ActivityIndicator, Text, View } from "react-native";
 
 import { Icon } from "@/components/ui/icon";
 import type { IconName } from "@/components/ui/icon";
-import { Card } from "@/components/ui/primitives";
-import { Eyebrow } from "@/components/ui/typography";
 import { useSiteWeather } from "@/features/dashboard/weather-api";
 import { cityFromAddress } from "@/lib/dashboard/weather";
 import type { WeatherCondition } from "@/lib/dashboard/weather";
@@ -30,8 +28,9 @@ type Props = {
 };
 
 /**
- * "Today on site" strip under the agenda (web sidebar footer + overview weather card, made
- * live): current temperature + condition at the project's city, and today's headcount.
+ * 1b "today on site" strip at the foot of the overview sheet — no card: a 22px accent weather
+ * icon and one muted line, `31° trời quang · Quận 7 · 6 công nhân tại công trường`, with the
+ * temperature + condition in ink.
  */
 export function TodayOnSiteCard({ address, workersOnSite }: Props) {
   const { t } = useTranslation();
@@ -46,44 +45,40 @@ export function TodayOnSiteCard({ address, workersOnSite }: Props) {
     cityFromAddress(address) === null
       ? "dashboard.today.noAddress"
       : "dashboard.today.unavailable";
+  const workers =
+    workersOnSite === null
+      ? "—"
+      : t("dashboard.today.workers", { count: workersOnSite });
 
   return (
-    <View testID="overview-today-on-site">
-      <Eyebrow className="mb-2">{t("dashboard.today.title")}</Eyebrow>
-      <Card radius={14} className="flex-row items-center gap-3">
-        <Icon
-          name={data ? CONDITION_ICON[data.condition] : "cloud-off"}
-          size={26}
-          color={tokens.accent}
-        />
-        <View className="min-w-0 flex-1">
-          {weather.isFetching && !data ? (
-            <ActivityIndicator color={tokens.muted} />
-          ) : data ? (
-            <Text className="font-display text-[22px] leading-none text-ink">
-              {data.temperatureC}°
-              <Text className="font-sans text-[12px] text-muted">
-                {"  "}
-                {conditionKey ? t(conditionKey) : ""}
-              </Text>
+    <View
+      testID="overview-today-on-site"
+      className="flex-row items-center gap-3 px-1"
+    >
+      <Icon
+        name={data ? CONDITION_ICON[data.condition] : "cloud-off"}
+        size={22}
+        color={tokens.accent}
+      />
+      {weather.isFetching && !data ? (
+        <ActivityIndicator color={tokens.muted} />
+      ) : (
+        <Text
+          className="min-w-0 flex-1 font-sans text-[13px] leading-[18px] text-muted"
+          numberOfLines={2}
+          testID="overview-today-location"
+        >
+          {data ? (
+            <Text className="font-sans-semibold text-ink">
+              {data.temperatureC}° {conditionKey ? t(conditionKey) : ""}
             </Text>
           ) : (
-            <Text className="font-sans text-[12.5px] text-muted">
-              {t(emptyKey)}
-            </Text>
+            t(emptyKey)
           )}
-          <Text
-            className="mt-1 font-sans text-[11.5px] text-muted"
-            numberOfLines={1}
-            testID="overview-today-location"
-          >
-            {data?.place ? `${data.place} · ` : ""}
-            {workersOnSite === null
-              ? "—"
-              : t("dashboard.today.workers", { count: workersOnSite })}
-          </Text>
-        </View>
-      </Card>
+          {data?.place ? ` · ${data.place}` : ""}
+          {` · ${workers}`}
+        </Text>
+      )}
     </View>
   );
 }
