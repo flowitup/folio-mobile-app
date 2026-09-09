@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 
-import "@/i18n";
+import i18n from "@/i18n";
 import NotificationPreferencesScreen from "../../app/(app)/(tabs)/settings/notifications";
 
 const mockGet = jest.fn();
@@ -145,7 +145,7 @@ describe("Settings → Notifications", () => {
     await renderScreen();
 
     expect(
-      await screen.findByText("Could not load your notification settings."),
+      await screen.findByText(i18n.t("settings.notificationPrefs.loadError")),
     ).toBeTruthy();
     expect(screen.queryByTestId("notification-prefs")).toBeNull();
   });
