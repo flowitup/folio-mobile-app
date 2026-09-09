@@ -72,12 +72,13 @@ jest.mock("@/features/projects/selected-project", () => {
 
 const mockGet = jest.fn();
 const mockPost = jest.fn();
+const mockPut = jest.fn();
 const mockPatch = jest.fn();
 jest.mock("@/api/client", () => ({
   api: {
     GET: (...args: unknown[]) => mockGet(...args),
     POST: (...args: unknown[]) => mockPost(...args),
-    PUT: jest.fn(),
+    PUT: (...args: unknown[]) => mockPut(...args),
     PATCH: (...args: unknown[]) => mockPatch(...args),
     DELETE: jest.fn(),
   },
@@ -87,6 +88,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   // Implementations installed by one describe must not leak into the next.
   mockPost.mockReset();
+  mockPut.mockReset();
   mockPatch.mockReset();
   mockParams = { id: PROJECT_ID };
   mockGet.mockImplementation(answerGet(() => mockPersona));
@@ -274,5 +276,33 @@ describe("invoice detail · manager", () => {
     expect(mockRouter.push).toHaveBeenCalledWith(
       `/projects/${PROJECT_ID}/invoices/${INVOICE_MATERIALS.id}/edit`,
     );
+  });
+});
+
+describe("invoice detail · member (deep link)", () => {
+  beforeEach(() => {
+    mockPersona = persona("member");
+    mockParams = { id: PROJECT_ID, invoiceId: INVOICE_MATERIALS.id };
+  });
+
+  it("keeps the sheet readable but hides every write control", async () => {
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(await screen.findByTestId("invoice-actions")).toBeTruthy();
+    expect(screen.getByTestId("invoice-print")).toBeTruthy();
+    // Wait for the project row (the scoped permissions) before judging the gated controls.
+    await waitFor(() =>
+      expect(callsTo(mockGet, "/api/v1/projects/{project_id}")).toHaveLength(1),
+    );
+    expect(screen.queryByTestId("invoice-edit")).toBeNull();
+    expect(screen.queryByTestId("invoice-delete")).toBeNull();
+    expect(screen.queryByTestId("attachment-add")).toBeNull();
+    expect(screen.queryByTestId("invoice-transfer-company")).toBeNull();
+    expect(screen.queryByTestId("invoice-mark-refunded")).toBeNull();
+
+    // The highlight palette stays visible but inert (a tap would PUT the invoice).
+    await fireEvent.press(screen.getByTestId("detail-highlight-green"));
+    expect(mockPut).not.toHaveBeenCalled();
+    expect(mockPatch).not.toHaveBeenCalled();
   });
 });

@@ -38,6 +38,8 @@ type Props = {
   invoiceId: string;
   /** Owned by the screen so the "Đính kèm" action button can open the picker sheet. */
   addSheet: RefObject<BottomSheetModal | null>;
+  /** Without `project:manage_invoices`: files open, but no rename / delete menu. */
+  readOnly?: boolean;
 };
 
 /**
@@ -49,6 +51,7 @@ export function InvoiceAttachmentsCard({
   projectId,
   invoiceId,
   addSheet,
+  readOnly = false,
 }: Props) {
   const { t } = useTranslation();
   const tokens = useTokens();
@@ -114,18 +117,20 @@ export function InvoiceAttachmentsCard({
                 {formatDate(attachment.uploaded_at)}
               </Text>
             </View>
-            <Pressable
-              testID={`attachment-menu-${attachment.id}`}
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={() => {
-                setSelected(attachment);
-                menuSheet.current?.present();
-              }}
-              className="h-8 w-8 items-center justify-center active:opacity-70"
-            >
-              <Icon name="more-horizontal" size={18} color={tokens.muted2} />
-            </Pressable>
+            {readOnly ? null : (
+              <Pressable
+                testID={`attachment-menu-${attachment.id}`}
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => {
+                  setSelected(attachment);
+                  menuSheet.current?.present();
+                }}
+                className="h-8 w-8 items-center justify-center active:opacity-70"
+              >
+                <Icon name="more-horizontal" size={18} color={tokens.muted2} />
+              </Pressable>
+            )}
           </Pressable>
         ))}
       </Card>

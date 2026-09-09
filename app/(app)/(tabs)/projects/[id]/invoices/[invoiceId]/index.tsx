@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Text, View } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
 import { showToast } from "@/components/ui/toast";
@@ -27,7 +28,7 @@ import {
   useSetRefundableStatus,
   useUpdateInvoice,
 } from "@/features/invoices/invoices-api";
-import { useProject } from "@/features/projects/projects-api";
+import { projectCan, useProject } from "@/features/projects/projects-api";
 import { buildInvoicePrintHtml } from "@/lib/invoices/invoice-print-html";
 import { INK_BLOCK } from "@/theme/tokens";
 
@@ -42,8 +43,16 @@ export default function InvoiceDetailScreen() {
     id: string;
     invoiceId: string;
   }>();
+  const { user } = useAuth();
   const project = useProject(id);
   const invoice = useInvoice(id, invoiceId);
+  // Every write on this screen needs project:manage_invoices (the backend answers 403 otherwise);
+  // a member reaching the detail through a push or a deep link gets a read-only sheet.
+  const canManage = projectCan(
+    project.data,
+    "project:manage_invoices",
+    user?.permissions,
+  );
   const update = useUpdateInvoice(id, invoiceId);
   const remove = useDeleteInvoice(id);
   const setRefundable = useSetRefundableStatus(id);
@@ -107,11 +116,14 @@ export default function InvoiceDetailScreen() {
 
   const data = invoice.data;
   const canTransferToCompany =
+    canManage &&
     data.type === "materials_services" &&
     !data.refundable_status &&
     Boolean(project.data?.company_id);
   const awaitingRefund =
-    Boolean(data.refundable_status) && data.refundable_status !== "refunded";
+    canManage &&
+    Boolean(data.refundable_status) &&
+    data.refundable_status !== "refunded";
 
   return (
     <>
@@ -121,6 +133,7 @@ export default function InvoiceDetailScreen() {
       >
         <InvoiceDetailActions
           printing={printing}
+          canManage={canManage}
           onPrint={() => void printPdf()}
           onAttach={() => addSheet.current?.present()}
           onEdit={() =>
@@ -160,9 +173,11 @@ export default function InvoiceDetailScreen() {
           projectId={id}
           invoiceId={invoiceId}
           addSheet={addSheet}
+          readOnly={!canManage}
         />
         <InvoiceHighlightRow
           value={data.highlight_color}
+          disabled={!canManage}
           onChange={(color) => update.mutate({ highlight_color: color })}
         />
       </InkSheetScreen>

@@ -10,9 +10,12 @@ import { useTokens } from "@/theme/tokens";
 export function InvoiceHighlightRow({
   value,
   onChange,
+  disabled = false,
 }: {
   value: HighlightColor | null | undefined;
   onChange: (color: HighlightColor | null) => void;
+  /** Read-only (no `project:manage_invoices`): the current colour shows, taps do nothing. */
+  disabled?: boolean;
 }) {
   const { t } = useTranslation();
   const tokens = useTokens();
@@ -23,7 +26,8 @@ export function InvoiceHighlightRow({
         testID="detail-highlight-none"
         accessibilityRole="button"
         accessibilityLabel={t("invoices.detail.noHighlight")}
-        accessibilityState={{ selected: !value }}
+        accessibilityState={{ selected: !value, disabled }}
+        disabled={disabled}
         onPress={() => onChange(null)}
         className="h-[26px] w-[26px] items-center justify-center rounded-full bg-card"
         style={{
@@ -39,7 +43,8 @@ export function InvoiceHighlightRow({
           testID={`detail-highlight-${color}`}
           accessibilityRole="button"
           accessibilityLabel={color}
-          accessibilityState={{ selected: value === color }}
+          accessibilityState={{ selected: value === color, disabled }}
+          disabled={disabled}
           onPress={() => onChange(color)}
           className="h-[26px] w-[26px] rounded-full"
           style={{
