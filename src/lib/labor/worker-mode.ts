@@ -6,8 +6,8 @@ import { can } from "@/auth/permissions";
  * A signed-in user on a project is either a *manager* (holder of `project:manage_labor`,
  * through their assignment's scoped permissions or a company-wide/D8-granted permission) or a
  * *worker*. The backend already narrows every labor/pay endpoint for workers to their own
- * linked worker; the app mirrors that by showing only two tabs: their attendance and their
- * salary. The former project-owner bypass is gone (D6: the resolver no longer grants it) — an
+ * linked worker; the app mirrors that by showing only three tabs: their attendance, their
+ * salary and their profile (rate + history). The former project-owner bypass is gone (D6: the resolver no longer grants it) — an
  * admin still lands here as a manager because the matrix gives `admin` `manage_labor` on every
  * company project.
  */
