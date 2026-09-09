@@ -20,7 +20,8 @@ It is a second client of the existing Folio backend: same API, same users, same 
 
 The signed-in app is built around one selected project (`src/features/projects/selected-project.tsx`,
 persisted in secure storage). Four project tabs sit in a floating tab bar; everything else opens from the
-top bar or the menu tab as sheets or hidden stack routes.
+top bar or the menu tab as sheets or hidden stack routes. A company member without `project:manage_labor`
+gets the worker shell instead (`src/lib/labor/worker-mode.ts`): Attendance / Salary / Profile / Planning tabs and no Menu.
 
 The Overview and Expenses tabs and the invoice detail follow design 1b ("Bảng mực"): a fixed ink header, a
 scrolling ink hero with the headline figure (`InkFigure`, ring gauge drawn with Views in
