@@ -9,6 +9,9 @@ import type { components } from "@/api/generated/schema";
 export type RosterRow = components["schemas"]["RosterRowResponse"];
 
 export const rosterKeys = {
+  /** Every cached day of the project's roster — what an attendance mutation invalidates. */
+  all: (projectId: string) =>
+    ["projects", projectId, "labor", "roster"] as const,
   day: (projectId: string, date: string) =>
     ["projects", projectId, "labor", "roster", date] as const,
 };

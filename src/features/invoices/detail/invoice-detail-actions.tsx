@@ -60,12 +60,15 @@ function RoundAction({
 /** 1b action row of the invoice sheet: PDF · Đính kèm · Sửa (ink) · Xoá (negative), 52px circles. */
 export function InvoiceDetailActions({
   printing,
+  canManage,
   onPrint,
   onAttach,
   onEdit,
   onDelete,
 }: {
   printing: boolean;
+  /** `project:manage_invoices` — without it only the PDF export stays (the backend refuses writes). */
+  canManage: boolean;
   onPrint: () => void;
   onAttach: () => void;
   onEdit: () => void;
@@ -82,27 +85,31 @@ export function InvoiceDetailActions({
         loading={printing}
         onPress={onPrint}
       />
-      <RoundAction
-        testID="attachment-add"
-        icon="paperclip"
-        label={t("invoices.detail.attach")}
-        tone="paper"
-        onPress={onAttach}
-      />
-      <RoundAction
-        testID="invoice-edit"
-        icon="edit-3"
-        label={t("common.edit")}
-        tone="ink"
-        onPress={onEdit}
-      />
-      <RoundAction
-        testID="invoice-delete"
-        icon="trash-2"
-        label={t("common.delete")}
-        tone="danger"
-        onPress={onDelete}
-      />
+      {canManage ? (
+        <>
+          <RoundAction
+            testID="attachment-add"
+            icon="paperclip"
+            label={t("invoices.detail.attach")}
+            tone="paper"
+            onPress={onAttach}
+          />
+          <RoundAction
+            testID="invoice-edit"
+            icon="edit-3"
+            label={t("common.edit")}
+            tone="ink"
+            onPress={onEdit}
+          />
+          <RoundAction
+            testID="invoice-delete"
+            icon="trash-2"
+            label={t("common.delete")}
+            tone="danger"
+            onPress={onDelete}
+          />
+        </>
+      ) : null}
     </View>
   );
 }

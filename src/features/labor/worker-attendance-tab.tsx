@@ -87,6 +87,10 @@ export function WorkerAttendanceTab() {
   const [editNote, setEditNote] = useState("");
   useRefetchOnFocus(entries.refetch);
   useRefetchOnFocus(summary.refetch);
+  // A manager's validation lands on the roster too (pending → present) and, for a caller with
+  // view_pay, on the day's cost next to it; refresh both with the rest.
+  useRefetchOnFocus(roster.refetch);
+  useRefetchOnFocus(dayPaySummary.refetch);
 
   const myWorker =
     (workers.data ?? []).find((w) => w.user_id === user?.id) ??
