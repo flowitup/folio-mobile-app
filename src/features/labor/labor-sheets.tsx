@@ -10,15 +10,23 @@ import {
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdminOrManager } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
+import { useCompanyPersons } from "@/features/companies/company-members-api";
 import { useMembers } from "@/features/projects/members-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import {
+  NEW_PERSON,
+  directoryCandidates,
+  prefillFromDirectory,
+} from "@/lib/labor/company-directory-candidates";
 import { laborRoleLabel } from "@/lib/labor/labor-role-label";
 import { countRepricedDays } from "@/lib/labor/rate-change-impact";
 import { currentDailyRate } from "@/lib/labor/rate-history";
@@ -53,17 +61,45 @@ type WorkerFormProps = {
   onSubmit: (values: CreateWorkerPayload | UpdateWorkerPayload) => void;
   /** When set, the sheet offers to link a project member's app account (worker mode / self-log). */
   projectId?: string;
+  /**
+   * Owning company. Unlocks the person directory so someone who already works for the
+   * company is added to this project as the SAME person instead of a fresh duplicate.
+   */
+  companyId?: string | null;
 };
 
 const NO_ACCOUNT = "__none__";
 
 /** Add / edit worker — name, daily rate (create only; later via rate changes), phone, role, linked account. */
 export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
-  function WorkerFormSheet({ worker, submitting, onSubmit, projectId }, ref) {
+  function WorkerFormSheet(
+    { worker, submitting, onSubmit, projectId, companyId },
+    ref,
+  ) {
     const { t } = useTranslation();
+    const { user } = useAuth();
     const sheet = useRef<BottomSheetModal>(null);
     const roles = useLaborRoles();
     const members = useMembers(projectId ?? "");
+    // The backend reserves the directory for a company admin or manager: anyone else
+    // must never issue the request, not even once (it would 403).
+    const mayReadDirectory =
+      !worker && isCompanyAdminOrManager(user, companyId);
+    const directory = useCompanyPersons(
+      mayReadDirectory ? (companyId ?? undefined) : undefined,
+    );
+    const projectWorkers = useWorkers(projectId ?? "");
+    const candidates = useMemo(
+      () => directoryCandidates(directory.data, projectWorkers.data),
+      [directory.data, projectWorkers.data],
+    );
+    // Both answers are needed before offering anyone: until the project's workers are
+    // known, the "already works here" filter cannot run and the picker would offer a
+    // duplicate. The options fill in when they settle; the picker itself is mounted
+    // from the start (see below) and offers only "someone new" until then.
+    const offered =
+      directory.isFetched && projectWorkers.isFetched ? candidates : [];
+    const [personId, setPersonId] = useState<string>(NEW_PERSON);
     const [userId, setUserId] = useState<string | null>(
       worker?.user_id ?? null,
     );
@@ -75,8 +111,14 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     );
     const [error, setError] = useState<string | null>(null);
 
+    const picked =
+      personId === NEW_PERSON
+        ? null
+        : (offered.find((entry) => entry.person_id === personId) ?? null);
+
     useImperativeHandle(ref, () => ({
       open: () => {
+        setPersonId(NEW_PERSON);
         setName(worker?.name ?? "");
         setRate(worker ? String(worker.daily_rate) : "");
         setPhone(worker?.phone ?? "");
@@ -88,22 +130,49 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
       close: () => sheet.current?.dismiss(),
     }));
 
+    /** Company profile supplies identity, rate, role and account — each still editable below. */
+    function pickPerson(value: string) {
+      setPersonId(value);
+      setError(null);
+      if (value === NEW_PERSON) {
+        setName("");
+        setPhone("");
+        setRate("");
+        setRoleId(null);
+        setUserId(null);
+        return;
+      }
+      const entry = offered.find((item) => item.person_id === value);
+      if (!entry) return;
+      const prefill = prefillFromDirectory(entry);
+      setRate(prefill.rate);
+      setRoleId(prefill.roleId);
+      setUserId(prefill.userId);
+    }
+
     function submit() {
-      if (!name.trim()) return setError(t("labor.workers.nameRequired"));
-      if (worker)
+      if (worker) {
+        if (!name.trim()) return setError(t("labor.workers.nameRequired"));
         return onSubmit({
           name: name.trim(),
           phone: phone.trim() || undefined,
           role_id: roleId,
           user_id: userId,
         });
+      }
+      // Identity comes from the picked Person; only the legacy manual path needs a name.
+      if (!picked && !name.trim())
+        return setError(t("labor.workers.nameRequired"));
       const dailyRate = parseMoneyInput(rate);
       if (!dailyRate || dailyRate <= 0)
         return setError(t("labor.workers.rateRequired"));
       onSubmit({
-        name: name.trim(),
+        // Sent alone, without name/phone: the server resolves both from the Person,
+        // which stays the single source of truth for who this worker is.
+        ...(picked
+          ? { person_id: picked.person_id }
+          : { name: name.trim(), phone: phone.trim() || undefined }),
         daily_rate: dailyRate,
-        phone: phone.trim() || undefined,
         role_id: roleId ?? undefined,
         user_id: userId ?? undefined,
       });
@@ -116,14 +185,53 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         snapPoints={["70%"]}
       >
         <View className="p-4">
-          <Input
-            testID="worker-name"
-            label={t("labor.workers.name")}
-            value={name}
-            onChangeText={setName}
-            error={error}
-            autoFocus
-          />
+          {/* Mounted for the whole life of the sheet, never gated on the directory query.
+              A nested bottom sheet that appears while its parent is already open corrupts
+              gorhom's sheet stack: the next dismiss closes both and the form stops
+              re-opening. `mayReadDirectory` only reads the caller's company role, which
+              cannot change while the sheet is up. */}
+          {mayReadDirectory ? (
+            <Select
+              testID="worker-person"
+              label={t("labor.workers.fromCompany")}
+              placeholder={t("labor.workers.fromCompanyNew")}
+              value={personId}
+              options={[
+                ...offered.map((entry) => ({
+                  value: entry.person_id,
+                  label: entry.phone
+                    ? `${entry.name} · ${entry.phone}`
+                    : entry.name,
+                })),
+                { value: NEW_PERSON, label: t("labor.workers.fromCompanyNew") },
+              ]}
+              onChange={pickPerson}
+            />
+          ) : null}
+          {picked ? (
+            <Card className="mb-4 p-3">
+              <Text
+                testID="worker-person-name"
+                className="font-sans text-base text-ink"
+              >
+                {picked.name}
+              </Text>
+              <Text className="mt-0.5 font-sans text-[13px] text-muted">
+                {picked.phone
+                  ? `${picked.phone} · ${t("labor.workers.fromCompanyHint")}`
+                  : t("labor.workers.fromCompanyHint")}
+              </Text>
+            </Card>
+          ) : (
+            <Input
+              testID="worker-name"
+              label={t("labor.workers.name")}
+              value={name}
+              onChangeText={setName}
+              error={error}
+              autoFocus
+            />
+          )}
           {!worker ? (
             <Input
               testID="worker-rate"
@@ -131,15 +239,18 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               value={rate}
               onChangeText={setRate}
               keyboardType="decimal-pad"
+              error={picked ? error : undefined}
             />
           ) : null}
-          <Input
-            testID="worker-phone"
-            label={t("labor.workers.phone")}
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-          />
+          {!picked ? (
+            <Input
+              testID="worker-phone"
+              label={t("labor.workers.phone")}
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+            />
+          ) : null}
           <Select
             testID="worker-role"
             label={t("labor.workers.role")}

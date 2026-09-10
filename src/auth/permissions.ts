@@ -41,6 +41,26 @@ export function isCompanyAdmin(
   );
 }
 
+/**
+ * True when the user is `admin` or `manager` of the given company (or a platform-ops account).
+ * Mirrors the backend gate on the company person directory
+ * (`require_company_role_any("admin", "manager")`).
+ */
+export function isCompanyAdminOrManager(
+  user: AuthUser | null | undefined,
+  companyId: string | undefined | null,
+): boolean {
+  if (!user || !companyId) return false;
+  if (isPlatformOps(user)) return true;
+  return (
+    user.companies?.some(
+      (company) =>
+        company.id === companyId &&
+        (company.role === "admin" || company.role === "manager"),
+    ) ?? false
+  );
+}
+
 /** True when the user is `admin` of at least one attached company (or platform-ops). */
 export function isCompanyAdminAnywhere(
   user: AuthUser | null | undefined,

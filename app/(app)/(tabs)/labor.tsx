@@ -502,6 +502,7 @@ function LaborTabContent() {
       <WorkerFormSheet
         ref={workerForm}
         projectId={id}
+        companyId={project.data?.company_id ?? null}
         worker={editingWorker}
         submitting={createWorker.isPending || updateWorker.isPending}
         onSubmit={(values) =>

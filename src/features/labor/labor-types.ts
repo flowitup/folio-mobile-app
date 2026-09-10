@@ -36,15 +36,18 @@ export interface WorkerListResponse {
 }
 
 export interface CreateWorkerPayload {
-  name: string;
+  // Exactly one of `name` / `person_id` identifies the worker: `name` creates a
+  // fresh Person, `person_id` reuses one the company already knows. The server
+  // rejects a request that carries neither.
+  name?: string;
   daily_rate: number;
   phone?: string;
   /** App account that may self-log for this worker. */
   user_id?: string;
-  // When set, link the new Worker to an existing Person picked via the
-  // PersonTypeahead (cook 1d-ii-b). Server skips inline Person creation
-  // and uses this id instead. When omitted, the BE creates a Person
-  // from name+phone (legacy behavior).
+  // When set, link the new Worker to an existing Person — picked from the company
+  // directory on mobile, the PersonTypeahead on web (cook 1d-ii-b). The server
+  // skips inline Person creation and resolves name/phone from that Person, so
+  // neither is sent alongside it.
   person_id?: string;
   role_id?: string;
 }

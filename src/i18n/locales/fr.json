@@ -357,7 +357,10 @@
       "day": "jour",
       "perDay": "par jour · {{count}} jours",
       "account": "Compte appli",
-      "accountNone": "Non relié"
+      "accountNone": "Non relié",
+      "fromCompany": "Ouvrier de l'entreprise",
+      "fromCompanyNew": "Nouvelle personne",
+      "fromCompanyHint": "annuaire de l'entreprise"
     },
     "rates": {
       "link": "Taux",

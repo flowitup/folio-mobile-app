@@ -357,7 +357,10 @@
       "day": "ngày",
       "perDay": "mỗi ngày · {{count}} ngày",
       "account": "Tài khoản app",
-      "accountNone": "Không gắn"
+      "accountNone": "Không gắn",
+      "fromCompany": "Thợ của công ty",
+      "fromCompanyNew": "Người mới",
+      "fromCompanyHint": "từ danh bạ công ty"
     },
     "rates": {
       "link": "Đơn giá",
