@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { userDisplayName } from "@/lib/auth/user-display-name";
 import { useShell } from "@/components/shell/shell-context";
 import { ShellSheet } from "@/components/shell/shell-sheet";
 import { Avatar } from "@/components/ui/avatar";
@@ -32,14 +33,14 @@ export function AccountSheet() {
   return (
     <ShellSheet open={open} testID="account-sheet">
       <View className="flex-row items-center gap-3 pb-3.5 pt-1">
-        <Avatar name={user?.email} size={40} />
+        <Avatar name={userDisplayName(user)} size={40} />
         <View className="min-w-0 flex-1">
           <Text
             className="font-sans-semibold text-[15px] text-ink"
             numberOfLines={1}
             testID="account-email"
           >
-            {user?.email}
+            {userDisplayName(user)}
           </Text>
           <Text className="font-sans text-xs text-muted" numberOfLines={1}>
             {(user?.companies ?? [])

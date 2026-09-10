@@ -23,7 +23,11 @@
             "type": "string"
           }
         },
-        "required": ["token", "name", "password"],
+        "required": [
+          "token",
+          "name",
+          "password"
+        ],
         "title": "AcceptInviteRequest",
         "type": "object"
       },
@@ -72,7 +76,9 @@
             "type": "string"
           }
         },
-        "required": ["phone"],
+        "required": [
+          "phone"
+        ],
         "title": "AddMemberByPhoneRequest",
         "type": "object"
       },
@@ -227,7 +233,9 @@
             "title": "Recipient Siret"
           }
         },
-        "required": ["recipient_name"],
+        "required": [
+          "recipient_name"
+        ],
         "title": "ApplyTemplateRequest",
         "type": "object"
       },
@@ -333,7 +341,10 @@
             "type": "integer"
           }
         },
-        "required": ["items", "total"],
+        "required": [
+          "items",
+          "total"
+        ],
         "title": "AttachedUsersListResponse",
         "type": "object"
       },
@@ -356,7 +367,12 @@
             "type": "string"
           }
         },
-        "required": ["url", "filename", "content_type", "size_bytes"],
+        "required": [
+          "url",
+          "filename",
+          "content_type",
+          "size_bytes"
+        ],
         "title": "AttachmentResponse",
         "type": "object"
       },
@@ -376,7 +392,11 @@
             "type": "boolean"
           }
         },
-        "required": ["login_mode", "session", "signup"],
+        "required": [
+          "login_mode",
+          "session",
+          "signup"
+        ],
         "title": "AuthConfigResponse",
         "type": "object"
       },
@@ -394,7 +414,9 @@
             "type": "array"
           }
         },
-        "required": ["project_ids"],
+        "required": [
+          "project_ids"
+        ],
         "title": "BulkAddRequest",
         "type": "object"
       },
@@ -409,7 +431,9 @@
             "type": "array"
           }
         },
-        "required": ["results"],
+        "required": [
+          "results"
+        ],
         "title": "BulkAddResponse",
         "type": "object"
       },
@@ -433,12 +457,20 @@
             "title": "Project Name"
           },
           "status": {
-            "enum": ["added", "already_member", "project_not_found"],
+            "enum": [
+              "added",
+              "already_member",
+              "project_not_found"
+            ],
             "title": "Status",
             "type": "string"
           }
         },
-        "required": ["project_id", "project_name", "status"],
+        "required": [
+          "project_id",
+          "project_name",
+          "status"
+        ],
         "title": "BulkAddResultItem",
         "type": "object"
       },
@@ -474,7 +506,11 @@
           "shift_type": {
             "anyOf": [
               {
-                "enum": ["full", "half", "overtime"],
+                "enum": [
+                  "full",
+                  "half",
+                  "overtime"
+                ],
                 "type": "string"
               },
               {
@@ -496,7 +532,9 @@
             "type": "string"
           }
         },
-        "required": ["worker_id"],
+        "required": [
+          "worker_id"
+        ],
         "title": "BulkLogAttendanceEntry",
         "type": "object"
       },
@@ -522,7 +560,10 @@
             "type": "array"
           }
         },
-        "required": ["date", "entries"],
+        "required": [
+          "date",
+          "entries"
+        ],
         "title": "BulkLogAttendanceRequest",
         "type": "object"
       },
@@ -536,7 +577,9 @@
             "type": "array"
           }
         },
-        "required": ["items"],
+        "required": [
+          "items"
+        ],
         "title": "ChannelListResponse",
         "type": "object"
       },
@@ -610,7 +653,10 @@
           "override_kind": {
             "anyOf": [
               {
-                "enum": ["devis", "facture"],
+                "enum": [
+                  "devis",
+                  "facture"
+                ],
                 "type": "string"
               },
               {
@@ -684,7 +730,10 @@
             "type": "string"
           }
         },
-        "required": ["date", "title"],
+        "required": [
+          "date",
+          "title"
+        ],
         "title": "CreateActivitySchema",
         "type": "object"
       },
@@ -720,7 +769,10 @@
             "type": "array"
           },
           "kind": {
-            "enum": ["devis", "facture"],
+            "enum": [
+              "devis",
+              "facture"
+            ],
             "title": "Kind",
             "type": "string"
           },
@@ -860,7 +912,12 @@
             "title": "Validity Until"
           }
         },
-        "required": ["kind", "recipient_name", "items", "company_id"],
+        "required": [
+          "kind",
+          "recipient_name",
+          "items",
+          "company_id"
+        ],
         "title": "CreateBillingDocumentRequest",
         "type": "object"
       },
@@ -972,7 +1029,10 @@
             "title": "Tva Number"
           }
         },
-        "required": ["legal_name", "address"],
+        "required": [
+          "legal_name",
+          "address"
+        ],
         "title": "CreateCompanyRequest",
         "type": "object"
       },
@@ -990,7 +1050,10 @@
             "type": "string"
           }
         },
-        "required": ["project_id", "email"],
+        "required": [
+          "project_id",
+          "email"
+        ],
         "title": "CreateInviteRequest",
         "type": "object"
       },
@@ -1024,7 +1087,10 @@
             "title": "Invitation Id"
           },
           "kind": {
-            "enum": ["invitation_sent", "direct_added"],
+            "enum": [
+              "invitation_sent",
+              "direct_added"
+            ],
             "title": "Kind",
             "type": "string"
           },
@@ -1042,7 +1108,9 @@
             "title": "User Id"
           }
         },
-        "required": ["kind"],
+        "required": [
+          "kind"
+        ],
         "title": "CreateInviteResponse",
         "type": "object"
       },
@@ -1065,7 +1133,14 @@
           "highlight_color": {
             "anyOf": [
               {
-                "enum": ["red", "orange", "yellow", "green", "blue", "purple"],
+                "enum": [
+                  "red",
+                  "orange",
+                  "yellow",
+                  "green",
+                  "blue",
+                  "purple"
+                ],
                 "type": "string"
               },
               {
@@ -1165,7 +1240,10 @@
           "settled_via": {
             "anyOf": [
               {
-                "enum": ["cash", "avoir"],
+                "enum": [
+                  "cash",
+                  "avoir"
+                ],
                 "type": "string"
               },
               {
@@ -1200,7 +1278,12 @@
             "title": "Worker Id"
           }
         },
-        "required": ["type", "issue_date", "recipient_name", "items"],
+        "required": [
+          "type",
+          "issue_date",
+          "recipient_name",
+          "items"
+        ],
         "title": "CreateInvoiceSchema",
         "type": "object"
       },
@@ -1215,7 +1298,10 @@
             "type": "string"
           }
         },
-        "required": ["name", "color"],
+        "required": [
+          "name",
+          "color"
+        ],
         "title": "CreateLaborRoleRequest",
         "type": "object"
       },
@@ -1230,7 +1316,9 @@
             "type": "string"
           }
         },
-        "required": ["label"],
+        "required": [
+          "label"
+        ],
         "title": "CreatePaymentMethodRequest",
         "type": "object"
       },
@@ -1300,7 +1388,9 @@
             "type": "string"
           }
         },
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "title": "CreateProjectRequest",
         "type": "object"
       },
@@ -1370,7 +1460,9 @@
             "type": "string"
           }
         },
-        "required": ["title"],
+        "required": [
+          "title"
+        ],
         "title": "CreateTaskSchema",
         "type": "object"
       },
@@ -1416,7 +1508,10 @@
             "type": "array"
           },
           "kind": {
-            "enum": ["devis", "facture"],
+            "enum": [
+              "devis",
+              "facture"
+            ],
             "title": "Kind",
             "type": "string"
           },
@@ -1451,7 +1546,10 @@
             "title": "Terms"
           }
         },
-        "required": ["kind", "name"],
+        "required": [
+          "kind",
+          "name"
+        ],
         "title": "CreateTemplateRequest",
         "type": "object"
       },
@@ -1552,7 +1650,9 @@
             "type": "boolean"
           }
         },
-        "required": ["chat"],
+        "required": [
+          "chat"
+        ],
         "title": "FeaturesResponse",
         "type": "object"
       },
@@ -1607,7 +1707,10 @@
             "type": "array"
           },
           "kind": {
-            "enum": ["devis", "facture"],
+            "enum": [
+              "devis",
+              "facture"
+            ],
             "title": "Kind",
             "type": "string"
           },
@@ -1721,7 +1824,12 @@
             "title": "Signature Block Text"
           },
           "status": {
-            "enum": ["draft", "sent", "paid", "cancelled"],
+            "enum": [
+              "draft",
+              "sent",
+              "paid",
+              "cancelled"
+            ],
             "title": "Status",
             "type": "string"
           },
@@ -1783,7 +1891,10 @@
             "type": "array"
           }
         },
-        "required": ["from_company_id", "person_ids"],
+        "required": [
+          "from_company_id",
+          "person_ids"
+        ],
         "title": "ImportMembersRequest",
         "type": "object"
       },
@@ -1813,7 +1924,11 @@
             "type": "number"
           }
         },
-        "required": ["description", "quantity", "unit_price"],
+        "required": [
+          "description",
+          "quantity",
+          "unit_price"
+        ],
         "title": "InvoiceItemSchema",
         "type": "object"
       },
@@ -1883,7 +1998,12 @@
             "title": "Vat Rate"
           }
         },
-        "required": ["description", "quantity", "unit_price", "vat_rate"],
+        "required": [
+          "description",
+          "quantity",
+          "unit_price",
+          "vat_rate"
+        ],
         "title": "ItemSchema",
         "type": "object"
       },
@@ -1896,7 +2016,9 @@
             "type": "string"
           }
         },
-        "required": ["join_code"],
+        "required": [
+          "join_code"
+        ],
         "title": "JoinCodeResponse",
         "type": "object"
       },
@@ -1911,7 +2033,9 @@
             "type": "string"
           }
         },
-        "required": ["code"],
+        "required": [
+          "code"
+        ],
         "title": "JoinCompanyRequest",
         "type": "object"
       },
@@ -1992,7 +2116,9 @@
             "type": "array"
           }
         },
-        "required": ["months"],
+        "required": [
+          "months"
+        ],
         "title": "LaborPaymentsSummarySchema",
         "type": "object"
       },
@@ -2016,7 +2142,12 @@
             "type": "string"
           }
         },
-        "required": ["worker_id", "worker_name", "paid", "invoice_count"],
+        "required": [
+          "worker_id",
+          "worker_name",
+          "paid",
+          "invoice_count"
+        ],
         "title": "LaborPaymentsWorkerSchema",
         "type": "object"
       },
@@ -2051,7 +2182,12 @@
             "title": "Slug"
           }
         },
-        "required": ["id", "name", "color", "created_at"],
+        "required": [
+          "id",
+          "name",
+          "color",
+          "created_at"
+        ],
         "title": "LaborRoleResponse",
         "type": "object"
       },
@@ -2091,7 +2227,11 @@
           "shift_type": {
             "anyOf": [
               {
-                "enum": ["full", "half", "overtime"],
+                "enum": [
+                  "full",
+                  "half",
+                  "overtime"
+                ],
                 "type": "string"
               },
               {
@@ -2113,7 +2253,10 @@
             "type": "string"
           }
         },
-        "required": ["worker_id", "date"],
+        "required": [
+          "worker_id",
+          "date"
+        ],
         "title": "LogAttendanceRequest",
         "type": "object"
       },
@@ -2132,7 +2275,10 @@
             "type": "string"
           }
         },
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "title": "LoginRequest",
         "type": "object"
       },
@@ -2161,7 +2307,11 @@
             "$ref": "#/components/schemas/UserResponse"
           }
         },
-        "required": ["access_token", "refresh_token", "user"],
+        "required": [
+          "access_token",
+          "refresh_token",
+          "user"
+        ],
         "title": "LoginResponse",
         "type": "object"
       },
@@ -2188,7 +2338,10 @@
         "description": "One grant/deny row in the member-grants API responses.",
         "properties": {
           "effect": {
-            "enum": ["grant", "deny"],
+            "enum": [
+              "grant",
+              "deny"
+            ],
             "title": "Effect",
             "type": "string"
           },
@@ -2214,7 +2367,12 @@
             "title": "Project Id"
           }
         },
-        "required": ["permission", "effect", "project_id", "granted_at"],
+        "required": [
+          "permission",
+          "effect",
+          "project_id",
+          "granted_at"
+        ],
         "title": "MemberGrantRow",
         "type": "object"
       },
@@ -2236,7 +2394,10 @@
             "type": "array"
           }
         },
-        "required": ["grants", "customisable"],
+        "required": [
+          "grants",
+          "customisable"
+        ],
         "title": "MemberGrantsListResponse",
         "type": "object"
       },
@@ -2263,7 +2424,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "title": "MemberResponse",
         "type": "object"
       },
@@ -2284,7 +2448,10 @@
             "type": "array"
           }
         },
-        "required": ["items", "members"],
+        "required": [
+          "items",
+          "members"
+        ],
         "title": "MessagePageResponse",
         "type": "object"
       },
@@ -2384,7 +2551,9 @@
             "type": "string"
           }
         },
-        "required": ["status"],
+        "required": [
+          "status"
+        ],
         "title": "MoveTaskSchema",
         "type": "object"
       },
@@ -2425,7 +2594,9 @@
             "type": "string"
           }
         },
-        "required": ["title"],
+        "required": [
+          "title"
+        ],
         "title": "NoteCreateBody",
         "type": "object"
       },
@@ -2469,7 +2640,10 @@
           "status": {
             "anyOf": [
               {
-                "enum": ["open", "done"],
+                "enum": [
+                  "open",
+                  "done"
+                ],
                 "type": "string"
               },
               {
@@ -2546,7 +2720,9 @@
             "type": "string"
           }
         },
-        "required": ["phone"],
+        "required": [
+          "phone"
+        ],
         "title": "OtpRequestBody",
         "type": "object"
       },
@@ -2558,7 +2734,9 @@
             "type": "integer"
           }
         },
-        "required": ["expires_in"],
+        "required": [
+          "expires_in"
+        ],
         "title": "OtpRequestResponse",
         "type": "object"
       },
@@ -2577,7 +2755,10 @@
             "type": "string"
           }
         },
-        "required": ["phone", "code"],
+        "required": [
+          "phone",
+          "code"
+        ],
         "title": "OtpVerifyBody",
         "type": "object"
       },
@@ -2634,7 +2815,11 @@
           "proposed_shift_type": {
             "anyOf": [
               {
-                "enum": ["full", "half", "overtime"],
+                "enum": [
+                  "full",
+                  "half",
+                  "overtime"
+                ],
                 "type": "string"
               },
               {
@@ -2659,7 +2844,11 @@
           "shift_type": {
             "anyOf": [
               {
-                "enum": ["full", "half", "overtime"],
+                "enum": [
+                  "full",
+                  "half",
+                  "overtime"
+                ],
                 "type": "string"
               },
               {
@@ -2669,7 +2858,10 @@
             "title": "Shift Type"
           },
           "status": {
-            "enum": ["pending", "validated"],
+            "enum": [
+              "pending",
+              "validated"
+            ],
             "title": "Status",
             "type": "string"
           },
@@ -2846,7 +3038,9 @@
             "type": "string"
           }
         },
-        "required": ["token"],
+        "required": [
+          "token"
+        ],
         "title": "RedeemInviteTokenRequest",
         "type": "object"
       },
@@ -2868,7 +3062,9 @@
             "type": "string"
           }
         },
-        "required": ["access_token"],
+        "required": [
+          "access_token"
+        ],
         "title": "RefreshResponse",
         "type": "object"
       },
@@ -2876,7 +3072,10 @@
         "additionalProperties": false,
         "properties": {
           "platform": {
-            "enum": ["ios", "android"],
+            "enum": [
+              "ios",
+              "android"
+            ],
             "title": "Platform",
             "type": "string"
           },
@@ -2887,7 +3086,10 @@
             "type": "string"
           }
         },
-        "required": ["token", "platform"],
+        "required": [
+          "token",
+          "platform"
+        ],
         "title": "RegisterPushDeviceRequest",
         "type": "object"
       },
@@ -2915,7 +3117,9 @@
             "title": "Project Id"
           }
         },
-        "required": ["permission"],
+        "required": [
+          "permission"
+        ],
         "title": "RemoveMemberGrantRequest",
         "type": "object"
       },
@@ -2930,7 +3134,9 @@
             "type": "array"
           }
         },
-        "required": ["rows"],
+        "required": [
+          "rows"
+        ],
         "title": "RosterResponse",
         "type": "object"
       },
@@ -2958,7 +3164,11 @@
             "type": "string"
           },
           "status": {
-            "enum": ["present", "pending", "absent"],
+            "enum": [
+              "present",
+              "pending",
+              "absent"
+            ],
             "title": "Status",
             "type": "string"
           },
@@ -2967,7 +3177,12 @@
             "type": "string"
           }
         },
-        "required": ["worker_id", "name", "status", "hours"],
+        "required": [
+          "worker_id",
+          "name",
+          "status",
+          "hours"
+        ],
         "title": "RosterRowResponse",
         "type": "object"
       },
@@ -2990,7 +3205,11 @@
           "shift_type": {
             "anyOf": [
               {
-                "enum": ["full", "half", "overtime"],
+                "enum": [
+                  "full",
+                  "half",
+                  "overtime"
+                ],
                 "type": "string"
               },
               {
@@ -3035,7 +3254,11 @@
           "shift_type": {
             "anyOf": [
               {
-                "enum": ["full", "half", "overtime"],
+                "enum": [
+                  "full",
+                  "half",
+                  "overtime"
+                ],
                 "type": "string"
               },
               {
@@ -3053,7 +3276,9 @@
             "type": "integer"
           }
         },
-        "required": ["date"],
+        "required": [
+          "date"
+        ],
         "title": "SelfLogAttendanceRequest",
         "type": "object"
       },
@@ -3086,7 +3311,11 @@
           "shift_type": {
             "anyOf": [
               {
-                "enum": ["full", "half", "overtime"],
+                "enum": [
+                  "full",
+                  "half",
+                  "overtime"
+                ],
                 "type": "string"
               },
               {
@@ -3096,7 +3325,10 @@
             "title": "Shift Type"
           },
           "status": {
-            "enum": ["pending", "validated"],
+            "enum": [
+              "pending",
+              "validated"
+            ],
             "title": "Status",
             "type": "string"
           },
@@ -3143,7 +3375,9 @@
             "type": "string"
           }
         },
-        "required": ["body"],
+        "required": [
+          "body"
+        ],
         "title": "SendMessageBody",
         "type": "object"
       },
@@ -3161,7 +3395,10 @@
             "type": "string"
           }
         },
-        "required": ["date", "description"],
+        "required": [
+          "date",
+          "description"
+        ],
         "title": "SetDayDescriptionSchema",
         "type": "object"
       },
@@ -3170,7 +3407,10 @@
         "description": "Request body for PUT /companies/<company_id>/members/<user_id>/grants.",
         "properties": {
           "effect": {
-            "enum": ["grant", "deny"],
+            "enum": [
+              "grant",
+              "deny"
+            ],
             "title": "Effect",
             "type": "string"
           },
@@ -3194,7 +3434,10 @@
             "title": "Project Id"
           }
         },
-        "required": ["permission", "effect"],
+        "required": [
+          "permission",
+          "effect"
+        ],
         "title": "SetMemberGrantRequest",
         "type": "object"
       },
@@ -3208,7 +3451,9 @@
             "type": "string"
           }
         },
-        "required": ["company_id"],
+        "required": [
+          "company_id"
+        ],
         "title": "SetPrimaryCompanyRequest",
         "type": "object"
       },
@@ -3222,7 +3467,9 @@
             "type": "string"
           }
         },
-        "required": ["phone"],
+        "required": [
+          "phone"
+        ],
         "title": "SignupRequestBody",
         "type": "object"
       },
@@ -3247,7 +3494,11 @@
             "type": "string"
           }
         },
-        "required": ["phone", "code", "display_name"],
+        "required": [
+          "phone",
+          "code",
+          "display_name"
+        ],
         "title": "SignupVerifyBody",
         "type": "object"
       },
@@ -3261,7 +3512,9 @@
             "type": "string"
           }
         },
-        "required": ["token"],
+        "required": [
+          "token"
+        ],
         "title": "UnregisterPushDeviceRequest",
         "type": "object"
       },
@@ -3317,7 +3570,11 @@
           "shift_type": {
             "anyOf": [
               {
-                "enum": ["full", "half", "overtime"],
+                "enum": [
+                  "full",
+                  "half",
+                  "overtime"
+                ],
                 "type": "string"
               },
               {
@@ -3671,7 +3928,14 @@
           "highlight_color": {
             "anyOf": [
               {
-                "enum": ["red", "orange", "yellow", "green", "blue", "purple"],
+                "enum": [
+                  "red",
+                  "orange",
+                  "yellow",
+                  "green",
+                  "blue",
+                  "purple"
+                ],
                 "type": "string"
               },
               {
@@ -3801,7 +4065,10 @@
           "settled_via": {
             "anyOf": [
               {
-                "enum": ["cash", "avoir"],
+                "enum": [
+                  "cash",
+                  "avoir"
+                ],
                 "type": "string"
               },
               {
@@ -3875,6 +4142,45 @@
           }
         },
         "title": "UpdateLaborRoleRequest",
+        "type": "object"
+      },
+      "UpdateMemberPayDefaultsRequest": {
+        "additionalProperties": false,
+        "description": "Request body for PATCH /companies/<id>/members/<person_id>.\n\nBoth fields are optional and nullable, and the two cases are NOT the same:\nan absent key leaves the stored value untouched, while an explicit ``null``\nclears it. The route reads ``model_fields_set`` to tell them apart, so the\ndefault here is only what an absent key deserializes to.",
+        "properties": {
+          "default_daily_rate": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 99999999.99,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Default Daily Rate"
+          },
+          "labor_role_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Labor Role Id"
+          }
+        },
+        "title": "UpdateMemberPayDefaultsRequest",
         "type": "object"
       },
       "UpdateNotificationPreferencesRequest": {
@@ -4111,7 +4417,9 @@
             "type": "string"
           }
         },
-        "required": ["new_status"],
+        "required": [
+          "new_status"
+        ],
         "title": "UpdateStatusRequest",
         "type": "object"
       },
@@ -4364,7 +4672,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "legal_name", "role", "is_primary"],
+        "required": [
+          "id",
+          "legal_name",
+          "role",
+          "is_primary"
+        ],
         "title": "UserCompanySummary",
         "type": "object"
       },
@@ -4378,6 +4691,18 @@
             },
             "title": "Companies",
             "type": "array"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Display Name"
           },
           "email": {
             "title": "Email",
@@ -4413,7 +4738,11 @@
             "title": "Phone"
           }
         },
-        "required": ["id", "email", "permissions"],
+        "required": [
+          "id",
+          "email",
+          "permissions"
+        ],
         "title": "UserResponse",
         "type": "object"
       },
@@ -4429,7 +4758,10 @@
             "type": "string"
           },
           "status": {
-            "enum": ["pending", "validated"],
+            "enum": [
+              "pending",
+              "validated"
+            ],
             "title": "Status",
             "type": "string"
           },
@@ -4462,7 +4794,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "worker_id", "date", "status"],
+        "required": [
+          "id",
+          "worker_id",
+          "date",
+          "status"
+        ],
         "title": "ValidatedEntryResponse",
         "type": "object"
       },
@@ -4653,7 +4990,7 @@
   },
   "info": {
     "title": "Folio API",
-    "version": "0.2.134"
+    "version": "0.2.139"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -4670,7 +5007,9 @@
           }
         ],
         "summary": "Search users by email or display name (platform ops only)",
-        "tags": ["admin"]
+        "tags": [
+          "admin"
+        ]
       }
     },
     "/api/v1/admin/users/{user_id}": {
@@ -4696,7 +5035,9 @@
           }
         ],
         "summary": "Update a user's email / display name (platform ops only)",
-        "tags": ["admin"]
+        "tags": [
+          "admin"
+        ]
       }
     },
     "/api/v1/admin/users/{user_id}/memberships": {
@@ -4740,7 +5081,9 @@
           }
         ],
         "summary": "Bulk-add an existing user to multiple projects with the given role",
-        "tags": ["admin"]
+        "tags": [
+          "admin"
+        ]
       }
     },
     "/api/v1/attachments/{attachment_id}": {
@@ -4766,7 +5109,9 @@
           }
         ],
         "summary": "Delete an invoice attachment",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       }
     },
     "/api/v1/attachments/{attachment_id}/download": {
@@ -4792,7 +5137,9 @@
           }
         ],
         "summary": "Download an invoice attachment",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       }
     },
     "/api/v1/attachments/{attachment_id}/rename": {
@@ -4818,7 +5165,9 @@
           }
         ],
         "summary": "Rename an invoice attachment",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       }
     },
     "/api/v1/auth/config": {
@@ -4836,7 +5185,9 @@
           }
         },
         "summary": "Sign-in options of this deployment",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/login": {
@@ -4864,7 +5215,9 @@
           }
         },
         "summary": "Authenticate user and return tokens",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/logout": {
@@ -4890,7 +5243,9 @@
           }
         ],
         "summary": "Logout user, clear cookies, revoke the access and refresh tokens",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/me": {
@@ -4913,7 +5268,9 @@
           }
         ],
         "summary": "Get current authenticated user info",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/otp/request": {
@@ -4941,7 +5298,9 @@
           }
         },
         "summary": "Send a 6-digit sign-in code by SMS to a phone number",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/otp/verify": {
@@ -4969,7 +5328,9 @@
           }
         },
         "summary": "Exchange a phone number + SMS code for tokens",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/refresh": {
@@ -4987,7 +5348,9 @@
           }
         },
         "summary": "Refresh access token using refresh token",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/signup/request": {
@@ -5015,7 +5378,9 @@
           }
         },
         "summary": "Text a sign-up code to a phone number that has no account yet",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/signup/verify": {
@@ -5043,7 +5408,9 @@
           }
         },
         "summary": "Create an account from a phone number + sign-up code + display name",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/bibliotheque/categories": {
@@ -5058,7 +5425,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       }
     },
     "/api/v1/bibliotheque/import": {
@@ -5073,7 +5442,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       }
     },
     "/api/v1/bibliotheque/products": {
@@ -5088,7 +5459,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       },
       "post": {
         "responses": {
@@ -5101,7 +5474,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       }
     },
     "/api/v1/bibliotheque/products/{product_id}": {
@@ -5127,7 +5502,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       },
       "get": {
         "parameters": [
@@ -5151,7 +5528,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       },
       "patch": {
         "parameters": [
@@ -5175,7 +5554,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       }
     },
     "/api/v1/bibliotheque/products/{product_id}/image": {
@@ -5201,7 +5582,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       },
       "post": {
         "parameters": [
@@ -5225,7 +5608,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       }
     },
     "/api/v1/bibliotheque/products/{product_id}/image-from-url": {
@@ -5251,7 +5636,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       }
     },
     "/api/v1/bibliotheque/suppliers": {
@@ -5266,7 +5653,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["bibliotheque"]
+        "tags": [
+          "bibliotheque"
+        ]
       }
     },
     "/api/v1/billing-document-templates": {
@@ -5282,7 +5671,9 @@
           }
         ],
         "summary": "List all billing templates for the authenticated user",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       },
       "post": {
         "requestBody": {
@@ -5306,7 +5697,9 @@
           }
         ],
         "summary": "Create a new billing document template",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-document-templates/{template_id}": {
@@ -5332,7 +5725,9 @@
           }
         ],
         "summary": "Delete a billing document template",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       },
       "get": {
         "parameters": [
@@ -5356,7 +5751,9 @@
           }
         ],
         "summary": "Retrieve a single billing template by ID",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       },
       "put": {
         "parameters": [
@@ -5390,7 +5787,9 @@
           }
         ],
         "summary": "Partially update a billing document template",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents": {
@@ -5406,7 +5805,9 @@
           }
         ],
         "summary": "List billing documents for the authenticated user",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       },
       "post": {
         "requestBody": {
@@ -5430,7 +5831,9 @@
           }
         ],
         "summary": "Create a new billing document (devis or facture)",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents/activity-suggestions": {
@@ -5496,7 +5899,9 @@
           }
         ],
         "summary": "Return line-item suggestions aggregated from the requester's documents",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents/from-template/{template_id}": {
@@ -5532,7 +5937,9 @@
           }
         ],
         "summary": "Create a new billing document pre-filled from a template",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents/import": {
@@ -5558,7 +5965,9 @@
           }
         ],
         "summary": "Import a historical billing document with a pre-supplied document number",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents/{doc_id}": {
@@ -5584,7 +5993,9 @@
           }
         ],
         "summary": "Delete a billing document",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       },
       "get": {
         "parameters": [
@@ -5608,7 +6019,9 @@
           }
         ],
         "summary": "Retrieve a single billing document by ID",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       },
       "put": {
         "parameters": [
@@ -5642,7 +6055,9 @@
           }
         ],
         "summary": "Partially update a billing document (immutable fields rejected by schema)",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents/{doc_id}/clone": {
@@ -5678,7 +6093,9 @@
           }
         ],
         "summary": "Clone an existing billing document into a new draft",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents/{doc_id}/convert-to-facture": {
@@ -5714,7 +6131,9 @@
           }
         ],
         "summary": "Convert an accepted devis to a new facture draft",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents/{doc_id}/pdf": {
@@ -5740,7 +6159,9 @@
           }
         ],
         "summary": "Render billing document as PDF and stream as attachment",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents/{doc_id}/status": {
@@ -5776,7 +6197,9 @@
           }
         ],
         "summary": "Transition a billing document to a new status",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing-documents/{doc_id}/xlsx": {
@@ -5802,7 +6225,9 @@
           }
         ],
         "summary": "Render billing document as XLSX and stream as attachment",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/billing/materials-expenses": {
@@ -5817,7 +6242,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["billing_documents"]
+        "tags": [
+          "billing_documents"
+        ]
       }
     },
     "/api/v1/billing/materials-expenses/{invoice_id}": {
@@ -5842,7 +6269,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["billing_documents"]
+        "tags": [
+          "billing_documents"
+        ]
       }
     },
     "/api/v1/chat/channels": {
@@ -5865,7 +6294,9 @@
           }
         ],
         "summary": "List the chat channels of the current user",
-        "tags": ["chat"]
+        "tags": [
+          "chat"
+        ]
       }
     },
     "/api/v1/chat/channels/{channel_key}/messages": {
@@ -5928,7 +6359,9 @@
           }
         ],
         "summary": "List messages of a channel (oldest first) with its members",
-        "tags": ["chat"]
+        "tags": [
+          "chat"
+        ]
       },
       "post": {
         "parameters": [
@@ -5969,7 +6402,9 @@
           }
         ],
         "summary": "Send a message (JSON text, or multipart/form-data with an image `file`)",
-        "tags": ["chat"]
+        "tags": [
+          "chat"
+        ]
       }
     },
     "/api/v1/chat/channels/{channel_key}/read": {
@@ -5995,7 +6430,9 @@
           }
         ],
         "summary": "Mark a channel as read up to now",
-        "tags": ["chat"]
+        "tags": [
+          "chat"
+        ]
       }
     },
     "/api/v1/chat/messages/{message_id}/attachment": {
@@ -6022,7 +6459,9 @@
           }
         ],
         "summary": "Download a message attachment (channel members only)",
-        "tags": ["chat"]
+        "tags": [
+          "chat"
+        ]
       }
     },
     "/api/v1/companies": {
@@ -6038,7 +6477,9 @@
           }
         ],
         "summary": "List companies",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       },
       "post": {
         "requestBody": {
@@ -6062,7 +6503,9 @@
           }
         ],
         "summary": "Create a new company (self-service — any authenticated user)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/attach-by-token": {
@@ -6088,7 +6531,9 @@
           }
         ],
         "summary": "Attach the caller to a company by redeeming an invite token",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/join": {
@@ -6114,7 +6559,9 @@
           }
         ],
         "summary": "Join a company as member with its join code",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}": {
@@ -6140,7 +6587,9 @@
           }
         ],
         "summary": "Delete a company (admin only)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       },
       "get": {
         "parameters": [
@@ -6164,7 +6613,9 @@
           }
         ],
         "summary": "Get a company by ID",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       },
       "put": {
         "parameters": [
@@ -6198,7 +6649,9 @@
           }
         ],
         "summary": "Update a company (admin only)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/access": {
@@ -6224,7 +6677,9 @@
           }
         ],
         "summary": "Detach the authenticated caller from a company",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/access/{target_user_id}": {
@@ -6258,7 +6713,9 @@
           }
         ],
         "summary": "Remove a user from a company (admin only)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/access/{target_user_id}/role": {
@@ -6292,7 +6749,9 @@
           }
         ],
         "summary": "Change a company member's role (admin only)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/attached-users": {
@@ -6325,7 +6784,9 @@
           }
         ],
         "summary": "List users attached to a company (company admin)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/invite-tokens": {
@@ -6351,7 +6812,9 @@
           }
         ],
         "summary": "Generate an invite token for a company (admin only)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/invite-tokens/active": {
@@ -6377,7 +6840,9 @@
           }
         ],
         "summary": "Revoke the active invite token for a company (admin only)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/join-code": {
@@ -6403,7 +6868,9 @@
           }
         ],
         "summary": "Revoke the company's join code (admin only)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       },
       "post": {
         "parameters": [
@@ -6434,7 +6901,9 @@
           }
         ],
         "summary": "Create or renew the company's join code (admin only)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/members": {
@@ -6470,7 +6939,9 @@
           }
         ],
         "summary": "Add a company member by phone number (admin only)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/members/import": {
@@ -6506,7 +6977,55 @@
           }
         ],
         "summary": "Import member profiles from another company the caller also admins",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
+      }
+    },
+    "/api/v1/companies/{company_id}/members/{person_id}": {
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "person_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberPayDefaultsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Set a company member's default daily rate and labor role (admin or manager)",
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/members/{user_id}/grants": {
@@ -6550,7 +7069,9 @@
           }
         ],
         "summary": "Remove a grant/deny row from a company member (D8)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       },
       "get": {
         "parameters": [
@@ -6589,7 +7110,9 @@
           }
         ],
         "summary": "List a company member's D8 grant/deny rows",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       },
       "put": {
         "parameters": [
@@ -6638,7 +7161,9 @@
           }
         ],
         "summary": "Grant or deny one permission to a company member (D8)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/payment-methods": {
@@ -6664,7 +7189,9 @@
           }
         ],
         "summary": "List payment methods for a company",
-        "tags": ["payment_methods"]
+        "tags": [
+          "payment_methods"
+        ]
       },
       "post": {
         "parameters": [
@@ -6698,7 +7225,9 @@
           }
         ],
         "summary": "Create a new payment method for a company (admin only)",
-        "tags": ["payment_methods"]
+        "tags": [
+          "payment_methods"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/payment-methods/{payment_method_id}": {
@@ -6732,7 +7261,9 @@
           }
         ],
         "summary": "Soft-delete a payment method (admin only)",
-        "tags": ["payment_methods"]
+        "tags": [
+          "payment_methods"
+        ]
       },
       "patch": {
         "parameters": [
@@ -6774,7 +7305,9 @@
           }
         ],
         "summary": "Partially update a payment method (admin only)",
-        "tags": ["payment_methods"]
+        "tags": [
+          "payment_methods"
+        ]
       }
     },
     "/api/v1/companies/{company_id}/persons": {
@@ -6800,7 +7333,9 @@
           }
         ],
         "summary": "List a company's member directory (admin or manager)",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/features": {
@@ -6823,7 +7358,9 @@
           }
         ],
         "summary": "Feature flags of this deployment",
-        "tags": ["features"]
+        "tags": [
+          "features"
+        ]
       }
     },
     "/api/v1/invitations": {
@@ -6856,7 +7393,9 @@
           }
         ],
         "summary": "Create an invitation (or directly add existing user) to a project",
-        "tags": ["invitations"]
+        "tags": [
+          "invitations"
+        ]
       }
     },
     "/api/v1/invitations/accept": {
@@ -6877,7 +7416,9 @@
           }
         },
         "summary": "Accept an invitation: create account + membership, return JWT cookies",
-        "tags": ["invitations"]
+        "tags": [
+          "invitations"
+        ]
       }
     },
     "/api/v1/invitations/projects/{project_id}/invitations": {
@@ -6904,7 +7445,9 @@
           }
         ],
         "summary": "List invitations for a project",
-        "tags": ["invitations"]
+        "tags": [
+          "invitations"
+        ]
       }
     },
     "/api/v1/invitations/verify/{token}": {
@@ -6932,7 +7475,9 @@
           }
         },
         "summary": "Verify an invitation token and return safe metadata",
-        "tags": ["invitations"]
+        "tags": [
+          "invitations"
+        ]
       }
     },
     "/api/v1/invitations/{invitation_id}/revoke": {
@@ -6959,7 +7504,9 @@
           }
         ],
         "summary": "Revoke a pending invitation",
-        "tags": ["invitations"]
+        "tags": [
+          "invitations"
+        ]
       }
     },
     "/api/v1/labor/roles": {
@@ -6975,7 +7522,9 @@
           }
         ],
         "summary": "List labor roles (scoped to the caller's company) with the suggested color palette",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "post": {
         "requestBody": {
@@ -7006,7 +7555,9 @@
           }
         ],
         "summary": "Create a new labor role, scoped to the caller's company",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/labor/roles/{role_id}": {
@@ -7032,7 +7583,9 @@
           }
         ],
         "summary": "Delete a labor role",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "patch": {
         "parameters": [
@@ -7073,7 +7626,9 @@
           }
         ],
         "summary": "Update name and/or color of a labor role",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/notifications": {
@@ -7088,7 +7643,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["notifications"]
+        "tags": [
+          "notifications"
+        ]
       }
     },
     "/api/v1/notifications/preferences": {
@@ -7111,7 +7668,9 @@
           }
         ],
         "summary": "Read the caller's push notification preferences",
-        "tags": ["notifications"]
+        "tags": [
+          "notifications"
+        ]
       },
       "put": {
         "requestBody": {
@@ -7142,7 +7701,9 @@
           }
         ],
         "summary": "Update the caller's push notification preferences (partial)",
-        "tags": ["notifications"]
+        "tags": [
+          "notifications"
+        ]
       }
     },
     "/api/v1/notifications/{note_id}/dismiss": {
@@ -7168,7 +7729,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["notifications"]
+        "tags": [
+          "notifications"
+        ]
       }
     },
     "/api/v1/persons": {
@@ -7183,7 +7746,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["persons"]
+        "tags": [
+          "persons"
+        ]
       },
       "post": {
         "responses": {
@@ -7196,7 +7761,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["persons"]
+        "tags": [
+          "persons"
+        ]
       }
     },
     "/api/v1/persons/{source_person_id}/merge": {
@@ -7221,7 +7788,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["persons"]
+        "tags": [
+          "persons"
+        ]
       }
     },
     "/api/v1/projects": {
@@ -7237,7 +7806,9 @@
           }
         ],
         "summary": "List projects for current user",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       },
       "post": {
         "requestBody": {
@@ -7268,7 +7839,9 @@
           }
         ],
         "summary": "Create a new project",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       }
     },
     "/api/v1/projects/{project_id}": {
@@ -7294,7 +7867,9 @@
           }
         ],
         "summary": "Delete a project",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       },
       "get": {
         "parameters": [
@@ -7325,7 +7900,9 @@
           }
         ],
         "summary": "Get a single project by ID",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       },
       "put": {
         "parameters": [
@@ -7366,7 +7943,9 @@
           }
         ],
         "summary": "Update an existing project",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/analyses": {
@@ -7417,7 +7996,10 @@
             "required": false,
             "schema": {
               "default": "created_at",
-              "enum": ["created_at", "title"],
+              "enum": [
+                "created_at",
+                "title"
+              ],
               "title": "Sort",
               "type": "string"
             }
@@ -7428,7 +8010,10 @@
             "required": false,
             "schema": {
               "default": "desc",
-              "enum": ["asc", "desc"],
+              "enum": [
+                "asc",
+                "desc"
+              ],
               "title": "Order",
               "type": "string"
             }
@@ -7469,7 +8054,9 @@
           }
         ],
         "summary": "List analysis reports for a project",
-        "tags": ["project_analyses"]
+        "tags": [
+          "project_analyses"
+        ]
       },
       "post": {
         "parameters": [
@@ -7494,7 +8081,9 @@
           }
         ],
         "summary": "Upload an HTML analysis report to a project (multipart/form-data)",
-        "tags": ["project_analyses"]
+        "tags": [
+          "project_analyses"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/analyses/tags": {
@@ -7521,7 +8110,9 @@
           }
         ],
         "summary": "List the distinct tags used by a project's analyses",
-        "tags": ["project_analyses"]
+        "tags": [
+          "project_analyses"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/analyses/{analysis_id}": {
@@ -7557,7 +8148,9 @@
           }
         ],
         "summary": "Soft-delete an analysis report",
-        "tags": ["project_analyses"]
+        "tags": [
+          "project_analyses"
+        ]
       },
       "get": {
         "parameters": [
@@ -7591,7 +8184,9 @@
           }
         ],
         "summary": "Get an analysis report's metadata",
-        "tags": ["project_analyses"]
+        "tags": [
+          "project_analyses"
+        ]
       },
       "patch": {
         "parameters": [
@@ -7635,7 +8230,9 @@
           }
         ],
         "summary": "Edit an analysis report's title/summary/source_url/tags",
-        "tags": ["project_analyses"]
+        "tags": [
+          "project_analyses"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/analyses/{analysis_id}/content": {
@@ -7671,7 +8268,9 @@
           }
         ],
         "summary": "Get the raw HTML body of an analysis report",
-        "tags": ["project_analyses"]
+        "tags": [
+          "project_analyses"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/assignments/{user_id}": {
@@ -7705,7 +8304,9 @@
           }
         ],
         "summary": "Remove a project assignment",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       },
       "put": {
         "parameters": [
@@ -7747,7 +8348,9 @@
           }
         ],
         "summary": "Assign a company member to a project; a company admin may pass role=manager to promote the target",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/billing-documents": {
@@ -7773,7 +8376,9 @@
           }
         ],
         "summary": "List all billing documents linked to a project (project:read required)",
-        "tags": ["billing"]
+        "tags": [
+          "billing"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage": {
@@ -7798,7 +8403,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}": {
@@ -7831,7 +8438,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       },
       "patch": {
         "parameters": [
@@ -7862,7 +8471,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/image": {
@@ -7895,7 +8506,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       },
       "get": {
         "parameters": [
@@ -7926,7 +8539,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       },
       "post": {
         "parameters": [
@@ -7957,7 +8572,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/image-from-url": {
@@ -7990,7 +8607,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/quotes": {
@@ -8023,7 +8642,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/articles/{article_id}/reorder": {
@@ -8056,7 +8677,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/postes": {
@@ -8081,7 +8704,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}": {
@@ -8114,7 +8739,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       },
       "patch": {
         "parameters": [
@@ -8145,7 +8772,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}/articles": {
@@ -8178,7 +8807,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}/reorder": {
@@ -8211,7 +8842,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/postes/{poste_id}/stores": {
@@ -8244,7 +8877,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/quotes/{quote_id}": {
@@ -8277,7 +8912,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       },
       "patch": {
         "parameters": [
@@ -8308,7 +8945,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/quotes/{quote_id}/select": {
@@ -8341,7 +8980,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/rooms": {
@@ -8366,7 +9007,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       },
       "post": {
         "parameters": [
@@ -8389,7 +9032,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/rooms/{room_id}": {
@@ -8422,7 +9067,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       },
       "patch": {
         "parameters": [
@@ -8453,7 +9100,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/rooms/{room_id}/reorder": {
@@ -8486,7 +9135,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/stores": {
@@ -8511,7 +9162,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/stores/{store_id}": {
@@ -8544,7 +9197,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       },
       "patch": {
         "parameters": [
@@ -8575,7 +9230,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/units": {
@@ -8600,7 +9257,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       },
       "post": {
         "parameters": [
@@ -8623,7 +9282,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/units/{unit_id}": {
@@ -8656,7 +9317,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["chiffrage"]
+        "tags": [
+          "chiffrage"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/documents": {
@@ -8727,7 +9390,12 @@
             "required": false,
             "schema": {
               "default": "created_at",
-              "enum": ["name", "size", "created_at", "uploader"],
+              "enum": [
+                "name",
+                "size",
+                "created_at",
+                "uploader"
+              ],
               "title": "Sort",
               "type": "string"
             }
@@ -8738,7 +9406,10 @@
             "required": false,
             "schema": {
               "default": "desc",
-              "enum": ["asc", "desc"],
+              "enum": [
+                "asc",
+                "desc"
+              ],
               "title": "Order",
               "type": "string"
             }
@@ -8779,7 +9450,9 @@
           }
         ],
         "summary": "List project documents with optional filters",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       },
       "post": {
         "parameters": [
@@ -8803,7 +9476,9 @@
           }
         ],
         "summary": "Upload a document to a project (multipart/form-data)",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/documents/confirm": {
@@ -8829,7 +9504,9 @@
           }
         ],
         "summary": "Confirm a presigned upload — verify S3 object exists and persist DB row",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/documents/presign": {
@@ -8855,7 +9532,9 @@
           }
         ],
         "summary": "Generate a presigned PUT URL for direct-to-S3 browser upload",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/documents/tags": {
@@ -8881,7 +9560,9 @@
           }
         ],
         "summary": "List all tags used in a project's documents",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/documents/{document_id}": {
@@ -8915,7 +9596,9 @@
           }
         ],
         "summary": "Delete a project document",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/documents/{document_id}/download": {
@@ -8949,7 +9632,9 @@
           }
         ],
         "summary": "Download a project document",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/documents/{document_id}/preview-url": {
@@ -8983,7 +9668,9 @@
           }
         ],
         "summary": "Return a short-lived presigned GET URL for browser preview",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/documents/{document_id}/rename": {
@@ -9017,7 +9704,9 @@
           }
         ],
         "summary": "Rename a project document",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/documents/{document_id}/tags": {
@@ -9051,7 +9740,9 @@
           }
         ],
         "summary": "Replace all tags on a project document",
-        "tags": ["project_documents"]
+        "tags": [
+          "project_documents"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/invoices": {
@@ -9114,7 +9805,9 @@
           }
         ],
         "summary": "List invoices for a project, optionally filtered by ?type=/?service_month=/?worker_id=",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       },
       "post": {
         "parameters": [
@@ -9148,7 +9841,9 @@
           }
         ],
         "summary": "Create a new invoice for a project",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/invoices-export": {
@@ -9185,7 +9880,10 @@
             "name": "format",
             "required": true,
             "schema": {
-              "enum": ["xlsx", "pdf"],
+              "enum": [
+                "xlsx",
+                "pdf"
+              ],
               "title": "Format",
               "type": "string"
             }
@@ -9226,7 +9924,9 @@
           }
         ],
         "summary": "Stream xlsx or pdf export for a project's invoices",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/invoices/{invoice_id}": {
@@ -9260,7 +9960,9 @@
           }
         ],
         "summary": "Delete an invoice by ID, scoped to the project",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       },
       "get": {
         "parameters": [
@@ -9292,7 +9994,9 @@
           }
         ],
         "summary": "Retrieve a single invoice by ID, scoped to the project",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       },
       "put": {
         "parameters": [
@@ -9334,7 +10038,9 @@
           }
         ],
         "summary": "Partially update an invoice",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/invoices/{invoice_id}/attachments": {
@@ -9368,7 +10074,9 @@
           }
         ],
         "summary": "List attachments for an invoice",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       },
       "post": {
         "parameters": [
@@ -9400,7 +10108,9 @@
           }
         ],
         "summary": "Upload an attachment to an invoice",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-activities": {
@@ -9426,7 +10136,9 @@
           }
         ],
         "summary": "List labor activities for a project with optional date filters",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "post": {
         "parameters": [
@@ -9460,7 +10172,9 @@
           }
         ],
         "summary": "Create a labor activity for a project day (multiple entries per day allowed)",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-activities/{activity_id}": {
@@ -9494,7 +10208,9 @@
           }
         ],
         "summary": "Delete a labor activity",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "put": {
         "parameters": [
@@ -9536,7 +10252,9 @@
           }
         ],
         "summary": "Update an existing labor activity by ID",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-day-descriptions": {
@@ -9562,7 +10280,9 @@
           }
         ],
         "summary": "List labor day descriptions for a project within a date range",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "put": {
         "parameters": [
@@ -9596,7 +10316,9 @@
           }
         ],
         "summary": "Upsert (or clear) the labor day description for a project day",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries": {
@@ -9622,7 +10344,9 @@
           }
         ],
         "summary": "List labor entries for a project with optional filters",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "post": {
         "parameters": [
@@ -9656,7 +10380,9 @@
           }
         ],
         "summary": "Log daily attendance for a worker",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries/bulk": {
@@ -9692,7 +10418,9 @@
           }
         ],
         "summary": "Bulk-log attendance for N workers on a single date",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries/conflicts": {
@@ -9718,7 +10446,9 @@
           }
         ],
         "summary": "Return cross-project labor conflicts on a given date",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries/self": {
@@ -9761,7 +10491,9 @@
           }
         ],
         "summary": "Log my own attendance for a day (pending until a manager validates)",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries/{entry_id}": {
@@ -9795,7 +10527,9 @@
           }
         ],
         "summary": "Delete a labor entry",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "put": {
         "parameters": [
@@ -9837,7 +10571,9 @@
           }
         ],
         "summary": "Update an existing labor entry",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries/{entry_id}/change/reject": {
@@ -9878,7 +10614,9 @@
           }
         ],
         "summary": "Drop a worker's change request; the validated day stays as it is (409 when none is open)",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries/{entry_id}/change/validate": {
@@ -9919,7 +10657,9 @@
           }
         ],
         "summary": "Apply a worker's change request to the day (409 when none is open)",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries/{entry_id}/reject": {
@@ -9953,7 +10693,9 @@
           }
         ],
         "summary": "Reject a pending attendance entry (deletes it; 409 once validated)",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries/{entry_id}/self": {
@@ -10004,7 +10746,9 @@
           }
         ],
         "summary": "Edit one of my own days: a pending day is updated, a validated day gets a change request",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-entries/{entry_id}/validate": {
@@ -10045,7 +10789,9 @@
           }
         ],
         "summary": "Validate a worker-submitted attendance entry (idempotent)",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-export": {
@@ -10087,7 +10833,10 @@
             "required": true,
             "schema": {
               "description": "Export format",
-              "enum": ["xlsx", "pdf"],
+              "enum": [
+                "xlsx",
+                "pdf"
+              ],
               "title": "Format",
               "type": "string"
             }
@@ -10104,7 +10853,9 @@
           }
         ],
         "summary": "Stream xlsx or pdf export for a project's labor data",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-monthly-summary": {
@@ -10130,7 +10881,9 @@
           }
         ],
         "summary": "Per-month rollup of labor totals across all workers on a project",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-payments-summary": {
@@ -10163,7 +10916,9 @@
           }
         ],
         "summary": "Aggregate paid labor amounts per service month and worker",
-        "tags": ["invoices"]
+        "tags": [
+          "invoices"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor-summary": {
@@ -10189,7 +10944,9 @@
           }
         ],
         "summary": "Get aggregated labor summary for a project",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/labor/roster": {
@@ -10233,7 +10990,9 @@
           }
         ],
         "summary": "Day roster for a project: name, presence, hours, day type (never pay)",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/members": {
@@ -10260,7 +11019,9 @@
           }
         ],
         "summary": "Return the people assigned to a project with their company role",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/notes": {
@@ -10287,7 +11048,9 @@
           }
         ],
         "summary": "List all journal notes for a project",
-        "tags": ["notes"]
+        "tags": [
+          "notes"
+        ]
       },
       "post": {
         "parameters": [
@@ -10322,7 +11085,9 @@
           }
         ],
         "summary": "Create a journal note for a project",
-        "tags": ["notes"]
+        "tags": [
+          "notes"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/notes/{note_id}": {
@@ -10358,7 +11123,9 @@
           }
         ],
         "summary": "Delete a journal note",
-        "tags": ["notes"]
+        "tags": [
+          "notes"
+        ]
       },
       "patch": {
         "parameters": [
@@ -10402,7 +11169,9 @@
           }
         ],
         "summary": "Update a journal note's fields",
-        "tags": ["notes"]
+        "tags": [
+          "notes"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/photos": {
@@ -10452,7 +11221,9 @@
           }
         ],
         "summary": "List progress photos for a project",
-        "tags": ["project_photos"]
+        "tags": [
+          "project_photos"
+        ]
       },
       "post": {
         "parameters": [
@@ -10476,7 +11247,9 @@
           }
         ],
         "summary": "Upload a progress photo to a project (multipart/form-data)",
-        "tags": ["project_photos"]
+        "tags": [
+          "project_photos"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/photos/{photo_id}": {
@@ -10510,7 +11283,9 @@
           }
         ],
         "summary": "Soft-delete a project photo",
-        "tags": ["project_photos"]
+        "tags": [
+          "project_photos"
+        ]
       },
       "patch": {
         "parameters": [
@@ -10542,7 +11317,9 @@
           }
         ],
         "summary": "Update caption and/or captured_at on a project photo",
-        "tags": ["project_photos"]
+        "tags": [
+          "project_photos"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/photos/{photo_id}/original": {
@@ -10576,7 +11353,9 @@
           }
         ],
         "summary": "Stream the original full-resolution image for a project photo",
-        "tags": ["project_photos"]
+        "tags": [
+          "project_photos"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/photos/{photo_id}/thumbnail": {
@@ -10610,7 +11389,9 @@
           }
         ],
         "summary": "Stream the JPEG thumbnail for a project photo",
-        "tags": ["project_photos"]
+        "tags": [
+          "project_photos"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/tasks": {
@@ -10636,7 +11417,9 @@
           }
         ],
         "summary": "List tasks for a project",
-        "tags": ["tasks"]
+        "tags": [
+          "tasks"
+        ]
       },
       "post": {
         "parameters": [
@@ -10670,7 +11453,9 @@
           }
         ],
         "summary": "Create a new task in a project",
-        "tags": ["tasks"]
+        "tags": [
+          "tasks"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/users": {
@@ -10696,7 +11481,9 @@
           }
         ],
         "summary": "Get users assigned to a project",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       },
       "post": {
         "parameters": [
@@ -10720,7 +11507,9 @@
           }
         ],
         "summary": "DEPRECATED — invite-only signup is the only membership-creation path",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/users/{user_id}": {
@@ -10754,7 +11543,9 @@
           }
         ],
         "summary": "Remove a user from a project",
-        "tags": ["projects"]
+        "tags": [
+          "projects"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/workers": {
@@ -10780,7 +11571,9 @@
           }
         ],
         "summary": "List workers for a project",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "post": {
         "parameters": [
@@ -10821,7 +11614,9 @@
           }
         ],
         "summary": "Create a new worker for a project",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/workers/{worker_id}": {
@@ -10855,7 +11650,9 @@
           }
         ],
         "summary": "Soft delete a worker (deactivate)",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "put": {
         "parameters": [
@@ -10904,7 +11701,9 @@
           }
         ],
         "summary": "Update an existing worker",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/workers/{worker_id}/labor-export": {
@@ -10954,7 +11753,10 @@
             "required": true,
             "schema": {
               "description": "Export format",
-              "enum": ["xlsx", "pdf"],
+              "enum": [
+                "xlsx",
+                "pdf"
+              ],
               "title": "Format",
               "type": "string"
             }
@@ -10971,7 +11773,9 @@
           }
         ],
         "summary": "Stream xlsx or pdf export for a single worker's labor data",
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/workers/{worker_id}/rate-changes": {
@@ -11004,7 +11808,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       },
       "post": {
         "parameters": [
@@ -11035,7 +11841,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/workers/{worker_id}/rate-changes/{rc_id}": {
@@ -11076,7 +11884,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["labor"]
+        "tags": [
+          "labor"
+        ]
       }
     },
     "/api/v1/push/devices": {
@@ -11102,7 +11912,9 @@
           }
         ],
         "summary": "Forget this device's push token (sign-out)",
-        "tags": ["push"]
+        "tags": [
+          "push"
+        ]
       },
       "post": {
         "requestBody": {
@@ -11126,7 +11938,9 @@
           }
         ],
         "summary": "Register this device's push token for the signed-in user",
-        "tags": ["push"]
+        "tags": [
+          "push"
+        ]
       }
     },
     "/api/v1/tasks/{task_id}": {
@@ -11152,7 +11966,9 @@
           }
         ],
         "summary": "Delete a task",
-        "tags": ["tasks"]
+        "tags": [
+          "tasks"
+        ]
       },
       "get": {
         "parameters": [
@@ -11176,7 +11992,9 @@
           }
         ],
         "summary": "Get a single task by ID",
-        "tags": ["tasks"]
+        "tags": [
+          "tasks"
+        ]
       },
       "put": {
         "parameters": [
@@ -11210,7 +12028,9 @@
           }
         ],
         "summary": "Update a task's fields",
-        "tags": ["tasks"]
+        "tags": [
+          "tasks"
+        ]
       }
     },
     "/api/v1/tasks/{task_id}/move": {
@@ -11246,7 +12066,9 @@
           }
         ],
         "summary": "Move a task to a new status column",
-        "tags": ["tasks"]
+        "tags": [
+          "tasks"
+        ]
       }
     },
     "/api/v1/users": {
@@ -11261,7 +12083,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["api_v1"]
+        "tags": [
+          "api_v1"
+        ]
       }
     },
     "/api/v1/users/me/primary-company": {
@@ -11287,7 +12111,9 @@
           }
         ],
         "summary": "Set the caller's primary company",
-        "tags": ["companies"]
+        "tags": [
+          "companies"
+        ]
       }
     },
     "/api/v1/users/{user_id}": {
@@ -11312,7 +12138,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["api_v1"]
+        "tags": [
+          "api_v1"
+        ]
       }
     },
     "/health": {
@@ -11327,7 +12155,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["health_check"]
+        "tags": [
+          "health_check"
+        ]
       }
     }
   }

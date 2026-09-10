@@ -123,6 +123,13 @@ export function LaborEntryRow({
           </Text>
         </Text>
       </View>
+      {entry.change_requested_at ? (
+        <Badge
+          testID="entry-change-requested"
+          label={t("worker.changeRequested")}
+          tone="warning"
+        />
+      ) : null}
       <Badge label={chip.label} tone={chip.tone} />
     </Pressable>
   );

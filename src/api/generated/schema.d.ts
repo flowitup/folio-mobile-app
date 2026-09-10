@@ -2274,6 +2274,47 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/companies/{company_id}/members/{person_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Set a company member's default daily rate and labor role (admin or manager) */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          company_id: string;
+          person_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateMemberPayDefaultsRequest"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    trace?: never;
+  };
   "/api/v1/companies/{company_id}/members/{user_id}/grants": {
     parameters: {
       query?: never;
@@ -8835,6 +8876,27 @@ export interface components {
       name: string | null;
     };
     /**
+     * UpdateMemberPayDefaultsRequest
+     * @description Request body for PATCH /companies/<id>/members/<person_id>.
+     *
+     *     Both fields are optional and nullable, and the two cases are NOT the same:
+     *     an absent key leaves the stored value untouched, while an explicit ``null``
+     *     clears it. The route reads ``model_fields_set`` to tell them apart, so the
+     *     default here is only what an absent key deserializes to.
+     */
+    UpdateMemberPayDefaultsRequest: {
+      /**
+       * Default Daily Rate
+       * @default null
+       */
+      default_daily_rate: number | string | null;
+      /**
+       * Labor Role Id
+       * @default null
+       */
+      labor_role_id: string | null;
+    };
+    /**
      * UpdateNotificationPreferencesRequest
      * @description Partial update — omitted fields keep their current value.
      *
@@ -9083,6 +9145,11 @@ export interface components {
        * @default []
        */
       companies: components["schemas"]["UserCompanySummary"][];
+      /**
+       * Display Name
+       * @default null
+       */
+      display_name: string | null;
       /** Email */
       email: string;
       /**
