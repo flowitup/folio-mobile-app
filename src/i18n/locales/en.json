@@ -29,8 +29,8 @@
       "email": "Email"
     },
     "phone": "Phone number",
-    "phoneHint": "e.g. 06 12 34 56 78, or +84 912 345 678 for a Vietnamese number",
-    "invalidPhone": "Enter a valid phone number.",
+    "phoneHint": "French numbers only, e.g. 06 12 34 56 78",
+    "invalidPhone": "Enter a valid French phone number.",
     "sendCode": "Send code",
     "codeSentTo": "A 6-digit code was sent to {{phone}}.",
     "code": "SMS code",

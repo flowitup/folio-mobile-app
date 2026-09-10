@@ -29,8 +29,8 @@
       "email": "Email"
     },
     "phone": "Số điện thoại",
-    "phoneHint": "VD: 06 12 34 56 78, số Việt Nam nhập +84 912 345 678",
-    "invalidPhone": "Nhập số điện thoại hợp lệ.",
+    "phoneHint": "Chỉ nhận số điện thoại Pháp, VD: 06 12 34 56 78",
+    "invalidPhone": "Nhập số điện thoại Pháp hợp lệ.",
     "sendCode": "Gửi mã",
     "codeSentTo": "Mã 6 số đã gửi tới {{phone}}.",
     "code": "Mã SMS",
