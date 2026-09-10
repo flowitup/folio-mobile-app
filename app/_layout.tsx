@@ -22,13 +22,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, LogBox, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider, useAuth } from "@/auth/auth-context";
 import { ToastProvider } from "@/components/ui/toast";
 import { useTokens } from "@/theme/tokens";
+
+// NativeWind's JSX transform also rewrites React Native's own LogBox sources, and
+// cssInterop mangles LogBoxButton's function-valued `style` (nativewind#1834). The
+// warning toast therefore renders white text on a white card — no readable content —
+// while still capturing every touch inside `position:absolute; bottom:20`, which puts
+// an invisible tap-blocker over the tab bar. Warnings stay visible in the Metro logs.
+if (__DEV__) LogBox.ignoreAllLogs();
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
