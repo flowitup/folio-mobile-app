@@ -87,6 +87,10 @@ npx expo prebuild      # generates ios/ and android/ (not committed)
 npm run ios            # or: npm run android
 ```
 
+`prebuild` copies `assets/` into `ios/` and `android/` once, at generation time — `npm run ios` /
+`npm run android` do not re-sync it. After any change to the brand assets or their `app.json` paths,
+re-run `npx expo prebuild -p <platform> --clean`; `npm run icons:check` reports when you have not.
+
 Local backend: run the Folio docker compose stack from the parent workspace; the API listens on
 `http://localhost:5000` (iOS simulator) / `http://10.0.2.2:5000` (Android emulator). Set `FEATURE_CHAT=1`
 on the API container to work on chat. Production API: `https://folio.flowitup.com`.
@@ -104,6 +108,7 @@ Once the dev client is installed, later runs only need Metro (`npm start`) and o
 | `npm run type-check`              | `tsc --noEmit`                                                               |
 | `npm test`                        | Jest                                                                         |
 | `npm run api:types`               | regenerate `src/api/generated/schema.d.ts` from `openapi/folio-openapi.json` |
+| `npm run icons:check`             | flags `ios/` / `android/` still holding pre-rebrand launcher icons           |
 
 Before every commit: `npx prettier --write`, `npm run lint`, `npm run type-check`, `npx jest --ci` —
 all four green, zero warnings (CI runs the last three).

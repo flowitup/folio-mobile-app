@@ -8,6 +8,7 @@
     "android": "expo run:android",
     "android:check-apk": "node scripts/check-android-apk-freshness.mjs",
     "ios": "expo run:ios",
+    "icons:check": "node scripts/check-native-icon-freshness.mjs",
     "lint": "expo lint",
     "type-check": "tsc --noEmit",
     "test": "jest",
