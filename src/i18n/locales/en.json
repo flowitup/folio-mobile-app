@@ -1609,6 +1609,7 @@
     "project_manage_invoices": "Manage invoices",
     "project_log_own_attendance": "Log own attendance",
     "bibliotheque_manage": "Manage the product library",
-    "project_view_pay": "View others' pay"
+    "project_view_pay": "View others' pay",
+    "project_view_budget": "View budget & released funds"
   }
 }

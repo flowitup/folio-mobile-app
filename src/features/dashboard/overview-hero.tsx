@@ -15,6 +15,14 @@ type Props = {
   spentPersonal: number;
   /** Bank credit not yet released (credit − draws); null when the project has no bank credit. */
   bankRemaining: number | null;
+  /**
+   * Whether the caller holds `project:view_budget`. False swaps the headline
+   * from "remaining to spend" (budget − spent) to plain total spent and drops
+   * everything measured against the project's financing: the ring gauge and its
+   * caption, both shares of a denominator the caller cannot see, and the
+   * "release funds" action, which the backend refuses anyway.
+   */
+  canViewBudget?: boolean;
   onAddInvoice: () => void;
   onAddRelease: () => void;
   onPayLabor: () => void;
@@ -34,6 +42,7 @@ export function OverviewHero({
   onAddInvoice,
   onAddRelease,
   onPayLabor,
+  canViewBudget = true,
 }: Props) {
   const { t } = useTranslation();
   const share = (value: number) =>
@@ -45,26 +54,30 @@ export function OverviewHero({
       <View className="flex-row items-center gap-[18px] px-5 pb-[30px] pt-[26px]">
         <View className="min-w-0 flex-1">
           <Text className="font-sans text-[11px] uppercase tracking-[1.1px] text-ink-block-muted">
-            {t("dashboard.remainingToSpend")}
+            {canViewBudget
+              ? t("dashboard.remainingToSpend")
+              : t("invoices.summary.spent")}
           </Text>
           <View className="mt-1.5">
             <InkFigure
-              amount={budget.left}
-              negative={budget.left < 0}
+              amount={canViewBudget ? budget.left : spentTotal}
+              negative={canViewBudget && budget.left < 0}
               testID="overview-remaining"
             />
           </View>
-          <Text className="mt-1.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted">
-            {t(
-              budget.usesBudget
-                ? "dashboard.overview.spentOfCredit"
-                : "dashboard.overview.spentOfReleased",
-              {
-                spent: formatMoney(spentTotal),
-                total: formatMoney(budget.denominator),
-              },
-            )}
-          </Text>
+          {canViewBudget ? (
+            <Text className="mt-1.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted">
+              {t(
+                budget.usesBudget
+                  ? "dashboard.overview.spentOfCredit"
+                  : "dashboard.overview.spentOfReleased",
+                {
+                  spent: formatMoney(spentTotal),
+                  total: formatMoney(budget.denominator),
+                },
+              )}
+            </Text>
+          ) : null}
           {bankRemaining !== null ? (
             <Text
               className="mt-0.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted"
@@ -77,24 +90,26 @@ export function OverviewHero({
             </Text>
           ) : null}
         </View>
-        <RingGauge
-          testID="overview-ring"
-          segments={[
-            { pct: share(spentByCredits), color: INK_BLOCK.text },
-            { pct: share(spentPersonal), color: INK_BLOCK.muted },
-          ]}
-          trackColor={INK_BLOCK.tile}
-        >
-          <Text
-            className="font-mono text-[22px] leading-[26px] text-on-ink-block"
-            testID="overview-ring-pct"
+        {canViewBudget ? (
+          <RingGauge
+            testID="overview-ring"
+            segments={[
+              { pct: share(spentByCredits), color: INK_BLOCK.text },
+              { pct: share(spentPersonal), color: INK_BLOCK.muted },
+            ]}
+            trackColor={INK_BLOCK.tile}
           >
-            {budget.pct}%
-          </Text>
-          <Text className="font-sans text-[10px] uppercase tracking-[0.8px] text-ink-block-muted">
-            {t("project.spent")}
-          </Text>
-        </RingGauge>
+            <Text
+              className="font-mono text-[22px] leading-[26px] text-on-ink-block"
+              testID="overview-ring-pct"
+            >
+              {budget.pct}%
+            </Text>
+            <Text className="font-sans text-[10px] uppercase tracking-[0.8px] text-ink-block-muted">
+              {t("project.spent")}
+            </Text>
+          </RingGauge>
+        ) : null}
       </View>
       <View className="flex-row gap-2 px-5 pb-6">
         <Pressable
@@ -111,16 +126,18 @@ export function OverviewHero({
             {t("dashboard.overview.addInvoice")}
           </Text>
         </Pressable>
-        <Pressable
-          testID="overview-add-release"
-          accessibilityRole="button"
-          onPress={onAddRelease}
-          className="h-11 flex-1 items-center justify-center rounded-xl border border-ink-block-line active:opacity-70"
-        >
-          <Text className="font-sans-medium text-[13px] text-on-ink-block">
-            {t("dashboard.overview.addRelease")}
-          </Text>
-        </Pressable>
+        {canViewBudget ? (
+          <Pressable
+            testID="overview-add-release"
+            accessibilityRole="button"
+            onPress={onAddRelease}
+            className="h-11 flex-1 items-center justify-center rounded-xl border border-ink-block-line active:opacity-70"
+          >
+            <Text className="font-sans-medium text-[13px] text-on-ink-block">
+              {t("dashboard.overview.addRelease")}
+            </Text>
+          </Pressable>
+        ) : null}
         <Pressable
           testID="overview-pay-labor"
           accessibilityRole="button"

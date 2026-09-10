@@ -171,8 +171,8 @@ export function ProjectSwitcherSheet() {
             {
               name: values.name,
               address: values.address,
-              budget: values.budget,
-              budget_source: values.budget_source,
+              budget: values.budget ?? null,
+              budget_source: values.budget_source ?? null,
               company_id: ownerCompanyId,
             },
             {

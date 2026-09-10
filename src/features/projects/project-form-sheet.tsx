@@ -11,16 +11,24 @@ import { View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/auth/auth-context";
 import { Sheet } from "@/components/ui/sheet";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 
-import type { Project, UpdateProjectInput } from "./projects-api";
+import { projectCan } from "./projects-api";
+import type { Project, UpdateProjectBody } from "./projects-api";
 
 export type ProjectFormValues = {
   name: string;
   address: string | null;
-  budget: number | null;
-  budget_source: string | null;
+  /**
+   * Financing side — present only when the caller holds `project:view_budget`.
+   * Absent (not null) otherwise: the API refuses a PUT that carries a budget
+   * the caller cannot read, and "absent" is how it is told to leave the stored
+   * value alone, while null would mean "clear it".
+   */
+  budget?: number | null;
+  budget_source?: string | null;
   invoice_prefix?: string | null;
 };
 
@@ -47,6 +55,13 @@ function toDraft(project?: Project) {
 export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
   function ProjectFormSheet({ project, submitting, onSubmit }, ref) {
     const { t } = useTranslation();
+    const { user } = useAuth();
+    // Editing an existing project: the financing fields need
+    // `project:view_budget`. Creating one is already admin-only
+    // (`project:create` is never customisable), so the fields always show there.
+    const canViewBudget = project
+      ? projectCan(project, "project:view_budget", user?.permissions)
+      : true;
     const sheet = useRef<BottomSheetModal>(null);
     const [draft, setDraft] = useState(() => toDraft(project));
     const [nameError, setNameError] = useState<string | null>(null);
@@ -69,8 +84,12 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
       const values: ProjectFormValues = {
         name,
         address: draft.address.trim() || null,
-        budget: budgetText ? parseMoneyInput(budgetText) : null,
-        budget_source: draft.budgetSource.trim() || null,
+        ...(canViewBudget
+          ? {
+              budget: budgetText ? parseMoneyInput(budgetText) : null,
+              budget_source: draft.budgetSource.trim() || null,
+            }
+          : {}),
       };
       if (project) values.invoice_prefix = draft.invoicePrefix.trim() || null;
       onSubmit(values);
@@ -99,27 +118,31 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
             value={draft.address}
             onChangeText={(address) => setDraft({ ...draft, address })}
           />
-          <Input
-            testID="project-form-budget"
-            label={t("project.form.budget")}
-            value={draft.budget}
-            onChangeText={(budget) => setDraft({ ...draft, budget })}
-            keyboardType="decimal-pad"
-            hint={
-              draft.budget
-                ? formatMoney(parseMoneyInput(draft.budget))
-                : undefined
-            }
-          />
-          <Input
-            testID="project-form-budget-source"
-            label={t("project.form.budgetSource")}
-            value={draft.budgetSource}
-            onChangeText={(budgetSource) =>
-              setDraft({ ...draft, budgetSource })
-            }
-            hint={t("project.form.budgetSourceHint")}
-          />
+          {canViewBudget ? (
+            <>
+              <Input
+                testID="project-form-budget"
+                label={t("project.form.budget")}
+                value={draft.budget}
+                onChangeText={(budget) => setDraft({ ...draft, budget })}
+                keyboardType="decimal-pad"
+                hint={
+                  draft.budget
+                    ? formatMoney(parseMoneyInput(draft.budget))
+                    : undefined
+                }
+              />
+              <Input
+                testID="project-form-budget-source"
+                label={t("project.form.budgetSource")}
+                value={draft.budgetSource}
+                onChangeText={(budgetSource) =>
+                  setDraft({ ...draft, budgetSource })
+                }
+                hint={t("project.form.budgetSourceHint")}
+              />
+            </>
+          ) : null}
           {project ? (
             <Input
               testID="project-form-invoice-prefix"
@@ -145,12 +168,16 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
 );
 
 /** Maps form values to the PUT body; the API keeps fields absent from the body unchanged. */
-export function toUpdateBody(values: ProjectFormValues): UpdateProjectInput {
+export function toUpdateBody(values: ProjectFormValues): UpdateProjectBody {
   return {
     name: values.name,
     address: values.address,
-    budget: values.budget,
-    budget_source: values.budget_source,
+    // Spread rather than assign: a caller without `project:view_budget` sends
+    // no budget key at all, and the API 403s a body that carries one.
+    ...("budget" in values ? { budget: values.budget } : {}),
+    ...("budget_source" in values
+      ? { budget_source: values.budget_source }
+      : {}),
     invoice_prefix: values.invoice_prefix ?? null,
   };
 }

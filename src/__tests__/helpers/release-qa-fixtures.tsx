@@ -75,9 +75,15 @@ const MEMBER_PROJECT = [
   "project:view_roster",
 ];
 const UNASSIGNED = ["user:read"];
+/**
+ * The financing side of a project — its budget and the funds released to the
+ * company. On the matrix it belongs to the admin alone; a manager gets it only
+ * through a D8 grant, which is why it is kept out of MANAGER_PROJECT above.
+ */
+const ADMIN_FINANCING = ["project:view_budget"];
 
 export const MATRIX = {
-  admin: [...ADMIN_ONLY, ...MANAGER_PROJECT, ...UNASSIGNED],
+  admin: [...ADMIN_ONLY, ...ADMIN_FINANCING, ...MANAGER_PROJECT, ...UNASSIGNED],
   manager: [...MANAGER_PROJECT, ...UNASSIGNED],
   member: [...MEMBER_PROJECT, ...UNASSIGNED],
 } as const;

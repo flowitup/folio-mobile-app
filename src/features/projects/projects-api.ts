@@ -61,14 +61,26 @@ export function useCreateProject() {
   });
 }
 
+/**
+ * PUT body. `UpdateProjectRequest` lists no required field — every property has
+ * a default — but openapi-typescript still emits them all as required, so the
+ * partial the route actually accepts is spelled out here. Omitting a key means
+ * "leave it as it is"; sending null means "clear it".
+ */
+export type UpdateProjectBody = Partial<UpdateProjectInput>;
+
 export function useUpdateProject(projectId: string) {
   const { t } = useTranslation();
-  return useApiMutation<UpdateProjectInput, Project>({
+  return useApiMutation<UpdateProjectBody, Project>({
     mutationFn: async (body) =>
       unwrap(
         await api.PUT("/api/v1/projects/{project_id}", {
           params: { path: { project_id: projectId } },
-          body,
+          // openapi-typescript emits every field of UpdateProjectRequest as
+          // required because each declares a default; the schema requires none
+          // and the route reads an absent key as "leave unchanged". This is the
+          // one place that mismatch has to be bridged.
+          body: body as UpdateProjectInput,
         }),
       ),
     invalidates: [projectKeys.all, projectKeys.detail(projectId)],

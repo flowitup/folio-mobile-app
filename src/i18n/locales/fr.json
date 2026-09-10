@@ -1609,6 +1609,7 @@
     "project_manage_invoices": "Gérer les factures",
     "project_log_own_attendance": "Pointer sa propre présence",
     "bibliotheque_manage": "Gérer la bibliothèque produits",
-    "project_view_pay": "Voir la paie des autres"
+    "project_view_pay": "Voir la paie des autres",
+    "project_view_budget": "Voir le budget et les fonds débloqués"
   }
 }

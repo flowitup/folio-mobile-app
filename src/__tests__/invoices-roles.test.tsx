@@ -99,10 +99,38 @@ describe("expenses tab · manager", () => {
     mockPersona = persona("manager");
   });
 
-  it("lists the month's invoices, the purses and the create button", async () => {
+  it("lists the month's invoices and the create button, but not the purses", async () => {
     await renderWithProviders(<ExpensesTab />);
 
     expect(await screen.findByTestId("expenses-title")).toBeTruthy();
+    expect(
+      await screen.findByTestId(`invoice-row-${INVOICE_MATERIALS.id}`),
+    ).toBeTruthy();
+    // The purse cards read spend as a share of the funds released to each
+    // purse, so they need project:view_budget. The fixture still serves the
+    // admin's meta — released totals and all — so these assertions fail if the
+    // client-side gate goes, rather than passing on an empty response.
+    expect(screen.queryByTestId("expenses-purse-company")).toBeNull();
+    expect(screen.queryByTestId("expenses-purse-personal")).toBeNull();
+    expect(screen.getByTestId("invoices-export")).toBeTruthy();
+    expect(screen.queryByTestId("worker-salary-title")).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("invoices-create"));
+    expect(mockRouter.push).toHaveBeenCalledWith(
+      `/projects/${PROJECT_ID}/invoices/new`,
+    );
+  });
+});
+
+describe("expenses tab · admin", () => {
+  beforeEach(() => {
+    mockPersona = persona("admin");
+  });
+
+  it("keeps the purses a manager does not get", async () => {
+    await renderWithProviders(<ExpensesTab />);
+
+    // Await the ledger before reading it — the rows arrive with the query.
     expect(
       await screen.findByTestId(`invoice-row-${INVOICE_MATERIALS.id}`),
     ).toBeTruthy();
@@ -111,13 +139,6 @@ describe("expenses tab · manager", () => {
     ).toBeTruthy();
     expect(screen.getByTestId("expenses-purse-company")).toBeTruthy();
     expect(screen.getByTestId("expenses-purse-personal")).toBeTruthy();
-    expect(screen.getByTestId("invoices-export")).toBeTruthy();
-    expect(screen.queryByTestId("worker-salary-title")).toBeNull();
-
-    await fireEvent.press(screen.getByTestId("invoices-create"));
-    expect(mockRouter.push).toHaveBeenCalledWith(
-      `/projects/${PROJECT_ID}/invoices/new`,
-    );
   });
 });
 
@@ -178,6 +199,35 @@ describe("salaries section · manager", () => {
 describe("new invoice · manager", () => {
   beforeEach(() => {
     mockPersona = persona("manager");
+    mockParams = { id: PROJECT_ID, type: "released_funds" };
+    mockPost.mockImplementation(async (_path: string, options: unknown) => ({
+      data: {
+        ...INVOICE_RELEASE,
+        id: "created-1",
+        ...(options as { body: Record<string, unknown> }).body,
+      },
+      response: { status: 201, statusText: "Created" },
+    }));
+  });
+
+  it("ignores a released-funds deep link and opens an expense instead", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+
+    // `?type=released_funds` is a link the manager can still be handed (an old
+    // build, a shared URL); without project:view_budget the form falls back to
+    // the everyday expense type rather than posting a release the API refuses.
+    expect(await screen.findByTestId("invoice-type")).toHaveTextContent(
+      containing(i18n.t("invoices.types.materials_services")),
+    );
+    expect(screen.getByTestId("invoice-type")).not.toHaveTextContent(
+      containing(i18n.t("invoices.types.released_funds")),
+    );
+  });
+});
+
+describe("new invoice · admin", () => {
+  beforeEach(() => {
+    mockPersona = persona("admin");
     mockParams = { id: PROJECT_ID, type: "released_funds" };
     mockPost.mockImplementation(async (_path: string, options: unknown) => ({
       data: {
