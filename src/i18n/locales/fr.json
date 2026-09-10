@@ -364,7 +364,10 @@
       "title": "Taux — {{name}}",
       "current": "Taux actuel : {{rate}} / jour",
       "effectiveDate": "À partir du",
-      "add": "Ajouter un changement"
+      "add": "Ajouter un changement",
+      "impact_zero": "Aucun jour pointé depuis le {{date}}",
+      "impact_one": "Recalcule 1 jour déjà pointé depuis le {{date}}",
+      "impact_other": "Recalcule {{count}} jours déjà pointés depuis le {{date}}"
     },
     "log": {
       "open": "Saisir la journée",

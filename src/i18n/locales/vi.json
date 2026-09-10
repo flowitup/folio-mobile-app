@@ -364,7 +364,10 @@
       "title": "Đơn giá — {{name}}",
       "current": "Đơn giá hiện tại: {{rate}} / ngày",
       "effectiveDate": "Áp dụng từ",
-      "add": "Thêm thay đổi"
+      "add": "Thêm thay đổi",
+      "impact_zero": "Chưa có ngày công nào từ {{date}}",
+      "impact_one": "Tính lại 1 ngày công đã chấm từ {{date}}",
+      "impact_other": "Tính lại {{count}} ngày công đã chấm từ {{date}}"
     },
     "log": {
       "open": "Chấm công ngày",

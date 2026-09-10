@@ -364,7 +364,10 @@
       "title": "Rates — {{name}}",
       "current": "Current rate: {{rate}} / day",
       "effectiveDate": "Effective from",
-      "add": "Add rate change"
+      "add": "Add rate change",
+      "impact_zero": "No days logged yet from {{date}}",
+      "impact_one": "Re-prices 1 day already logged since {{date}}",
+      "impact_other": "Re-prices {{count}} days already logged since {{date}}"
     },
     "log": {
       "open": "Log a day",

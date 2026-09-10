@@ -19,10 +19,12 @@ import { useMembers } from "@/features/projects/members-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import { laborRoleLabel } from "@/lib/labor/labor-role-label";
+import { countRepricedDays } from "@/lib/labor/rate-change-impact";
 
 import {
   useCreateRateChange,
   useDeleteRateChange,
+  useLaborEntries,
   useLaborRoles,
   useRateChanges,
 } from "./labor-api";
@@ -192,6 +194,19 @@ export const RateChangesSheet = forwardRef<
   const remove = useDeleteRateChange(projectId);
   const [date, setDate] = useState<string | null>(toIsoDate(new Date()));
   const [rate, setRate] = useState("");
+  // Days already logged from the picked date onward: the backend re-prices them
+  // on read, so show the admin how far back this change reaches before saving.
+  const logged = useLaborEntries(
+    projectId,
+    date ?? undefined,
+    undefined,
+    Boolean(worker && date),
+  );
+  const repricedDays = countRepricedDays(
+    logged.data ?? [],
+    worker?.id ?? "",
+    date ?? "",
+  );
 
   useImperativeHandle(ref, () => ({
     open: () => sheet.current?.present(),
@@ -239,6 +254,17 @@ export const RateChangesSheet = forwardRef<
           onChange={setDate}
           doneLabel={t("common.ok")}
         />
+        {date && !logged.isPending ? (
+          <Text
+            testID="rate-change-impact"
+            className="mb-2 text-xs text-muted-foreground"
+          >
+            {t("labor.rates.impact", {
+              count: repricedDays,
+              date: formatDate(date),
+            })}
+          </Text>
+        ) : null}
         <Input
           testID="rate-change-rate"
           label={t("labor.workers.dailyRate")}

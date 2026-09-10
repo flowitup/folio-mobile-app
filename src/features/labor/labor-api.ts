@@ -228,10 +228,16 @@ export function useDeleteRateChange(projectId: string) {
 
 // ---- entries ---------------------------------------------------------------
 
-export function useLaborEntries(projectId: string, from?: string, to?: string) {
+export function useLaborEntries(
+  projectId: string,
+  from?: string,
+  to?: string,
+  /** Callers that only need the range once a selection exists (rate-change impact) pass false to hold the fetch. */
+  enabled = true,
+) {
   return useQuery({
     queryKey: laborKeys.entries(projectId, from, to),
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId) && enabled,
     queryFn: async () =>
       unwrapAs<{ entries?: LaborEntry[] }>(
         await api.GET("/api/v1/projects/{project_id}/labor-entries", {
