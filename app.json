@@ -2,7 +2,7 @@
   "expo": {
     "name": "Folio",
     "slug": "folio-mobile-app",
-    "version": "0.2.15",
+    "version": "0.2.16",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "folio",
