@@ -6,17 +6,21 @@ describe("normalizePhone", () => {
     ["06 12 34 56 78", "+33612345678"],
     ["+33 6 12 34 56 78", "+33612345678"],
     ["0033612345678", "+33612345678"],
-    ["+84 912-345-678", "+84912345678"],
-    ["0084912345678", "+84912345678"],
-  ])("normalises %s (France by default)", (raw, expected) => {
+    ["01 42 34 56 78", "+33142345678"],
+  ])("normalises the French number %s", (raw, expected) => {
     expect(normalizePhone(raw)).toBe(expected);
   });
 
-  it("uses the region argument for national numbers", () => {
-    expect(normalizePhone("0912 345 678", "VN")).toBe("+84912345678");
+  it.each([
+    "+84 912-345-678",
+    "0084912345678",
+    "+44 20 7946 0958",
+    "+1 202 555 0173",
+  ])("refuses %s: sign-in accepts French numbers only", (raw) => {
+    expect(normalizePhone(raw)).toBeNull();
   });
 
-  it.each(["", "abc", "12345", "+0123456789", "912345678"])(
+  it.each(["", "abc", "12345", "+0123456789", "912345678", "0612345"])(
     "rejects %s",
     (raw) => {
       expect(normalizePhone(raw)).toBeNull();
