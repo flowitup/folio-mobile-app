@@ -8,11 +8,6 @@
     "scheme": "folio",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.flowitup.folio",
@@ -50,16 +45,22 @@
           "cameraPermission": "Folio uses the camera to capture invoices and site pictures."
         }
       ],
-      [
-        "@react-native-community/datetimepicker",
-        {}
-      ],
+      ["@react-native-community/datetimepicker", {}],
       "expo-document-picker",
       [
         "expo-notifications",
         {
           "icon": "./assets/android-icon-monochrome.png",
           "color": "#5A7A4A"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "imageWidth": 200
         }
       ]
     ],
