@@ -15,12 +15,12 @@
     "remove": "Retirer"
   },
   "login": {
-    "title": "Connexion à Folio",
+    "title": "Se connecter\nà Folio",
     "email": "E-mail",
     "password": "Mot de passe",
     "submit": "Se connecter",
     "failed": "Échec de la connexion : {{message}}",
-    "subtitle": "Même compte que la version web.",
+    "subtitle": "Un code SMS, sans mot de passe.",
     "show": "Afficher",
     "hide": "Masquer",
     "forgot": "Mot de passe oublié ? Contactez l'administrateur du chantier.",
@@ -29,13 +29,13 @@
       "email": "Email"
     },
     "phone": "Numéro de téléphone",
-    "phoneHint": "Numéros français uniquement, ex. 06 12 34 56 78",
+    "phoneHint": "Numéros français uniquement — sans le 0 initial. Code à 6 chiffres par SMS.",
     "invalidPhone": "Saisissez un numéro de téléphone français valide.",
     "sendCode": "Envoyer le code",
-    "codeSentTo": "Un code à 6 chiffres a été envoyé au {{phone}}.",
+    "codeSentTo": "Code à 6 chiffres envoyé au <mono>{{phone}}</mono>.",
     "code": "Code SMS",
     "verify": "Se connecter",
-    "resend": "Renvoyer",
+    "resend": "Renvoyer le code",
     "resendIn": "Renvoyer dans {{seconds}} s",
     "changePhone": "Changer de numéro",
     "noAccount": "Pas encore de compte ?",
@@ -46,7 +46,13 @@
       "phoneTaken": "Ce numéro a déjà un compte. Connectez-vous.",
       "smsFailed": "Le SMS n’a pas pu être envoyé. Réessayez dans un instant.",
       "throttled": "Un code vient d’être envoyé. Attendez une minute et réessayez."
-    }
+    },
+    "codeTitle": "Vérifiez vos\nmessages",
+    "emailSubtitle": "Le même compte que sur le web.",
+    "codeDigit": "Chiffre {{position}} sur {{total}}",
+    "codeExpires": "Expire dans {{minutes}} minutes",
+    "autoSubmitHint": "Connexion automatique dès les 6 chiffres",
+    "retry": "Réessayer"
   },
   "home": {
     "welcome": "Connecté en tant que {{email}}",

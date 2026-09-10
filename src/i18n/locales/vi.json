@@ -15,12 +15,12 @@
     "remove": "Gỡ"
   },
   "login": {
-    "title": "Đăng nhập Folio",
+    "title": "Đăng nhập\nFolio",
     "email": "Email",
     "password": "Mật khẩu",
     "submit": "Đăng nhập",
     "failed": "Đăng nhập thất bại: {{message}}",
-    "subtitle": "Cùng tài khoản với bản web.",
+    "subtitle": "Một mã SMS, không cần mật khẩu.",
     "show": "Hiện",
     "hide": "Ẩn",
     "forgot": "Quên mật khẩu? Liên hệ quản trị viên công trình.",
@@ -29,13 +29,13 @@
       "email": "Email"
     },
     "phone": "Số điện thoại",
-    "phoneHint": "Chỉ nhận số điện thoại Pháp, VD: 06 12 34 56 78",
+    "phoneHint": "Chỉ nhận số Pháp — bỏ số 0 đầu. Mã 6 số gửi qua SMS.",
     "invalidPhone": "Nhập số điện thoại Pháp hợp lệ.",
     "sendCode": "Gửi mã",
-    "codeSentTo": "Mã 6 số đã gửi tới {{phone}}.",
+    "codeSentTo": "Mã 6 số đã gửi tới <mono>{{phone}}</mono>.",
     "code": "Mã SMS",
     "verify": "Đăng nhập",
-    "resend": "Gửi lại",
+    "resend": "Gửi lại mã",
     "resendIn": "Gửi lại sau {{seconds}} giây",
     "changePhone": "Đổi số",
     "noAccount": "Chưa có tài khoản?",
@@ -46,7 +46,13 @@
       "phoneTaken": "Số này đã có tài khoản. Hãy đăng nhập.",
       "smsFailed": "Không gửi được tin nhắn. Thử lại sau giây lát.",
       "throttled": "Mã vừa được gửi. Đợi một phút rồi thử lại."
-    }
+    },
+    "codeTitle": "Kiểm tra\ntin nhắn",
+    "emailSubtitle": "Cùng tài khoản với bản web.",
+    "codeDigit": "Số thứ {{position}} / {{total}}",
+    "codeExpires": "Hết hạn sau {{minutes}} phút",
+    "autoSubmitHint": "Tự đăng nhập khi đủ 6 số",
+    "retry": "Thử lại"
   },
   "home": {
     "welcome": "Đã đăng nhập: {{email}}",
