@@ -357,7 +357,10 @@
       "day": "day",
       "perDay": "per day · {{count}} days",
       "account": "App account",
-      "accountNone": "Not linked"
+      "accountNone": "Not linked",
+      "fromCompany": "Company worker",
+      "fromCompanyNew": "Someone new",
+      "fromCompanyHint": "from the company directory"
     },
     "rates": {
       "link": "Rates",
