@@ -3,6 +3,7 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -20,6 +21,7 @@ import { formatDate, toIsoDate } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import { laborRoleLabel } from "@/lib/labor/labor-role-label";
 import { countRepricedDays } from "@/lib/labor/rate-change-impact";
+import { currentDailyRate } from "@/lib/labor/rate-history";
 
 import {
   useCreateRateChange,
@@ -27,6 +29,7 @@ import {
   useLaborEntries,
   useLaborRoles,
   useRateChanges,
+  useWorkers,
 } from "./labor-api";
 import type {
   BulkLogEntry,
@@ -196,6 +199,13 @@ export const RateChangesSheet = forwardRef<
   const [rate, setRate] = useState("");
   // Days already logged from the picked date onward: the backend re-prices them
   // on read, so show the admin how far back this change reaches before saving.
+  // The `worker` prop is captured when the actions sheet opens, so its
+  // current_daily_rate is stale the moment a change is saved. The mutation
+  // invalidates the workers query, so read the rate off that fresh row.
+  const workers = useWorkers(projectId);
+  const fresh =
+    workers.data?.find((candidate) => candidate.id === worker?.id) ?? worker;
+  const today = useMemo(() => toIsoDate(new Date()), []);
   const logged = useLaborEntries(
     projectId,
     date ?? undefined,
@@ -223,7 +233,7 @@ export const RateChangesSheet = forwardRef<
         <Text className="mb-3 text-sm text-muted-foreground">
           {t("labor.rates.current", {
             rate: formatMoney(
-              worker?.current_daily_rate ?? worker?.daily_rate ?? 0,
+              fresh ? currentDailyRate(fresh, changes.data ?? [], today) : 0,
             ),
           })}
         </Text>
