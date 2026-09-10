@@ -1609,6 +1609,7 @@
     "project_manage_invoices": "Quản lý hoá đơn",
     "project_log_own_attendance": "Tự chấm công",
     "bibliotheque_manage": "Quản lý thư viện sản phẩm",
-    "project_view_pay": "Xem lương người khác"
+    "project_view_pay": "Xem lương người khác",
+    "project_view_budget": "Xem ngân sách & vốn giải ngân"
   }
 }

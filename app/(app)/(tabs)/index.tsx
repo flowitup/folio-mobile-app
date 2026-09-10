@@ -19,6 +19,7 @@ import { useLaborEntries } from "@/features/labor/labor-api";
 import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
+import { useProjectCan } from "@/features/projects/use-project-can";
 import { useTasks } from "@/features/tasks/tasks-api";
 import { computeBankReleaseMetrics } from "@/lib/dashboard/bank-release-metrics";
 import { countWorkersOnSite } from "@/lib/dashboard/weather";
@@ -47,6 +48,10 @@ function OverviewTabContent() {
   const invoices = useInvoices(projectId);
   const tasks = useTasks(projectId);
   const billing = useBillingAccess();
+  // Financing side of the project: the backend nulls `budget` and zeroes every
+  // released-funds total without `project:view_budget`, so the hero drops the
+  // figures measured against them instead of drawing them from zeros.
+  const canViewBudget = useProjectCan(projectId, "project:view_budget");
   useRefetchOnFocus(invoices.refetch);
   useRefetchOnFocus(tasks.refetch);
 
@@ -96,7 +101,9 @@ function OverviewTabContent() {
             spentByCredits={project.spent_by_credits ?? 0}
             spentPersonal={project.spent_personal ?? 0}
             bankRemaining={
-              metrics.bank.hasCredit ? metrics.bank.remaining : null
+              canViewBudget && metrics.bank.hasCredit
+                ? metrics.bank.remaining
+                : null
             }
             onAddInvoice={() =>
               router.push(`/projects/${projectId}/invoices/new`)
@@ -108,6 +115,7 @@ function OverviewTabContent() {
               })
             }
             onPayLabor={payLabor}
+            canViewBudget={canViewBudget}
           />
         ) : (
           <View className="h-24 items-center justify-center">

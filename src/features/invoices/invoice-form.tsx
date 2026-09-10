@@ -19,6 +19,8 @@ import type {
   InvoiceType,
   SettledVia,
 } from "./invoice-types";
+import { useProjectCan } from "@/features/projects/use-project-can";
+
 import { useInvoices, usePaymentMethods, useWorkers } from "./invoices-api";
 
 export const INVOICE_TYPES: InvoiceType[] = [
@@ -77,9 +79,16 @@ export function InvoiceForm({
 }: Props) {
   const { t } = useTranslation();
   const editing = Boolean(initial);
+  // Recording a release is the financing side of the project: the backend
+  // refuses it without `project:view_budget`, so the type is dropped from the
+  // picker and a `?type=released_funds` deep link falls back to an expense.
+  const canRecordReleases = useProjectCan(projectId, "project:view_budget");
+  const requestedType = initial?.type ?? initialType;
 
   const [type, setType] = useState<InvoiceType>(
-    initial?.type ?? initialType ?? "materials_services",
+    requestedType && (canRecordReleases || requestedType !== "released_funds")
+      ? requestedType
+      : "materials_services",
   );
   const [issueDate, setIssueDate] = useState<string | null>(
     initial?.issue_date ?? toIsoDate(new Date()),
@@ -181,7 +190,9 @@ export function InvoiceForm({
     onSubmit(payload);
   }
 
-  const typeOptions = INVOICE_TYPES.map((value) => ({
+  const typeOptions = INVOICE_TYPES.filter(
+    (value) => canRecordReleases || value !== "released_funds",
+  ).map((value) => ({
     value,
     label: t(`invoices.types.${value}`),
   }));

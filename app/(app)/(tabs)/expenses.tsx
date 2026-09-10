@@ -27,6 +27,7 @@ import { useInvoices } from "@/features/invoices/invoices-api";
 import { WorkerSalaryTab } from "@/features/labor/worker-salary-tab";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
+import { useProjectCan } from "@/features/projects/use-project-can";
 import { currentMonth, formatMonth, shiftMonth } from "@/lib/format/date";
 import { buildPursesSummary } from "@/lib/invoices/expense-purses";
 import { groupInvoicesByMonth } from "@/lib/invoices/group-invoices-by-month";
@@ -42,6 +43,10 @@ const FILTERS: Filter[] = [
   "materials_services",
   "others",
 ];
+/** Same chips minus the financing side, for a caller without `project:view_budget`. */
+const SPEND_ONLY_FILTERS: Filter[] = FILTERS.filter(
+  (value) => value !== "released_funds",
+);
 
 /**
  * Chi phí (design 1b): ink header — project ▾, Fraunces title, month stepper — and hero with the
@@ -63,6 +68,7 @@ function ExpensesTabContent() {
   const [filter, setFilter] = useState<Filter>("all");
   const [month, setMonth] = useState(currentMonth());
   const invoices = useInvoices(projectId);
+  const canViewBudget = useProjectCan(projectId, "project:view_budget");
   const billing = useBillingAccess();
   const chatEnabled = useChatEnabled();
   useRefetchOnFocus(invoices.refetch);
@@ -112,6 +118,9 @@ function ExpensesTabContent() {
     };
   }, [allMonths, month]);
   const meta = invoices.data;
+  // Without `project:view_budget` the backend strips the release rows and
+  // zeroes these totals, so the purse cards — spend as a share of what was
+  // released — are hidden rather than drawn against zero.
   const releasedPersonal = meta?.funds_released_personal_total ?? 0;
   const releasedCompany =
     meta?.funds_released_company_total ??
@@ -186,24 +195,26 @@ function ExpensesTabContent() {
                     month: shortMonthLabel(headline.previous),
                   }).trim()}
                 </Text>
-                <View className="mt-4 flex-row gap-2.5">
-                  <PurseCard
-                    testID="expenses-purse-company"
-                    label={
-                      meta.company_name ?? t("invoices.summary.companyPurse")
-                    }
-                    released={releasedCompany}
-                    spent={summary.company.spent}
-                    tone="company"
-                  />
-                  <PurseCard
-                    testID="expenses-purse-personal"
-                    label={t("invoices.summary.personalPurse")}
-                    released={releasedPersonal}
-                    spent={summary.personal.spent}
-                    tone="personal"
-                  />
-                </View>
+                {canViewBudget ? (
+                  <View className="mt-4 flex-row gap-2.5">
+                    <PurseCard
+                      testID="expenses-purse-company"
+                      label={
+                        meta.company_name ?? t("invoices.summary.companyPurse")
+                      }
+                      released={releasedCompany}
+                      spent={summary.company.spent}
+                      tone="company"
+                    />
+                    <PurseCard
+                      testID="expenses-purse-personal"
+                      label={t("invoices.summary.personalPurse")}
+                      released={releasedPersonal}
+                      spent={summary.personal.spent}
+                      tone="personal"
+                    />
+                  </View>
+                ) : null}
               </>
             ) : null}
           </View>
@@ -211,13 +222,15 @@ function ExpensesTabContent() {
       >
         <ChipRow<Filter>
           testID="expenses-filter"
-          options={FILTERS.map((value) => ({
-            value,
-            label:
-              value === "all"
-                ? t("invoices.all")
-                : t(`expenses.filters.${value}`),
-          }))}
+          options={(canViewBudget ? FILTERS : SPEND_ONLY_FILTERS).map(
+            (value) => ({
+              value,
+              label:
+                value === "all"
+                  ? t("invoices.all")
+                  : t(`expenses.filters.${value}`),
+            }),
+          )}
           value={filter}
           onChange={setFilter}
         />

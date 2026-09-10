@@ -91,11 +91,13 @@ describe("overview tab · manager", () => {
 
     expect(await screen.findByTestId("overview-headline")).toBeTruthy();
     expect(screen.getByTestId("overview-remaining")).toBeTruthy();
-    expect(screen.getByTestId("overview-ring-pct")).toBeTruthy();
-    // Bank credit still to draw: budget 60 000 − 20 000 released.
-    expect(screen.getByTestId("overview-figure-bank")).toHaveTextContent(
-      containing(formatMoney(40000)),
-    );
+    // Financing side: no project:view_budget on the matrix, so the ring (spend
+    // as a share of the credit) and the bank draw-down are both absent. The
+    // fixture still serves the admin's payload — budget 60 000, 20 000
+    // released — so these assertions fail if the client-side gate is removed,
+    // rather than passing on an empty response.
+    expect(screen.queryByTestId("overview-ring-pct")).toBeNull();
+    expect(screen.queryByTestId("overview-figure-bank")).toBeNull();
     expect(await screen.findByTestId("overview-due-tiles")).toBeTruthy();
     expect(
       screen.getByTestId("overview-labor-unpaid-amount"),
@@ -106,7 +108,7 @@ describe("overview tab · manager", () => {
     expect(screen.queryByTestId("worker-attendance-title")).toBeNull();
   });
 
-  it("quick actions open the invoice form, the released-funds preset and the payments segment", async () => {
+  it("quick actions open the invoice form and the payments segment, but not a release", async () => {
     await renderWithProviders(<OverviewTab />);
     await screen.findByTestId("overview-headline");
 
@@ -115,11 +117,8 @@ describe("overview tab · manager", () => {
       `/projects/${PROJECT_ID}/invoices/new`,
     );
 
-    await fireEvent.press(screen.getByTestId("overview-add-release"));
-    expect(mockRouter.push).toHaveBeenCalledWith({
-      pathname: `/projects/${PROJECT_ID}/invoices/new`,
-      params: { type: "released_funds" },
-    });
+    // Recording a release needs project:view_budget, which a manager lacks.
+    expect(screen.queryByTestId("overview-add-release")).toBeNull();
 
     await fireEvent.press(screen.getByTestId("overview-pay-labor"));
     expect(mockRouter.navigate).toHaveBeenCalledWith({
@@ -142,6 +141,23 @@ describe("overview tab · manager", () => {
 describe("overview tab · admin", () => {
   beforeEach(() => {
     mockPersona = persona("admin");
+  });
+
+  it("shows the financing side a manager does not get", async () => {
+    await renderWithProviders(<OverviewTab />);
+    await screen.findByTestId("overview-headline");
+
+    expect(screen.getByTestId("overview-ring-pct")).toBeTruthy();
+    // Bank credit still to draw: budget 60 000 − 20 000 released.
+    expect(screen.getByTestId("overview-figure-bank")).toHaveTextContent(
+      containing(formatMoney(40000)),
+    );
+
+    await fireEvent.press(screen.getByTestId("overview-add-release"));
+    expect(mockRouter.push).toHaveBeenCalledWith({
+      pathname: `/projects/${PROJECT_ID}/invoices/new`,
+      params: { type: "released_funds" },
+    });
   });
 
   it("opens the company billing refund list for pending refunds", async () => {

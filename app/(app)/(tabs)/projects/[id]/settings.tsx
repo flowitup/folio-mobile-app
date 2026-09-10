@@ -52,20 +52,31 @@ export default function ProjectSettingsSection() {
   const canDelete =
     projectCan(data, "project:delete", user?.permissions) ||
     data.owner_id === user?.id;
+  // Financing side: the backend returns a null budget without
+  // `project:view_budget`, so the rows are dropped rather than shown blank.
+  const canViewBudget = projectCan(
+    data,
+    "project:view_budget",
+    user?.permissions,
+  );
 
   return (
     <ScrollView className="flex-1 bg-paper" contentContainerClassName="p-4">
       <Card className="mb-4">
         <Field label={t("project.form.name")} value={data.name} />
         <Field label={t("project.form.address")} value={data.address ?? ""} />
-        <Field
-          label={t("project.form.budget")}
-          value={data.budget != null ? formatMoney(data.budget) : ""}
-        />
-        <Field
-          label={t("project.form.budgetSource")}
-          value={data.budget_source ?? ""}
-        />
+        {canViewBudget ? (
+          <>
+            <Field
+              label={t("project.form.budget")}
+              value={data.budget != null ? formatMoney(data.budget) : ""}
+            />
+            <Field
+              label={t("project.form.budgetSource")}
+              value={data.budget_source ?? ""}
+            />
+          </>
+        ) : null}
         <Field
           label={t("project.form.invoicePrefix")}
           value={data.invoice_prefix ?? ""}
