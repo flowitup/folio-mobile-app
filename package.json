@@ -6,6 +6,7 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
+    "android:check-apk": "node scripts/check-android-apk-freshness.mjs",
     "ios": "expo run:ios",
     "lint": "expo lint",
     "type-check": "tsc --noEmit",
