@@ -5,9 +5,7 @@ import {
   MEMBERS,
   answerGet,
   callsTo,
-  ok,
   persona,
-  project,
   renderWithProviders,
 } from "./helpers/release-qa-fixtures";
 import type { Persona } from "./helpers/release-qa-fixtures";
@@ -51,6 +49,8 @@ jest.mock("@/api/client", () => ({
 }));
 
 const MEMBERS_PATH = "/api/v1/projects/{project_id}/members";
+/** The company directory the assign sheet loads — the backend reserves it to admins/managers. */
+const PERSONS_PATH = "/api/v1/companies/{company_id}/persons";
 const INVITATIONS_PATH =
   "/api/v1/invitations/projects/{project_id}/invitations";
 
@@ -77,6 +77,9 @@ describe("Members per role", () => {
       expect(screen.getByTestId("invitation-revoke-i1")).toBeTruthy(),
     );
     expect(callsTo(mockGet, INVITATIONS_PATH).length).toBeGreaterThan(0);
+    await waitFor(() =>
+      expect(callsTo(mockGet, PERSONS_PATH).length).toBeGreaterThan(0),
+    );
   });
 
   it("gives an admin the same controls", async () => {
@@ -112,6 +115,8 @@ describe("Members per role", () => {
       expect(callsTo(mockGet, MEMBERS_PATH).length).toBeGreaterThan(0),
     );
     expect(callsTo(mockGet, INVITATIONS_PATH)).toHaveLength(0);
+    // The assign sheet is not mounted for them, so its directory query never goes out either.
+    expect(callsTo(mockGet, PERSONS_PATH)).toHaveLength(0);
     expect(mockPut).not.toHaveBeenCalled();
     expect(mockDelete).not.toHaveBeenCalled();
   });
@@ -120,16 +125,6 @@ describe("Members per role", () => {
     mockCurrent = persona("manager", {
       deny: ["project:manage_users", "project:invite"],
     });
-    // The deny is scoped: the company-wide list still carries both permissions.
-    expect(mockCurrent.user.permissions).toEqual(
-      expect.arrayContaining(["project:manage_users", "project:invite"]),
-    );
-    mockGet.mockImplementation(async (path: string, options?: unknown) => {
-      if (path === "/api/v1/projects/{project_id}")
-        return ok(project(mockCurrent.scoped));
-      return answerGet(() => mockCurrent)(path, options as never);
-    });
-
     await renderWithProviders(<ProjectMembersSection />);
 
     // Settle both queries, then assert: the deny wins once the project row is known.
@@ -139,5 +134,9 @@ describe("Members per role", () => {
     );
     expect(screen.queryByTestId("member-remove-u-member")).toBeNull();
     expect(screen.queryByTestId("invitation-revoke-i1")).toBeNull();
+    // Both gated queries wait for the project's scoped answer, so the deny is never raced by a
+    // request the JWT-wide list would have allowed.
+    expect(callsTo(mockGet, INVITATIONS_PATH)).toHaveLength(0);
+    expect(callsTo(mockGet, PERSONS_PATH)).toHaveLength(0);
   });
 });

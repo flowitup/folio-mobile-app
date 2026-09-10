@@ -1,11 +1,13 @@
-import { screen, waitFor } from "@testing-library/react-native";
+import { act, screen, waitFor } from "@testing-library/react-native";
 
 import i18n from "@/i18n";
 import BillingHub from "../../app/(app)/(tabs)/billing/index";
 import {
+  BILLING_DEVIS,
   COMPANY_ID,
   answerGet,
   callsTo,
+  containing,
   ok,
   persona,
   renderWithProviders,
@@ -19,6 +21,8 @@ import type { Persona, Role } from "./helpers/release-qa-fixtures";
  * query, and only an allowed caller should ever issue it.
  */
 let mockCurrent: Persona = persona("admin");
+/** Captured so a test can replay a focus — `useRefetchOnFocus` skips only the first one. */
+let mockFocusCallbacks: (() => void)[] = [];
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
@@ -27,7 +31,9 @@ jest.mock("expo-router", () => ({
     replace: jest.fn(),
   }),
   useLocalSearchParams: () => ({}),
-  useFocusEffect: () => undefined,
+  useFocusEffect: (callback: () => void) => {
+    mockFocusCallbacks.push(callback);
+  },
 }));
 
 jest.mock("@/auth/auth-context", () => ({
@@ -63,8 +69,16 @@ function answerWithCompanyRole() {
 
 beforeEach(() => {
   mockGet.mockReset();
+  mockFocusCallbacks = [];
   mockGet.mockImplementation(answerWithCompanyRole());
 });
+
+/** Every focus after the first one triggers the refetch the hook guards. */
+async function replayFocus() {
+  await act(async () => {
+    for (const callback of mockFocusCallbacks) callback();
+  });
+}
 
 describe("Billing hub per company role", () => {
   it("opens the hub for a company admin", async () => {
@@ -79,6 +93,16 @@ describe("Billing hub per company role", () => {
     await waitFor(() =>
       expect(callsTo(mockGet, DOCUMENTS_PATH).length).toBeGreaterThan(0),
     );
+    // Rendering the row proves the response was unwrapped, not merely requested — an empty
+    // page would satisfy the call-count assertion even with the wrong unwrap key.
+    await waitFor(() =>
+      expect(
+        screen.getByTestId(`billing-doc-${BILLING_DEVIS.id}`),
+      ).toBeTruthy(),
+    );
+    expect(
+      screen.getByTestId(`billing-doc-${BILLING_DEVIS.id}`),
+    ).toHaveTextContent(containing(BILLING_DEVIS.document_number));
   });
 
   it.each(["manager", "member"] as Role[])(
@@ -93,6 +117,29 @@ describe("Billing hub per company role", () => {
       expect(screen.queryByTestId("billing-kind")).toBeNull();
       expect(screen.queryByTestId("billing-search")).toBeNull();
       expect(callsTo(mockGet, DOCUMENTS_PATH)).toHaveLength(0);
+
+      // `refetch()` fetches even a disabled query, so a screen that refetches on focus without
+      // re-checking access would re-issue the refused query on every return to it.
+      await replayFocus();
+      await replayFocus();
+      expect(callsTo(mockGet, DOCUMENTS_PATH)).toHaveLength(0);
     },
   );
+
+  it("still refetches on focus for an allowed admin", async () => {
+    mockCurrent = persona("admin");
+    await renderWithProviders(<BillingHub />);
+
+    await waitFor(() =>
+      expect(callsTo(mockGet, DOCUMENTS_PATH).length).toBeGreaterThan(0),
+    );
+    const before = callsTo(mockGet, DOCUMENTS_PATH).length;
+
+    await replayFocus();
+    await replayFocus();
+
+    await waitFor(() =>
+      expect(callsTo(mockGet, DOCUMENTS_PATH).length).toBeGreaterThan(before),
+    );
+  });
 });
