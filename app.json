@@ -2,7 +2,7 @@
   "expo": {
     "name": "Folio",
     "slug": "folio-mobile-app",
-    "version": "0.2.13",
+    "version": "0.2.14",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "folio",
@@ -45,7 +45,10 @@
           "cameraPermission": "Folio uses the camera to capture invoices and site pictures."
         }
       ],
-      ["@react-native-community/datetimepicker", {}],
+      [
+        "@react-native-community/datetimepicker",
+        {}
+      ],
       "expo-document-picker",
       [
         "expo-notifications",
