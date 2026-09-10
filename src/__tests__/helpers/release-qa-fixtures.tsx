@@ -116,6 +116,7 @@ export function persona(
     user: {
       id: `u-${role}`,
       email: `qa.${role}@example.com`,
+      display_name: null,
       phone: null,
       permissions: companyWide,
       companies: [

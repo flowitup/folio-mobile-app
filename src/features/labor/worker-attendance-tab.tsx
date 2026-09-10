@@ -171,7 +171,9 @@ export function WorkerAttendanceTab() {
               className="mt-1 font-sans text-[12.5px] text-muted"
               numberOfLines={1}
             >
-              {myWorker?.name ?? "…"} · {formatMonth(month)}
+              {myWorker?.name
+                ? `${myWorker.name} · ${formatMonth(month)}`
+                : formatMonth(month)}
             </Text>
           </View>
           <MonthPicker

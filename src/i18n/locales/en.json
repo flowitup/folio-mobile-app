@@ -39,7 +39,14 @@
     "resendIn": "Send again in {{seconds}} s",
     "changePhone": "Change number",
     "noAccount": "No account yet?",
-    "createAccount": "Create an account"
+    "createAccount": "Create an account",
+    "errors": {
+      "badCredentials": "Wrong e-mail or password.",
+      "invalidCode": "That code is wrong or has expired. Ask for a new one.",
+      "phoneTaken": "This number already has an account. Sign in instead.",
+      "smsFailed": "The text message could not be sent. Try again in a moment.",
+      "throttled": "A code was sent a moment ago. Wait a minute and try again."
+    }
   },
   "home": {
     "welcome": "Signed in as {{email}}",

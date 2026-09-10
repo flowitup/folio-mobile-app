@@ -25,6 +25,9 @@ import {
 } from "@/auth/token-storage";
 
 import type { components } from "@/api/generated/schema";
+import i18n from "@/i18n";
+import { authErrorKey } from "@/lib/auth/auth-error-message";
+import type { AuthFlow } from "@/lib/auth/auth-error-message";
 
 // `is_platform_ops` (D5) is not on the generated `UserResponse` yet — the backend ships it in
 // a later phase of the roles/permissions redesign. Declared optional here so the app reads it
@@ -61,9 +64,14 @@ type AuthContextValue = {
 type LoginPayload = components["schemas"]["LoginResponse"];
 
 function errorMessage(
+  flow: AuthFlow,
   error: unknown,
   response: { status: number } | undefined,
 ): string {
+  // Recognised failures get a translated string; the rest keep the server's own wording,
+  // which is more specific than any catch-all we could write.
+  const key = authErrorKey(flow, response?.status);
+  if (key) return i18n.t(key);
   return (
     (error as { message?: string } | undefined)?.message ??
     `HTTP ${response?.status ?? "?"}`
@@ -155,7 +163,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       "/api/v1/auth/otp/request",
       { body: { phone } },
     );
-    if (!data) throw new Error(errorMessage(error, response));
+    if (!data) throw new Error(errorMessage("otp", error, response));
     return data.expires_in;
   }, []);
 
@@ -165,7 +173,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/otp/verify",
         { body: { phone, code } },
       );
-      if (!data) throw new Error(errorMessage(error, response));
+      if (!data) throw new Error(errorMessage("otp", error, response));
       await applyLoginPayload(data);
     },
     [applyLoginPayload],
@@ -176,7 +184,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       "/api/v1/auth/signup/request",
       { body: { phone } },
     );
-    if (!data) throw new Error(errorMessage(error, response));
+    if (!data) throw new Error(errorMessage("signup", error, response));
     return data.expires_in;
   }, []);
 
@@ -186,7 +194,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/signup/verify",
         { body: { phone, code, display_name: displayName } },
       );
-      if (!data) throw new Error(errorMessage(error, response));
+      if (!data) throw new Error(errorMessage("signup", error, response));
       await applyLoginPayload(data);
     },
     [applyLoginPayload],
@@ -197,7 +205,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const { data, error, response } = await api.POST("/api/v1/auth/login", {
         body: { email, password },
       });
-      if (!data) throw new Error(errorMessage(error, response));
+      if (!data) throw new Error(errorMessage("password", error, response));
       await applyLoginPayload(data);
     },
     [applyLoginPayload],

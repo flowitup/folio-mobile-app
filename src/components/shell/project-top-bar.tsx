@@ -3,6 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/auth/auth-context";
+import { userDisplayName } from "@/lib/auth/user-display-name";
 import { useShell } from "@/components/shell/shell-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
@@ -109,13 +110,13 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
       >
         {ink ? (
           <Avatar
-            name={user?.email}
+            name={userDisplayName(user)}
             size={36}
             color={INK_BLOCK.tile}
             textColor={INK_BLOCK.text}
           />
         ) : (
-          <Avatar name={user?.email} size={36} />
+          <Avatar name={userDisplayName(user)} size={36} />
         )}
       </Pressable>
     </View>

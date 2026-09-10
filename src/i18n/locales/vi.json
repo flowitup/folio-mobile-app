@@ -39,7 +39,14 @@
     "resendIn": "Gửi lại sau {{seconds}} giây",
     "changePhone": "Đổi số",
     "noAccount": "Chưa có tài khoản?",
-    "createAccount": "Tạo tài khoản"
+    "createAccount": "Tạo tài khoản",
+    "errors": {
+      "badCredentials": "Email hoặc mật khẩu không đúng.",
+      "invalidCode": "Mã không đúng hoặc đã hết hạn. Hãy yêu cầu mã mới.",
+      "phoneTaken": "Số này đã có tài khoản. Hãy đăng nhập.",
+      "smsFailed": "Không gửi được tin nhắn. Thử lại sau giây lát.",
+      "throttled": "Mã vừa được gửi. Đợi một phút rồi thử lại."
+    }
   },
   "home": {
     "welcome": "Đã đăng nhập: {{email}}",
