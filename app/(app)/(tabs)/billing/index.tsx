@@ -27,6 +27,9 @@ import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
 
+/** Keeps the focus hook's dependency stable while the caller has no access to the list. */
+const NOOP_REFETCH = () => {};
+
 /** Status colors of the 2a list: sent warning, accepted / paid positive, overdue negative, rest muted. */
 const STATUS_CLASS: Record<BillingDocumentStatus, string> = {
   draft: "text-muted",
@@ -58,7 +61,10 @@ export default function BillingHub() {
   const [status, setStatus] = useState<BillingDocumentStatus | null>(null);
   const [search, setSearch] = useState("");
   const list = useBillingDocuments(kind, status, access.allowed);
-  useRefetchOnFocus(list.refetch);
+  // `refetch()` fetches even a disabled query, so the focus hook has to respect the gate too —
+  // otherwise a refused caller re-issues the company-wide query every time the screen regains
+  // focus, which is exactly what `enabled` is there to prevent.
+  useRefetchOnFocus(access.allowed ? list.refetch : NOOP_REFETCH);
 
   const documents = useMemo(() => {
     const all = list.data?.pages.flatMap((page) => page.items) ?? [];

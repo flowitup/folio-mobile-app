@@ -35,7 +35,8 @@ export default function ProjectMembersSection() {
   const members = useMembers(id);
   const invitations = useInvitations(
     id,
-    projectCan(project.data, "project:invite", user?.permissions),
+    project.isSuccess &&
+      projectCan(project.data, "project:invite", user?.permissions),
   );
   const unassign = useUnassignMember(id);
   const revoke = useRevokeInvitation(id);
@@ -142,12 +143,16 @@ export default function ProjectMembersSection() {
         </>
       ) : null}
 
-      <AssignMemberSheet
-        ref={assignSheet}
-        projectId={id}
-        companyId={project.data?.company_id}
-        members={members.data ?? []}
-      />
+      {/* Mounted only for a caller who can assign: the sheet loads the company directory,
+          which the backend reserves for a company admin or manager. */}
+      {canManage ? (
+        <AssignMemberSheet
+          ref={assignSheet}
+          projectId={id}
+          companyId={project.data?.company_id}
+          members={members.data ?? []}
+        />
+      ) : null}
 
       <ConfirmDialog
         visible={removing !== null}

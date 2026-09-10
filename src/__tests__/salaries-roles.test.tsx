@@ -74,9 +74,8 @@ describe("Salaries per role", () => {
     await fireEvent.press(pay);
 
     await waitFor(() =>
-      expect(screen.getByTestId("salary-amount")).toBeTruthy(),
+      expect(screen.getByTestId("salary-amount").props.value).toBe("150"),
     );
-    expect(screen.getByTestId("salary-amount").props.value).toBe("150");
   });
 
   it("shows a member the same months read-only", async () => {
@@ -89,6 +88,7 @@ describe("Salaries per role", () => {
     expect(screen.getByTestId("salaries-outstanding")).toHaveTextContent(
       containing("150"),
     );
+    expect(screen.getByTestId(`salary-month-${MONTH}`)).toBeTruthy();
     expect(screen.getByText(i18n.t("salaries.readOnly"))).toBeTruthy();
     expect(screen.queryByTestId(`salary-pay-${MONTH}`)).toBeNull();
     expect(mockPost).not.toHaveBeenCalled();
@@ -122,8 +122,9 @@ describe("Salaries per role", () => {
     mockCurrent = persona("manager", { deny: ["project:manage_invoices"] });
     await renderWithProviders(<ProjectSalariesSection />);
 
+    // Anchor on the month row: "no pay button" would pass vacuously on an empty month list.
     await waitFor(() =>
-      expect(screen.getByTestId("salaries-outstanding")).toBeTruthy(),
+      expect(screen.getByTestId(`salary-month-${MONTH}`)).toBeTruthy(),
     );
     await waitFor(() =>
       expect(screen.queryByTestId(`salary-pay-${MONTH}`)).toBeNull(),

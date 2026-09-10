@@ -9,6 +9,11 @@ import type { FloatingTabBar } from "@/components/shell/floating-tab-bar";
 import type { Invoice } from "@/features/invoices/invoice-types";
 import type { LaborEntry, Worker } from "@/features/labor/labor-types";
 import type { RosterRow } from "@/features/labor/roster-api";
+import type { BillingDocument } from "@/features/billing/billing-types";
+import type {
+  Invitation,
+  ProjectMember,
+} from "@/features/projects/members-api";
 import type { Project } from "@/features/projects/projects-api";
 import type { Task } from "@/features/tasks/tasks-api";
 import { toIsoDate } from "@/lib/format/date";
@@ -384,7 +389,7 @@ export const TASKS: Task[] = [
 ];
 
 /** `GET /projects/{id}/members` — the company people assigned to the QA project. */
-export const MEMBERS = [
+export const MEMBERS: ProjectMember[] = [
   {
     user_id: "u-manager",
     email: "qa.manager@example.com",
@@ -402,15 +407,53 @@ export const MEMBERS = [
 ];
 
 /** A legacy email invitation: still revocable from the screen, never created by the app. */
-export const INVITATIONS = [
+export const INVITATIONS: Invitation[] = [
   {
     id: "i1",
     email: "invited@example.com",
+    role_name: "member",
     status: "pending",
     created_at: `${MONTH}-02T08:00:00Z`,
     expires_at: `${MONTH}-09T08:00:00Z`,
+    invited_by_name: "QA Admin",
   },
 ];
+
+/** One quote, so the billing list's response shape is exercised by a rendered row. */
+export const BILLING_DEVIS: BillingDocument = {
+  id: "bd1",
+  user_id: "u-admin",
+  company_id: COMPANY_ID,
+  project_id: PROJECT_ID,
+  kind: "devis",
+  document_number: "DEV-2026-0001",
+  status: "draft",
+  issue_date: `${MONTH}-04`,
+  validity_until: null,
+  payment_due_date: null,
+  payment_terms: null,
+  recipient_name: "Client QA",
+  recipient_address: null,
+  recipient_email: null,
+  recipient_siret: null,
+  notes: null,
+  terms: null,
+  signature_block_text: null,
+  items: [],
+  issuer_legal_name: "Folio QA",
+  issuer_address: "1 rue de la Recette, 75000 Paris",
+  issuer_siret: null,
+  issuer_tva_number: null,
+  issuer_iban: null,
+  issuer_bic: null,
+  issuer_logo_url: null,
+  source_devis_id: null,
+  total_ht: "1000.00",
+  total_tva: "200.00",
+  total_ttc: "1200.00",
+  created_at: `${MONTH}-04T08:00:00Z`,
+  updated_at: `${MONTH}-04T08:00:00Z`,
+};
 
 /** The QA project as the backend returns it (list row and detail share the shape). */
 export function project(scoped: string[]): Project {
@@ -555,7 +598,7 @@ export function answerGet(
       case "/api/v1/invitations/projects/{project_id}/invitations":
         return ok({ items: INVITATIONS });
       case "/api/v1/billing-documents":
-        return ok({ items: [], total: 0 });
+        return ok({ items: [BILLING_DEVIS], total: 1 });
       case "/api/v1/labor/roles":
         return ok({ roles: [], palette: [] });
       case "/api/v1/companies/{company_id}/payment-methods":
