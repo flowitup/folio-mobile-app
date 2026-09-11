@@ -7,8 +7,14 @@ import { ShellSheet } from "@/components/shell/shell-sheet";
 import { Badge, ListRow } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/icon";
 import { Eyebrow } from "@/components/ui/typography";
-import { getHelpCatalogue } from "@/content/help";
-import type { HelpTopic } from "@/content/help";
+import {
+  getHelpCatalogue,
+  getHelpChrome,
+  resolveHelpLocale,
+  HELP_LOCALES,
+  HELP_LOCALE_NAMES,
+} from "@/content/help";
+import type { HelpChrome, HelpTopic } from "@/content/help";
 import { visibleHelpTopics } from "@/content/help/visibility";
 import { useAuth } from "@/auth/auth-context";
 import { isCompanyAdminAnywhere } from "@/auth/permissions";
@@ -24,7 +30,7 @@ import { useTokens } from "@/theme/tokens";
  * the question about.
  */
 export function HelpSheet() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const { sheet } = useShell();
   const { user } = useAuth();
   const { projectId } = useSelectedProject();
@@ -33,9 +39,21 @@ export function HelpSheet() {
   const billing = useBillingAccess();
   const isOpen = sheet === "help";
 
+  // The guide can be read in a language of its own: someone whose app is in Vietnamese may still
+  // want the French wording their colleagues use. Defaults to the app's language and changes
+  // nothing outside this panel.
+  const appLocale = resolveHelpLocale(i18n.language);
+  const [guideLocale, setGuideLocale] = useState(appLocale);
+  const [lastAppLocale, setLastAppLocale] = useState(appLocale);
+  if (lastAppLocale !== appLocale) {
+    setLastAppLocale(appLocale);
+    setGuideLocale(appLocale);
+  }
+  const chrome = getHelpChrome(guideLocale);
+
   // The guide lists what this reader's navigation lists. A worker has no Menu at all, so every
   // Menu-reached topic would otherwise walk them through a screen they cannot open.
-  const topics = visibleHelpTopics(getHelpCatalogue(i18n.language), {
+  const topics = visibleHelpTopics(getHelpCatalogue(guideLocale), {
     workerMode,
     canUpdateProject,
     billingAllowed: billing.allowed,
@@ -57,13 +75,18 @@ export function HelpSheet() {
 
   return (
     <ShellSheet open={isOpen} testID="help-sheet" scroll>
+      <LanguagePicker value={guideLocale} onChange={setGuideLocale} />
       {selected ? (
-        <TopicDetail topic={selected} onBack={() => setSelectedId(null)} />
+        <TopicDetail
+          topic={selected}
+          chrome={chrome}
+          onBack={() => setSelectedId(null)}
+        />
       ) : (
         <View>
-          <Eyebrow className="mb-2">{t("help.title")}</Eyebrow>
+          <Eyebrow className="mb-2">{chrome.title}</Eyebrow>
           <Text className="mb-3 font-sans text-[12.5px] text-muted">
-            {t("help.subtitle")}
+            {chrome.subtitle}
           </Text>
           <View className="overflow-hidden rounded-xl border border-line bg-card">
             {topics.map((topic) => (
@@ -84,14 +107,49 @@ export function HelpSheet() {
   );
 }
 
+function LanguagePicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (locale: (typeof HELP_LOCALES)[number]) => void;
+}) {
+  return (
+    <View testID="help-language" className="mb-3 flex-row gap-1.5">
+      {HELP_LOCALES.map((code) => {
+        const active = code === value;
+        return (
+          <Pressable
+            key={code}
+            testID={`help-language-${code}`}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
+            onPress={() => onChange(code)}
+            className={`rounded-full border px-2.5 py-1 active:opacity-70 ${
+              active ? "border-ink bg-ink" : "border-line bg-paper-2"
+            }`}
+          >
+            <Text
+              className={`font-sans-medium text-[11.5px] ${active ? "text-on-ink" : "text-muted"}`}
+            >
+              {HELP_LOCALE_NAMES[code]}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 function TopicDetail({
   topic,
+  chrome,
   onBack,
 }: {
   topic: HelpTopic;
+  chrome: HelpChrome;
   onBack: () => void;
 }) {
-  const { t } = useTranslation();
   const tokens = useTokens();
 
   return (
@@ -104,7 +162,7 @@ function TopicDetail({
         className="mb-3 flex-row items-center gap-1.5 self-start active:opacity-70"
       >
         <Icon name="arrow-left" size={14} color={tokens.muted} />
-        <Text className="font-sans text-xs text-muted">{t("help.back")}</Text>
+        <Text className="font-sans text-xs text-muted">{chrome.back}</Text>
       </Pressable>
 
       <Text className="font-serif text-[20px] leading-[24px] text-ink">
@@ -112,14 +170,14 @@ function TopicDetail({
       </Text>
       {topic.workerMode ? (
         <View className="mt-2">
-          <Badge label={t("help.workerBadge")} tone="neutral" />
+          <Badge label={chrome.workerBadge} tone="neutral" />
         </View>
       ) : null}
       <Text className="mb-4 mt-2 font-sans text-[13px] leading-[19px] text-muted">
         {topic.purpose}
       </Text>
 
-      <Eyebrow className="mb-2">{t("help.steps")}</Eyebrow>
+      <Eyebrow className="mb-2">{chrome.steps}</Eyebrow>
       <View className="mb-4 gap-2.5">
         {topic.steps.map((step, index) => (
           <View key={`${topic.id}-step-${index}`} className="flex-row gap-2.5">
@@ -135,14 +193,14 @@ function TopicDetail({
         ))}
       </View>
 
-      <Eyebrow className="mb-1.5">{t("help.whoCanDoIt")}</Eyebrow>
+      <Eyebrow className="mb-1.5">{chrome.whoCanDoIt}</Eyebrow>
       <Text className="mb-4 font-sans text-[13px] leading-[19px] text-ink">
         {topic.whoCanDoIt}
       </Text>
 
       {topic.webOnlyNote ? (
         <>
-          <Eyebrow className="mb-1.5">{t("help.webOnly")}</Eyebrow>
+          <Eyebrow className="mb-1.5">{chrome.webOnly}</Eyebrow>
           <Text className="mb-4 font-sans text-[13px] leading-[19px] text-ink">
             {topic.webOnlyNote}
           </Text>
@@ -151,7 +209,7 @@ function TopicDetail({
 
       {topic.gotchas && topic.gotchas.length > 0 ? (
         <>
-          <Eyebrow className="mb-1.5">{t("help.gotchas")}</Eyebrow>
+          <Eyebrow className="mb-1.5">{chrome.gotchas}</Eyebrow>
           <View className="mb-2 gap-1.5">
             {topic.gotchas.map((gotcha, index) => (
               <View

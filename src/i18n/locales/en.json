@@ -1573,14 +1573,6 @@
     "project_view_budget": "View budget & released funds"
   },
   "help": {
-    "title": "How Folio works",
-    "subtitle": "Every workflow, step by step.",
-    "back": "All topics",
-    "open": "Open the workflow guide",
-    "steps": "Steps",
-    "whoCanDoIt": "Who can do this",
-    "gotchas": "Good to know",
-    "webOnly": "On the web app",
-    "workerBadge": "Worker view"
+    "open": "Open the workflow guide"
   }
 }

@@ -1,4 +1,4 @@
-import type { HelpCatalogue } from "./types";
+import type { HelpCatalogue, HelpChrome } from "./types";
 
 /**
  * Le guide des processus en français. Traduit de `en.ts` et calé sur les libellés que
@@ -499,3 +499,15 @@ export const helpCatalogueFr: HelpCatalogue = [
     workerMode: true,
   },
 ];
+
+/** The panel's own labels in this language. */
+export const helpChromeFr: HelpChrome = {
+  title: "Comment fonctionne Folio",
+  subtitle: "Tous les processus, étape par étape.",
+  back: "Tous les sujets",
+  steps: "Étapes",
+  whoCanDoIt: "Qui peut le faire",
+  gotchas: "Bon à savoir",
+  webOnly: "Sur l'application web",
+  workerBadge: "Vue ouvrier",
+};

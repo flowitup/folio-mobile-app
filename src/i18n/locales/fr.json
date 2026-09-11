@@ -1573,14 +1573,6 @@
     "project_view_budget": "Voir le budget et les fonds débloqués"
   },
   "help": {
-    "title": "Comment fonctionne Folio",
-    "subtitle": "Tous les processus, étape par étape.",
-    "back": "Tous les sujets",
-    "open": "Ouvrir le guide des processus",
-    "steps": "Étapes",
-    "whoCanDoIt": "Qui peut le faire",
-    "gotchas": "Bon à savoir",
-    "webOnly": "Sur l'application web",
-    "workerBadge": "Vue ouvrier"
+    "open": "Ouvrir le guide des processus"
   }
 }
