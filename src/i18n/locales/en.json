@@ -15,12 +15,12 @@
     "remove": "Remove"
   },
   "login": {
-    "title": "Sign in to Folio",
+    "title": "Sign in to\nFolio",
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
     "failed": "Sign-in failed: {{message}}",
-    "subtitle": "Same account as the web app.",
+    "subtitle": "One SMS code, no password.",
     "show": "Show",
     "hide": "Hide",
     "forgot": "Forgot your password? Contact the project administrator.",
@@ -29,13 +29,13 @@
       "email": "Email"
     },
     "phone": "Phone number",
-    "phoneHint": "French numbers only, e.g. 06 12 34 56 78",
+    "phoneHint": "French numbers only — without the leading 0. A 6-digit code by SMS.",
     "invalidPhone": "Enter a valid French phone number.",
     "sendCode": "Send code",
-    "codeSentTo": "A 6-digit code was sent to {{phone}}.",
+    "codeSentTo": "6-digit code sent to <mono>{{phone}}</mono>.",
     "code": "SMS code",
     "verify": "Sign in",
-    "resend": "Send again",
+    "resend": "Resend code",
     "resendIn": "Send again in {{seconds}} s",
     "changePhone": "Change number",
     "noAccount": "No account yet?",
@@ -46,7 +46,13 @@
       "phoneTaken": "This number already has an account. Sign in instead.",
       "smsFailed": "The text message could not be sent. Try again in a moment.",
       "throttled": "A code was sent a moment ago. Wait a minute and try again."
-    }
+    },
+    "codeTitle": "Check your\nmessages",
+    "emailSubtitle": "The same account as on the web.",
+    "codeDigit": "Digit {{position}} of {{total}}",
+    "codeExpires": "Expires in {{minutes}} minutes",
+    "autoSubmitHint": "Signs in automatically at 6 digits",
+    "retry": "Try again"
   },
   "home": {
     "welcome": "Signed in as {{email}}",
