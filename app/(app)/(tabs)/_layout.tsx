@@ -4,6 +4,7 @@ import { View } from "react-native";
 import { AccountSheet } from "@/components/shell/account-sheet";
 import { ChatFab } from "@/components/shell/chat-fab";
 import { FloatingTabBar } from "@/components/shell/floating-tab-bar";
+import { HelpSheet } from "@/components/shell/help-sheet";
 import { MenuSheet } from "@/components/shell/menu-sheet";
 import { NotificationsSheet } from "@/components/shell/notifications-sheet";
 import { ProjectSwitcherSheet } from "@/components/shell/project-switcher-sheet";
@@ -22,7 +23,7 @@ const HIDDEN_ROUTES = [
 
 /**
  * Project-first shell (design 2a): four tabs of the selected project plus a Menu item, one
- * floating tab bar, and the shell sheets (switcher / account / menu / reminders) rendered above
+ * floating tab bar, and the shell sheets (switcher / account / menu / reminders / help) rendered above
  * the content but below the tab bar.
  */
 export default function TabsLayout() {
@@ -52,6 +53,7 @@ export default function TabsLayout() {
           <AccountSheet />
           <MenuSheet />
           <NotificationsSheet />
+          <HelpSheet />
         </View>
       </ShellProvider>
     </SelectedProjectProvider>

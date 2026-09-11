@@ -9,7 +9,8 @@ import {
 import type { PropsWithChildren } from "react";
 
 /** The shell sheets: one open at a time; scrim tap, tab change or navigation closes it. */
-export type ShellSheet = "switcher" | "account" | "menu" | "notifications";
+export type ShellSheet =
+  "switcher" | "account" | "menu" | "notifications" | "help";
 
 type ShellValue = {
   sheet: ShellSheet | null;
