@@ -1499,7 +1499,7 @@
     "logToday": "Log today",
     "logDay": "Log {{date}}",
     "submit": "Log this day",
-    "futureDay": "You can only log today or yesterday.",
+    "futureDay": "You can only log today or an earlier day.",
     "logged": "Attendance sent — waiting for your manager to validate.",
     "notLinked": "Your account is not linked to a worker on this site yet. Ask your manager.",
     "monthList": "Days this month",
