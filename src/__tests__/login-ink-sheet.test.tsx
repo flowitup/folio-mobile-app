@@ -15,11 +15,10 @@ const SAFE_AREA_METRICS: Metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
-let mockLoginMode: "phone" | "email" | "both" = "phone";
 jest.mock("@/auth/auth-config", () => ({
   ...jest.requireActual("@/auth/auth-config"),
   useAuthConfig: () => ({
-    data: { login_mode: mockLoginMode, session: "expiring", signup: false },
+    data: { session: "expiring", signup: false },
   }),
 }));
 
@@ -50,7 +49,6 @@ async function renderLogin() {
 
 describe("Login — ink header + paper sheet (design 2c / 2d)", () => {
   beforeEach(() => {
-    mockLoginMode = "phone";
     mockRequestOtp.mockReset().mockResolvedValue(300);
     mockSignInWithOtp.mockReset().mockResolvedValue(undefined);
   });
