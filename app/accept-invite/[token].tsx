@@ -183,9 +183,14 @@ export default function AcceptInviteScreen() {
         phone: sentTo,
         code,
       });
-      // Acceptance already signed them in — adopt the session and let the
-      // root layout route them into the app.
+      // Acceptance already signed them in — adopt the session, then navigate.
+      // This screen sits outside the Stack.Protected guards so the invitee can
+      // reach it signed out, which also means flipping to "signedIn" makes the
+      // app navigable but does not navigate; without this replace the render
+      // below falls into the "signed in as someone else" branch and offers to
+      // sign out of the session just earned.
       await signInWithSession(session);
+      router.replace("/(app)/(tabs)");
     } catch (caught) {
       fail(caught);
     } finally {

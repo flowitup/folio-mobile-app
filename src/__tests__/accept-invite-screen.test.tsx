@@ -109,8 +109,13 @@ describe("accept-invite screen", () => {
     await waitFor(() =>
       expect(mockSignInWithSession).toHaveBeenCalledWith(SESSION),
     );
-    expect(mockReplace).not.toHaveBeenCalledWith(
-      expect.objectContaining({ pathname: "/(auth)" }),
+    // ...and then navigates. This screen sits outside the Stack.Protected
+    // guards, so adopting the session alone leaves the invitee sitting on the
+    // invite screen — which, now that they are signed in, renders the "signed
+    // in as someone else" branch offering to sign out of the session they just
+    // earned. Assert the navigation itself, not merely the absence of a wrong one.
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/(app)/(tabs)"),
     );
   });
 
