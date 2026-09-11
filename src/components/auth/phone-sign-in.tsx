@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Pressable, Text, TextInput, View } from "react-native";
 
@@ -20,13 +20,7 @@ import { INK_BLOCK, useTokens } from "@/theme/tokens";
 const RESEND_SECONDS = 60;
 
 /** Step 1: phone → "Send code"; step 2: the 6-digit code with a 60 s resend timer. */
-export function PhoneSignIn({
-  signup,
-  modeSwitcher,
-}: {
-  signup: boolean;
-  modeSwitcher: ReactNode;
-}) {
+export function PhoneSignIn({ signup }: { signup: boolean }) {
   const { t } = useTranslation();
   const tokens = useTokens();
   const router = useRouter();
@@ -134,7 +128,6 @@ export function PhoneSignIn({
         headline={t("login.title")}
         sub={t("login.subtitle")}
       >
-        {modeSwitcher ? <View className="mb-5">{modeSwitcher}</View> : null}
         <Eyebrow className="mb-2">{t("login.phone")}</Eyebrow>
         <View className="mb-2 flex-row gap-2">
           <View className="h-[52px] flex-row items-center gap-1.5 rounded-[10px] border border-line-2 bg-paper-2 px-3">

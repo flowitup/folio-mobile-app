@@ -2,12 +2,11 @@ import { authErrorKey } from "@/lib/auth/auth-error-message";
 
 describe("authErrorKey", () => {
   it("localises the resend throttle for every flow", () => {
-    for (const flow of ["password", "otp", "signup"] as const)
+    for (const flow of ["otp", "signup"] as const)
       expect(authErrorKey(flow, 429)).toBe("login.errors.throttled");
   });
 
-  it("separates a wrong password from a wrong SMS code", () => {
-    expect(authErrorKey("password", 401)).toBe("login.errors.badCredentials");
+  it("maps a wrong or expired code the same way for every flow", () => {
     expect(authErrorKey("otp", 401)).toBe("login.errors.invalidCode");
     expect(authErrorKey("signup", 401)).toBe("login.errors.invalidCode");
   });

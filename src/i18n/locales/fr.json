@@ -12,47 +12,32 @@
     "saved": "Enregistré.",
     "edit": "Modifier",
     "back": "Retour",
-    "remove": "Retirer"
+    "remove": "Retirer",
+    "email": "E-mail"
   },
   "login": {
-    "title": "Se connecter\nà Folio",
-    "email": "E-mail",
-    "password": "Mot de passe",
+    "title": "Connexion à Folio",
     "submit": "Se connecter",
     "failed": "Échec de la connexion : {{message}}",
-    "subtitle": "Un code SMS, sans mot de passe.",
-    "show": "Afficher",
-    "hide": "Masquer",
-    "forgot": "Mot de passe oublié ? Contactez l'administrateur du chantier.",
-    "mode": {
-      "phone": "Numéro de téléphone",
-      "email": "Email"
-    },
+    "subtitle": "Même compte que la version web.",
     "phone": "Numéro de téléphone",
-    "phoneHint": "Numéros français uniquement — sans le 0 initial. Code à 6 chiffres par SMS.",
+    "phoneHint": "Numéros français uniquement, ex. 06 12 34 56 78",
     "invalidPhone": "Saisissez un numéro de téléphone français valide.",
     "sendCode": "Envoyer le code",
-    "codeSentTo": "Code à 6 chiffres envoyé au <mono>{{phone}}</mono>.",
+    "codeSentTo": "Un code à 6 chiffres a été envoyé au {{phone}}.",
     "code": "Code SMS",
     "verify": "Se connecter",
-    "resend": "Renvoyer le code",
+    "resend": "Renvoyer",
     "resendIn": "Renvoyer dans {{seconds}} s",
     "changePhone": "Changer de numéro",
     "noAccount": "Pas encore de compte ?",
     "createAccount": "Créer un compte",
     "errors": {
-      "badCredentials": "E-mail ou mot de passe incorrect.",
       "invalidCode": "Ce code est incorrect ou a expiré. Demandez-en un nouveau.",
       "phoneTaken": "Ce numéro a déjà un compte. Connectez-vous.",
       "smsFailed": "Le SMS n’a pas pu être envoyé. Réessayez dans un instant.",
       "throttled": "Un code vient d’être envoyé. Attendez une minute et réessayez."
-    },
-    "codeTitle": "Vérifiez vos\nmessages",
-    "emailSubtitle": "Le même compte que sur le web.",
-    "codeDigit": "Chiffre {{position}} sur {{total}}",
-    "codeExpires": "Expire dans {{minutes}} minutes",
-    "autoSubmitHint": "Connexion automatique dès les 6 chiffres",
-    "retry": "Réessayer"
+    }
   },
   "home": {
     "welcome": "Connecté en tant que {{email}}",
@@ -339,7 +324,15 @@
       "payments": "Paiements"
     },
     "calendar": {
-      "weekdays": ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"],
+      "weekdays": [
+        "Lu",
+        "Ma",
+        "Me",
+        "Je",
+        "Ve",
+        "Sa",
+        "Di"
+      ],
       "empty": "Aucun pointage",
       "logDay": "Pointer ce jour",
       "details": "Activités & notes",
@@ -1281,13 +1274,8 @@
     "subtitle": "{{inviterName}} vous a invité en tant que {{roleName}}",
     "emailLabel": "E-mail",
     "nameLabel": "Votre nom complet",
-    "passwordLabel": "Choisissez un mot de passe",
-    "confirmLabel": "Confirmez le mot de passe",
     "submit": "Créer le compte",
     "submitting": "Création du compte...",
-    "passwordHint": "8-128 caractères",
-    "passwordMismatch": "Les mots de passe ne correspondent pas",
-    "success": "Compte créé. Bienvenue !",
     "errors": {
       "expired": "Cette invitation a expiré. Demandez à votre invitant d'en envoyer une nouvelle.",
       "revoked": "Cette invitation a été révoquée. Contactez votre invitant.",
@@ -1300,7 +1288,8 @@
       "body": "Vous êtes connecté en tant que {{currentEmail}}. Déconnectez-vous pour accepter cette invitation.",
       "signOut": "Se déconnecter et continuer"
     },
-    "backToLogin": "Aller à la connexion"
+    "backToLogin": "Aller à la connexion",
+    "success": "Compte créé. Bienvenue !"
   },
   "laborRoles": {
     "title": "Rôles main-d'œuvre",

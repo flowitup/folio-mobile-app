@@ -12,47 +12,32 @@
     "saved": "Đã lưu.",
     "edit": "Sửa",
     "back": "Quay lại",
-    "remove": "Gỡ"
+    "remove": "Gỡ",
+    "email": "Email"
   },
   "login": {
-    "title": "Đăng nhập\nFolio",
-    "email": "Email",
-    "password": "Mật khẩu",
+    "title": "Đăng nhập Folio",
     "submit": "Đăng nhập",
     "failed": "Đăng nhập thất bại: {{message}}",
-    "subtitle": "Một mã SMS, không cần mật khẩu.",
-    "show": "Hiện",
-    "hide": "Ẩn",
-    "forgot": "Quên mật khẩu? Liên hệ quản trị viên công trình.",
-    "mode": {
-      "phone": "Số điện thoại",
-      "email": "Email"
-    },
+    "subtitle": "Cùng tài khoản với bản web.",
     "phone": "Số điện thoại",
-    "phoneHint": "Chỉ nhận số Pháp — bỏ số 0 đầu. Mã 6 số gửi qua SMS.",
+    "phoneHint": "Chỉ nhận số điện thoại Pháp, VD: 06 12 34 56 78",
     "invalidPhone": "Nhập số điện thoại Pháp hợp lệ.",
     "sendCode": "Gửi mã",
-    "codeSentTo": "Mã 6 số đã gửi tới <mono>{{phone}}</mono>.",
+    "codeSentTo": "Mã 6 số đã gửi tới {{phone}}.",
     "code": "Mã SMS",
     "verify": "Đăng nhập",
-    "resend": "Gửi lại mã",
+    "resend": "Gửi lại",
     "resendIn": "Gửi lại sau {{seconds}} giây",
     "changePhone": "Đổi số",
     "noAccount": "Chưa có tài khoản?",
     "createAccount": "Tạo tài khoản",
     "errors": {
-      "badCredentials": "Email hoặc mật khẩu không đúng.",
       "invalidCode": "Mã không đúng hoặc đã hết hạn. Hãy yêu cầu mã mới.",
       "phoneTaken": "Số này đã có tài khoản. Hãy đăng nhập.",
       "smsFailed": "Không gửi được tin nhắn. Thử lại sau giây lát.",
       "throttled": "Mã vừa được gửi. Đợi một phút rồi thử lại."
-    },
-    "codeTitle": "Kiểm tra\ntin nhắn",
-    "emailSubtitle": "Cùng tài khoản với bản web.",
-    "codeDigit": "Số thứ {{position}} / {{total}}",
-    "codeExpires": "Hết hạn sau {{minutes}} phút",
-    "autoSubmitHint": "Tự đăng nhập khi đủ 6 số",
-    "retry": "Thử lại"
+    }
   },
   "home": {
     "welcome": "Đã đăng nhập: {{email}}",
@@ -339,7 +324,15 @@
       "payments": "Thanh toán"
     },
     "calendar": {
-      "weekdays": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+      "weekdays": [
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "CN"
+      ],
       "empty": "Chưa chấm công",
       "logDay": "Chấm công ngày này",
       "details": "Hoạt động & ghi chú",
@@ -1281,13 +1274,8 @@
     "subtitle": "{{inviterName}} đã mời bạn với vai trò {{roleName}}",
     "emailLabel": "Email",
     "nameLabel": "Họ và tên",
-    "passwordLabel": "Chọn mật khẩu",
-    "confirmLabel": "Xác nhận mật khẩu",
     "submit": "Tạo tài khoản",
     "submitting": "Đang tạo tài khoản...",
-    "passwordHint": "8-128 ký tự",
-    "passwordMismatch": "Mật khẩu không khớp",
-    "success": "Tài khoản đã được tạo. Chào mừng!",
     "errors": {
       "expired": "Lời mời này đã hết hạn. Hãy nhờ người mời gửi lại.",
       "revoked": "Lời mời này đã bị thu hồi. Liên hệ người mời.",
@@ -1300,7 +1288,8 @@
       "body": "Bạn đang đăng nhập là {{currentEmail}}. Đăng xuất để chấp nhận lời mời này.",
       "signOut": "Đăng xuất và tiếp tục"
     },
-    "backToLogin": "Đến trang đăng nhập"
+    "backToLogin": "Đến trang đăng nhập",
+    "success": "Đã tạo tài khoản. Chào mừng!"
   },
   "laborRoles": {
     "title": "Vai trò nhân công",

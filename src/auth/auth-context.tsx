@@ -45,7 +45,6 @@ type AuthStatus = "loading" | "signedOut" | "signedIn";
 type AuthContextValue = {
   status: AuthStatus;
   user: AuthUser | null;
-  signIn: (email: string, password: string) => Promise<void>;
   /** Asks the backend to text a 6-digit code; resolves with the code's lifetime in seconds. */
   requestOtp: (phone: string) => Promise<number>;
   signInWithOtp: (phone: string, code: string) => Promise<void>;
@@ -104,7 +103,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return () => setSessionExpiredHandler(null);
   }, [signOutLocally]);
 
-  // Shared post-login step for both the password and OTP flows. The login/OTP responses embed
+  // Shared post-login step for both OTP flows (sign-in and sign-up). Their responses embed
   // a `user` snapshot that carries `companies` in normal operation; only fall back to a
   // `/auth/me` round trip when a payload omits it (older backend build).
   const applyLoginPayload = useCallback(async (data: LoginPayload) => {
@@ -200,17 +199,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [applyLoginPayload],
   );
 
-  const signIn = useCallback(
-    async (email: string, password: string) => {
-      const { data, error, response } = await api.POST("/api/v1/auth/login", {
-        body: { email, password },
-      });
-      if (!data) throw new Error(errorMessage("password", error, response));
-      await applyLoginPayload(data);
-    },
-    [applyLoginPayload],
-  );
-
   const signOut = useCallback(async () => {
     // Best effort server-side revocation (access + refresh); local sign-out must succeed even offline.
     await unregisterPushDevice();
@@ -227,7 +215,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     () => ({
       status,
       user,
-      signIn,
       requestOtp,
       signInWithOtp,
       requestSignupOtp,
@@ -238,7 +225,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [
       status,
       user,
-      signIn,
       requestOtp,
       signInWithOtp,
       requestSignupOtp,

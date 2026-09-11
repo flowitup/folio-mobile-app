@@ -12,47 +12,32 @@
     "saved": "Saved.",
     "edit": "Edit",
     "back": "Back",
-    "remove": "Remove"
+    "remove": "Remove",
+    "email": "Email"
   },
   "login": {
-    "title": "Sign in to\nFolio",
-    "email": "Email",
-    "password": "Password",
+    "title": "Sign in to Folio",
     "submit": "Sign in",
     "failed": "Sign-in failed: {{message}}",
-    "subtitle": "One SMS code, no password.",
-    "show": "Show",
-    "hide": "Hide",
-    "forgot": "Forgot your password? Contact the project administrator.",
-    "mode": {
-      "phone": "Phone number",
-      "email": "Email"
-    },
+    "subtitle": "Same account as the web app.",
     "phone": "Phone number",
-    "phoneHint": "French numbers only — without the leading 0. A 6-digit code by SMS.",
+    "phoneHint": "French numbers only, e.g. 06 12 34 56 78",
     "invalidPhone": "Enter a valid French phone number.",
     "sendCode": "Send code",
-    "codeSentTo": "6-digit code sent to <mono>{{phone}}</mono>.",
+    "codeSentTo": "A 6-digit code was sent to {{phone}}.",
     "code": "SMS code",
     "verify": "Sign in",
-    "resend": "Resend code",
+    "resend": "Send again",
     "resendIn": "Send again in {{seconds}} s",
     "changePhone": "Change number",
     "noAccount": "No account yet?",
     "createAccount": "Create an account",
     "errors": {
-      "badCredentials": "Wrong e-mail or password.",
       "invalidCode": "That code is wrong or has expired. Ask for a new one.",
       "phoneTaken": "This number already has an account. Sign in instead.",
       "smsFailed": "The text message could not be sent. Try again in a moment.",
       "throttled": "A code was sent a moment ago. Wait a minute and try again."
-    },
-    "codeTitle": "Check your\nmessages",
-    "emailSubtitle": "The same account as on the web.",
-    "codeDigit": "Digit {{position}} of {{total}}",
-    "codeExpires": "Expires in {{minutes}} minutes",
-    "autoSubmitHint": "Signs in automatically at 6 digits",
-    "retry": "Try again"
+    }
   },
   "home": {
     "welcome": "Signed in as {{email}}",
@@ -339,7 +324,15 @@
       "payments": "Payments"
     },
     "calendar": {
-      "weekdays": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+      "weekdays": [
+        "Mo",
+        "Tu",
+        "We",
+        "Th",
+        "Fr",
+        "Sa",
+        "Su"
+      ],
       "empty": "No attendance yet",
       "logDay": "Log this day",
       "details": "Activities & notes",
@@ -1281,13 +1274,8 @@
     "subtitle": "{{inviterName}} invited you as {{roleName}}",
     "emailLabel": "Email",
     "nameLabel": "Your full name",
-    "passwordLabel": "Choose a password",
-    "confirmLabel": "Confirm password",
     "submit": "Create account",
     "submitting": "Creating account...",
-    "passwordHint": "8-128 characters",
-    "passwordMismatch": "Passwords do not match",
-    "success": "Account created. Welcome!",
     "errors": {
       "expired": "This invitation has expired. Ask your inviter to send a new one.",
       "revoked": "This invitation was revoked. Contact your inviter.",
@@ -1300,7 +1288,8 @@
       "body": "You're signed in as {{currentEmail}}. Sign out to accept this invitation.",
       "signOut": "Sign out and continue"
     },
-    "backToLogin": "Go to login"
+    "backToLogin": "Go to login",
+    "success": "Account created. Welcome!"
   },
   "laborRoles": {
     "title": "Labor roles",
