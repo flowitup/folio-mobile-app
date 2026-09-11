@@ -9,6 +9,13 @@ import { Icon } from "@/components/ui/icon";
 import { Eyebrow } from "@/components/ui/typography";
 import { getHelpCatalogue } from "@/content/help";
 import type { HelpTopic } from "@/content/help";
+import { visibleHelpTopics } from "@/content/help/visibility";
+import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdminAnywhere } from "@/auth/permissions";
+import { useBillingAccess } from "@/features/companies/companies-api";
+import { useWorkerMode } from "@/features/labor/use-worker-mode";
+import { useSelectedProject } from "@/features/projects/selected-project";
+import { useProjectCan } from "@/features/projects/use-project-can";
 import { useTokens } from "@/theme/tokens";
 
 /**
@@ -19,8 +26,21 @@ import { useTokens } from "@/theme/tokens";
 export function HelpSheet() {
   const { t, i18n } = useTranslation();
   const { sheet } = useShell();
-  const topics = getHelpCatalogue(i18n.language);
+  const { user } = useAuth();
+  const { projectId } = useSelectedProject();
+  const { workerMode } = useWorkerMode();
+  const canUpdateProject = useProjectCan(projectId, "project:update");
+  const billing = useBillingAccess();
   const isOpen = sheet === "help";
+
+  // The guide lists what this reader's navigation lists. A worker has no Menu at all, so every
+  // Menu-reached topic would otherwise walk them through a screen they cannot open.
+  const topics = visibleHelpTopics(getHelpCatalogue(i18n.language), {
+    workerMode,
+    canUpdateProject,
+    billingAllowed: billing.allowed,
+    companyAdmin: isCompanyAdminAnywhere(user),
+  });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Reopening lands on the index rather than wherever the last read finished. Reset on the way

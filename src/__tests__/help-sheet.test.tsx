@@ -2,6 +2,7 @@
  * The help sheet is the only way into the workflow guide, so what matters is the path through
  * it: the index lists the topics, a topic opens its own steps, and back returns to the index.
  * Assertions read from the real catalogue so the test stays true as the documentation grows.
+ *
  * `fireEvent` is awaited throughout: on React Native Testing Library 14 it resolves
  * asynchronously, and without the await the shell state update never lands.
  */
@@ -15,6 +16,32 @@ import { HelpSheet } from "@/components/shell/help-sheet";
 import { ShellProvider, useShell } from "@/components/shell/shell-context";
 import { helpCatalogueEn } from "@/content/help/en";
 import i18n from "@/i18n";
+
+// The sheet narrows the catalogue to what this reader's navigation shows; these mocks decide who
+// is reading. Default is the widest reader, and one test switches to the worker shell.
+let mockWorkerMode = false;
+
+jest.mock("@/auth/auth-context", () => ({
+  useAuth: () => ({
+    user: {
+      id: "u1",
+      permissions: [],
+      companies: [{ id: "c1", role: "admin" }],
+    },
+  }),
+}));
+jest.mock("@/features/projects/selected-project", () => ({
+  useSelectedProject: () => ({ projectId: "p1", project: { id: "p1" } }),
+}));
+jest.mock("@/features/projects/use-project-can", () => ({
+  useProjectCan: () => true,
+}));
+jest.mock("@/features/companies/companies-api", () => ({
+  useBillingAccess: () => ({ allowed: true }),
+}));
+jest.mock("@/features/labor/use-worker-mode", () => ({
+  useWorkerMode: () => ({ workerMode: mockWorkerMode }),
+}));
 
 const SAFE_AREA_METRICS: Metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -45,19 +72,25 @@ async function renderHelp() {
 const [firstTopic] = helpCatalogueEn;
 
 describe("HelpSheet", () => {
+  beforeEach(() => {
+    mockWorkerMode = false;
+  });
+
   it("stays closed until the shell asks for it", async () => {
     await renderHelp();
     expect(screen.queryByTestId("help-sheet")).toBeNull();
   });
 
-  it("lists every documented workflow once opened", async () => {
+  it("lists the workflows this reader can reach", async () => {
     await renderHelp();
 
     await fireEvent.press(screen.getByTestId("open-help"));
 
-    for (const topic of helpCatalogueEn) {
+    for (const topic of helpCatalogueEn.filter((t) => !t.workerMode)) {
       expect(screen.getByTestId(`help-topic-${topic.id}`)).toBeTruthy();
     }
+    // A manager is not offered the worker-only screens.
+    expect(screen.queryByTestId("help-topic-worker-salary")).toBeNull();
   });
 
   it("drills into a topic and comes back to the index", async () => {
@@ -75,5 +108,19 @@ describe("HelpSheet", () => {
 
     expect(screen.getByTestId(`help-topic-${firstTopic.id}`)).toBeTruthy();
     expect(screen.queryByTestId("help-topic-detail")).toBeNull();
+  });
+
+  it("gives a worker their own screens and none of the Menu ones", async () => {
+    mockWorkerMode = true;
+    await renderHelp();
+
+    await fireEvent.press(screen.getByTestId("open-help"));
+
+    expect(screen.getByTestId("help-topic-worker-attendance")).toBeTruthy();
+    expect(screen.getByTestId("help-topic-worker-salary")).toBeTruthy();
+    // Worker mode drops the Menu entirely, so these areas are not theirs to open.
+    expect(screen.queryByTestId("help-topic-billing")).toBeNull();
+    expect(screen.queryByTestId("help-topic-library")).toBeNull();
+    expect(screen.queryByTestId("help-topic-documents")).toBeNull();
   });
 });
