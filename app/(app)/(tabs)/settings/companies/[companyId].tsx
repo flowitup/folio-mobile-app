@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   ScrollView,
   Share,
@@ -22,22 +21,16 @@ import {
 } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
-import { ToastViewport } from "@/components/ui/toast";
 import {
   useBootAttachedUser,
   useCompany,
   useDeleteCompany,
-  useGenerateInviteToken,
-  useRevokeInviteToken,
   useSetMemberRole,
   useRevokeJoinCode,
   useSetJoinCode,
   useUpdateCompany,
 } from "@/features/companies/companies-api";
-import type {
-  CompanyInviteTokenGenerated,
-  CompanyRole,
-} from "@/features/companies/companies-api";
+import type { CompanyRole } from "@/features/companies/companies-api";
 import { useAttachedUsers } from "@/features/companies/company-members-api";
 import type { AttachedUser } from "@/features/companies/company-members-api";
 import { CompanyFormSheet } from "@/features/companies/company-form-sheet";
@@ -45,13 +38,12 @@ import { PaymentMethodsSection } from "@/features/companies/payment-methods-sect
 import { formatJoinCode } from "@/lib/companies/join-code";
 import { memberDisplayName } from "@/lib/companies/member-display";
 import { formatDate } from "@/lib/format/date";
-import { ApiError } from "@/lib/query/api-error";
 
-type Tab = "edit" | "invites" | "users" | "payments" | "delete";
-const TABS: Tab[] = ["edit", "invites", "users", "payments", "delete"];
+type Tab = "edit" | "code" | "users" | "payments" | "delete";
+const TABS: Tab[] = ["edit", "code", "users", "payments", "delete"];
 const ROLE_OPTIONS: CompanyRole[] = ["admin", "manager", "member"];
 
-/** Company manage page: edit, invite tokens (one-shot display), attached users, payment methods, delete. */
+/** Company manage page: edit, company code, attached users, payment methods, delete. */
 export default function CompanyManageScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -62,39 +54,16 @@ export default function CompanyManageScreen() {
   const setJoinCode = useSetJoinCode();
   const revokeJoinCode = useRevokeJoinCode();
   const remove = useDeleteCompany();
-  const generate = useGenerateInviteToken();
-  const revoke = useRevokeInviteToken();
   const setRole = useSetMemberRole();
   const boot = useBootAttachedUser();
   const [tab, setTab] = useState<Tab>("edit");
   const editSheet = useRef<BottomSheetModal>(null);
-  const [inviteRole, setInviteRole] = useState<CompanyRole>("member");
-  const [generated, setGenerated] =
-    useState<CompanyInviteTokenGenerated | null>(null);
   const [confirm, setConfirm] = useState<{
     title: string;
     run: () => void;
   } | null>(null);
   const [booting, setBooting] = useState<AttachedUser | null>(null);
   const [deleting, setDeleting] = useState(false);
-
-  function generateToken(regenerate = false) {
-    if (!companyId) return;
-    generate.mutate(
-      { companyId, role: inviteRole, regenerate },
-      {
-        onSuccess: setGenerated,
-        onError: (error) => {
-          // Same fallback as the web: an active token already exists → ask before regenerating.
-          if (error instanceof ApiError && error.status === 409 && !regenerate)
-            setConfirm({
-              title: t("companies.admin.manage.invites.regenerateConfirm"),
-              run: () => generateToken(true),
-            });
-        },
-      },
-    );
-  }
 
   if (company.isPending)
     return (
@@ -138,7 +107,9 @@ export default function CompanyManageScreen() {
                   : "text-muted-foreground"
               }
             >
-              {t(`companies.admin.manage.tabs.${value}`)}
+              {value === "code"
+                ? t("companies.admin.manage.joinCode.title")
+                : t(`companies.admin.manage.tabs.${value}`)}
             </Text>
           </Pressable>
         ))}
@@ -174,145 +145,88 @@ export default function CompanyManageScreen() {
           </Card>
         ) : null}
 
-        {tab === "invites" ? (
-          <View>
-            <Card className="mb-4">
-              <Text className="font-sans-semibold text-[14px] text-ink">
-                {t("companies.admin.manage.joinCode.title")}
-              </Text>
-              <Text className="mb-3 mt-1 text-xs text-muted-foreground">
-                {t("companies.admin.manage.joinCode.description")}
-              </Text>
-              {data?.join_code ? (
-                <Pressable
-                  testID="join-code-share"
-                  accessibilityRole="button"
-                  onPress={() =>
-                    void Share.share({
-                      message: t(
-                        "companies.admin.manage.joinCode.shareMessage",
-                        {
-                          company: data.legal_name,
-                          code: formatJoinCode(data.join_code ?? ""),
-                        },
-                      ),
-                    })
-                  }
-                  className="mb-3 items-center rounded-[10px] border border-line-2 bg-paper-2 py-3 active:opacity-70"
-                >
-                  <Text
-                    testID="join-code-value"
-                    className="font-mono-bold text-[26px] tracking-[4px] text-ink"
-                  >
-                    {formatJoinCode(data.join_code)}
-                  </Text>
-                  <Text className="mt-1 font-sans text-[11px] text-muted">
-                    {t("companies.admin.manage.joinCode.tapToShare")}
-                  </Text>
-                </Pressable>
-              ) : (
-                <Text className="mb-3 font-sans text-[13px] text-muted">
-                  {t("companies.admin.manage.joinCode.none")}
-                </Text>
-              )}
-              <View className="flex-row flex-wrap gap-2">
-                <Button
-                  testID="join-code-create"
-                  label={
-                    data?.join_code
-                      ? t("companies.admin.manage.joinCode.renew")
-                      : t("companies.admin.manage.joinCode.create")
-                  }
-                  size="sm"
-                  loading={setJoinCode.isPending}
-                  onPress={() =>
-                    data?.join_code
-                      ? setConfirm({
-                          title: t(
-                            "companies.admin.manage.joinCode.renewConfirm",
-                          ),
-                          run: () =>
-                            companyId && setJoinCode.mutate({ companyId }),
-                        })
-                      : companyId && setJoinCode.mutate({ companyId })
-                  }
-                />
-                {data?.join_code ? (
-                  <Button
-                    testID="join-code-revoke"
-                    label={t("companies.admin.manage.joinCode.revoke")}
-                    size="sm"
-                    variant="danger"
-                    loading={revokeJoinCode.isPending}
-                    onPress={() =>
-                      setConfirm({
-                        title: t(
-                          "companies.admin.manage.joinCode.revokeConfirm",
-                        ),
-                        run: () =>
-                          companyId && revokeJoinCode.mutate({ companyId }),
-                      })
-                    }
-                  />
-                ) : null}
-              </View>
-            </Card>
-            <Text className="mb-3 text-xs text-muted-foreground">
-              {t("companies.admin.manage.invites.description")}
+        {tab === "code" ? (
+          <Card>
+            <Text className="font-sans-semibold text-[14px] text-ink">
+              {t("companies.admin.manage.joinCode.title")}
             </Text>
-            <Select<CompanyRole>
-              testID="invite-role"
-              label={t("companies.admin.manage.invites.roleLabel")}
-              value={inviteRole}
-              options={[
-                {
-                  value: "member",
-                  label: t("companies.admin.manage.invites.roleMemberOption"),
-                },
-                {
-                  value: "admin",
-                  label: t("companies.admin.manage.invites.roleAdminOption"),
-                },
-              ]}
-              onChange={setInviteRole}
-            />
+            <Text className="mb-3 mt-1 text-xs text-muted-foreground">
+              {t("companies.admin.manage.joinCode.description")}
+            </Text>
+            {data?.join_code ? (
+              <Pressable
+                testID="join-code-share"
+                accessibilityRole="button"
+                onPress={() =>
+                  void Share.share({
+                    message: t(
+                      "companies.admin.manage.joinCode.shareMessage",
+                      {
+                        company: data.legal_name,
+                        code: formatJoinCode(data.join_code ?? ""),
+                      },
+                    ),
+                  })
+                }
+                className="mb-3 items-center rounded-[10px] border border-line-2 bg-paper-2 py-3 active:opacity-70"
+              >
+                <Text
+                  testID="join-code-value"
+                  className="font-mono-bold text-[26px] tracking-[4px] text-ink"
+                >
+                  {formatJoinCode(data.join_code)}
+                </Text>
+                <Text className="mt-1 font-sans text-[11px] text-muted">
+                  {t("companies.admin.manage.joinCode.tapToShare")}
+                </Text>
+              </Pressable>
+            ) : (
+              <Text className="mb-3 font-sans text-[13px] text-muted">
+                {t("companies.admin.manage.joinCode.none")}
+              </Text>
+            )}
             <View className="flex-row flex-wrap gap-2">
               <Button
-                testID="invite-generate"
-                label={t("companies.admin.manage.invites.generate")}
-                loading={generate.isPending}
-                onPress={() => generateToken(false)}
-              />
-              <Button
-                testID="invite-regenerate"
-                label={t("companies.admin.manage.invites.regenerate")}
-                variant="secondary"
+                testID="join-code-create"
+                label={
+                  data?.join_code
+                    ? t("companies.admin.manage.joinCode.renew")
+                    : t("companies.admin.manage.joinCode.create")
+                }
+                size="sm"
+                loading={setJoinCode.isPending}
                 onPress={() =>
-                  setConfirm({
-                    title: t(
-                      "companies.admin.manage.invites.regenerateConfirm",
-                    ),
-                    run: () => generateToken(true),
-                  })
+                  data?.join_code
+                    ? setConfirm({
+                        title: t(
+                          "companies.admin.manage.joinCode.renewConfirm",
+                        ),
+                        run: () =>
+                          companyId && setJoinCode.mutate({ companyId }),
+                      })
+                    : companyId && setJoinCode.mutate({ companyId })
                 }
               />
-              <Button
-                testID="invite-revoke"
-                label={t("companies.admin.manage.invites.revoke")}
-                variant="danger"
-                loading={revoke.isPending}
-                onPress={() =>
-                  setConfirm({
-                    title: t("companies.admin.manage.invites.revokeConfirm"),
-                    run: () => companyId && revoke.mutate({ companyId }),
-                  })
-                }
-              />
+              {data?.join_code ? (
+                <Button
+                  testID="join-code-revoke"
+                  label={t("companies.admin.manage.joinCode.revoke")}
+                  size="sm"
+                  variant="danger"
+                  loading={revokeJoinCode.isPending}
+                  onPress={() =>
+                    setConfirm({
+                      title: t(
+                        "companies.admin.manage.joinCode.revokeConfirm",
+                      ),
+                      run: () =>
+                        companyId && revokeJoinCode.mutate({ companyId }),
+                    })
+                  }
+                />
+              ) : null}
             </View>
-            <Text className="mt-3 text-xs text-muted-foreground">
-              {t("companies.admin.manage.invites.policyNote")}
-            </Text>
-          </View>
+          </Card>
         ) : null}
 
         {tab === "users" ? (
@@ -412,53 +326,6 @@ export default function CompanyManageScreen() {
           )
         }
       />
-
-      <Modal
-        visible={generated !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setGenerated(null)}
-      >
-        <View className="flex-1 items-center justify-center bg-scrim p-6">
-          <View className="w-full rounded-lg bg-card p-4">
-            <Text className="mb-2 text-lg font-semibold text-primary">
-              {t("companies.tokenGenerated.dialogTitle")}
-            </Text>
-            <Text
-              testID="invite-token-value"
-              selectable
-              className="mb-2 rounded bg-paper-2 p-2 font-mono text-xs text-primary"
-            >
-              {generated?.token}
-            </Text>
-            <Text className="text-xs text-muted-foreground">
-              {t("companies.tokenGenerated.expiresLine", {
-                expiresAt: generated ? formatDate(generated.expires_at) : "",
-              })}
-            </Text>
-            <Text className="my-2 text-xs text-warning">
-              {t("companies.tokenGenerated.oneShotWarning")}
-            </Text>
-            <View className="flex-row justify-end gap-2">
-              <Button
-                testID="invite-token-share"
-                label={t("companies.x.tokenShare")}
-                size="sm"
-                variant="secondary"
-                onPress={() =>
-                  generated && void Share.share({ message: generated.token })
-                }
-              />
-              <Button
-                label={t("common.ok")}
-                size="sm"
-                onPress={() => setGenerated(null)}
-              />
-            </View>
-          </View>
-          <ToastViewport />
-        </View>
-      </Modal>
 
       <ConfirmDialog
         visible={confirm !== null}

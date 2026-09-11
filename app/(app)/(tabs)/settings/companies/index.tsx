@@ -8,22 +8,19 @@ import { useAuth } from "@/auth/auth-context";
 import { isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
 import { Badge, Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
-import { Sheet } from "@/components/ui/sheet";
 import {
   useCreateCompany,
   useDetachCompany,
   useMyCompanies,
-  useRedeemInviteToken,
   useSetPrimaryCompany,
 } from "@/features/companies/companies-api";
 import type { MyCompany } from "@/features/companies/companies-api";
 import { CompanyFormSheet } from "@/features/companies/company-form-sheet";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
-/** My companies: cards with masked sensitive fields, set primary, detach, manage (admins), redeem token, create. */
+/** My companies: cards with masked sensitive fields, set primary, detach, manage (admins), create. */
 export default function MyCompaniesScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -33,12 +30,9 @@ export default function MyCompaniesScreen() {
   useRefetchOnFocus(companies.refetch);
   const setPrimary = useSetPrimaryCompany();
   const detach = useDetachCompany();
-  const redeem = useRedeemInviteToken();
   const create = useCreateCompany();
-  const redeemSheet = useRef<BottomSheetModal>(null);
   const createSheet = useRef<BottomSheetModal>(null);
   const [createKey, setCreateKey] = useState(0);
-  const [token, setToken] = useState("");
   const [detaching, setDetaching] = useState<MyCompany | null>(null);
 
   return (
@@ -61,13 +55,6 @@ export default function MyCompaniesScreen() {
         <Text className="mb-3 text-xs text-muted-foreground">
           {t("companies.my.description")}
         </Text>
-        <Button
-          testID="company-redeem"
-          label={t("companies.x.redeem")}
-          variant="secondary"
-          className="mb-4"
-          onPress={() => redeemSheet.current?.present()}
-        />
         {companies.isPending ? <ActivityIndicator className="mt-8" /> : null}
         {companies.data && companies.data.length === 0 ? (
           <EmptyState message={t("companies.my.empty.cta")} />
@@ -125,41 +112,6 @@ export default function MyCompaniesScreen() {
           </Card>
         ))}
       </ScrollView>
-
-      <Sheet
-        ref={redeemSheet}
-        title={t("companies.invite.dialogTitle")}
-        snapPoints={["45%"]}
-      >
-        <View className="p-4">
-          <Input
-            testID="redeem-token"
-            label={t("companies.invite.inputLabel")}
-            placeholder={t("companies.invite.inputPlaceholder")}
-            value={token}
-            onChangeText={setToken}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <Button
-            testID="redeem-submit"
-            label={t("companies.invite.attachCta")}
-            loading={redeem.isPending}
-            disabled={!token.trim()}
-            onPress={() =>
-              redeem.mutate(
-                { token: token.trim() },
-                {
-                  onSuccess: () => {
-                    setToken("");
-                    redeemSheet.current?.dismiss();
-                  },
-                },
-              )
-            }
-          />
-        </View>
-      </Sheet>
 
       <CompanyFormSheet
         key={createKey}
