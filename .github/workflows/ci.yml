@@ -2,15 +2,18 @@
 #
 # Pull requests to master:
 #   version-bump  → bumps package.json / package-lock.json / app.json (expo.version)
-#                   from the PR labels (version:major | version:minor | version:patch,
-#                   default patch; version:none opts out) and pushes the commit back
-#                   to the PR branch.
+#                   from the highest released tag and the PR labels (version:major |
+#                   version:minor | version:patch, default patch; version:none opts
+#                   out), and pushes the commit back to the PR branch. This keeps the
+#                   manifests roughly right; it does not decide the release.
 #   lint, type-check (parallel) → test.
 #
 # Push to master (a squash-merged PR):
-#   release → tags v<version> from package.json and publishes a GitHub Release
-#             with generated notes. Skipped when the tag already exists
-#             (version:none PRs, re-runs).
+#   release → computes the next version from the TAG LIST, tags the merge commit and
+#             publishes a GitHub Release with generated notes. Reading the version from
+#             package.json instead used to let two pull requests open at once claim the
+#             same number: the second to merge hit an existing tag and was silently
+#             skipped while the run stayed green. Only version:none opts out now.
 #
 # App binaries are not built here: EAS builds / dev clients are cut separately.
 
@@ -83,7 +86,12 @@ jobs:
       - name: Get master version
         id: main-version
         run: |
-          MAIN_VERSION=$(git show origin/master:package.json | node -pe 'JSON.parse(require("fs").readFileSync(0, "utf8")).version' 2>/dev/null || echo "0.0.0")
+          # The highest released tag, matching what the release job computes at merge.
+          # Reading master's package.json instead let two open pull requests claim the
+          # same number.
+          MAIN_VERSION=$(git tag -l 'v[0-9]*' | sed 's/^v//' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          MAIN_VERSION=${MAIN_VERSION:-0.0.0}
           echo "main_version=$MAIN_VERSION" >> "$GITHUB_OUTPUT"
           echo "master version: $MAIN_VERSION"
 
@@ -274,39 +282,74 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get version
-        id: get-version
+      - name: Resolve the bump type from the merged pull request
+        id: bump-type
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=$(node -pe 'require("./package.json").version')
-          APP_VERSION=$(node -pe 'require("./app.json").expo.version')
-          if [ "$VERSION" != "$APP_VERSION" ]; then
-            echo "::warning::package.json ($VERSION) and app.json expo.version ($APP_VERSION) differ"
+          LABELS=$(gh api "repos/${{ github.repository }}/commits/$GITHUB_SHA/pulls" \
+            --jq '.[].labels[].name' 2>/dev/null || echo "")
+          echo "Labels on the merged PR: ${LABELS:-<none>}"
+
+          # Explicit label wins; otherwise patch, so every merged PR releases.
+          # `version:none` opts out — docs-only, ci-only, or a hotfix riding on
+          # the previous release.
+          if echo "$LABELS" | grep -q "version:none"; then
+            TYPE=none
+          elif echo "$LABELS" | grep -q "version:major"; then
+            TYPE=major
+          elif echo "$LABELS" | grep -q "version:minor"; then
+            TYPE=minor
+          else
+            TYPE=patch
           fi
+          echo "type=$TYPE" >> "$GITHUB_OUTPUT"
+          echo "Bump type: $TYPE"
+
+      - name: Compute the next version from the tag list
+        id: get-version
+        if: steps.bump-type.outputs.type != 'none'
+        run: |
+          # The highest released tag, not package.json. The manifest is bumped on the
+          # pull request from whatever master read at that moment, so two pull requests
+          # open at once claimed the same number: the second to merge landed on a tag
+          # that already existed and the release was silently skipped while the run
+          # stayed green. The tag list says what has actually shipped, and it is only
+          # read here, after the merge.
+          BASE=$(git tag -l 'v[0-9]*' | sed 's/^v//' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          BASE=${BASE:-0.0.0}
+
+          MAJOR=${BASE%%.*}; REST=${BASE#*.}; MINOR=${REST%%.*}; PATCH=${REST#*.}
+          case "${{ steps.bump-type.outputs.type }}" in
+            major) VERSION="$((MAJOR + 1)).0.0" ;;
+            minor) VERSION="$MAJOR.$((MINOR + 1)).0" ;;
+            patch) VERSION="$MAJOR.$MINOR.$((PATCH + 1))" ;;
+          esac
+
+          echo "Highest released tag: v$BASE -> releasing v$VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Check if tag exists
-        id: check-tag
-        run: |
-          TAG="${{ steps.get-version.outputs.tag }}"
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Tag $TAG already exists, skipping release"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+          # The manifests no longer decide the release, but they still drive the Expo
+          # build, so a drift between them is worth surfacing.
+          PKG=$(node -pe 'require("./package.json").version')
+          APP=$(node -pe 'require("./app.json").expo.version')
+          if [ "$PKG" != "$APP" ]; then
+            echo "::warning::package.json ($PKG) and app.json expo.version ($APP) differ"
           fi
 
       - name: Create tag
-        if: steps.check-tag.outputs.exists == 'false'
+        if: steps.bump-type.outputs.type != 'none'
         run: |
           TAG="${{ steps.get-version.outputs.tag }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "Release $TAG"
+          git tag -a "$TAG" -m "Release $TAG" "$GITHUB_SHA"
           git push origin "$TAG"
 
       - name: Create GitHub Release
-        if: steps.check-tag.outputs.exists == 'false'
+        if: steps.bump-type.outputs.type != 'none'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -315,8 +358,8 @@ jobs:
 
       - name: Job summary
         run: |
-          if [ "${{ steps.check-tag.outputs.exists }}" = "true" ]; then
-            echo "## Release skipped — tag ${{ steps.get-version.outputs.tag }} already exists" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.bump-type.outputs.type }}" = "none" ]; then
+            echo "## Release skipped — the merged pull request carried version:none" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "## Release ${{ steps.get-version.outputs.tag }} created" >> "$GITHUB_STEP_SUMMARY"
             echo "https://github.com/${{ github.repository }}/releases/tag/${{ steps.get-version.outputs.tag }}" >> "$GITHUB_STEP_SUMMARY"
