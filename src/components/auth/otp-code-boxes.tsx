@@ -9,7 +9,8 @@ export const CODE_LENGTH = 6;
 type Props = {
   value: string;
   onChange: (value: string) => void;
-  /** Called once, on the edit that completes all six digits — drives auto sign-in. */
+  /** Called on the edit that *completes* the row — drives auto sign-in. Retyping
+   * over an already-full row does not re-fire it. */
   onComplete?: (value: string) => void;
   invalid?: boolean;
   disabled?: boolean;
@@ -60,10 +61,14 @@ export function OtpCodeBoxes({
       cursor += 1;
     }
     const next = chars.join("").slice(0, CODE_LENGTH);
+    // A rejected code keeps its digits, so the row is still full while the user
+    // retypes over it. Only the edit that *fills* the row may sign in, or every
+    // keystroke would spend one of the backend's five attempts.
+    const wasComplete = typed.current.length === CODE_LENGTH;
     typed.current = next;
     onChange(next);
     focusBox(cursor);
-    if (next.length === CODE_LENGTH) onComplete?.(next);
+    if (!wasComplete && next.length === CODE_LENGTH) onComplete?.(next);
   };
 
   const handleBackspace = (index: number) => {

@@ -154,6 +154,36 @@ describe("Login — ink header + paper sheet (design 2c / 2d)", () => {
     expect(screen.getByText(t("login.retry"))).toBeTruthy();
   });
 
+  it("accepts the very number the field's own placeholder shows", async () => {
+    const user = userEvent.setup();
+    await renderLogin();
+
+    // Regression: the chip states `FR +33` and the field offers a national
+    // example, so typing exactly that must reach the backend rather than
+    // leaving the button disabled with nothing explaining why.
+    await user.type(screen.getByTestId("login-phone"), "6 12 34 56 78");
+
+    expect(screen.getByTestId("login-send-code")).not.toBeDisabled();
+    await user.press(screen.getByTestId("login-send-code"));
+    expect(mockRequestOtp).toHaveBeenCalledWith("+33612345678");
+  });
+
+  it("does not sign in again while the rejected digits are unchanged", async () => {
+    mockSignInWithOtp.mockRejectedValue(new Error("Wrong code"));
+    const user = userEvent.setup();
+    await renderLogin();
+
+    await user.type(screen.getByTestId("login-phone"), "0612345678");
+    await user.press(screen.getByTestId("login-send-code"));
+    await fireEvent.changeText(screen.getByTestId("login-code-0"), "482917");
+    expect(mockSignInWithOtp).toHaveBeenCalledTimes(1);
+
+    // Retyping over the full row must not spend another of the five attempts
+    // per keystroke.
+    await fireEvent.changeText(screen.getByTestId("login-code-0"), "5");
+    expect(mockSignInWithOtp).toHaveBeenCalledTimes(1);
+  });
+
   it("comes back to the phone step from the header pill", async () => {
     const user = userEvent.setup();
     await renderLogin();

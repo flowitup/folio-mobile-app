@@ -41,21 +41,31 @@ export function PhoneSignIn({
   // every request, so the sheet quotes what was actually sent rather than a
   // number that silently drifts from the server's.
   const [expiresInMinutes, setExpiresInMinutes] = useState(5);
+  // The code the backend has already rejected. Sending it again would spend
+  // another of the five attempts for nothing, so the sheet waits for a change —
+  // state, not a ref, because the sign-in button's own state depends on it.
+  const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Tick once a second while the resend timer runs.
+  // Tick once a second while the resend timer runs, and stop when it expires —
+  // a live interval would re-render the six code inputs under the user's typing.
   useEffect(() => {
-    if (resendAt === null) return;
+    if (resendAt === null || resendAt <= now) return;
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [resendAt]);
+  }, [resendAt, now]);
 
   const phone = normalizePhone(phoneInput);
   const secondsLeft =
     resendAt === null ? 0 : Math.max(0, Math.ceil((resendAt - now) / 1000));
-  const canSend = phone !== null && !submitting;
+  // The backend throttles per number, so the countdown only gates asking again
+  // for the SAME number: edit the number and "Send code" is live immediately.
+  const canSend =
+    phone !== null && !submitting && (secondsLeft === 0 || phone !== sentTo);
   const canVerify =
-    new RegExp(`^\\d{${CODE_LENGTH}}$`).test(code) && !submitting;
+    new RegExp(`^\\d{${CODE_LENGTH}}$`).test(code) &&
+    !submitting &&
+    code !== lastSubmitted;
 
   async function sendCode() {
     if (!phone) return setError(t("login.invalidPhone"));
@@ -65,7 +75,9 @@ export function PhoneSignIn({
       const expiresIn = await requestOtp(phone);
       setExpiresInMinutes(Math.max(1, Math.round(expiresIn / 60)));
       setSentTo(phone);
+      // A new code invalidates whatever is still in the boxes.
       setCode("");
+      setLastSubmitted(null);
       setResendAt(Date.now() + RESEND_SECONDS * 1000);
       setNow(Date.now());
     } catch (caught) {
@@ -83,6 +95,8 @@ export function PhoneSignIn({
     // auto sign-in and a button press of the same code both go out.
     if (submitting || !sentTo) return;
     if (!new RegExp(`^\\d{${CODE_LENGTH}}$`).test(submitted)) return;
+    if (submitted === lastSubmitted) return;
+    setLastSubmitted(submitted);
     setSubmitting(true);
     setError(null);
     try {
@@ -98,6 +112,7 @@ export function PhoneSignIn({
   function changeNumber() {
     setSentTo(null);
     setCode("");
+    setLastSubmitted(null);
     setError(null);
   }
 

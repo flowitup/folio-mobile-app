@@ -20,7 +20,16 @@ describe("normalizePhone", () => {
     expect(normalizePhone(raw)).toBeNull();
   });
 
-  it.each(["", "abc", "12345", "+0123456789", "912345678", "0612345"])(
+  // The sheet states `FR +33` beside the number, so a national form typed
+  // without its trunk 0 is a French number and has to normalise.
+  it.each([
+    ["6 12 34 56 78", "+33612345678"],
+    ["912345678", "+33912345678"],
+  ])("normalises the national form %s", (raw, expected) => {
+    expect(normalizePhone(raw)).toBe(expected);
+  });
+
+  it.each(["", "abc", "12345", "+0123456789", "91234567", "0612345"])(
     "rejects %s",
     (raw) => {
       expect(normalizePhone(raw)).toBeNull();
