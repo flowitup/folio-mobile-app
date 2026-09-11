@@ -1961,21 +1961,6 @@
         "title": "ProjectResponse",
         "type": "object"
       },
-      "RedeemInviteTokenRequest": {
-        "additionalProperties": false,
-        "description": "Request body for POST /companies/attach-by-token.",
-        "properties": {
-          "token": {
-            "maxLength": 512,
-            "minLength": 1,
-            "title": "Token",
-            "type": "string"
-          }
-        },
-        "required": ["token"],
-        "title": "RedeemInviteTokenRequest",
-        "type": "object"
-      },
       "RefreshResponse": {
         "description": "Refresh token response.",
         "properties": {
@@ -4152,24 +4137,6 @@
         "tags": ["companies"]
       }
     },
-    "/api/v1/companies/attach-by-token": {
-      "post": {
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RedeemInviteTokenRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": { "200": { "description": "Success" } },
-        "security": [{ "bearerAuth": [] }],
-        "summary": "Attach the caller to a company by redeeming an invite token",
-        "tags": ["companies"]
-      }
-    },
     "/api/v1/companies/join": {
       "post": {
         "requestBody": {
@@ -4322,38 +4289,6 @@
         },
         "security": [{ "bearerAuth": [] }],
         "summary": "List users attached to a company (company admin)",
-        "tags": ["companies"]
-      }
-    },
-    "/api/v1/companies/{company_id}/invite-tokens": {
-      "post": {
-        "parameters": [
-          {
-            "in": "path",
-            "name": "company_id",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": { "200": { "description": "Success" } },
-        "security": [{ "bearerAuth": [] }],
-        "summary": "Generate an invite token for a company (admin only)",
-        "tags": ["companies"]
-      }
-    },
-    "/api/v1/companies/{company_id}/invite-tokens/active": {
-      "delete": {
-        "parameters": [
-          {
-            "in": "path",
-            "name": "company_id",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": { "200": { "description": "Success" } },
-        "security": [{ "bearerAuth": [] }],
-        "summary": "Revoke the active invite token for a company (admin only)",
         "tags": ["companies"]
       }
     },

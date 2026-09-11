@@ -1744,44 +1744,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/companies/attach-by-token": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Attach the caller to a company by redeeming an invite token */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["RedeemInviteTokenRequest"];
-        };
-      };
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/companies/join": {
     parameters: {
       query?: never;
@@ -2043,78 +2005,6 @@ export interface paths {
     put?: never;
     post?: never;
     delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/invite-tokens": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Generate an invite token for a company (admin only) */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/companies/{company_id}/invite-tokens/active": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Revoke the active invite token for a company (admin only) */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          company_id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Success */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
     options?: never;
     head?: never;
     patch?: never;
@@ -8416,14 +8306,6 @@ export interface components {
       spent_personal: number;
       /** User Count */
       user_count: number;
-    };
-    /**
-     * RedeemInviteTokenRequest
-     * @description Request body for POST /companies/attach-by-token.
-     */
-    RedeemInviteTokenRequest: {
-      /** Token */
-      token: string;
     };
     /**
      * RefreshResponse
