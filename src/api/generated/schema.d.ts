@@ -2633,7 +2633,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Accept an invitation: create account + membership, return JWT cookies */
+    /** Accept an invitation: create the account and membership, then sign the invitee in */
     post: {
       parameters: {
         query?: never;
@@ -2647,12 +2647,14 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Success */
+        /** @description OK */
         200: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            "application/json": components["schemas"]["AcceptInviteResponse"];
+          };
         };
       };
     };
@@ -7016,6 +7018,40 @@ export interface components {
       phone: string;
       /** Token */
       token: string;
+    };
+    /**
+     * AcceptInviteResponse
+     * @description POST /invitations/accept — the accepted account plus its session tokens.
+     *
+     *     Tokens are in the body as well as in cookies, matching every other flow that
+     *     signs a user in (see ``_login_response`` on the auth blueprint). The web app
+     *     forwards the cookies; the mobile app is bearer-only and reads these fields,
+     *     so omitting them would leave an invitee accepted but not signed in.
+     */
+    AcceptInviteResponse: {
+      /** Access Token */
+      access_token: string;
+      /** Refresh Token */
+      refresh_token: string;
+      user: components["schemas"]["AcceptedUserResponse"];
+    };
+    /**
+     * AcceptedUserResponse
+     * @description User info returned on successful accept.
+     */
+    AcceptedUserResponse: {
+      /**
+       * Display Name
+       * @default null
+       */
+      display_name: string | null;
+      /** Email */
+      email: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
     };
     /**
      * AddMemberByPhoneRequest

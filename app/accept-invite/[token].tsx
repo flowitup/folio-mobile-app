@@ -32,7 +32,7 @@ type State =
   | { kind: "ready"; invite: VerifyInviteResponse };
 
 /** Once the invitation itself checks out: collect name + phone, verify the SMS code, done. */
-type Step = "details" | "code" | "done";
+type Step = "details" | "code";
 
 const ERROR_KEY: Record<InviteErrorReason | "generic", string> = {
   expired: "expired",
@@ -84,18 +84,16 @@ function inlineErrorKey(error: InviteActionError): string {
 }
 
 /**
- * Deep link `folio://accept-invite/<token>`: verify → name + French phone → SMS code → done.
+ * Deep link `folio://accept-invite/<token>`: verify → name + French phone → SMS code → signed in.
  * The invitee never chooses a password; acceptance only proves phone ownership, the same way
- * phone sign-up does. The backend answers acceptance with session cookies for browser clients,
- * which this Bearer-token app (see `src/api/client.ts`) cannot use, so acceptance ends on a
- * success card that sends the invitee to the normal phone sign-in with their number pre-filled,
- * rather than trying to synthesise a session from a response that carries no tokens.
+ * phone sign-up does. Acceptance returns the session tokens in its body, so the invitee lands
+ * in the app directly rather than being sent back through sign-in for a second code.
  */
 export default function AcceptInviteScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { token } = useLocalSearchParams<{ token: string }>();
-  const { status, user, signOut } = useAuth();
+  const { status, user, signOut, signInWithSession } = useAuth();
   const [state, setState] = useState<State>({ kind: "loading" });
   const [step, setStep] = useState<Step>("details");
   const [name, setName] = useState("");
@@ -179,8 +177,15 @@ export default function AcceptInviteScreen() {
     setSubmitting(true);
     setError(null);
     try {
-      await acceptInvite({ token, name: name.trim(), phone: sentTo, code });
-      setStep("done");
+      const session = await acceptInvite({
+        token,
+        name: name.trim(),
+        phone: sentTo,
+        code,
+      });
+      // Acceptance already signed them in — adopt the session and let the
+      // root layout route them into the app.
+      await signInWithSession(session);
     } catch (caught) {
       fail(caught);
     } finally {
@@ -237,26 +242,6 @@ export default function AcceptInviteScreen() {
               variant="secondary"
               className="mt-3"
               onPress={() => router.replace("/(auth)")}
-            />
-          </Card>
-        ) : step === "done" ? (
-          <Card>
-            <Text
-              testID="invite-done"
-              className="text-base font-semibold text-primary"
-            >
-              {t("acceptInvite.success")}
-            </Text>
-            <Button
-              testID="invite-continue"
-              label={t("acceptInvite.backToLogin")}
-              className="mt-3"
-              onPress={() =>
-                router.replace({
-                  pathname: "/(auth)",
-                  params: sentTo ? { phone: sentTo } : {},
-                })
-              }
             />
           </Card>
         ) : (

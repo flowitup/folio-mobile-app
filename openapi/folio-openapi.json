@@ -32,6 +32,32 @@
         "title": "AcceptInviteRequest",
         "type": "object"
       },
+      "AcceptInviteResponse": {
+        "description": "POST /invitations/accept \u2014 the accepted account plus its session tokens.\n\nTokens are in the body as well as in cookies, matching every other flow that\nsigns a user in (see ``_login_response`` on the auth blueprint). The web app\nforwards the cookies; the mobile app is bearer-only and reads these fields,\nso omitting them would leave an invitee accepted but not signed in.",
+        "properties": {
+          "access_token": { "title": "Access Token", "type": "string" },
+          "refresh_token": { "title": "Refresh Token", "type": "string" },
+          "user": { "$ref": "#/components/schemas/AcceptedUserResponse" }
+        },
+        "required": ["access_token", "refresh_token", "user"],
+        "title": "AcceptInviteResponse",
+        "type": "object"
+      },
+      "AcceptedUserResponse": {
+        "description": "User info returned on successful accept.",
+        "properties": {
+          "display_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "default": null,
+            "title": "Display Name"
+          },
+          "email": { "title": "Email", "type": "string" },
+          "id": { "format": "uuid", "title": "Id", "type": "string" }
+        },
+        "required": ["id", "email"],
+        "title": "AcceptedUserResponse",
+        "type": "object"
+      },
       "AddMemberByPhoneRequest": {
         "additionalProperties": false,
         "description": "Request body for POST /companies/<id>/members.\n\n``person_id`` lets the caller resend the request after a 409\n(several un-linked candidates matched the phone) to pick one explicitly.",
@@ -4714,8 +4740,19 @@
           },
           "required": true
         },
-        "responses": { "200": { "description": "Success" } },
-        "summary": "Accept an invitation: create account + membership, return JWT cookies",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptInviteResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Accept an invitation: create the account and membership, then sign the invitee in",
         "tags": ["invitations"]
       }
     },

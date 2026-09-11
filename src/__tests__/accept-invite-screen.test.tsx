@@ -34,13 +34,22 @@ jest.mock("expo-router", () => ({
 
 let mockAuthStatus: "signedOut" | "signedIn" = "signedOut";
 const mockSignOut = jest.fn();
+const mockSignInWithSession = jest.fn();
 jest.mock("@/auth/auth-context", () => ({
   useAuth: () => ({
     status: mockAuthStatus,
     user: mockAuthStatus === "signedIn" ? { email: "other@example.com" } : null,
     signOut: mockSignOut,
+    signInWithSession: (...args: unknown[]) => mockSignInWithSession(...args),
   }),
 }));
+
+/** What POST /invitations/accept answers with — the invitee is signed in from here. */
+const SESSION = {
+  access_token: "access-token-stub",
+  refresh_token: "refresh-token-stub",
+  user: { id: "u-1", email: "invitee@example.com", display_name: "New User" },
+};
 
 const INVITE = {
   email: "invitee@example.com",
@@ -56,13 +65,14 @@ beforeEach(() => {
   mockRequestInviteCode.mockReset();
   mockAcceptInvite.mockReset();
   mockReplace.mockReset();
+  mockSignInWithSession.mockReset();
   mockSignOut.mockReset();
 });
 
 describe("accept-invite screen", () => {
-  it("walks name+phone -> SMS code -> done, then hands off to sign-in with the phone pre-filled", async () => {
+  it("walks name+phone -> SMS code -> signed in, adopting the session acceptance returns", async () => {
     mockRequestInviteCode.mockResolvedValue({ expiresIn: 300 });
-    mockAcceptInvite.mockResolvedValue(undefined);
+    mockAcceptInvite.mockResolvedValue(SESSION);
 
     await renderWithProviders(<AcceptInviteScreen />);
 
@@ -94,13 +104,14 @@ describe("accept-invite screen", () => {
       }),
     );
 
-    await screen.findByTestId("invite-done");
-    await fireEvent.press(screen.getByTestId("invite-continue"));
-
-    expect(mockReplace).toHaveBeenCalledWith({
-      pathname: "/(auth)",
-      params: { phone: "+33612345678" },
-    });
+    // Acceptance signs the invitee in, so the screen adopts that session
+    // instead of sending them back through sign-in for a second code.
+    await waitFor(() =>
+      expect(mockSignInWithSession).toHaveBeenCalledWith(SESSION),
+    );
+    expect(mockReplace).not.toHaveBeenCalledWith(
+      expect.objectContaining({ pathname: "/(auth)" }),
+    );
   });
 
   it("shows an inline, translated error and keeps the typed details on a taken phone", async () => {

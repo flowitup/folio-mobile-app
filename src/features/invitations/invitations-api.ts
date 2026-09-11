@@ -1,5 +1,7 @@
 import { API_BASE_URL } from "@/config/env";
 
+import type { components } from "@/api/generated/schema";
+
 export interface VerifyInviteResponse {
   email: string;
   expires_at: string;
@@ -49,6 +51,9 @@ export type InviteActionErrorReason =
   | "throttled"
   | "sms_failed"
   | "generic";
+
+/** Session an accepted invitation hands back — the invitee is signed in from this point. */
+export type AcceptedSession = components["schemas"]["AcceptInviteResponse"];
 
 /** Thrown by `requestInviteCode` and `acceptInvite`; `reason` drives which message the screen shows. */
 export class InviteActionError extends Error {
@@ -126,21 +131,21 @@ export async function requestInviteCode(payload: {
 
 /**
  * Creates the account + project membership from a name, a phone proven by the SMS code, and
- * the invitation token. The backend answers with session cookies for browser clients (same as
- * web sign-in) but this app is Bearer-token only (see `src/api/client.ts`) and has no use for
- * them, so there are no tokens to read here — the caller routes the invitee to the normal phone
- * sign-in afterwards instead of trying to synthesise a session from this response.
+ * the invitation token. Acceptance signs the invitee in: the backend returns the session tokens
+ * in the body (as well as setting cookies for browser clients), so the caller can hand them
+ * straight to the auth context instead of sending the invitee through sign-in for a second code.
  */
 export async function acceptInvite(payload: {
   token: string;
   name: string;
   phone: string;
   code: string;
-}): Promise<void> {
+}): Promise<AcceptedSession> {
   const response = await fetch(`${API_BASE_URL}/api/v1/invitations/accept`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!response.ok) throw await inviteActionError(response);
+  return (await response.json()) as AcceptedSession;
 }

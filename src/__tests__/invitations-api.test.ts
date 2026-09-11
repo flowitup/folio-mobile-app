@@ -79,11 +79,16 @@ describe("requestInviteCode", () => {
 });
 
 describe("acceptInvite", () => {
-  it("resolves on 200 without throwing (no tokens in the body — see module doc)", async () => {
-    mockFetch.mockResolvedValueOnce(
-      jsonResponse(200, { user: { id: "u1", email: "a@example.com" } }),
-    );
+  it("returns the session tokens acceptance signs the invitee in with", async () => {
+    const session = {
+      access_token: "access-token-stub",
+      refresh_token: "refresh-token-stub",
+      user: { id: "u1", email: "a@example.com", display_name: "New User" },
+    };
+    mockFetch.mockResolvedValueOnce(jsonResponse(200, session));
 
+    // This app is bearer-only, so a body without tokens would leave the invitee
+    // accepted but signed out — the reason the backend returns them here.
     await expect(
       acceptInvite({
         token: "tok",
@@ -91,7 +96,7 @@ describe("acceptInvite", () => {
         phone: "+33612345678",
         code: "424242",
       }),
-    ).resolves.toBeUndefined();
+    ).resolves.toEqual(session);
   });
 
   it("rejects with reason invalid_code on a wrong or expired code", async () => {
