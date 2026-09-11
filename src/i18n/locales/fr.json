@@ -1499,7 +1499,7 @@
     "logToday": "Pointer aujourd'hui",
     "logDay": "Pointer le {{date}}",
     "submit": "Pointer ce jour",
-    "futureDay": "Vous ne pouvez pointer qu'aujourd'hui ou hier.",
+    "futureDay": "Vous ne pouvez pointer qu'aujourd'hui ou un jour passé.",
     "logged": "Pointage envoyé — en attente de validation par votre responsable.",
     "notLinked": "Votre compte n'est pas encore relié à un ouvrier sur ce chantier. Demandez à votre responsable.",
     "monthList": "Jours ce mois-ci",

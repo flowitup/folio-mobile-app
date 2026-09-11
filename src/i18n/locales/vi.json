@@ -1499,7 +1499,7 @@
     "logToday": "Chấm công hôm nay",
     "logDay": "Chấm công ngày {{date}}",
     "submit": "Chấm ngày này",
-    "futureDay": "Chỉ chấm được hôm nay hoặc hôm qua.",
+    "futureDay": "Chỉ chấm được hôm nay hoặc ngày đã qua.",
     "logged": "Đã gửi chấm công, chờ quản lý duyệt.",
     "notLinked": "Tài khoản của bạn chưa được gắn với nhân công nào ở công trình này. Hãy hỏi quản lý.",
     "monthList": "Ngày công trong tháng",
