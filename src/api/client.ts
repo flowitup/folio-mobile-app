@@ -9,10 +9,26 @@ import {
 
 import type { paths } from "./generated/schema";
 
-// Auth endpoints carry their own credentials; never attach or refresh a Bearer token on them.
-const AUTH_PATHS = ["/api/v1/auth/login", "/api/v1/auth/refresh"];
+// Endpoints that carry their own credentials — an SMS code, a refresh token or
+// an invitation token. Never attach a Bearer token to them, and never treat
+// their 401 as an expired session: a wrong SMS code answers 401, and running
+// that through the refresh-or-sign-out path would clear a perfectly good
+// session because someone mistyped a digit.
+const AUTH_PATHS = [
+  "/api/v1/auth/otp/request",
+  "/api/v1/auth/otp/verify",
+  "/api/v1/auth/signup/request",
+  "/api/v1/auth/signup/verify",
+  "/api/v1/auth/refresh",
+  "/api/v1/invitations/accept",
+];
 
-function isAuthPath(url: string): boolean {
+/**
+ * Whether `url` is one of those endpoints. Exported for the test that pins the
+ * list: getting it wrong is silent — sign-in keeps working, and the damage
+ * only shows when someone mistypes a code while holding a valid session.
+ */
+export function isAuthPath(url: string): boolean {
   return AUTH_PATHS.some((path) => url.includes(path));
 }
 
