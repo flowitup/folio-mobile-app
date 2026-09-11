@@ -1092,9 +1092,7 @@
     "errors": {
       "forbiddenAdminRequired": "Yêu cầu quyền quản trị viên.",
       "companyAlreadyAttached": "Bạn đã được liên kết với công ty này.",
-      "activeTokenExists": "Đã có mã mời đang hoạt động. Dùng regenerate=true để thay thế.",
       "conflict": "Đã xảy ra xung đột.",
-      "tokenInvalid": "Liên kết mời này không còn hợp lệ. Yêu cầu quản trị viên tạo liên kết mới.",
       "validation": "Lỗi xác thực dữ liệu.",
       "unauthorized": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
       "notFound": "Không tìm thấy tài nguyên yêu cầu.",

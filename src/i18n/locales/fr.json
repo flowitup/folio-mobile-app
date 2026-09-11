@@ -1092,9 +1092,7 @@
     "errors": {
       "forbiddenAdminRequired": "Accès administrateur requis.",
       "companyAlreadyAttached": "Vous êtes déjà rattaché·e à cette société.",
-      "activeTokenExists": "Un jeton d'invitation actif existe déjà. Utilisez regenerate=true pour le remplacer.",
       "conflict": "Un conflit est survenu.",
-      "tokenInvalid": "Ce lien d'invitation n'est plus valable. Demandez à un administrateur d'en générer un nouveau.",
       "validation": "Erreur de validation.",
       "unauthorized": "Session expirée. Veuillez vous reconnecter.",
       "notFound": "La ressource demandée est introuvable.",
