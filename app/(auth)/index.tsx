@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView } from "react-native";
 
 import { loginModesFor, useAuthConfig } from "@/auth/auth-config";
 import { EmailSignIn } from "@/components/auth/email-sign-in";
@@ -40,10 +40,11 @@ export default function LoginScreen() {
     ) : null;
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-ink-block"
-    >
+    // Both platforms need the avoidance. Android used to rely on the window
+    // resizing under the keyboard, but this app is edge-to-edge, where the
+    // window keeps its full height and the keyboard simply draws over the paper
+    // sheet — the six code boxes and the sign-in button included.
+    <KeyboardAvoidingView behavior="padding" className="flex-1 bg-ink-block">
       {mode === "phone" ? (
         <PhoneSignIn signup={signup} modeSwitcher={modeSwitcher} />
       ) : (
