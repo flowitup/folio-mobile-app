@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { screen } from "@testing-library/react-native";
 
 import { renderWithProviders } from "./helpers/release-qa-fixtures";
 
@@ -33,7 +33,12 @@ beforeEach(() => {
   mockPush.mockReset();
 });
 
-describe("login screen", () => {
+/**
+ * Guards the email-removal half of the sign-in screen. The phone flow itself —
+ * steps, code boxes, countdown, auto-submit — is covered by
+ * login-ink-sheet.test.tsx; this file only asserts what must never come back.
+ */
+describe("login screen — email sign-in removed", () => {
   it("shows only the phone form — no mode switcher and no email/password fields", async () => {
     await renderWithProviders(<LoginScreen />);
 
@@ -49,30 +54,5 @@ describe("login screen", () => {
 
     expect(await screen.findByTestId("login-phone")).toBeTruthy();
     expect(screen.queryByTestId("login-signup")).toBeNull();
-  });
-
-  it("pre-fills the phone field from a `phone` route param (accept-invite hand-off)", async () => {
-    mockPhoneParam = "+33612345678";
-    await renderWithProviders(<LoginScreen />);
-
-    expect((await screen.findByTestId("login-phone")).props.value).toBe(
-      "+33612345678",
-    );
-  });
-
-  it("sends a code for the typed phone and moves to code entry", async () => {
-    mockRequestOtp.mockResolvedValue(300);
-    await renderWithProviders(<LoginScreen />);
-
-    await fireEvent.changeText(
-      screen.getByTestId("login-phone"),
-      "06 12 34 56 78",
-    );
-    await fireEvent.press(screen.getByTestId("login-send-code"));
-
-    await waitFor(() =>
-      expect(mockRequestOtp).toHaveBeenCalledWith("+33612345678"),
-    );
-    expect(await screen.findByTestId("login-code")).toBeTruthy();
   });
 });

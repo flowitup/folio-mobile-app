@@ -16,18 +16,18 @@
     "email": "Email"
   },
   "login": {
-    "title": "Sign in to Folio",
+    "title": "Sign in to\nFolio",
     "submit": "Sign in",
     "failed": "Sign-in failed: {{message}}",
-    "subtitle": "Same account as the web app.",
+    "subtitle": "One SMS code, no password.",
     "phone": "Phone number",
-    "phoneHint": "French numbers only, e.g. 06 12 34 56 78",
+    "phoneHint": "French numbers only — without the leading 0. A 6-digit code by SMS.",
     "invalidPhone": "Enter a valid French phone number.",
     "sendCode": "Send code",
-    "codeSentTo": "A 6-digit code was sent to {{phone}}.",
+    "codeSentTo": "6-digit code sent to <mono>{{phone}}</mono>.",
     "code": "SMS code",
     "verify": "Sign in",
-    "resend": "Send again",
+    "resend": "Resend code",
     "resendIn": "Send again in {{seconds}} s",
     "changePhone": "Change number",
     "noAccount": "No account yet?",
@@ -37,7 +37,12 @@
       "phoneTaken": "This number already has an account. Sign in instead.",
       "smsFailed": "The text message could not be sent. Try again in a moment.",
       "throttled": "A code was sent a moment ago. Wait a minute and try again."
-    }
+    },
+    "codeTitle": "Check your\nmessages",
+    "codeDigit": "Digit {{position}} of {{total}}",
+    "codeExpires": "Expires in {{minutes}} minutes",
+    "autoSubmitHint": "Signs in automatically at 6 digits",
+    "retry": "Try again"
   },
   "home": {
     "welcome": "Signed in as {{email}}",
@@ -324,15 +329,7 @@
       "payments": "Payments"
     },
     "calendar": {
-      "weekdays": [
-        "Mo",
-        "Tu",
-        "We",
-        "Th",
-        "Fr",
-        "Sa",
-        "Su"
-      ],
+      "weekdays": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
       "empty": "No attendance yet",
       "logDay": "Log this day",
       "details": "Activities & notes",
@@ -1276,6 +1273,7 @@
     "nameLabel": "Your full name",
     "submit": "Create account",
     "submitting": "Creating account...",
+    "success": "Account created. Welcome!",
     "errors": {
       "expired": "This invitation has expired. Ask your inviter to send a new one.",
       "revoked": "This invitation was revoked. Contact your inviter.",
@@ -1288,8 +1286,7 @@
       "body": "You're signed in as {{currentEmail}}. Sign out to accept this invitation.",
       "signOut": "Sign out and continue"
     },
-    "backToLogin": "Go to login",
-    "success": "Account created. Welcome!"
+    "backToLogin": "Go to login"
   },
   "laborRoles": {
     "title": "Labor roles",

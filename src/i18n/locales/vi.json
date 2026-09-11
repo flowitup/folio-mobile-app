@@ -16,18 +16,18 @@
     "email": "Email"
   },
   "login": {
-    "title": "Đăng nhập Folio",
+    "title": "Đăng nhập\nFolio",
     "submit": "Đăng nhập",
     "failed": "Đăng nhập thất bại: {{message}}",
-    "subtitle": "Cùng tài khoản với bản web.",
+    "subtitle": "Một mã SMS, không cần mật khẩu.",
     "phone": "Số điện thoại",
-    "phoneHint": "Chỉ nhận số điện thoại Pháp, VD: 06 12 34 56 78",
+    "phoneHint": "Chỉ nhận số Pháp — bỏ số 0 đầu. Mã 6 số gửi qua SMS.",
     "invalidPhone": "Nhập số điện thoại Pháp hợp lệ.",
     "sendCode": "Gửi mã",
-    "codeSentTo": "Mã 6 số đã gửi tới {{phone}}.",
+    "codeSentTo": "Mã 6 số đã gửi tới <mono>{{phone}}</mono>.",
     "code": "Mã SMS",
     "verify": "Đăng nhập",
-    "resend": "Gửi lại",
+    "resend": "Gửi lại mã",
     "resendIn": "Gửi lại sau {{seconds}} giây",
     "changePhone": "Đổi số",
     "noAccount": "Chưa có tài khoản?",
@@ -37,7 +37,12 @@
       "phoneTaken": "Số này đã có tài khoản. Hãy đăng nhập.",
       "smsFailed": "Không gửi được tin nhắn. Thử lại sau giây lát.",
       "throttled": "Mã vừa được gửi. Đợi một phút rồi thử lại."
-    }
+    },
+    "codeTitle": "Kiểm tra\ntin nhắn",
+    "codeDigit": "Số thứ {{position}} / {{total}}",
+    "codeExpires": "Hết hạn sau {{minutes}} phút",
+    "autoSubmitHint": "Tự đăng nhập khi đủ 6 số",
+    "retry": "Thử lại"
   },
   "home": {
     "welcome": "Đã đăng nhập: {{email}}",
@@ -324,15 +329,7 @@
       "payments": "Thanh toán"
     },
     "calendar": {
-      "weekdays": [
-        "T2",
-        "T3",
-        "T4",
-        "T5",
-        "T6",
-        "T7",
-        "CN"
-      ],
+      "weekdays": ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
       "empty": "Chưa chấm công",
       "logDay": "Chấm công ngày này",
       "details": "Hoạt động & ghi chú",
@@ -1276,6 +1273,7 @@
     "nameLabel": "Họ và tên",
     "submit": "Tạo tài khoản",
     "submitting": "Đang tạo tài khoản...",
+    "success": "Tài khoản đã được tạo. Chào mừng!",
     "errors": {
       "expired": "Lời mời này đã hết hạn. Hãy nhờ người mời gửi lại.",
       "revoked": "Lời mời này đã bị thu hồi. Liên hệ người mời.",
@@ -1288,8 +1286,7 @@
       "body": "Bạn đang đăng nhập là {{currentEmail}}. Đăng xuất để chấp nhận lời mời này.",
       "signOut": "Đăng xuất và tiếp tục"
     },
-    "backToLogin": "Đến trang đăng nhập",
-    "success": "Đã tạo tài khoản. Chào mừng!"
+    "backToLogin": "Đến trang đăng nhập"
   },
   "laborRoles": {
     "title": "Vai trò nhân công",
