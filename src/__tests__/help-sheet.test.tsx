@@ -14,7 +14,8 @@ import { Pressable, Text } from "react-native";
 
 import { HelpSheet } from "@/components/shell/help-sheet";
 import { ShellProvider, useShell } from "@/components/shell/shell-context";
-import { helpCatalogueEn } from "@/content/help/en";
+import { helpCatalogueEn, helpChromeEn } from "@/content/help/en";
+import { helpCatalogueFr, helpChromeFr } from "@/content/help/fr";
 import i18n from "@/i18n";
 
 // The sheet narrows the catalogue to what this reader's navigation shows; these mocks decide who
@@ -122,5 +123,36 @@ describe("HelpSheet", () => {
     expect(screen.queryByTestId("help-topic-billing")).toBeNull();
     expect(screen.queryByTestId("help-topic-library")).toBeNull();
     expect(screen.queryByTestId("help-topic-documents")).toBeNull();
+  });
+
+  it("reads the guide in another language without touching the app's", async () => {
+    await renderHelp();
+    await fireEvent.press(screen.getByTestId("open-help"));
+
+    // Starts in the app's language.
+    expect(screen.getByText(helpChromeEn.title)).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId("help-language-fr"));
+
+    // Panel labels and topic titles both follow the choice.
+    expect(screen.getByText(helpChromeFr.title)).toBeTruthy();
+    expect(screen.getByText(helpCatalogueFr[0].title)).toBeTruthy();
+    expect(screen.queryByText(helpCatalogueEn[0].title)).toBeNull();
+    // The app itself is untouched.
+    expect(i18n.language).toBe("en");
+  });
+
+  it("keeps you on the same topic when the guide language changes", async () => {
+    await renderHelp();
+    await fireEvent.press(screen.getByTestId("open-help"));
+    await fireEvent.press(screen.getByTestId("help-topic-planning"));
+
+    const english = helpCatalogueEn.find((topic) => topic.id === "planning")!;
+    expect(screen.getByText(english.steps[0])).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId("help-language-fr"));
+
+    const french = helpCatalogueFr.find((topic) => topic.id === "planning")!;
+    expect(screen.getByText(french.steps[0])).toBeTruthy();
   });
 });
