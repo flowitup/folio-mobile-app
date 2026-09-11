@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   ImageBackground,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -30,6 +31,19 @@ export const FIELD =
 /**
  * Ink board above, paper sheet below. `pill` is the top-left affordance, which
  * sits on a dark chip so it stays legible over the board.
+ *
+ * The keyboard is what shapes this layout. On the code step it opens by itself
+ * (the first box autofocuses), and on a 4.7" screen it claims about a third of
+ * the height. So the frame scrolls, and the board is laid out to survive that:
+ *
+ * - `flexShrink: 0` with an auto basis means the board grows into spare height
+ *   as before, but never shrinks below the pill + headline + sub it contains.
+ *   Without it the board is the only flexible row, absorbs the whole keyboard,
+ *   and collapses until the headline overlaps the pill and the status bar.
+ * - The pill is in flow rather than absolutely positioned, so it is part of the
+ *   height the board refuses to shrink past instead of being overlapped by it.
+ * - Anything that no longer fits scrolls, and the paper sheet — last child of a
+ *   `flexGrow: 1` content container — stays pinned to the bottom while it does.
  */
 export function LoginFrame({
   pill,
@@ -44,11 +58,19 @@ export function LoginFrame({
 }) {
   const insets = useSafeAreaInsets();
   return (
-    <>
+    <ScrollView
+      className="flex-1"
+      contentContainerStyle={{ flexGrow: 1 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bounces={false}
+      overScrollMode="never"
+    >
       <ImageBackground
         source={HERO}
         resizeMode="cover"
-        className="flex-1 justify-end bg-ink-block-tile px-7 pb-7"
+        className="justify-between bg-ink-block-tile px-7 pb-7"
+        style={{ flexGrow: 1, flexShrink: 0, flexBasis: "auto" }}
       >
         <View
           pointerEvents="none"
@@ -57,18 +79,20 @@ export function LoginFrame({
             { experimental_backgroundImage: SCRIM },
           ]}
         />
-        <View className="absolute left-7" style={{ top: insets.top + 8 }}>
+        <View className="items-start" style={{ paddingTop: insets.top + 8 }}>
           {pill}
         </View>
-        <Text
-          className="font-serif text-[38px] leading-[40px] text-on-ink-block"
-          style={{ letterSpacing: -0.76 }}
-        >
-          {headline}
-        </Text>
-        <Text className="mt-2.5 max-w-[300px] font-sans text-[14.5px] leading-[22px] text-on-ink-block-2">
-          {sub}
-        </Text>
+        <View className="pt-4">
+          <Text
+            className="font-serif text-[38px] leading-[40px] text-on-ink-block"
+            style={{ letterSpacing: -0.76 }}
+          >
+            {headline}
+          </Text>
+          <Text className="mt-2.5 max-w-[300px] font-sans text-[14.5px] leading-[22px] text-on-ink-block-2">
+            {sub}
+          </Text>
+        </View>
       </ImageBackground>
       <View
         className="rounded-t-[24px] bg-paper px-7 pt-[26px]"
@@ -76,7 +100,7 @@ export function LoginFrame({
       >
         {children}
       </View>
-    </>
+    </ScrollView>
   );
 }
 
