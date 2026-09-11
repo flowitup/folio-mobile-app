@@ -1,21 +1,24 @@
 #!/usr/bin/env node
 /**
- * Guards against a generated native project carrying stale brand icons.
+ * Guards against a generated native project carrying stale brand assets — the launcher icon and
+ * the splash screen.
  *
  * ios/ and android/ are generated (they are gitignored — Expo continuous native generation), and
  * prebuild copies the brand assets into them exactly once, at generation time. Nothing re-syncs
  * them afterwards: `expo run:ios` / `expo run:android` skip prebuild when the native directory
  * already exists, so a native project generated before a brand change keeps building the old
- * launcher icon. The JS is current, every gate is green, and the icon on the springboard is wrong
- * for a reason nothing in the diff explains.
+ * launcher icon, or no splash screen at all. The JS is current, every gate is green, and what the
+ * device shows is wrong for a reason nothing in the diff explains.
  *
- * Timestamps alone cannot answer this — a checkout rewrites mtimes — so the artifact's mtime is
- * used only to locate the commit the native project was generated from. The verdict comes from
- * comparing the tracked brand inputs (the asset blobs, plus the app.json keys pointing at them)
- * between that commit and the current working tree, which is what the next build would consume.
+ * Timestamps alone cannot answer this — a checkout rewrites mtimes — so the oldest artifact mtime
+ * is used only to locate the commit the native project was generated from. The verdict comes from
+ * comparing the tracked brand inputs (the asset blobs, the app.json keys pointing at them, and the
+ * expo-splash-screen plugin entry that configures the splash) between that commit and the current
+ * working tree, which is what the next build would consume. A project generated before an asset
+ * existed at all never wrote it, and is caught by the missing artifact rather than by that diff.
  *
  * Usage: node scripts/check-native-icon-freshness.mjs [--json]
- * Exit 0 when the generated icons match the working tree, 1 when a prebuild is required.
+ * Exit 0 when the generated assets match the working tree, 1 when a prebuild is required.
  */
 
 import { execFileSync } from "node:child_process";
@@ -26,32 +29,41 @@ import { fileURLToPath } from "node:url";
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 /**
- * One entry per platform: the generated artifact that dates the native project, the tracked
- * assets prebuild reads to produce it, and the app.json keys that select those assets.
+ * One entry per platform: the generated artifacts that must exist and that date the native
+ * project, the tracked assets prebuild reads to produce them, and the app.json keys and plugin
+ * entries that select those assets.
  */
 const PLATFORMS = [
   {
     name: "ios",
     nativeDir: "ios",
-    artifact:
+    // One density is enough per asset: prebuild writes the whole imageset in the same pass.
+    artifacts: [
       "ios/Folio/Images.xcassets/AppIcon.appiconset/App-Icon-1024x1024@1x.png",
-    assets: ["assets/icon.png"],
+      "ios/Folio/Images.xcassets/SplashScreenLogo.imageset/image@3x.png",
+    ],
+    assets: ["assets/icon.png", "assets/splash-icon.png"],
     configPaths: [["icon"]],
+    configPlugins: ["expo-splash-screen"],
     rebuildHint: "npx expo prebuild -p ios --clean",
   },
   {
     name: "android",
     nativeDir: "android",
-    // One density is enough: prebuild regenerates every mipmap in the same pass.
-    artifact:
+    // One density is enough: prebuild regenerates every mipmap and drawable in the same pass.
+    artifacts: [
       "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp",
+      "android/app/src/main/res/drawable-xxxhdpi/splashscreen_logo.png",
+    ],
     assets: [
       "assets/icon.png",
       "assets/android-icon-foreground.png",
       "assets/android-icon-background.png",
       "assets/android-icon-monochrome.png",
+      "assets/splash-icon.png",
     ],
     configPaths: [["icon"], ["android", "adaptiveIcon"]],
+    configPlugins: ["expo-splash-screen"],
     rebuildHint: "npx expo prebuild -p android --clean",
   },
 ];
@@ -98,6 +110,21 @@ function configValue(expo, keys) {
   return JSON.stringify(node);
 }
 
+/**
+ * A plugin's entry in expo.plugins, which is a flat array of either "name" or ["name", props].
+ * Returning the whole entry means repointing the splash image or recolouring it counts as a change.
+ */
+function pluginEntry(expo, name) {
+  const plugins = expo?.plugins;
+  if (!Array.isArray(plugins)) return undefined;
+  return JSON.stringify(
+    plugins.find(
+      (plugin) =>
+        plugin === name || (Array.isArray(plugin) && plugin[0] === name),
+    ),
+  );
+}
+
 /** The brand inputs for one platform, at a commit (or the working tree when commit is null). */
 function brandState(platform, commit) {
   const expo = appConfig(commit);
@@ -108,12 +135,16 @@ function brandState(platform, commit) {
         commit === null ? blobOnDisk(path) : blobAt(commit, path),
       ]),
     ),
-    config: Object.fromEntries(
-      platform.configPaths.map((keys) => [
+    config: Object.fromEntries([
+      ...platform.configPaths.map((keys) => [
         keys.join("."),
         configValue(expo, keys),
       ]),
-    ),
+      ...platform.configPlugins.map((name) => [
+        `plugins.${name}`,
+        pluginEntry(expo, name),
+      ]),
+    ]),
   };
 }
 
@@ -136,17 +167,23 @@ function check(platform) {
     return { ...base, skipped: true, reason: "not-generated" };
   }
 
-  const artifact = resolve(REPO_ROOT, platform.artifact);
-  if (!existsSync(artifact)) {
+  const missing = platform.artifacts.filter(
+    (path) => !existsSync(resolve(REPO_ROOT, path)),
+  );
+  if (missing.length) {
+    // Generated before this asset existed at all — no commit comparison can add to that.
     return {
       ...base,
       stale: true,
-      reason: "missing-icon",
-      detail: `${platform.nativeDir}/ exists but ${platform.artifact} does not.`,
+      reason: "missing-artifact",
+      detail: `${platform.nativeDir}/ exists but ${missing.join(", ")} does not.`,
     };
   }
 
-  const generatedAt = statSync(artifact).mtime;
+  // The oldest artifact dates the project, so a partly refreshed one is judged by its stalest part.
+  const generatedAt = platform.artifacts
+    .map((path) => statSync(resolve(REPO_ROOT, path)).mtime)
+    .reduce((oldest, mtime) => (mtime < oldest ? mtime : oldest));
   // The commit the tree was on when prebuild ran: brand changes that landed after it never
   // reached the native project.
   const generatedFrom = git([
@@ -160,7 +197,7 @@ function check(platform) {
       ...base,
       stale: true,
       reason: "unknown-origin",
-      detail: `Native icons predate every commit reachable from HEAD (generated ${generatedAt.toISOString()}).`,
+      detail: `Native brand assets predate every commit reachable from HEAD (generated ${generatedAt.toISOString()}).`,
       generatedAt,
     };
   }
@@ -202,13 +239,19 @@ if (process.argv.includes("--json")) {
       );
     } else if (!result.stale) {
       console.log(
-        `${result.platform}: native icons are current (generated ${result.generatedAt.toISOString()} from ${result.generatedFrom}).`,
+        `${result.platform}: native brand assets are current (generated ${result.generatedAt.toISOString()} from ${result.generatedFrom}).`,
       );
     } else {
       console.error(
-        `${result.platform}: native icons are STALE — the build would ship the wrong launcher icon.`,
+        `${result.platform}: native brand assets are STALE — the build would ship the wrong launcher icon or splash screen.`,
       );
-      if (result.detail) console.error(`  changed since: ${result.detail}`);
+      if (result.detail) {
+        console.error(
+          result.reason === "brand-assets-changed"
+            ? `  changed since: ${result.detail}`
+            : `  ${result.detail}`,
+        );
+      }
       const hint = PLATFORMS.find(
         (platform) => platform.name === result.platform,
       )?.rebuildHint;
