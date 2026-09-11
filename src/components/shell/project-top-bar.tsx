@@ -19,7 +19,8 @@ type Props = {
 
 /**
  * Top bar of the four project tabs: project switcher (28px ink square + name + "Đổi công trình ▾"),
- * 40px bell with an accent dot when reminders are pending, 36px initials avatar.
+ * 40px help mark opening the workflow guide, 40px bell with an accent dot when reminders are
+ * pending, 36px initials avatar.
  */
 export function ProjectTopBar({ tone = "paper" }: Props) {
   const { t } = useTranslation();
@@ -74,7 +75,8 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
           </Text>
           <View className="flex-row items-center gap-1">
             <Text
-              className={`font-sans text-[11px] ${ink ? "text-ink-block-muted" : "text-muted"}`}
+              className={`shrink font-sans text-[11px] ${ink ? "text-ink-block-muted" : "text-muted"}`}
+              numberOfLines={1}
             >
               {t("shell.switchProject")}
             </Text>
@@ -85,6 +87,19 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
             />
           </View>
         </View>
+      </Pressable>
+      <Pressable
+        testID="top-bar-help"
+        accessibilityRole="button"
+        accessibilityLabel={t("help.open")}
+        onPress={() => openSheet("help")}
+        className="h-10 w-10 items-center justify-center active:opacity-70"
+      >
+        <Icon
+          name="help-circle"
+          size={20}
+          color={ink ? INK_BLOCK.text : tokens.ink}
+        />
       </Pressable>
       <Pressable
         testID="top-bar-bell"

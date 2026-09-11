@@ -1571,5 +1571,16 @@
     "bibliotheque_manage": "Quản lý thư viện sản phẩm",
     "project_view_pay": "Xem lương người khác",
     "project_view_budget": "Xem ngân sách & vốn giải ngân"
+  },
+  "help": {
+    "title": "Folio hoạt động thế nào",
+    "subtitle": "Mọi quy trình, từng bước một.",
+    "back": "Tất cả chủ đề",
+    "open": "Mở hướng dẫn quy trình",
+    "steps": "Các bước",
+    "whoCanDoIt": "Ai có thể làm",
+    "gotchas": "Cần lưu ý",
+    "webOnly": "Trên ứng dụng web",
+    "workerBadge": "Chế độ thợ"
   }
 }
