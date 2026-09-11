@@ -12,22 +12,14 @@
     "saved": "Saved.",
     "edit": "Edit",
     "back": "Back",
-    "remove": "Remove"
+    "remove": "Remove",
+    "email": "Email"
   },
   "login": {
     "title": "Sign in to\nFolio",
-    "email": "Email",
-    "password": "Password",
     "submit": "Sign in",
     "failed": "Sign-in failed: {{message}}",
     "subtitle": "One SMS code, no password.",
-    "show": "Show",
-    "hide": "Hide",
-    "forgot": "Forgot your password? Contact the project administrator.",
-    "mode": {
-      "phone": "Phone number",
-      "email": "Email"
-    },
     "phone": "Phone number",
     "phoneHint": "French numbers only — without the leading 0. A 6-digit code by SMS.",
     "invalidPhone": "Enter a valid French phone number.",
@@ -41,14 +33,12 @@
     "noAccount": "No account yet?",
     "createAccount": "Create an account",
     "errors": {
-      "badCredentials": "Wrong e-mail or password.",
       "invalidCode": "That code is wrong or has expired. Ask for a new one.",
       "phoneTaken": "This number already has an account. Sign in instead.",
       "smsFailed": "The text message could not be sent. Try again in a moment.",
       "throttled": "A code was sent a moment ago. Wait a minute and try again."
     },
     "codeTitle": "Check your\nmessages",
-    "emailSubtitle": "The same account as on the web.",
     "codeDigit": "Digit {{position}} of {{total}}",
     "codeExpires": "Expires in {{minutes}} minutes",
     "autoSubmitHint": "Signs in automatically at 6 digits",
@@ -1281,12 +1271,8 @@
     "subtitle": "{{inviterName}} invited you as {{roleName}}",
     "emailLabel": "Email",
     "nameLabel": "Your full name",
-    "passwordLabel": "Choose a password",
-    "confirmLabel": "Confirm password",
     "submit": "Create account",
     "submitting": "Creating account...",
-    "passwordHint": "8-128 characters",
-    "passwordMismatch": "Passwords do not match",
     "success": "Account created. Welcome!",
     "errors": {
       "expired": "This invitation has expired. Ask your inviter to send a new one.",

@@ -45,10 +45,11 @@ type AuthStatus = "loading" | "signedOut" | "signedIn";
 type AuthContextValue = {
   status: AuthStatus;
   user: AuthUser | null;
-  signIn: (email: string, password: string) => Promise<void>;
   /** Asks the backend to text a 6-digit code; resolves with the code's lifetime in seconds. */
   requestOtp: (phone: string) => Promise<number>;
   signInWithOtp: (phone: string, code: string) => Promise<void>;
+  /** Adopt a session handed back by another flow (invitation acceptance) without a second code. */
+  signInWithSession: (session: AdoptableSession) => Promise<void>;
   /** Sign-up: code to a phone without an account; resolves with the code's lifetime in seconds. */
   requestSignupOtp: (phone: string) => Promise<number>;
   signUpWithOtp: (
@@ -62,6 +63,14 @@ type AuthContextValue = {
 };
 
 type LoginPayload = components["schemas"]["LoginResponse"];
+
+/**
+ * A session another flow already obtained — today only invitation acceptance,
+ * which signs the invitee in as it creates the account. Its `user` carries
+ * identity without companies, which is exactly the shape `applyLoginPayload`
+ * completes from `/auth/me`.
+ */
+export type AdoptableSession = components["schemas"]["AcceptInviteResponse"];
 
 function errorMessage(
   flow: AuthFlow,
@@ -104,7 +113,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return () => setSessionExpiredHandler(null);
   }, [signOutLocally]);
 
-  // Shared post-login step for both the password and OTP flows. The login/OTP responses embed
+  // Shared post-login step for both OTP flows (sign-in and sign-up). Their responses embed
   // a `user` snapshot that carries `companies` in normal operation; only fall back to a
   // `/auth/me` round trip when a payload omits it (older backend build).
   const applyLoginPayload = useCallback(async (data: LoginPayload) => {
@@ -179,6 +188,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [applyLoginPayload],
   );
 
+  const signInWithSession = useCallback(
+    async (session: AdoptableSession) => {
+      // Identity only — no companies or permissions, which the backend resolves
+      // per request — so applyLoginPayload takes its /auth/me path and fills in
+      // the rest before the app renders.
+      await applyLoginPayload(session as LoginPayload);
+    },
+    [applyLoginPayload],
+  );
+
   const requestSignupOtp = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/signup/request",
@@ -200,17 +219,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [applyLoginPayload],
   );
 
-  const signIn = useCallback(
-    async (email: string, password: string) => {
-      const { data, error, response } = await api.POST("/api/v1/auth/login", {
-        body: { email, password },
-      });
-      if (!data) throw new Error(errorMessage("password", error, response));
-      await applyLoginPayload(data);
-    },
-    [applyLoginPayload],
-  );
-
   const signOut = useCallback(async () => {
     // Best effort server-side revocation (access + refresh); local sign-out must succeed even offline.
     await unregisterPushDevice();
@@ -227,9 +235,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
     () => ({
       status,
       user,
-      signIn,
       requestOtp,
       signInWithOtp,
+      signInWithSession,
       requestSignupOtp,
       signUpWithOtp,
       signOut,
@@ -238,9 +246,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [
       status,
       user,
-      signIn,
       requestOtp,
       signInWithOtp,
+      signInWithSession,
       requestSignupOtp,
       signUpWithOtp,
       signOut,

@@ -1,7 +1,13 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
@@ -10,17 +16,23 @@ import { Card } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import {
   acceptInvite,
+  requestInviteCode,
   verifyInvite,
+  InviteActionError,
 } from "@/features/invitations/invitations-api";
 import type {
   InviteErrorReason,
   VerifyInviteResponse,
 } from "@/features/invitations/invitations-api";
+import { normalizePhone } from "@/lib/auth/phone-number";
 
 type State =
   | { kind: "loading" }
   | { kind: "error"; reason: InviteErrorReason | "generic" }
   | { kind: "ready"; invite: VerifyInviteResponse };
+
+/** Once the invitation itself checks out: collect name + phone, verify the SMS code, done. */
+type Step = "details" | "code";
 
 const ERROR_KEY: Record<InviteErrorReason | "generic", string> = {
   expired: "expired",
@@ -30,16 +42,66 @@ const ERROR_KEY: Record<InviteErrorReason | "generic", string> = {
   generic: "generic",
 };
 
-/** Deep link `folio://accept-invite/<token>`: verify → name + password → create the account → sign in. */
+const RESEND_SECONDS = 60;
+
+/**
+ * A 410/404 mid-flow means the invitation itself became unusable (expired, revoked, already
+ * accepted, or a garbage token) — the whole screen swaps to the same terminal error card the
+ * initial `verifyInvite()` check uses. Everything else is a retryable mistake shown inline next
+ * to the field that caused it, keeping the name/phone the invitee already typed.
+ */
+function screenErrorReason(
+  error: InviteActionError,
+): InviteErrorReason | "generic" | null {
+  switch (error.reason) {
+    case "expired":
+    case "revoked":
+    case "accepted":
+    case "not_found":
+      return error.reason;
+    case "generic":
+      return "generic";
+    default:
+      return null;
+  }
+}
+
+function inlineErrorKey(error: InviteActionError): string {
+  switch (error.reason) {
+    case "invalid_phone":
+      return "login.invalidPhone";
+    case "phone_registered":
+      return "login.errors.phoneTaken";
+    case "invalid_code":
+      return "login.errors.invalidCode";
+    case "throttled":
+      return "login.errors.throttled";
+    case "sms_failed":
+      return "login.errors.smsFailed";
+    default:
+      return "acceptInvite.errors.generic";
+  }
+}
+
+/**
+ * Deep link `folio://accept-invite/<token>`: verify → name + French phone → SMS code → signed in.
+ * The invitee never chooses a password; acceptance only proves phone ownership, the same way
+ * phone sign-up does. Acceptance returns the session tokens in its body, so the invitee lands
+ * in the app directly rather than being sent back through sign-in for a second code.
+ */
 export default function AcceptInviteScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { token } = useLocalSearchParams<{ token: string }>();
-  const { status, user, signIn, signOut } = useAuth();
+  const { status, user, signOut, signInWithSession } = useAuth();
   const [state, setState] = useState<State>({ kind: "loading" });
+  const [step, setStep] = useState<Step>("details");
   const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+  const [phoneInput, setPhoneInput] = useState("");
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const [resendAt, setResendAt] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -61,30 +123,87 @@ export default function AcceptInviteScreen() {
     };
   }, [token]);
 
-  async function submit() {
-    if (state.kind !== "ready" || !token) return;
-    const trimmed = name.trim();
-    if (trimmed.length < 1 || trimmed.length > 100)
-      return setError(t("acceptInvite.nameLabel"));
-    if (password.length < 8 || password.length > 128)
-      return setError(t("acceptInvite.passwordHint"));
-    if (password !== confirm)
-      return setError(t("acceptInvite.passwordMismatch"));
-    setError(null);
+  // Tick once a second while the resend timer runs (mirrors the sign-in and sign-up screens).
+  useEffect(() => {
+    if (resendAt === null) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [resendAt]);
+
+  const normalizedPhone = normalizePhone(phoneInput);
+  const secondsLeft =
+    resendAt === null ? 0 : Math.max(0, Math.ceil((resendAt - now) / 1000));
+  const canSend =
+    name.trim().length > 0 && normalizedPhone !== null && !submitting;
+  const canCreate = /^\d{6}$/.test(code) && !submitting;
+
+  function fail(caught: unknown) {
+    if (caught instanceof InviteActionError) {
+      const reason = screenErrorReason(caught);
+      if (reason) {
+        setState({ kind: "error", reason });
+        return;
+      }
+      setError(t(inlineErrorKey(caught)));
+      return;
+    }
+    setError(
+      caught instanceof Error
+        ? caught.message
+        : t("acceptInvite.errors.generic"),
+    );
+  }
+
+  async function sendCode() {
+    if (!token || !canSend || !normalizedPhone) return;
     setSubmitting(true);
+    setError(null);
     try {
-      await acceptInvite({ token, name: trimmed, password });
-      await signIn(state.invite.email, password);
-      router.replace("/(app)/(tabs)");
+      await requestInviteCode({ token, phone: normalizedPhone });
+      setSentTo(normalizedPhone);
+      setCode("");
+      setResendAt(Date.now() + RESEND_SECONDS * 1000);
+      setNow(Date.now());
+      setStep("code");
     } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : t("acceptInvite.errors.generic"),
-      );
+      fail(caught);
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function create() {
+    if (!token || !sentTo || !canCreate) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const session = await acceptInvite({
+        token,
+        name: name.trim(),
+        phone: sentTo,
+        code,
+      });
+      // Acceptance already signed them in — adopt the session, then navigate.
+      // This screen sits outside the Stack.Protected guards so the invitee can
+      // reach it signed out, which also means flipping to "signedIn" makes the
+      // app navigable but does not navigate; without this replace the render
+      // below falls into the "signed in as someone else" branch and offers to
+      // sign out of the session just earned.
+      await signInWithSession(session);
+      router.replace("/(app)/(tabs)");
+    } catch (caught) {
+      fail(caught);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function changeNumber() {
+    setStep("details");
+    setSentTo(null);
+    setCode("");
+    setError(null);
+    setResendAt(null);
   }
 
   return (
@@ -144,34 +263,97 @@ export default function AcceptInviteScreen() {
               value={state.invite.email}
               editable={false}
             />
-            <Input
-              testID="invite-name"
-              label={t("acceptInvite.nameLabel")}
-              value={name}
-              onChangeText={setName}
-            />
-            <Input
-              testID="invite-password"
-              label={t("acceptInvite.passwordLabel")}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              hint={t("acceptInvite.passwordHint")}
-            />
-            <Input
-              testID="invite-confirm"
-              label={t("acceptInvite.confirmLabel")}
-              value={confirm}
-              onChangeText={setConfirm}
-              secureTextEntry
-              error={error}
-            />
-            <Button
-              testID="invite-submit"
-              label={t("acceptInvite.submit")}
-              loading={submitting}
-              onPress={() => void submit()}
-            />
+
+            {step === "details" ? (
+              <View>
+                <Input
+                  testID="invite-name"
+                  label={t("acceptInvite.nameLabel")}
+                  value={name}
+                  onChangeText={setName}
+                  autoComplete="name"
+                  textContentType="name"
+                  maxLength={100}
+                />
+                <Input
+                  testID="invite-phone"
+                  label={t("login.phone")}
+                  hint={t("login.phoneHint")}
+                  error={error}
+                  value={phoneInput}
+                  onChangeText={setPhoneInput}
+                  autoComplete="tel"
+                  keyboardType="phone-pad"
+                  textContentType="telephoneNumber"
+                  placeholder="06 12 34 56 78"
+                  onSubmitEditing={() => void sendCode()}
+                />
+                <Button
+                  testID="invite-send-code"
+                  label={t("login.sendCode")}
+                  loading={submitting}
+                  disabled={!canSend}
+                  onPress={() => void sendCode()}
+                />
+              </View>
+            ) : (
+              <View>
+                <Text
+                  testID="invite-code-sent"
+                  className="mb-3 text-sm text-primary"
+                >
+                  {t("login.codeSentTo", { phone: sentTo })}
+                </Text>
+                <Input
+                  testID="invite-code"
+                  label={t("login.code")}
+                  error={error}
+                  value={code}
+                  onChangeText={(text) => setCode(text.replace(/\D/g, ""))}
+                  keyboardType="number-pad"
+                  autoComplete="sms-otp"
+                  textContentType="oneTimeCode"
+                  maxLength={6}
+                  placeholder="••••••"
+                  autoFocus
+                  onSubmitEditing={() => void create()}
+                />
+                <Button
+                  testID="invite-submit"
+                  label={t("acceptInvite.submit")}
+                  loading={submitting}
+                  disabled={!canCreate}
+                  onPress={() => void create()}
+                />
+                <View className="mt-4 flex-row items-center justify-between">
+                  <Pressable
+                    testID="invite-resend"
+                    accessibilityRole="button"
+                    disabled={secondsLeft > 0 || submitting}
+                    onPress={() => void sendCode()}
+                    hitSlop={8}
+                  >
+                    <Text
+                      className={`text-[13px] ${secondsLeft > 0 ? "text-muted" : "text-primary"}`}
+                    >
+                      {secondsLeft > 0
+                        ? t("login.resendIn", { seconds: secondsLeft })
+                        : t("login.resend")}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    testID="invite-change-phone"
+                    accessibilityRole="button"
+                    onPress={changeNumber}
+                    hitSlop={8}
+                  >
+                    <Text className="text-[13px] text-primary">
+                      {t("login.changePhone")}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>

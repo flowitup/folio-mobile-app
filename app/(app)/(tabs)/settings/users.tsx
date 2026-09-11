@@ -128,7 +128,7 @@ export default function AdminUsersScreen() {
         <View className="p-4">
           <Input
             testID="user-edit-email"
-            label={t("login.email")}
+            label={t("common.email")}
             value={editEmail}
             onChangeText={setEditEmail}
             autoCapitalize="none"

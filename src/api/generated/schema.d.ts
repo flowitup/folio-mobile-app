@@ -260,46 +260,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/auth/login": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Authenticate user and return tokens */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["LoginRequest"];
-        };
-      };
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["LoginResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/auth/logout": {
     parameters: {
       query?: never;
@@ -371,7 +331,31 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    /** Update the current user's display name and/or phone */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateMeRequest"];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["UserResponse"];
+          };
+        };
+      };
+    };
     trace?: never;
   };
   "/api/v1/auth/otp/request": {
@@ -2649,7 +2633,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Accept an invitation: create account + membership, return JWT cookies */
+    /** Accept an invitation: create the account and membership, then sign the invitee in */
     post: {
       parameters: {
         query?: never;
@@ -2663,12 +2647,54 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Success */
+        /** @description OK */
         200: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            "application/json": components["schemas"]["AcceptInviteResponse"];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/invitations/accept/request-code": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Text a 6-digit code to the phone number an invitation acceptor is claiming */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["RequestInviteCodeRequest"];
+        };
+      };
+      responses: {
+        /** @description Response */
+        202: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["OtpRequestResponse"];
+          };
         };
       };
     };
@@ -6984,12 +7010,48 @@ export interface components {
      * @description POST /invitations/accept request body.
      */
     AcceptInviteRequest: {
+      /** Code */
+      code: string;
       /** Name */
       name: string;
-      /** Password */
-      password: string;
+      /** Phone */
+      phone: string;
       /** Token */
       token: string;
+    };
+    /**
+     * AcceptInviteResponse
+     * @description POST /invitations/accept — the accepted account plus its session tokens.
+     *
+     *     Tokens are in the body as well as in cookies, matching every other flow that
+     *     signs a user in (see ``_login_response`` on the auth blueprint). The web app
+     *     forwards the cookies; the mobile app is bearer-only and reads these fields,
+     *     so omitting them would leave an invitee accepted but not signed in.
+     */
+    AcceptInviteResponse: {
+      /** Access Token */
+      access_token: string;
+      /** Refresh Token */
+      refresh_token: string;
+      user: components["schemas"]["AcceptedUserResponse"];
+    };
+    /**
+     * AcceptedUserResponse
+     * @description User info returned on successful accept.
+     */
+    AcceptedUserResponse: {
+      /**
+       * Display Name
+       * @default null
+       */
+      display_name: string | null;
+      /** Email */
+      email: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
     };
     /**
      * AddMemberByPhoneRequest
@@ -7168,8 +7230,6 @@ export interface components {
      * @description GET /auth/config — what this deployment offers, read by the apps before sign-in.
      */
     AuthConfigResponse: {
-      /** Login Mode */
-      login_mode: string;
       /** Session */
       session: string;
       /** Signup */
@@ -8017,19 +8077,6 @@ export interface components {
       worker_id: string;
     };
     /**
-     * LoginRequest
-     * @description Login request payload.
-     */
-    LoginRequest: {
-      /**
-       * Email
-       * Format: email
-       */
-      email: string;
-      /** Password */
-      password: string;
-    };
-    /**
      * LoginResponse
      * @description Login response with tokens and user info.
      */
@@ -8418,6 +8465,19 @@ export interface components {
        * @default null
        */
       project_id: string | null;
+    };
+    /**
+     * RequestInviteCodeRequest
+     * @description POST /invitations/accept/request-code request body.
+     *
+     *     Public: the invitation token (not a session) is the authorisation for texting a
+     *     code to the phone the invitee is claiming.
+     */
+    RequestInviteCodeRequest: {
+      /** Phone */
+      phone: string;
+      /** Token */
+      token: string;
     };
     /**
      * RosterResponse
@@ -8874,6 +8934,25 @@ export interface components {
        * @default null
        */
       name: string | null;
+    };
+    /**
+     * UpdateMeRequest
+     * @description PATCH /auth/me — the caller edits their own display name and/or phone.
+     *
+     *     The e-mail is deliberately not editable here (platform ops only). ``phone`` is stored in
+     *     E.164 and must stay unique; null/empty clears it. At least one field must be provided.
+     */
+    UpdateMeRequest: {
+      /**
+       * Display Name
+       * @default null
+       */
+      display_name: string | null;
+      /**
+       * Phone
+       * @default null
+       */
+      phone: string | null;
     };
     /**
      * UpdateMemberPayDefaultsRequest

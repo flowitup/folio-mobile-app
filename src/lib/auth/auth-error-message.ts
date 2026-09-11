@@ -7,8 +7,12 @@
  * which is more specific than a catch-all string would be.
  */
 
-/** Which sign-in path produced the error — 401 means different things per flow. */
-export type AuthFlow = "password" | "otp" | "signup";
+/**
+ * Which sign-in path produced the error — a 409 only means something for a path that creates a
+ * new phone-owning record. "signup" also covers invitation acceptance: both text a code to a
+ * phone with no account yet and reject it with the same `phone_registered` conflict.
+ */
+export type AuthFlow = "otp" | "signup";
 
 /** i18n key for a recognised failure, or null to show the server's message unchanged. */
 export function authErrorKey(
@@ -23,9 +27,7 @@ export function authErrorKey(
     case 409:
       return flow === "signup" ? "login.errors.phoneTaken" : null;
     case 401:
-      return flow === "password"
-        ? "login.errors.badCredentials"
-        : "login.errors.invalidCode";
+      return "login.errors.invalidCode";
     default:
       return null;
   }

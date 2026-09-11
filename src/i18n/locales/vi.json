@@ -12,22 +12,14 @@
     "saved": "Đã lưu.",
     "edit": "Sửa",
     "back": "Quay lại",
-    "remove": "Gỡ"
+    "remove": "Gỡ",
+    "email": "Email"
   },
   "login": {
     "title": "Đăng nhập\nFolio",
-    "email": "Email",
-    "password": "Mật khẩu",
     "submit": "Đăng nhập",
     "failed": "Đăng nhập thất bại: {{message}}",
     "subtitle": "Một mã SMS, không cần mật khẩu.",
-    "show": "Hiện",
-    "hide": "Ẩn",
-    "forgot": "Quên mật khẩu? Liên hệ quản trị viên công trình.",
-    "mode": {
-      "phone": "Số điện thoại",
-      "email": "Email"
-    },
     "phone": "Số điện thoại",
     "phoneHint": "Chỉ nhận số Pháp — bỏ số 0 đầu. Mã 6 số gửi qua SMS.",
     "invalidPhone": "Nhập số điện thoại Pháp hợp lệ.",
@@ -41,14 +33,12 @@
     "noAccount": "Chưa có tài khoản?",
     "createAccount": "Tạo tài khoản",
     "errors": {
-      "badCredentials": "Email hoặc mật khẩu không đúng.",
       "invalidCode": "Mã không đúng hoặc đã hết hạn. Hãy yêu cầu mã mới.",
       "phoneTaken": "Số này đã có tài khoản. Hãy đăng nhập.",
       "smsFailed": "Không gửi được tin nhắn. Thử lại sau giây lát.",
       "throttled": "Mã vừa được gửi. Đợi một phút rồi thử lại."
     },
     "codeTitle": "Kiểm tra\ntin nhắn",
-    "emailSubtitle": "Cùng tài khoản với bản web.",
     "codeDigit": "Số thứ {{position}} / {{total}}",
     "codeExpires": "Hết hạn sau {{minutes}} phút",
     "autoSubmitHint": "Tự đăng nhập khi đủ 6 số",
@@ -1281,12 +1271,8 @@
     "subtitle": "{{inviterName}} đã mời bạn với vai trò {{roleName}}",
     "emailLabel": "Email",
     "nameLabel": "Họ và tên",
-    "passwordLabel": "Chọn mật khẩu",
-    "confirmLabel": "Xác nhận mật khẩu",
     "submit": "Tạo tài khoản",
     "submitting": "Đang tạo tài khoản...",
-    "passwordHint": "8-128 ký tự",
-    "passwordMismatch": "Mật khẩu không khớp",
     "success": "Tài khoản đã được tạo. Chào mừng!",
     "errors": {
       "expired": "Lời mời này đã hết hạn. Hãy nhờ người mời gửi lại.",
