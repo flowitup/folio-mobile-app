@@ -100,13 +100,6 @@ export interface CreateCompanyPayload {
 }
 export type UpdateCompanyPayload = Partial<CreateCompanyPayload>;
 
-/** Plaintext `token` is only exposed at generation time: show it once, never store it. */
-export interface CompanyInviteTokenGenerated {
-  token: string;
-  token_id: string;
-  expires_at: string;
-}
-
 export const companyAdminKeys = {
   allCompanies: ["companies", "all"] as const,
 };
@@ -205,52 +198,6 @@ export function useSetPrimaryCompany() {
       ),
     invalidates: [companyKeys.all],
     successMessage: t("companies.toast.primarySet"),
-  });
-}
-
-export function useRedeemInviteToken() {
-  const { t } = useTranslation();
-  return useApiMutation<{ token: string }, MyCompany>({
-    mutationFn: async ({ token }) =>
-      unwrapAs<MyCompany>(
-        await api.POST("/api/v1/companies/attach-by-token", {
-          body: { token } as never,
-        }),
-      ),
-    invalidates: [companyKeys.all],
-    successMessage: t("companies.toast.attached"),
-  });
-}
-
-export function useGenerateInviteToken() {
-  return useApiMutation<
-    { companyId: string; role: CompanyRole; regenerate?: boolean },
-    CompanyInviteTokenGenerated
-  >({
-    mutationFn: async ({ companyId, role, regenerate }) =>
-      unwrapAs<CompanyInviteTokenGenerated>(
-        await api.POST("/api/v1/companies/{company_id}/invite-tokens", {
-          params: {
-            path: { company_id: companyId },
-            query: regenerate ? { regenerate: "true" } : {},
-          } as never,
-          body: { role } as never,
-        }),
-      ),
-  });
-}
-
-export function useRevokeInviteToken() {
-  const { t } = useTranslation();
-  return useApiMutation<{ companyId: string }>({
-    mutationFn: async ({ companyId }) =>
-      unwrapVoid(
-        await api.DELETE(
-          "/api/v1/companies/{company_id}/invite-tokens/active",
-          { params: { path: { company_id: companyId } } },
-        ),
-      ),
-    successMessage: t("companies.toast.tokenRevoked"),
   });
 }
 
