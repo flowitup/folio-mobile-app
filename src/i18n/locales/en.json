@@ -1476,7 +1476,18 @@
     "empty": "No messages yet.",
     "disabled": "Chat is not enabled on this server.",
     "permissionDenied": "Photo access was denied.",
-    "seenBy": "Seen by {{names}}"
+    "seenBy": "Seen by {{names}}",
+    "recordVoice": "Record a voice message",
+    "stopRecording": "Stop recording",
+    "recording": "Recording",
+    "recordingMaxReached": "A voice message stops at {{minutes}} minutes.",
+    "microphoneDenied": "Microphone access was denied.",
+    "voiceNote": "Voice message",
+    "playVoice": "Play the voice message",
+    "pauseVoice": "Pause the voice message",
+    "discardVoice": "Delete the recording",
+    "voiceLoadFailed": "This voice message could not be loaded.",
+    "recordingFailed": "The microphone could not be started."
   },
   "signup": {
     "title": "Create your profile",

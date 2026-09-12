@@ -65,6 +65,12 @@
           "backgroundColor": "#ffffff",
           "imageWidth": 200
         }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Folio uses the microphone to record voice messages in the team chat."
+        }
       ]
     ],
     "extra": {

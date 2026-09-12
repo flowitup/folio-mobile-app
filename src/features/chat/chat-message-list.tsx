@@ -5,12 +5,14 @@ import { Avatar } from "@/components/ui/avatar";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Icon } from "@/components/ui/icon";
 import type { ChatMember, ChatMessage } from "@/features/chat/chat-api";
+import { ChatVoiceBubble } from "@/features/chat/chat-voice-note";
 import {
   dayDividerLabel,
   groupMessagesByDay,
   showsSender,
   timeOf,
 } from "@/lib/chat/group-messages-by-day";
+import { isVoiceNote } from "@/lib/chat/voice-note";
 import { useTokens, workerColor } from "@/theme/tokens";
 
 /** Stable avatar color per sender, cycling the design palette. */
@@ -115,7 +117,10 @@ function MessageRow({
             </Text>
           </View>
         ) : null}
-        {message.attachment ? (
+        {message.attachment && isVoiceNote(message.attachment.content_type) ? (
+          <ChatVoiceBubble message={message} mine={mine} />
+        ) : null}
+        {message.attachment && !isVoiceNote(message.attachment.content_type) ? (
           <View className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card">
             <View className="h-[120px] items-center justify-center bg-paper-2">
               {/* Placeholder glyph sits under the image; it only shows until the bytes arrive. */}

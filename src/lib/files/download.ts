@@ -15,15 +15,8 @@ export function safeFilename(filename: string): string {
   return cleaned || "download";
 }
 
-/**
- * Downloads an authenticated API resource (xlsx export, pdf, attachment) into the cache
- * directory and opens the OS share sheet on it. Non-2xx responses raise ApiError instead of
- * sharing the error body as a file. Returns the local file URI.
- */
-export async function downloadAndShare(
-  path: string,
-  filename: string,
-): Promise<string> {
+/** Reads an authenticated API resource; a non-2xx answer raises instead of returning its body. */
+async function fetchAuthedBytes(path: string): Promise<Uint8Array> {
   const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
   const response = await authedFetch(url);
   if (!response.ok) {
@@ -36,8 +29,18 @@ export async function downloadAndShare(
     }
     throw new ApiError(response.status, "DownloadFailed", message);
   }
+  return new Uint8Array(await response.arrayBuffer());
+}
 
-  const bytes = new Uint8Array(await response.arrayBuffer());
+/**
+ * Downloads an authenticated API resource (xlsx export, pdf, attachment) into the cache
+ * directory and opens the OS share sheet on it. Returns the local file URI.
+ */
+export async function downloadAndShare(
+  path: string,
+  filename: string,
+): Promise<string> {
+  const bytes = await fetchAuthedBytes(path);
   const target = new File(
     Paths.cache,
     `${Date.now()}-${safeFilename(filename)}`,
@@ -45,5 +48,21 @@ export async function downloadAndShare(
   target.write(bytes);
 
   if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(target.uri);
+  return target.uri;
+}
+
+/**
+ * Copy of an authenticated API resource in the cache, under a caller-chosen stable name.
+ * Media players need a local file: they cannot carry the Bearer token, and a token that
+ * expires mid-playback would cut the stream. A name already cached is reused as is.
+ */
+export async function cacheAuthedFile(
+  path: string,
+  filename: string,
+): Promise<string> {
+  const target = new File(Paths.cache, safeFilename(filename));
+  if (target.exists) return target.uri;
+  const bytes = await fetchAuthedBytes(path);
+  target.write(bytes);
   return target.uri;
 }

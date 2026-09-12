@@ -1476,7 +1476,18 @@
     "empty": "Chưa có tin nhắn.",
     "disabled": "Máy chủ này chưa bật trò chuyện.",
     "permissionDenied": "Không được phép truy cập ảnh.",
-    "seenBy": "{{names}} đã xem"
+    "seenBy": "{{names}} đã xem",
+    "recordVoice": "Ghi tin nhắn thoại",
+    "stopRecording": "Dừng ghi",
+    "recording": "Đang ghi",
+    "recordingMaxReached": "Tin nhắn thoại dừng ở {{minutes}} phút.",
+    "microphoneDenied": "Quyền truy cập micro đã bị từ chối.",
+    "voiceNote": "Tin nhắn thoại",
+    "playVoice": "Phát tin nhắn thoại",
+    "pauseVoice": "Tạm dừng tin nhắn thoại",
+    "discardVoice": "Xoá bản ghi",
+    "voiceLoadFailed": "Không tải được tin nhắn thoại này.",
+    "recordingFailed": "Không khởi động được micro."
   },
   "signup": {
     "title": "Tạo hồ sơ của bạn",

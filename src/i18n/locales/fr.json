@@ -1476,7 +1476,18 @@
     "empty": "Pas encore de message.",
     "disabled": "La discussion n'est pas activée sur ce serveur.",
     "permissionDenied": "Accès aux photos refusé.",
-    "seenBy": "Vu par {{names}}"
+    "seenBy": "Vu par {{names}}",
+    "recordVoice": "Enregistrer un message vocal",
+    "stopRecording": "Arrêter l'enregistrement",
+    "recording": "Enregistrement",
+    "recordingMaxReached": "Un message vocal s'arrête à {{minutes}} minutes.",
+    "microphoneDenied": "L'accès au micro a été refusé.",
+    "voiceNote": "Message vocal",
+    "playVoice": "Écouter le message vocal",
+    "pauseVoice": "Mettre en pause le message vocal",
+    "discardVoice": "Supprimer l'enregistrement",
+    "voiceLoadFailed": "Ce message vocal n'a pas pu être chargé.",
+    "recordingFailed": "Le micro n'a pas pu démarrer."
   },
   "signup": {
     "title": "Créez votre profil",
