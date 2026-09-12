@@ -2,7 +2,7 @@
   "expo": {
     "name": "Folio",
     "slug": "folio-mobile-app",
-    "version": "0.2.28",
+    "version": "0.3.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "folio",
@@ -64,6 +64,13 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "imageWidth": 200
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Folio uses the microphone to record voice messages in the team chat.",
+          "enableBackgroundPlayback": false
         }
       ]
     ],

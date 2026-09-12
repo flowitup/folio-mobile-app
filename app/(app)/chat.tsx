@@ -7,7 +7,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,7 +15,6 @@ import { useAuth } from "@/auth/auth-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
-import { showToast } from "@/components/ui/toast";
 import {
   useChatChannels,
   useChatEnabled,
@@ -24,16 +22,16 @@ import {
   useMarkChatRead,
   useSendChatMessage,
 } from "@/features/chat/chat-api";
+import { ChatComposer } from "@/features/chat/chat-composer";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
-import { seenByMessage } from "@/lib/chat/seen-by";
-import { captureImage, pickImages } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
+import { seenByMessage } from "@/lib/chat/seen-by";
 import { useTokens, workerColor } from "@/theme/tokens";
 
 /**
  * Chat overlay (design 2a): header with the channel name, member count and stacked avatars,
  * channel chips (unread dot), message list anchored to the bottom, composer with image
- * picker / camera / send. Pushed over the tab shell; the back arrow closes it.
+ * picker / camera / microphone / send. Pushed over the tab shell; the back arrow closes it.
  */
 export default function ChatScreen() {
   const { t } = useTranslation();
@@ -54,8 +52,6 @@ export default function ChatScreen() {
   const messages = useChatMessages(channelKey);
   const markRead = useMarkChatRead();
   const send = useSendChatMessage(channelKey ?? "");
-  const [draft, setDraft] = useState("");
-  const [file, setFile] = useState<PickedFile | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   const channel = useMemo(
@@ -91,31 +87,13 @@ export default function ChatScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastMessageId]);
 
-  const canSend =
-    Boolean(channelKey) &&
-    (draft.trim().length > 0 || file !== null) &&
-    !send.isPending;
-
-  function submit() {
-    if (!canSend) return;
-    send.mutate(
-      { body: draft, file },
-      {
-        onSuccess: () => {
-          setDraft("");
-          setFile(null);
-          if (channelKey) markRead.mutate({ channelKey });
-        },
-      },
-    );
-  }
-
-  async function attach(source: "camera" | "library") {
-    const result =
-      source === "camera" ? await captureImage() : await pickImages(false);
-    if (result.status === "picked" && result.files[0]) setFile(result.files[0]);
-    else if (result.status === "denied")
-      showToast(t("chat.permissionDenied"), "error");
+  // Sending implies having read the channel; the composer clears itself once this resolves.
+  async function submit(message: {
+    body: string;
+    file: PickedFile | null;
+  }): Promise<void> {
+    await send.mutateAsync(message);
+    if (channelKey) markRead.mutate({ channelKey });
   }
 
   return (
@@ -236,72 +214,11 @@ export default function ChatScreen() {
           ) : null}
         </ScrollView>
 
-        {file ? (
-          <View className="flex-row items-center gap-2 border-t border-line bg-paper px-4 py-2">
-            <Icon name="image" size={16} color={tokens.muted} />
-            <Text
-              className="flex-1 font-mono-regular text-[11px] text-muted"
-              numberOfLines={1}
-            >
-              {file.name}
-            </Text>
-            <Pressable
-              testID="chat-remove-file"
-              onPress={() => setFile(null)}
-              hitSlop={8}
-            >
-              <Icon name="x" size={16} color={tokens.muted} />
-            </Pressable>
-          </View>
-        ) : null}
-        <View
-          className="flex-row items-center gap-2 border-t border-line bg-paper px-3 pt-2.5"
-          style={{ paddingBottom: Math.max(insets.bottom, 12) }}
-        >
-          <Pressable
-            testID="chat-attach"
-            accessibilityRole="button"
-            accessibilityLabel={t("chat.attachImage")}
-            onPress={() => void attach("library")}
-            className="h-10 w-10 items-center justify-center rounded-full active:opacity-70"
-          >
-            <Icon name="plus" size={22} color={tokens.ink} />
-          </Pressable>
-          <TextInput
-            testID="chat-input"
-            className="h-[42px] flex-1 rounded-full border border-line-2 bg-card px-3.5 font-sans text-[14px] text-ink"
-            placeholder={t("chat.placeholder")}
-            placeholderTextColor={tokens.muted}
-            value={draft}
-            onChangeText={setDraft}
-            multiline={false}
-            returnKeyType="send"
-            onSubmitEditing={submit}
-          />
-          <Pressable
-            testID="chat-camera"
-            accessibilityRole="button"
-            accessibilityLabel={t("chat.takePhoto")}
-            onPress={() => void attach("camera")}
-            className="h-10 w-10 items-center justify-center active:opacity-70"
-          >
-            <Icon name="camera" size={22} color={tokens.ink} />
-          </Pressable>
-          <Pressable
-            testID="chat-send"
-            accessibilityRole="button"
-            accessibilityLabel={t("chat.send")}
-            disabled={!canSend}
-            onPress={submit}
-            className={`h-10 w-10 items-center justify-center rounded-full bg-positive ${canSend ? "active:opacity-70" : "opacity-50"}`}
-          >
-            {send.isPending ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Icon name="send" size={18} color="#ffffff" />
-            )}
-          </Pressable>
-        </View>
+        <ChatComposer
+          disabled={!channelKey}
+          sending={send.isPending}
+          onSend={submit}
+        />
       </KeyboardAvoidingView>
     </View>
   );
