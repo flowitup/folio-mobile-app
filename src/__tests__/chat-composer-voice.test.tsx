@@ -19,6 +19,8 @@ import {
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 
+import type { ComponentProps } from "react";
+
 import { ChatComposer } from "@/features/chat/chat-composer";
 import i18n from "@/i18n";
 import { MAX_RECORDING_MS } from "@/lib/chat/voice-note";
@@ -33,6 +35,7 @@ jest.mock("expo-audio", () => {
     isRecording: false,
     durationMillis: 0,
     uri: null as string | null,
+    recordCalls: 0,
   };
   const listeners = new Set<() => void>();
   const emit = () => listeners.forEach((listener) => listener());
@@ -57,12 +60,14 @@ jest.mock("expo-audio", () => {
           },
           prepareToRecordAsync: jest.fn(async () => undefined),
           record: () => {
+            state.recordCalls += 1;
             if (!mockRecorderStarts) return;
             state.isRecording = true;
             state.durationMillis = 0;
             emit();
           },
           stop: jest.fn(async () => {
+            if (!mockStopSucceeds) throw new Error("stop failed");
             state.isRecording = false;
             state.uri = RECORDED_URI;
             emit();
@@ -99,7 +104,9 @@ jest.mock("expo-audio", () => {
         state.isRecording = false;
         state.durationMillis = 0;
         state.uri = null;
+        state.recordCalls = 0;
       },
+      recordCalls: () => state.recordCalls,
       advanceTo: (ms: number) => {
         state.durationMillis = ms;
         emit();
@@ -112,13 +119,26 @@ jest.mock("expo-audio", () => {
 let mockPermissionGranted = true;
 // Flipped by the test where the platform will not open an audio input.
 let mockRecorderStarts = true;
+// Flipped by the test where the device takes the input away mid-recording.
+let mockStopSucceeds = true;
 
 jest.mock("@/components/ui/toast", () => ({
   showToast: jest.fn(),
 }));
 
+// The photo picker is native; the tests decide what it returns.
+let mockPickResult: unknown = { status: "canceled" };
+jest.mock("@/lib/files/pick", () => ({
+  pickImages: jest.fn(async () => mockPickResult),
+  captureImage: jest.fn(async () => mockPickResult),
+}));
+
 const audio = jest.requireMock("expo-audio") as {
-  __control: { reset: () => void; advanceTo: (ms: number) => void };
+  __control: {
+    reset: () => void;
+    advanceTo: (ms: number) => void;
+    recordCalls: () => number;
+  };
 };
 const { showToast } = jest.requireMock("@/components/ui/toast") as {
   showToast: jest.Mock;
@@ -129,7 +149,11 @@ const SAFE_AREA_METRICS: Metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-async function renderComposer(onSend = jest.fn(async () => undefined)) {
+type OnSend = ComponentProps<typeof ChatComposer>["onSend"];
+
+async function renderComposer(
+  onSend: OnSend = jest.fn(async (): Promise<void> => {}),
+) {
   await i18n.changeLanguage("en");
   await render(
     <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
@@ -144,6 +168,8 @@ describe("ChatComposer voice messages", () => {
     audio.__control.reset();
     mockPermissionGranted = true;
     mockRecorderStarts = true;
+    mockStopSucceeds = true;
+    mockPickResult = { status: "canceled" };
     showToast.mockClear();
   });
 
@@ -196,6 +222,35 @@ describe("ChatComposer voice messages", () => {
     );
   });
 
+  it("keeps a take recorded while an earlier message is still uploading", async () => {
+    let finishSend: () => void = () => {};
+    const onSend = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finishSend = () => resolve();
+        }),
+    );
+    await renderComposer(onSend);
+
+    await fireEvent.press(screen.getByTestId("chat-record"));
+    await fireEvent.press(screen.getByTestId("chat-record"));
+    await waitFor(() => screen.getByTestId("chat-voice-review"));
+    await fireEvent.press(screen.getByTestId("chat-send"));
+    await waitFor(() => expect(onSend).toHaveBeenCalledTimes(1));
+
+    // A second take recorded while the first is still uploading.
+    await fireEvent.press(screen.getByTestId("chat-record"));
+    await fireEvent.press(screen.getByTestId("chat-record"));
+    await waitFor(() => screen.getByTestId("chat-voice-review"));
+
+    await act(async () => {
+      finishSend();
+    });
+
+    // The upload finishing must not take the new recording with it.
+    expect(screen.getByTestId("chat-voice-review")).toBeTruthy();
+  });
+
   it("throws the take away when the reader deletes it", async () => {
     const onSend = await renderComposer();
     await fireEvent.press(screen.getByTestId("chat-record"));
@@ -233,6 +288,65 @@ describe("ChatComposer voice messages", () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+
+  it("keeps a recording to one tap even before the recorder state has polled", async () => {
+    await renderComposer();
+
+    await fireEvent.press(screen.getByTestId("chat-record"));
+    await fireEvent.press(screen.getByTestId("chat-record"));
+
+    // The second tap must not start a second recording, and must not claim one failed.
+    expect(audio.__control.recordCalls()).toBe(1);
+    expect(showToast).not.toHaveBeenCalled();
+  });
+
+  it("keeps an attached photo when the microphone is refused", async () => {
+    mockPermissionGranted = false;
+    mockPickResult = {
+      status: "picked",
+      files: [
+        {
+          uri: "file:///tmp/site.jpg",
+          name: "site.jpg",
+          mimeType: "image/jpeg",
+        },
+      ],
+    };
+    await renderComposer();
+    await fireEvent.press(screen.getByTestId("chat-attach"));
+    await waitFor(() =>
+      expect(screen.getByTestId("chat-remove-file")).toBeTruthy(),
+    );
+
+    await fireEvent.press(screen.getByTestId("chat-record"));
+
+    await waitFor(() =>
+      expect(showToast).toHaveBeenCalledWith(
+        i18n.t("chat.microphoneDenied"),
+        "error",
+      ),
+    );
+    expect(screen.getByTestId("chat-remove-file")).toBeTruthy();
+  });
+
+  it("says so when the device loses the recording instead of dropping it in silence", async () => {
+    mockStopSucceeds = false;
+    const logged = jest.spyOn(console, "error").mockImplementation(() => {});
+    await renderComposer();
+    await fireEvent.press(screen.getByTestId("chat-record"));
+    await waitFor(() => screen.getByTestId("chat-recording-clock"));
+
+    await fireEvent.press(screen.getByTestId("chat-record"));
+
+    await waitFor(() =>
+      expect(showToast).toHaveBeenCalledWith(
+        i18n.t("chat.recordingLost"),
+        "error",
+      ),
+    );
+    expect(screen.queryByTestId("chat-voice-review")).toBeNull();
+    logged.mockRestore();
   });
 
   it("says so when the platform refuses to open an input", async () => {

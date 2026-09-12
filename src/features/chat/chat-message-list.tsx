@@ -77,6 +77,11 @@ function MessageRow({
 }) {
   const tokens = useTokens();
   const mine = message.mine;
+  // Anything that is not a recording renders as the picture card, as it did before voice notes.
+  const voiceNote =
+    message.attachment !== null &&
+    message.attachment !== undefined &&
+    isVoiceNote(message.attachment.content_type);
   return (
     <View
       className={`flex-row items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
@@ -117,10 +122,8 @@ function MessageRow({
             </Text>
           </View>
         ) : null}
-        {message.attachment && isVoiceNote(message.attachment.content_type) ? (
-          <ChatVoiceBubble message={message} mine={mine} />
-        ) : null}
-        {message.attachment && !isVoiceNote(message.attachment.content_type) ? (
+        {voiceNote ? <ChatVoiceBubble message={message} mine={mine} /> : null}
+        {message.attachment && !voiceNote ? (
           <View className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card">
             <View className="h-[120px] items-center justify-center bg-paper-2">
               {/* Placeholder glyph sits under the image; it only shows until the bytes arrive. */}

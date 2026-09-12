@@ -1487,7 +1487,8 @@
     "pauseVoice": "Mettre en pause le message vocal",
     "discardVoice": "Supprimer l'enregistrement",
     "voiceLoadFailed": "Ce message vocal n'a pas pu être chargé.",
-    "recordingFailed": "Le micro n'a pas pu démarrer."
+    "recordingFailed": "Le micro n'a pas pu démarrer.",
+    "recordingLost": "L'enregistrement a été perdu."
   },
   "signup": {
     "title": "Créez votre profil",

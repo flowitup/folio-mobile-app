@@ -62,18 +62,24 @@ export function ChatComposer({ disabled, sending, onSend }: Props) {
 
   async function submit() {
     if (!canSend) return;
-    const attachment: PickedFile | null = voice.take
+    const sentTake = voice.take;
+    const sentDraft = draft;
+    const sentFile = file;
+    const attachment: PickedFile | null = sentTake
       ? {
-          uri: voice.take.uri,
+          uri: sentTake.uri,
           name: voiceNoteFilename(),
+          // Inert: `uploadMultipart` takes the part's type from the file on disk, not from here.
           mimeType: "audio/m4a",
         }
-      : file;
+      : sentFile;
     try {
-      await onSend({ body: draft, file: attachment });
-      setDraft("");
-      setFile(null);
-      voice.discard();
+      await onSend({ body: sentDraft, file: attachment });
+      // Clear only what was actually sent: the reader can type or record a new take while the
+      // upload is in flight, and clearing blindly would throw that away unsent.
+      setDraft((current) => (current === sentDraft ? "" : current));
+      setFile((current) => (current === sentFile ? null : current));
+      if (sentTake) voice.discard(sentTake);
     } catch {
       // useApiMutation already toasted; keep the draft so it can be sent again.
     }
@@ -91,14 +97,18 @@ export function ChatComposer({ disabled, sending, onSend }: Props) {
 
   async function toggleRecording() {
     if (voice.recording) {
-      await voice.stop();
+      // A take the device lost is minutes of talking gone; never let that pass in silence.
+      if ((await voice.stop()) === "failed")
+        showToast(t("chat.recordingLost"), "error");
       return;
     }
-    setFile(null);
     const outcome = await voice.start();
-    if (outcome === "denied") showToast(t("chat.microphoneDenied"), "error");
-    else if (outcome === "failed")
-      showToast(t("chat.recordingFailed"), "error");
+    // The photo only goes once the recording is actually running: a refused microphone must
+    // not cost the reader the picture they had already attached.
+    if (outcome === "started") setFile(null);
+    else if (outcome === "denied")
+      showToast(t("chat.microphoneDenied"), "error");
+    else showToast(t("chat.recordingFailed"), "error");
   }
 
   return (
@@ -136,7 +146,7 @@ export function ChatComposer({ disabled, sending, onSend }: Props) {
             testID="chat-discard-voice"
             accessibilityRole="button"
             accessibilityLabel={t("chat.discardVoice")}
-            onPress={voice.discard}
+            onPress={() => voice.discard()}
             hitSlop={8}
             className="h-10 w-10 items-center justify-center active:opacity-70"
           >

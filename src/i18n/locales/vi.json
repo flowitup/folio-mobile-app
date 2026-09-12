@@ -1487,7 +1487,8 @@
     "pauseVoice": "Tạm dừng tin nhắn thoại",
     "discardVoice": "Xoá bản ghi",
     "voiceLoadFailed": "Không tải được tin nhắn thoại này.",
-    "recordingFailed": "Không khởi động được micro."
+    "recordingFailed": "Không khởi động được micro.",
+    "recordingLost": "Bản ghi đã bị mất."
   },
   "signup": {
     "title": "Tạo hồ sơ của bạn",

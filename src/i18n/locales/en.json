@@ -1487,7 +1487,8 @@
     "pauseVoice": "Pause the voice message",
     "discardVoice": "Delete the recording",
     "voiceLoadFailed": "This voice message could not be loaded.",
-    "recordingFailed": "The microphone could not be started."
+    "recordingFailed": "The microphone could not be started.",
+    "recordingLost": "The recording was lost."
   },
   "signup": {
     "title": "Create your profile",

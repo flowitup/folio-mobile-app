@@ -54,14 +54,21 @@ export async function downloadAndShare(
 /**
  * Copy of an authenticated API resource in the cache, under a caller-chosen stable name.
  * Media players need a local file: they cannot carry the Bearer token, and a token that
- * expires mid-playback would cut the stream. A name already cached is reused as is.
+ * expires mid-playback would cut the stream.
+ *
+ * A cached copy is reused only when it is whole: pass `expectedBytes` and a copy left
+ * truncated by an interrupted write is fetched again instead of being served forever.
  */
 export async function cacheAuthedFile(
   path: string,
   filename: string,
+  expectedBytes?: number,
 ): Promise<string> {
   const target = new File(Paths.cache, safeFilename(filename));
-  if (target.exists) return target.uri;
+  const cached =
+    target.exists &&
+    (expectedBytes === undefined || target.size === expectedBytes);
+  if (cached) return target.uri;
   const bytes = await fetchAuthedBytes(path);
   target.write(bytes);
   return target.uri;

@@ -1,88 +1,29 @@
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { Icon } from "@/components/ui/icon";
 import type { ChatMessage } from "@/features/chat/chat-api";
+import { VoicePill } from "@/features/chat/voice-pill";
 import { formatClock, playbackFraction } from "@/lib/chat/voice-note";
 import { cacheAuthedFile } from "@/lib/files/download";
-import { useTokens } from "@/theme/tokens";
 
-type PillProps = {
-  mine: boolean;
-  playing: boolean;
-  busy: boolean;
-  clock: string;
-  fraction: number;
-  onPress: () => void;
-  testID?: string;
-};
+/** A note that can be silenced when another one starts. */
+type Silenceable = { pause: () => void };
 
 /**
- * The voice-note pill: play-pause button, progress bar and clock. Shared by a message bubble
- * and by the composer's review row so a downloaded note looks the same as a fresh recording.
+ * The note currently playing. Voice notes are separate components with a player each, so
+ * without this a second tap leaves two people talking over each other.
  */
-function VoicePill({
-  mine,
-  playing,
-  busy,
-  clock,
-  fraction,
-  onPress,
-  testID,
-}: PillProps) {
-  const { t } = useTranslation();
-  const tokens = useTokens();
-  const tint = mine ? "#ffffff" : tokens.ink;
-  return (
-    <View
-      className={`w-[210px] flex-row items-center gap-2.5 px-3 py-[9px] ${mine ? "bg-positive" : "border border-line bg-card"}`}
-      style={{
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
-        borderBottomLeftRadius: mine ? 16 : 4,
-        borderBottomRightRadius: mine ? 4 : 16,
-      }}
-    >
-      <Pressable
-        testID={testID}
-        accessibilityRole="button"
-        accessibilityLabel={t(playing ? "chat.pauseVoice" : "chat.playVoice")}
-        onPress={onPress}
-        hitSlop={6}
-        className="h-8 w-8 items-center justify-center rounded-full active:opacity-70"
-        style={{
-          backgroundColor: mine ? "rgba(255,255,255,0.22)" : tokens.paper2,
-        }}
-      >
-        {busy ? (
-          <ActivityIndicator size="small" color={tint} />
-        ) : (
-          <Icon name={playing ? "pause" : "play"} size={15} color={tint} />
-        )}
-      </Pressable>
-      <View className="flex-1 gap-1.5">
-        <View
-          className="h-[3px] overflow-hidden rounded-full"
-          style={{
-            backgroundColor: mine ? "rgba(255,255,255,0.3)" : tokens.line,
-          }}
-        >
-          <View
-            testID="voice-progress"
-            className="h-full rounded-full"
-            style={{ width: `${fraction * 100}%`, backgroundColor: tint }}
-          />
-        </View>
-        <Text
-          className={`font-mono-regular text-[10.5px] ${mine ? "text-white" : "text-muted"}`}
-        >
-          {clock}
-        </Text>
-      </View>
-    </View>
-  );
+let playingNote: Silenceable | null = null;
+
+function claimPlayback(note: Silenceable): void {
+  if (playingNote && playingNote !== note) playingNote.pause();
+  playingNote = note;
+}
+
+function releasePlayback(note: Silenceable): void {
+  if (playingNote === note) playingNote = null;
 }
 
 /**
@@ -106,28 +47,43 @@ export function VoiceNotePlayer({
   const status = useAudioPlayerStatus(player);
   // A bubble tapped before its bytes were on disk plays as soon as the file loads — once.
   const autoPlayed = useRef(false);
+  // Stable identity for the registry; its `pause` follows the current player.
+  const self = useRef<Silenceable>({ pause: () => {} });
+
+  useEffect(() => {
+    self.current.pause = () => player.pause();
+  }, [player]);
 
   useEffect(() => {
     if (!autoPlay || autoPlayed.current || !status.isLoaded) return;
     autoPlayed.current = true;
+    claimPlayback(self.current);
     player.play();
   }, [autoPlay, status.isLoaded, player]);
+
+  // Whatever happens to this note, it must not stay the one everything else is muted for.
+  useEffect(() => {
+    const note = self.current;
+    return () => releasePlayback(note);
+  }, []);
 
   const durationMs =
     status.duration > 0 ? status.duration * 1000 : durationMsHint;
   const positionMs = status.currentTime * 1000;
 
-  function toggle() {
+  async function toggle() {
     if (status.playing) {
       player.pause();
       return;
     }
-    // A note played to the end sits at its last frame; rewind so the button replays it.
+    claimPlayback(self.current);
+    // A note played to the end sits at its last frame; rewind so the button replays it. The
+    // seek is awaited, or playback can start at the old position and report itself finished.
     if (
       status.didJustFinish ||
       (durationMs > 0 && positionMs >= durationMs - 120)
     )
-      player.seekTo(0);
+      await player.seekTo(0);
     player.play();
   }
 
@@ -140,7 +96,7 @@ export function VoiceNotePlayer({
         durationMs > 0 && positionMs > 0 ? ` / ${formatClock(durationMs)}` : ""
       }`}
       fraction={playbackFraction(positionMs, durationMs)}
-      onPress={toggle}
+      onPress={() => void toggle()}
       testID={testID}
     />
   );
@@ -158,18 +114,22 @@ export function ChatVoiceBubble({
   mine: boolean;
 }) {
   const { t } = useTranslation();
-  const attachmentUrl = message.attachment?.url;
+  const attachment = message.attachment;
   const [uri, setUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  if (!attachmentUrl) return null;
+  if (!attachment) return null;
 
   function load() {
-    if (loading || !attachmentUrl) return;
+    if (loading || !attachment) return;
     setLoading(true);
     setFailed(false);
-    void cacheAuthedFile(attachmentUrl, `chat-voice-${message.id}.m4a`)
+    void cacheAuthedFile(
+      attachment.url,
+      `chat-voice-${message.id}.m4a`,
+      attachment.size_bytes,
+    )
       .then((local) => setUri(local))
       .catch(() => setFailed(true))
       .finally(() => setLoading(false));

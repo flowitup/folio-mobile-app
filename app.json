@@ -69,7 +69,8 @@
       [
         "expo-audio",
         {
-          "microphonePermission": "Folio uses the microphone to record voice messages in the team chat."
+          "microphonePermission": "Folio uses the microphone to record voice messages in the team chat.",
+          "enableBackgroundPlayback": false
         }
       ]
     ],

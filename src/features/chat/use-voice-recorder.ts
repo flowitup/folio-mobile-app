@@ -19,8 +19,16 @@ export type VoiceRecording = { uri: string; durationMs: number };
  */
 export type StartOutcome = "started" | "denied" | "failed";
 
+/**
+ * How a recording ended. `failed` means a take was expected and is gone — the device ended the
+ * recording under us (a call came in, another app took the input) or the file never appeared;
+ * the reader has to be told, or minutes of talking vanish silently. `empty` is a stop with
+ * nothing to lose.
+ */
+export type StopOutcome = "take" | "empty" | "failed";
+
 export type VoiceRecorder = {
-  /** True between `start()` and `stop()`. */
+  /** True from the moment `start()` succeeds until `stop()` is called. */
   recording: boolean;
   /** Elapsed milliseconds while recording; `0` otherwise. */
   elapsedMs: number;
@@ -29,9 +37,14 @@ export type VoiceRecorder = {
   /** Asks for the microphone and starts recording. */
   start: () => Promise<StartOutcome>;
   /** Stops and keeps the take. */
-  stop: () => Promise<void>;
-  /** Throws the take away (after sending it, or when the reader deletes it). */
-  discard: () => void;
+  stop: () => Promise<StopOutcome>;
+
+  /**
+   * Throws the take away. Pass the take that was just sent to drop only that one: by the time
+   * an upload resolves the reader may have recorded another, and clearing blindly would delete
+   * a recording that was never sent.
+   */
+  discard: (only?: VoiceRecording) => void;
 };
 
 /**
@@ -40,52 +53,90 @@ export type VoiceRecorder = {
  * `onCapReached` fires when the cap — not the reader — ended the recording, so the screen can
  * say why it stopped on its own.
  *
- * iOS routes playback to the earpiece while the recording session is open, so the audio mode
- * is switched back as soon as the take is finished — otherwise reviewing it is barely audible.
+ * `recording` is this hook's own state rather than the recorder's, because
+ * `useAudioRecorderState` polls the native recorder every 250 ms: a screen driven by that poll
+ * still shows the idle composer for a quarter second after the mic is tapped, which is long
+ * enough to start a second recording or attach a photo over the first.
+ *
+ * `allowsRecording` is a process-wide iOS audio-session flag, not per-recorder state, so it is
+ * handed back on every path out of a recording — a normal stop, a failed start, a stop that
+ * found nothing, and unmounting mid-recording. Leaving it set routes later playback to the
+ * earpiece for the rest of the session.
  */
 export function useVoiceRecorder(onCapReached?: () => void): VoiceRecorder {
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const state = useAudioRecorderState(recorder, 250);
   const [take, setTake] = useState<VoiceRecording | null>(null);
-  // `stop` is called both by the reader and by the length cap; the ref keeps one in flight.
-  const stopping = useRef(false);
+  const [recording, setRecording] = useState(false);
+  // Mirrors `recording` for the handlers, which have to read it before the next render.
+  const isRecording = useRef(false);
+  // One start or stop in flight at a time; a second tap inside the first is ignored.
+  const busy = useRef(false);
   // Ends a recording the reader forgot about, so a take can never exceed the attachment limit.
   const capTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Read through a ref: the timer is armed once, the callback changes on every render.
+  // Latest polled duration, so a cap-ended take is not stamped with the length at arming time.
+  const elapsed = useRef(0);
+  // Read through refs: both are armed once, and change on later renders.
   const capCallback = useRef(onCapReached);
+  const recorderRef = useRef(recorder);
+
   useEffect(() => {
     capCallback.current = onCapReached;
   }, [onCapReached]);
+  useEffect(() => {
+    elapsed.current = state.durationMillis;
+  }, [state.durationMillis]);
+  useEffect(() => {
+    recorderRef.current = recorder;
+  }, [recorder]);
 
-  const stop = useCallback(async (): Promise<void> => {
-    if (stopping.current || !recorder.isRecording) return;
-    stopping.current = true;
+  const clearCap = useCallback(() => {
     if (capTimer.current) clearTimeout(capTimer.current);
     capTimer.current = null;
-    try {
-      await recorder.stop();
-      if (recorder.uri)
-        setTake({ uri: recorder.uri, durationMs: state.durationMillis });
-    } catch (error) {
-      if (__DEV__) console.error("[useVoiceRecorder] stop", error);
-    } finally {
-      // Always hand the session back, or iOS keeps playback on the earpiece.
-      await setAudioModeAsync({
+  }, []);
+
+  const releaseSession = useCallback(
+    () =>
+      setAudioModeAsync({
         allowsRecording: false,
         playsInSilentMode: true,
-      }).catch(() => undefined);
-      stopping.current = false;
+      }).catch(() => undefined),
+    [],
+  );
+
+  const stop = useCallback(async (): Promise<StopOutcome> => {
+    if (busy.current || !isRecording.current) return "empty";
+    busy.current = true;
+    clearCap();
+    isRecording.current = false;
+    setRecording(false);
+    const durationMs = elapsed.current;
+    try {
+      // The recorder stopping on its own is the device taking the input away from us.
+      if (!recorder.isRecording) return "failed";
+      await recorder.stop();
+      if (!recorder.uri) return "failed";
+      setTake({ uri: recorder.uri, durationMs });
+      return "take";
+    } catch (error) {
+      if (__DEV__) console.error("[useVoiceRecorder] stop", error);
+      return "failed";
+    } finally {
+      await releaseSession();
+      busy.current = false;
     }
-  }, [recorder, state.durationMillis]);
+  }, [recorder, clearCap, releaseSession]);
 
   const start = useCallback(async (): Promise<StartOutcome> => {
-    const permission =
-      await AudioModule.requestRecordingPermissionsAsync().catch(() => ({
-        granted: false,
-      }));
-    if (!permission.granted) return "denied";
-    setTake(null);
+    if (busy.current || isRecording.current) return "started";
+    busy.current = true;
     try {
+      const permission =
+        await AudioModule.requestRecordingPermissionsAsync().catch(() => ({
+          granted: false,
+        }));
+      if (!permission.granted) return "denied";
+      setTake(null);
       await setAudioModeAsync({
         allowsRecording: true,
         playsInSilentMode: true,
@@ -94,35 +145,52 @@ export function useVoiceRecorder(onCapReached?: () => void): VoiceRecorder {
       recorder.record();
       // `record()` does not throw when the platform refuses the input; it just never starts.
       if (!recorder.isRecording) throw new Error("Recorder did not start");
+      isRecording.current = true;
+      setRecording(true);
+      elapsed.current = 0;
+      clearCap();
       capTimer.current = setTimeout(() => {
-        void stop().then(() => capCallback.current?.());
+        // Only a recording the cap actually ended is worth explaining.
+        void stop().then((outcome) => {
+          if (outcome === "take") capCallback.current?.();
+        });
       }, MAX_RECORDING_MS);
+      return "started";
     } catch (error) {
       // An input the platform will not open (none present, or held by another app).
       if (__DEV__) console.error("[useVoiceRecorder] start", error);
-      await setAudioModeAsync({
-        allowsRecording: false,
-        playsInSilentMode: true,
-      }).catch(() => undefined);
+      await releaseSession();
       return "failed";
+    } finally {
+      busy.current = false;
     }
-    return "started";
-  }, [recorder, stop]);
+  }, [recorder, clearCap, releaseSession, stop]);
 
-  // Nothing is recording once the screen is gone; do not leave the cap timer behind.
+  // Leaving the screen mid-recording must still release the microphone and the audio session.
   useEffect(
     () => () => {
       if (capTimer.current) clearTimeout(capTimer.current);
+      if (!isRecording.current) return;
+      isRecording.current = false;
+      void recorderRef.current.stop().catch(() => undefined);
+      void setAudioModeAsync({
+        allowsRecording: false,
+        playsInSilentMode: true,
+      }).catch(() => undefined);
     },
     [],
   );
 
   return {
-    recording: state.isRecording,
-    elapsedMs: state.isRecording ? state.durationMillis : 0,
+    recording,
+    elapsedMs: recording ? state.durationMillis : 0,
     take,
     start,
     stop,
-    discard: useCallback(() => setTake(null), []),
+    discard: useCallback(
+      (only?: VoiceRecording) =>
+        setTake((current) => (only && current !== only ? current : null)),
+      [],
+    ),
   };
 }
