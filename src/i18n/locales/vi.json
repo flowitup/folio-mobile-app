@@ -100,6 +100,7 @@
       "create": "Tạo",
       "name": "Tên",
       "nameRequired": "Cần nhập tên.",
+      "company": "Công ty",
       "address": "Địa chỉ",
       "budget": "Ngân sách (€)",
       "budgetSource": "Nguồn ngân sách",

@@ -12,7 +12,9 @@ import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/auth/auth-context";
+import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
+import type { MyCompany } from "@/features/companies/companies-api";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 
 import { projectCan } from "./projects-api";
@@ -30,6 +32,12 @@ export type ProjectFormValues = {
   budget?: number | null;
   budget_source?: string | null;
   invoice_prefix?: string | null;
+  /**
+   * Owning company — create only, and only when the caller administers more than
+   * one. A single-company admin sends nothing and the API resolves the company
+   * itself, the same split the web create dialog makes.
+   */
+  company_id?: string;
 };
 
 export type ProjectFormSheetHandle = { open: () => void; close: () => void };
@@ -37,6 +45,11 @@ export type ProjectFormSheetHandle = { open: () => void; close: () => void };
 type Props = {
   /** Existing project to edit; omit for create. */
   project?: Project;
+  /**
+   * Companies the caller administers, primary first. Several of them render a
+   * company picker on create; one or none renders nothing.
+   */
+  adminCompanies?: MyCompany[];
   submitting: boolean;
   onSubmit: (values: ProjectFormValues) => void;
 };
@@ -53,7 +66,10 @@ function toDraft(project?: Project) {
 
 /** Create / edit project form in a bottom sheet — same fields as the web dialogs. */
 export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
-  function ProjectFormSheet({ project, submitting, onSubmit }, ref) {
+  function ProjectFormSheet(
+    { project, adminCompanies = [], submitting, onSubmit },
+    ref,
+  ) {
     const { t } = useTranslation();
     const { user } = useAuth();
     // Editing an existing project: the financing fields need
@@ -65,12 +81,27 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
     const sheet = useRef<BottomSheetModal>(null);
     const [draft, setDraft] = useState(() => toDraft(project));
     const [nameError, setNameError] = useState<string | null>(null);
+    // Choosing is only meaningful with more than one company to choose from. An
+    // existing project keeps no picker: changing its company is not what this
+    // form does.
+    const needsCompanyPicker = !project && adminCompanies.length > 1;
+    const defaultCompanyId =
+      adminCompanies.find((company) => company.is_primary)?.id ??
+      adminCompanies[0]?.id ??
+      null;
+    const [companyId, setCompanyId] = useState<string | null>(defaultCompanyId);
 
     useEffect(() => setDraft(toDraft(project)), [project]);
+    // The companies query can still be in flight when the sheet opens; adopt the
+    // default as soon as it lands, without overriding an explicit choice.
+    useEffect(() => {
+      setCompanyId((current) => current ?? defaultCompanyId);
+    }, [defaultCompanyId]);
 
     useImperativeHandle(ref, () => ({
       open: () => {
         setDraft(toDraft(project));
+        setCompanyId(defaultCompanyId);
         setNameError(null);
         sheet.current?.present();
       },
@@ -92,6 +123,7 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
           : {}),
       };
       if (project) values.invoice_prefix = draft.invoicePrefix.trim() || null;
+      if (needsCompanyPicker && companyId) values.company_id = companyId;
       onSubmit(values);
     }
 
@@ -112,6 +144,18 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
             error={nameError}
             autoFocus
           />
+          {needsCompanyPicker ? (
+            <Select
+              testID="project-form-company"
+              label={t("project.form.company")}
+              value={companyId}
+              options={adminCompanies.map((company) => ({
+                value: company.id,
+                label: company.legal_name,
+              }))}
+              onChange={setCompanyId}
+            />
+          ) : null}
           <Input
             testID="project-form-address"
             label={t("project.form.address")}

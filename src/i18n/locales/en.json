@@ -100,6 +100,7 @@
       "create": "Create",
       "name": "Name",
       "nameRequired": "Name is required.",
+      "company": "Company",
       "address": "Address",
       "budget": "Budget (€)",
       "budgetSource": "Budget source",
