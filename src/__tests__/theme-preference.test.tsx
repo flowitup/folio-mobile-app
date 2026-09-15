@@ -13,7 +13,6 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import * as SecureStore from "expo-secure-store";
-import { colorScheme } from "nativewind";
 import { Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
@@ -25,10 +24,14 @@ import {
   useThemePreference,
 } from "@/theme/theme-preference";
 
+const mockSetColorScheme = jest.fn();
+
 jest.mock("nativewind", () => ({
   ...jest.requireActual("nativewind"),
-  colorScheme: { set: jest.fn(), get: jest.fn(() => "light") },
-  useColorScheme: () => ({ colorScheme: "light" }),
+  useColorScheme: () => ({
+    colorScheme: "light",
+    setColorScheme: mockSetColorScheme,
+  }),
 }));
 
 jest.mock("expo-router", () => ({
@@ -45,7 +48,7 @@ const SAFE_AREA_METRICS: Metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-const setColorScheme = colorScheme.set as jest.Mock;
+const setColorScheme = mockSetColorScheme;
 const getItem = SecureStore.getItemAsync as jest.Mock;
 const setItem = SecureStore.setItemAsync as jest.Mock;
 
@@ -75,12 +78,15 @@ describe("Settings → Appearance", () => {
     expect(screen.getByTestId("appearance-dark")).toBeTruthy();
   });
 
-  it("defaults to following the device", async () => {
+  it("defaults to light, whatever the phone is set to", async () => {
     await renderScreen();
 
     expect(
-      screen.getByTestId("appearance-system").props.accessibilityState,
+      screen.getByTestId("appearance-light").props.accessibilityState,
     ).toEqual(expect.objectContaining({ selected: true }));
+    // Pushed to NativeWind during the first render, not an effect: an effect
+    // would let a dark phone paint one dark frame first.
+    expect(setColorScheme).toHaveBeenCalledWith("light");
   });
 
   it("pushes the choice into NativeWind so classNames and JS colors move together", async () => {
@@ -114,14 +120,14 @@ describe("Settings → Appearance", () => {
     );
   });
 
-  it("ignores a corrupted stored value rather than crashing", async () => {
+  it("falls back to the default when the stored value is corrupted", async () => {
     getItem.mockResolvedValue("chartreuse");
 
     await renderScreen();
 
-    expect(setColorScheme).not.toHaveBeenCalled();
+    expect(setColorScheme).not.toHaveBeenCalledWith("chartreuse");
     expect(
-      screen.getByTestId("appearance-system").props.accessibilityState,
+      screen.getByTestId("appearance-light").props.accessibilityState,
     ).toEqual(expect.objectContaining({ selected: true }));
   });
 
@@ -130,7 +136,20 @@ describe("Settings → Appearance", () => {
 
     await renderScreen();
 
-    expect(screen.getByTestId("appearance-system")).toBeTruthy();
+    expect(
+      screen.getByTestId("appearance-light").props.accessibilityState,
+    ).toEqual(expect.objectContaining({ selected: true }));
+  });
+
+  it("still lets the user hand control back to the device", async () => {
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId("appearance-system"));
+
+    expect(setColorScheme).toHaveBeenCalledWith("system");
+    await waitFor(() =>
+      expect(setItem).toHaveBeenCalledWith("theme_preference", "system"),
+    );
   });
 });
 

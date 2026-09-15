@@ -1,5 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // "class", not the Tailwind default "media": under "media" the palette is read
+  // straight from the OS and NativeWind's colorScheme.set() is inert, so the
+  // in-app Appearance setting could never override the phone. With "class",
+  // NativeWind toggles the `dark` selector itself and the setting works.
+  darkMode: "class",
   content: ["./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {

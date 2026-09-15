@@ -26,6 +26,9 @@
   --scrim: rgba(26,26,26,0.35);
 }
 
+/* NativeWind resolves prefers-color-scheme against its OWN colorScheme store
+   because tailwind.config.js sets darkMode: "class" — so this block follows the
+   Appearance setting, not the phone. See src/theme/theme-preference.tsx. */
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #171513;
