@@ -43,6 +43,8 @@ export type PaymentMethod = {
   id: string;
   label: string;
   is_active: boolean;
+  /** Seeded with the company. The API refuses to delete one (409 builtin_protected). */
+  is_builtin?: boolean;
   is_company_payment?: boolean;
   is_personal_payment?: boolean;
 };
