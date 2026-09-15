@@ -154,6 +154,20 @@
         "billing": "Money",
         "billingDesc": "Refunds on your expenses, quote and invoice status changes"
       }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "subtitle": "Choose how Folio looks on this device.",
+      "options": {
+        "system": "Match device",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "hints": {
+        "system": "Follows your phone's light or dark setting",
+        "light": "Always the light palette",
+        "dark": "Always the dark palette"
+      }
     }
   },
   "members": {

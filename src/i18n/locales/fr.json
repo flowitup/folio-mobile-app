@@ -154,6 +154,20 @@
         "billing": "Argent",
         "billingDesc": "Remboursements de vos dépenses, changements de statut des devis et factures"
       }
+    },
+    "appearance": {
+      "title": "Apparence",
+      "subtitle": "Choisissez l'apparence de Folio sur cet appareil.",
+      "options": {
+        "system": "Comme l'appareil",
+        "light": "Clair",
+        "dark": "Sombre"
+      },
+      "hints": {
+        "system": "Suit le réglage clair ou sombre de votre téléphone",
+        "light": "Toujours la palette claire",
+        "dark": "Toujours la palette sombre"
+      }
     }
   },
   "members": {

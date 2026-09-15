@@ -154,6 +154,20 @@
         "billing": "Tiền",
         "billingDesc": "Hoàn tiền chi phí của bạn, thay đổi trạng thái báo giá và hóa đơn"
       }
+    },
+    "appearance": {
+      "title": "Giao diện",
+      "subtitle": "Chọn giao diện của Folio trên máy này.",
+      "options": {
+        "system": "Theo máy",
+        "light": "Sáng",
+        "dark": "Tối"
+      },
+      "hints": {
+        "system": "Theo cài đặt sáng hoặc tối của điện thoại",
+        "light": "Luôn dùng nền sáng",
+        "dark": "Luôn dùng nền tối"
+      }
     }
   },
   "members": {
