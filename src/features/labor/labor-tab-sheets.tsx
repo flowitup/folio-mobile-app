@@ -284,6 +284,7 @@ export const PaymentSheet = forwardRef<
         {companyId ? (
           <Select
             testID="payment-method"
+            clearable
             label={t("invoices.form.paymentMethod")}
             placeholder={t("invoices.form.paymentMethodNone")}
             value={methodId}

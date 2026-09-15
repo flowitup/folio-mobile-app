@@ -227,6 +227,7 @@ export function InvoiceForm({
         <>
           <Select
             testID="invoice-worker"
+            clearable
             label={t("invoices.form.worker")}
             placeholder={t("invoices.form.workerNone")}
             value={workerId}
@@ -265,6 +266,7 @@ export function InvoiceForm({
       {companyId ? (
         <Select
           testID="invoice-payment-method"
+          clearable
           label={t("invoices.form.paymentMethod")}
           placeholder={t("invoices.form.paymentMethodNone")}
           value={paymentMethodId}
@@ -282,6 +284,7 @@ export function InvoiceForm({
           </Text>
           <Select
             testID="invoice-refunds"
+            clearable
             label={t("invoices.form.refundsInvoice")}
             placeholder={t("invoices.form.refundsInvoiceNone")}
             value={refundsInvoiceId}
@@ -304,6 +307,7 @@ export function InvoiceForm({
           {settledVia === "avoir" ? (
             <Select
               testID="invoice-applied-to"
+              clearable
               label={t("invoices.form.appliedTo")}
               placeholder={t("invoices.form.appliedToNone")}
               value={appliedToInvoiceId}

@@ -648,11 +648,12 @@ export default function ProjectChiffrageSection() {
               />
               <Select
                 testID="quote-store"
+                clearable
                 label={t("chiffrage.shop")}
                 placeholder={t("chiffrage.noShop")}
                 value={draft.store_id || null}
                 options={storeOptions}
-                onChange={set("store_id")}
+                onChange={(next) => set("store_id")(next ?? "")}
               />
               <Input
                 testID="quote-supplier"
@@ -700,19 +701,21 @@ export default function ProjectChiffrageSection() {
                   />
                   <Select
                     testID="article-unit"
+                    clearable
                     label={t("chiffrage.unit")}
                     placeholder="—"
                     value={draft.unit || null}
                     options={unitOptions}
-                    onChange={set("unit")}
+                    onChange={(next) => set("unit")(next ?? "")}
                   />
                   <Select
                     testID="article-room"
+                    clearable
                     label={t("chiffrage.room")}
                     placeholder={t("chiffrage.noRoom")}
                     value={draft.room_id || null}
                     options={roomOptions}
-                    onChange={set("room_id")}
+                    onChange={(next) => set("room_id")(next ?? "")}
                   />
                 </>
               ) : null}

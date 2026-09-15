@@ -13,29 +13,39 @@ export type SelectOption<T extends string> = {
   description?: string;
 };
 
-type Props<T extends string> = {
+type BaseProps<T extends string> = {
   label?: string;
   placeholder?: string;
   value: T | null;
   options: SelectOption<T>[];
-  onChange: (value: T) => void;
   error?: string | null;
   testID?: string;
   /** 38px field with 13px text (filters), instead of the 48px form field. */
   compact?: boolean;
 };
 
+/**
+ * `clearable` adds a row that puts the field back to its placeholder. An optional
+ * field needs it: every option row writes a value, so without it a field the user
+ * filled by mistake stays filled for the rest of the form's life.
+ */
+type Props<T extends string> = BaseProps<T> &
+  (
+    | { clearable: true; onChange: (value: T | null) => void }
+    | { clearable?: false; onChange: (value: T) => void }
+  );
+
 /** Single-choice picker: a field that opens the options in a bottom sheet. */
-export function Select<T extends string>({
-  label,
-  placeholder,
-  value,
-  options,
-  onChange,
-  error,
-  testID,
-  compact = false,
-}: Props<T>) {
+export function Select<T extends string>(props: Props<T>) {
+  const {
+    label,
+    placeholder,
+    value,
+    options,
+    error,
+    testID,
+    compact = false,
+  } = props;
   const tokens = useTokens();
   const sheet = useRef<BottomSheetModal>(null);
   const selected = options.find((option) => option.value === value);
@@ -61,12 +71,29 @@ export function Select<T extends string>({
         <Text className="mt-1 font-sans text-xs text-negative">{error}</Text>
       ) : null}
       <Sheet ref={sheet} title={label}>
+        {props.clearable ? (
+          <Pressable
+            testID={testID ? `${testID}-option-none` : undefined}
+            onPress={() => {
+              props.onChange(null);
+              sheet.current?.dismiss();
+            }}
+            className={`flex-row items-center border-b border-line px-4 py-3 ${value === null ? "bg-paper-2" : ""}`}
+          >
+            <Text className="flex-1 font-sans text-base text-muted">
+              {placeholder ?? "—"}
+            </Text>
+            {value === null ? (
+              <Icon name="check" size={16} color={tokens.ink} />
+            ) : null}
+          </Pressable>
+        ) : null}
         {options.map((option) => (
           <Pressable
             key={option.value}
             testID={testID ? `${testID}-option-${option.value}` : undefined}
             onPress={() => {
-              onChange(option.value);
+              props.onChange(option.value);
               sheet.current?.dismiss();
             }}
             className={`flex-row items-center border-b border-line px-4 py-3 ${option.value === value ? "bg-paper-2" : ""}`}
