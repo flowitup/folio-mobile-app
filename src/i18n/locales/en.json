@@ -702,7 +702,7 @@
       "loadMore": "Load more",
       "new": "New",
       "templates": "Templates",
-      "refundable": "Refundable expenses",
+      "refundable": "Refundable",
       "import": "Import"
     },
     "form": {
@@ -807,7 +807,7 @@
     },
     "refundable": {
       "title": "Refundable expenses",
-      "add": "Add expenses",
+      "add": "Add",
       "none": "No expense tracked for reimbursement.",
       "allCompanies": "All companies",
       "summary": {

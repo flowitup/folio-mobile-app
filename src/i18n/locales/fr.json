@@ -702,7 +702,7 @@
       "loadMore": "Charger plus",
       "new": "Nouveau",
       "templates": "Modèles",
-      "refundable": "Dépenses remboursables",
+      "refundable": "Remboursables",
       "import": "Importer"
     },
     "form": {
@@ -807,7 +807,7 @@
     },
     "refundable": {
       "title": "Dépenses remboursables",
-      "add": "Ajouter des dépenses",
+      "add": "Ajouter",
       "none": "Aucune dépense suivie pour remboursement.",
       "allCompanies": "Toutes les sociétés",
       "summary": {
