@@ -1,5 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
@@ -136,6 +137,8 @@ function ExpensesTabContent() {
             className="flex-row items-center gap-2 bg-ink-block pl-5 pr-4"
             style={{ paddingTop: insets.top + 8 }}
           >
+            {/* Same reason as ProjectTopBar: this header is the ink block. */}
+            <StatusBar style="light" />
             <Pressable
               testID="top-bar-switcher"
               accessibilityRole="button"
