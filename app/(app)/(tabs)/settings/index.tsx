@@ -51,11 +51,6 @@ export default function SettingsHub() {
       path: "/settings/notifications",
     },
     {
-      key: "persons-merge",
-      label: t("settings.personsMerge"),
-      path: "/settings/persons-merge",
-    },
-    {
       key: "join-company",
       label: t("settings.joinCompany"),
       path: "/join-company?another=1",
