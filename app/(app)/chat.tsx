@@ -18,6 +18,7 @@ import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import {
   useChatChannels,
   useChatEnabled,
+  useFeatures,
   useChatMessages,
   useMarkChatRead,
   useSendChatMessage,
@@ -41,6 +42,9 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ channel?: string }>();
   const enabled = useChatEnabled();
+  // `enabled` is false both while the flag is loading and when chat is off, so the
+  // features query is what says which — see the disabled branch below.
+  const features = useFeatures();
   const channels = useChatChannels(enabled, 15_000);
   const [selected, setSelected] = useState<string | null>(
     params.channel ?? null,
@@ -150,10 +154,12 @@ export default function ChatScreen() {
         </View>
       </View>
 
+      {/* Hidden when there is nothing to pick: with no channels this still drew its
+          padding and bottom rule, leaving an empty 53px bar under the header. */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="max-h-[53px] border-b border-line"
+        className={`max-h-[53px] border-b border-line ${(channels.data ?? []).length === 0 ? "hidden" : ""}`}
         contentContainerClassName="flex-row items-center gap-1.5 px-4 py-2.5"
       >
         {(channels.data ?? []).map((item) => {
@@ -191,7 +197,14 @@ export default function ChatScreen() {
             scrollRef.current?.scrollToEnd({ animated: false })
           }
         >
-          {!enabled && channels.isFetched ? (
+          {/* Gated on the FEATURES query, not the channels one. `useChatChannels` is
+              passed `enabled`, so when chat is off the channels query never runs and
+              `channels.isFetched` stays false forever — the old condition could never
+              be true, and the screen sat blank instead of saying chat was disabled. */}
+          {features.isPending ? (
+            <ActivityIndicator className="my-6" color={tokens.ink} />
+          ) : null}
+          {!enabled && features.isFetched ? (
             <EmptyState message={t("chat.disabled")} />
           ) : null}
           {messages.isPending && channelKey ? (

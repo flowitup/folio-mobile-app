@@ -18,6 +18,10 @@ import { ShellProvider } from "@/components/shell/shell-context";
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+  // ProjectTopBar claims the status bar for as long as it is focused.
+  useFocusEffect: (cb: () => undefined | (() => void)) => {
+    cb();
+  },
 }));
 
 jest.mock("@/auth/auth-context", () => ({

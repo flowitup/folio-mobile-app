@@ -10,9 +10,8 @@ import { Icon } from "@/components/ui/icon";
 import { useNotifications } from "@/features/notes/notes-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
-import { StatusBar } from "expo-status-bar";
-
 import { INK_BLOCK, useTokens } from "@/theme/tokens";
+import { useInkStatusBar } from "@/theme/use-ink-status-bar";
 
 type Props = {
   /** `ink`: the 1b variant on the ink block — paper project tile, on-ink text, no bottom line. */
@@ -36,6 +35,7 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
     (notifications.data?.items ?? []).filter((item) => !item.dismissed).length +
     (notifications.data?.attendance_pending.length ?? 0);
   const ink = tone === "ink";
+  useInkStatusBar(ink);
 
   return (
     <View
@@ -43,12 +43,6 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
       className={`flex-row items-center gap-2 ${ink ? "bg-ink-block pl-5 pr-4" : "border-b border-line bg-paper px-3 pb-2"}`}
       style={{ paddingTop: insets.top + 8 }}
     >
-      {/* The ink block keeps its dark values in BOTH palettes, so the clock and
-          battery sit on near-black whatever the theme says. `style="auto"` picks
-          from the color scheme, not from what is actually behind the bar — on a
-          light-scheme app that put dark glyphs on the dark block at a measured
-          1.13:1 contrast. This declares the truth for the bar this component owns. */}
-      <StatusBar style={ink ? "light" : "auto"} />
       <Pressable
         testID="top-bar-switcher"
         accessibilityRole="button"

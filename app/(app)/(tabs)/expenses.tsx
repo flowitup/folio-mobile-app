@@ -1,6 +1,5 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
@@ -35,6 +34,7 @@ import { groupInvoicesByMonth } from "@/lib/invoices/group-invoices-by-month";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { DARK, INK_BLOCK, useTokens } from "@/theme/tokens";
+import { useInkStatusBar } from "@/theme/use-ink-status-bar";
 
 type Filter = "all" | Exclude<InvoiceType, "return">;
 const FILTERS: Filter[] = [
@@ -60,6 +60,8 @@ function ExpensesTabContent() {
   const router = useRouter();
   const tokens = useTokens();
   const insets = useSafeAreaInsets();
+  // This screen builds its own ink header, so it owns the bar over it.
+  useInkStatusBar(true);
   const { openSheet, tabBarHeight } = useShell();
   const {
     projectId,
@@ -137,8 +139,6 @@ function ExpensesTabContent() {
             className="flex-row items-center gap-2 bg-ink-block pl-5 pr-4"
             style={{ paddingTop: insets.top + 8 }}
           >
-            {/* Same reason as ProjectTopBar: this header is the ink block. */}
-            <StatusBar style="light" />
             <Pressable
               testID="top-bar-switcher"
               accessibilityRole="button"
