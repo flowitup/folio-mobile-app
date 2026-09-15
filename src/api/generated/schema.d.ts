@@ -7093,8 +7093,9 @@ export interface components {
      * AccountDeletionBlockedResponse
      * @description 409 body for DELETE /auth/me when the caller is a company's last admin.
      *
-     *     ``reason`` is the discriminator clients branch on — declared here rather than
-     *     bolted onto a generic error body so it reaches the generated client types.
+     *     ``reason`` is the discriminator clients branch on. It reuses the value the
+     *     company demote/boot/detach endpoints already emit for the same condition, so
+     *     a client needs one branch, not two.
      */
     AccountDeletionBlockedResponse: {
       /** Company Name */
@@ -7108,10 +7109,10 @@ export interface components {
       message: string;
       /**
        * Reason
-       * @default last_company_admin
+       * @default last_admin
        * @constant
        */
-      reason: "last_company_admin";
+      reason: "last_admin";
       /**
        * Status Code
        * @default 409

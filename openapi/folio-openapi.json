@@ -59,7 +59,7 @@
         "type": "object"
       },
       "AccountDeletionBlockedResponse": {
-        "description": "409 body for DELETE /auth/me when the caller is a company's last admin.\n\n``reason`` is the discriminator clients branch on \u2014 declared here rather than\nbolted onto a generic error body so it reaches the generated client types.",
+        "description": "409 body for DELETE /auth/me when the caller is a company's last admin.\n\n``reason`` is the discriminator clients branch on. It reuses the value the\ncompany demote/boot/detach endpoints already emit for the same condition, so\na client needs one branch, not two.",
         "properties": {
           "company_name": { "title": "Company Name", "type": "string" },
           "error": {
@@ -69,8 +69,8 @@
           },
           "message": { "title": "Message", "type": "string" },
           "reason": {
-            "const": "last_company_admin",
-            "default": "last_company_admin",
+            "const": "last_admin",
+            "default": "last_admin",
             "title": "Reason",
             "type": "string"
           },
