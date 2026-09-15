@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/auth/auth-context";
+import { DeleteAccountAction } from "@/components/account/delete-account-action";
 import { useMyCompanies } from "@/features/companies/companies-api";
 import { useProjects } from "@/features/projects/projects-api";
 import { useTokens } from "@/theme/tokens";
@@ -72,6 +73,12 @@ export default function OnboardingWaitingScreen() {
             {t("home.signOut")}
           </Text>
         </Pressable>
+
+        <DeleteAccountAction
+          testID="onboarding-waiting-delete-account"
+          className="mt-3 self-start"
+          textClassName="font-sans text-[13px] text-muted"
+        />
       </ScrollView>
     </SafeAreaView>
   );

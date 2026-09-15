@@ -58,9 +58,30 @@ type AuthContextValue = {
     displayName: string,
   ) => Promise<void>;
   signOut: () => Promise<void>;
+  /**
+   * Erases the account on the backend, then signs out locally. Irreversible.
+   * Rejects with `AccountDeletionBlockedError` when the user is the last admin
+   * of a company that still has other members.
+   */
+  deleteAccount: () => Promise<void>;
   /** Re-fetches `/auth/me` (role/grant changes apply without re-login); no-op when signed out. */
   refreshUser: () => Promise<void>;
 };
+
+/**
+ * The backend refused the erasure because the account is a company's only
+ * administrator — someone else has to be promoted first, or the remaining
+ * members would be left unable to manage their own company.
+ */
+export class AccountDeletionBlockedError extends Error {
+  readonly companyName: string;
+
+  constructor(companyName: string) {
+    super(`Last administrator of ${companyName}`);
+    this.name = "AccountDeletionBlockedError";
+    this.companyName = companyName;
+  }
+}
 
 type LoginPayload = components["schemas"]["LoginResponse"];
 
@@ -231,6 +252,29 @@ export function AuthProvider({ children }: PropsWithChildren) {
     await signOutLocally();
   }, [signOutLocally]);
 
+  const deleteAccount = useCallback(async () => {
+    // Unregister first, while the token is still valid: this also clears the
+    // push token held in SecureStore, which the backend cannot reach.
+    await unregisterPushDevice();
+    const { refreshToken } = await getStoredTokens();
+    const { error, response } = await api.DELETE("/api/v1/auth/me", {
+      body: { refresh_token: refreshToken },
+    });
+
+    if (response.status === 409) {
+      const blocked = error as
+        components["schemas"]["AccountDeletionBlockedResponse"] | undefined;
+      throw new AccountDeletionBlockedError(blocked?.company_name ?? "");
+    }
+    if (!response.ok) {
+      throw new Error(i18n.t("account.delete.failed"));
+    }
+
+    // The account is gone; drop the local session regardless of what the
+    // logout endpoint would have done — the token no longer authenticates.
+    await signOutLocally();
+  }, [signOutLocally]);
+
   const value = useMemo(
     () => ({
       status,
@@ -241,6 +285,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       requestSignupOtp,
       signUpWithOtp,
       signOut,
+      deleteAccount,
       refreshUser,
     }),
     [
@@ -252,6 +297,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       requestSignupOtp,
       signUpWithOtp,
       signOut,
+      deleteAccount,
       refreshUser,
     ],
   );

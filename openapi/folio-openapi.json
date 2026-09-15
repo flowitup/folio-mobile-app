@@ -58,6 +58,32 @@
         "title": "AcceptedUserResponse",
         "type": "object"
       },
+      "AccountDeletionBlockedResponse": {
+        "description": "409 body for DELETE /auth/me when the caller is a company's last admin.\n\n``reason`` is the discriminator clients branch on. It reuses the value the\ncompany demote/boot/detach endpoints already emit for the same condition, so\na client needs one branch, not two.",
+        "properties": {
+          "company_name": { "title": "Company Name", "type": "string" },
+          "error": {
+            "default": "Conflict",
+            "title": "Error",
+            "type": "string"
+          },
+          "message": { "title": "Message", "type": "string" },
+          "reason": {
+            "const": "last_admin",
+            "default": "last_admin",
+            "title": "Reason",
+            "type": "string"
+          },
+          "status_code": {
+            "default": 409,
+            "title": "Status Code",
+            "type": "integer"
+          }
+        },
+        "required": ["message", "company_name"],
+        "title": "AccountDeletionBlockedResponse",
+        "type": "object"
+      },
       "AddMemberByPhoneRequest": {
         "additionalProperties": false,
         "description": "Request body for POST /companies/<id>/members.\n\n``person_id`` lets the caller resend the request after a 409\n(several un-linked candidates matched the phone) to pick one explicitly.",
@@ -210,14 +236,52 @@
         "title": "AssignMemberRequest",
         "type": "object"
       },
-      "AttachedUserRow": {
+      "AttachUserToCompanyResponse": {
         "additionalProperties": false,
-        "description": "One row of GET /companies/<id>/attached-users.\n\nAccess fields come from the use case; `email` / `display_name` / `phone`\nare joined from `users` so clients can render the member list directly.",
+        "description": "Response of POST /companies/<id>/access/<user_id>.\n\nSame shape whether the call created the row or found the user already\nattached (idempotent) \u2014 the current state of the access row either way.",
         "properties": {
           "attached_at": {
             "format": "date-time",
             "title": "Attached At",
             "type": "string"
+          },
+          "company_id": {
+            "format": "uuid",
+            "title": "Company Id",
+            "type": "string"
+          },
+          "is_primary": { "title": "Is Primary", "type": "boolean" },
+          "role": { "title": "Role", "type": "string" },
+          "user_id": { "format": "uuid", "title": "User Id", "type": "string" }
+        },
+        "required": [
+          "user_id",
+          "company_id",
+          "role",
+          "is_primary",
+          "attached_at"
+        ],
+        "title": "AttachUserToCompanyResponse",
+        "type": "object"
+      },
+      "AttachedUserRow": {
+        "additionalProperties": false,
+        "description": "One row of GET /companies/<id>/attached-users.\n\nAccess fields come from the use case; `email` / `display_name` / `phone`\nare joined from `users` so clients can render the member list directly.\n`companies` (D4) lists the target's OWN attachments intersected with the\ncompanies the CALLER administers \u2014 never a company the caller cannot\nmanage, so this can never leak cross-tenant membership.\n`assigned_project_ids` lists this company's projects the user is\nassigned to: the directory only carries it for people who have a\n`company_persons` profile, so an account attached without one would\notherwise look unassigned.",
+        "properties": {
+          "assigned_project_ids": {
+            "items": { "format": "uuid", "type": "string" },
+            "title": "Assigned Project Ids",
+            "type": "array"
+          },
+          "attached_at": {
+            "format": "date-time",
+            "title": "Attached At",
+            "type": "string"
+          },
+          "companies": {
+            "items": { "$ref": "#/components/schemas/CompanySummary" },
+            "title": "Companies",
+            "type": "array"
           },
           "company_id": {
             "format": "uuid",
@@ -457,6 +521,17 @@
         "title": "CloneRequest",
         "type": "object"
       },
+      "CompanySummary": {
+        "additionalProperties": false,
+        "description": "Minimal company reference nested in other responses (id + display name only).",
+        "properties": {
+          "id": { "format": "uuid", "title": "Id", "type": "string" },
+          "legal_name": { "title": "Legal Name", "type": "string" }
+        },
+        "required": ["id", "legal_name"],
+        "title": "CompanySummary",
+        "type": "object"
+      },
       "ConvertRequest": {
         "additionalProperties": false,
         "description": "Optional body for POST /billing-documents/<id>/convert-to-facture.\n\nBoth fields are optional \u2014 empty body {} is accepted.",
@@ -502,6 +577,21 @@
         },
         "required": ["date", "title"],
         "title": "CreateActivitySchema",
+        "type": "object"
+      },
+      "CreateApiKeyBody": {
+        "additionalProperties": false,
+        "description": "Request body for POST /api/v1/api-keys.",
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "title": "CreateApiKeyBody",
         "type": "object"
       },
       "CreateBillingDocumentRequest": {
@@ -2192,7 +2282,7 @@
       },
       "SendMessageBody": {
         "additionalProperties": false,
-        "description": "JSON body of POST /chat/channels/<key>/messages (text-only messages).\n\nMessages with an image use multipart/form-data instead: ``body`` text part + ``file``.",
+        "description": "JSON body of POST /chat/channels/<key>/messages (text-only messages).\n\nMessages with an image or a voice note use multipart/form-data instead: ``body`` text\npart + ``file``.",
         "properties": {
           "body": {
             "maxLength": 4000,
@@ -3268,6 +3358,44 @@
         "tags": ["admin"]
       }
     },
+    "/api/v1/api-keys": {
+      "get": {
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List the caller's API keys",
+        "tags": ["api-keys"]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateApiKeyBody" }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create a new API key for the caller",
+        "tags": ["api-keys"]
+      }
+    },
+    "/api/v1/api-keys/{key_id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Revoke one of the caller's API keys",
+        "tags": ["api-keys"]
+      }
+    },
     "/api/v1/attachments/{attachment_id}": {
       "delete": {
         "parameters": [
@@ -3349,6 +3477,32 @@
       }
     },
     "/api/v1/auth/me": {
+      "delete": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LogoutBody" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDeletionBlockedResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Permanently delete the current user's own account",
+        "tags": ["auth"]
+      },
       "get": {
         "responses": {
           "200": {
@@ -4079,7 +4233,7 @@
           }
         },
         "security": [{ "bearerAuth": [] }],
-        "summary": "Send a message (JSON text, or multipart/form-data with an image `file`)",
+        "summary": "Send a message (JSON text, or multipart/form-data with an image or voice note `file`)",
         "tags": ["chat"]
       }
     },
@@ -4240,6 +4394,37 @@
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
         "summary": "Remove a user from a company (admin only)",
+        "tags": ["companies"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "in": "path",
+            "name": "target_user_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttachUserToCompanyResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Attach an existing user account to a company as member (admin only)",
         "tags": ["companies"]
       }
     },

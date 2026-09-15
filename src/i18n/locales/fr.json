@@ -1586,5 +1586,19 @@
   },
   "help": {
     "open": "Ouvrir le guide des processus"
+  },
+  "account": {
+    "delete": {
+      "title": "Supprimer mon compte",
+      "confirmTitle": "Supprimer votre compte ?",
+      "confirmBody": "Cette action supprime définitivement votre compte et vos données personnelles. Les factures, chantiers et documents de votre entreprise sont conservés. Cette action est irréversible.",
+      "confirm": "Supprimer",
+      "cancel": "Annuler",
+      "deleting": "Suppression…",
+      "failed": "Votre compte n'a pas pu être supprimé. Veuillez réessayer.",
+      "blockedTitle": "Désignez d'abord un autre administrateur",
+      "blockedBody": "Vous êtes le seul administrateur de {{company}}. Nommez un autre administrateur, puis supprimez votre compte.",
+      "ok": "OK"
+    }
   }
 }

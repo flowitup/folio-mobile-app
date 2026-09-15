@@ -116,6 +116,98 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/api-keys": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the caller's API keys */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    /** Create a new API key for the caller */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CreateApiKeyBody"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/api-keys/{key_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revoke one of the caller's API keys */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          key_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/attachments/{attachment_id}": {
     parameters: {
       query?: never;
@@ -328,7 +420,38 @@ export interface paths {
     };
     put?: never;
     post?: never;
-    delete?: never;
+    /** Permanently delete the current user's own account */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["LogoutBody"];
+        };
+      };
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["AccountDeletionBlockedResponse"];
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     /** Update the current user's display name and/or phone */
@@ -1583,7 +1706,7 @@ export interface paths {
       };
     };
     put?: never;
-    /** Send a message (JSON text, or multipart/form-data with an image `file`) */
+    /** Send a message (JSON text, or multipart/form-data with an image or voice note `file`) */
     post: {
       parameters: {
         query?: never;
@@ -1907,7 +2030,30 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post?: never;
+    /** Attach an existing user account to a company as member (admin only) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          company_id: string;
+          target_user_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["AttachUserToCompanyResponse"];
+          };
+        };
+      };
+    };
     /** Remove a user from a company (admin only) */
     delete: {
       parameters: {
@@ -6944,6 +7090,36 @@ export interface components {
       id: string;
     };
     /**
+     * AccountDeletionBlockedResponse
+     * @description 409 body for DELETE /auth/me when the caller is a company's last admin.
+     *
+     *     ``reason`` is the discriminator clients branch on. It reuses the value the
+     *     company demote/boot/detach endpoints already emit for the same condition, so
+     *     a client needs one branch, not two.
+     */
+    AccountDeletionBlockedResponse: {
+      /** Company Name */
+      company_name: string;
+      /**
+       * Error
+       * @default Conflict
+       */
+      error: string;
+      /** Message */
+      message: string;
+      /**
+       * Reason
+       * @default last_admin
+       * @constant
+       */
+      reason: "last_admin";
+      /**
+       * Status Code
+       * @default 409
+       */
+      status_code: number;
+    };
+    /**
      * AddMemberByPhoneRequest
      * @description Request body for POST /companies/<id>/members.
      *
@@ -7055,18 +7231,57 @@ export interface components {
       role: string;
     };
     /**
-     * AttachedUserRow
-     * @description One row of GET /companies/<id>/attached-users.
+     * AttachUserToCompanyResponse
+     * @description Response of POST /companies/<id>/access/<user_id>.
      *
-     *     Access fields come from the use case; `email` / `display_name` / `phone`
-     *     are joined from `users` so clients can render the member list directly.
+     *     Same shape whether the call created the row or found the user already
+     *     attached (idempotent) — the current state of the access row either way.
      */
-    AttachedUserRow: {
+    AttachUserToCompanyResponse: {
       /**
        * Attached At
        * Format: date-time
        */
       attached_at: string;
+      /**
+       * Company Id
+       * Format: uuid
+       */
+      company_id: string;
+      /** Is Primary */
+      is_primary: boolean;
+      /** Role */
+      role: string;
+      /**
+       * User Id
+       * Format: uuid
+       */
+      user_id: string;
+    };
+    /**
+     * AttachedUserRow
+     * @description One row of GET /companies/<id>/attached-users.
+     *
+     *     Access fields come from the use case; `email` / `display_name` / `phone`
+     *     are joined from `users` so clients can render the member list directly.
+     *     `companies` (D4) lists the target's OWN attachments intersected with the
+     *     companies the CALLER administers — never a company the caller cannot
+     *     manage, so this can never leak cross-tenant membership.
+     *     `assigned_project_ids` lists this company's projects the user is
+     *     assigned to: the directory only carries it for people who have a
+     *     `company_persons` profile, so an account attached without one would
+     *     otherwise look unassigned.
+     */
+    AttachedUserRow: {
+      /** Assigned Project Ids */
+      assigned_project_ids?: string[];
+      /**
+       * Attached At
+       * Format: date-time
+       */
+      attached_at: string;
+      /** Companies */
+      companies?: components["schemas"]["CompanySummary"][];
       /**
        * Company Id
        * Format: uuid
@@ -7245,6 +7460,19 @@ export interface components {
       override_kind: ("devis" | "facture") | null;
     };
     /**
+     * CompanySummary
+     * @description Minimal company reference nested in other responses (id + display name only).
+     */
+    CompanySummary: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Legal Name */
+      legal_name: string;
+    };
+    /**
      * ConvertRequest
      * @description Optional body for POST /billing-documents/<id>/convert-to-facture.
      *
@@ -7273,6 +7501,14 @@ export interface components {
       date: string;
       /** Title */
       title: string;
+    };
+    /**
+     * CreateApiKeyBody
+     * @description Request body for POST /api/v1/api-keys.
+     */
+    CreateApiKeyBody: {
+      /** Name */
+      name: string;
     };
     /**
      * CreateBillingDocumentRequest
@@ -8473,7 +8709,8 @@ export interface components {
      * SendMessageBody
      * @description JSON body of POST /chat/channels/<key>/messages (text-only messages).
      *
-     *     Messages with an image use multipart/form-data instead: ``body`` text part + ``file``.
+     *     Messages with an image or a voice note use multipart/form-data instead: ``body`` text
+     *     part + ``file``.
      */
     SendMessageBody: {
       /** Body */
