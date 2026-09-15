@@ -92,7 +92,9 @@ export function PaymentMethodsSection({ companyId, readOnly = false }: Props) {
               </Text>
             </Pressable>
             {!method.is_active ? <Badge label="inactive" /> : null}
-            {!readOnly ? (
+            {/* A built-in method is seeded with the company and the API always refuses to
+                delete it, so offering the action only ever ends in an error banner. */}
+            {!readOnly && !method.is_builtin ? (
               <Pressable
                 testID={`pm-delete-${method.id}`}
                 onPress={() => setDeleting(method)}
