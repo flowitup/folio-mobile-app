@@ -1586,5 +1586,19 @@
   },
   "help": {
     "open": "Mở hướng dẫn quy trình"
+  },
+  "account": {
+    "delete": {
+      "title": "Xóa tài khoản của tôi",
+      "confirmTitle": "Xóa tài khoản của bạn?",
+      "confirmBody": "Thao tác này xóa vĩnh viễn tài khoản và dữ liệu cá nhân của bạn. Hóa đơn, công trình và hồ sơ của công ty vẫn được giữ lại. Không thể hoàn tác.",
+      "confirm": "Xóa",
+      "cancel": "Hủy",
+      "deleting": "Đang xóa…",
+      "failed": "Không thể xóa tài khoản của bạn. Vui lòng thử lại.",
+      "blockedTitle": "Hãy chọn quản trị viên khác trước",
+      "blockedBody": "Bạn là quản trị viên duy nhất của {{company}}. Hãy chỉ định một quản trị viên khác, sau đó xóa tài khoản của bạn.",
+      "ok": "OK"
+    }
   }
 }

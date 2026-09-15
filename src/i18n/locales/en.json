@@ -1586,5 +1586,19 @@
   },
   "help": {
     "open": "Open the workflow guide"
+  },
+  "account": {
+    "delete": {
+      "title": "Delete my account",
+      "confirmTitle": "Delete your account?",
+      "confirmBody": "This permanently deletes your account and personal data. Your company's invoices, projects and records are kept. This cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "failed": "Your account could not be deleted. Please try again.",
+      "blockedTitle": "Choose another administrator first",
+      "blockedBody": "You are the only administrator of {{company}}. Make someone else an administrator there, then delete your account.",
+      "ok": "OK"
+    }
   }
 }
