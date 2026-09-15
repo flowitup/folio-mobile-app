@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Pressable,
@@ -302,7 +302,13 @@ export default function AcceptInviteScreen() {
                   testID="invite-code-sent"
                   className="mb-3 text-sm text-primary"
                 >
-                  {t("login.codeSentTo", { phone: sentTo })}
+                  <Trans
+                    i18nKey="login.codeSentTo"
+                    values={{ phone: sentTo }}
+                    components={{
+                      mono: <Text className="font-mono text-sm text-primary" />,
+                    }}
+                  />
                 </Text>
                 <Input
                   testID="invite-code"

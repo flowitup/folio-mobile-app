@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -136,7 +136,18 @@ export default function SignupScreen() {
         {step === "code" ? (
           <View>
             <Text className="mb-4 font-sans text-[14px] text-ink">
-              {t("login.codeSentTo", { phone })}
+              <Trans
+                i18nKey="login.codeSentTo"
+                values={{ phone }}
+                components={{
+                  mono: (
+                    <Text
+                      testID="signup-code-sent"
+                      className="font-mono text-[14px] text-ink"
+                    />
+                  ),
+                }}
+              />
             </Text>
             <Eyebrow className="mb-1.5">{t("login.code")}</Eyebrow>
             <View className={`${FIELD} mb-6`}>
