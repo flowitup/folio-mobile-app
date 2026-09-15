@@ -807,7 +807,7 @@
     },
     "refundable": {
       "title": "Chi phí hoàn lại",
-      "add": "Thêm chi phí",
+      "add": "Thêm",
       "none": "Chưa theo dõi chi phí hoàn lại nào.",
       "allCompanies": "Mọi công ty",
       "summary": {

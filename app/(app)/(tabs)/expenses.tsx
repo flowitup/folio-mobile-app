@@ -34,6 +34,7 @@ import { groupInvoicesByMonth } from "@/lib/invoices/group-invoices-by-month";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { DARK, INK_BLOCK, useTokens } from "@/theme/tokens";
+import { useInkStatusBar } from "@/theme/use-ink-status-bar";
 
 type Filter = "all" | Exclude<InvoiceType, "return">;
 const FILTERS: Filter[] = [
@@ -59,6 +60,8 @@ function ExpensesTabContent() {
   const router = useRouter();
   const tokens = useTokens();
   const insets = useSafeAreaInsets();
+  // This screen builds its own ink header, so it owns the bar over it.
+  useInkStatusBar(true);
   const { openSheet, tabBarHeight } = useShell();
   const {
     projectId,
