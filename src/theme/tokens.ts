@@ -1,4 +1,7 @@
-import { useColorScheme } from "react-native";
+// NativeWind's hook, not React Native's: it reflects `colorScheme.set()` from the
+// Settings > Appearance override, so these JS colors and the `prefers-color-scheme`
+// block in global.css always resolve to the same palette.
+import { useColorScheme } from "nativewind";
 
 /**
  * Design tokens of the 2a hand-off (README "Design tokens"). `global.css` declares the same
@@ -103,7 +106,7 @@ export const CSS_VARIABLE_NAMES: Record<keyof Tokens, string> = {
 
 /** Palette for the active color scheme. */
 export function useTokens(): Tokens {
-  return useColorScheme() === "dark" ? DARK : LIGHT;
+  return useColorScheme().colorScheme === "dark" ? DARK : LIGHT;
 }
 
 /** Card shadow as a style object (empty in dark mode, where the design drops shadows). */
