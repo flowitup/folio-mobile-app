@@ -125,7 +125,6 @@
     "myCompanies": "Công ty của tôi",
     "paymentMethods": "Phương thức thanh toán",
     "laborRoles": "Vai trò nhân công",
-    "personsMerge": "Gộp người",
     "adminCompanies": "Tất cả công ty (admin)",
     "users": {
       "permissionDenied": "Bạn không có quyền thay đổi vai trò của người dùng."

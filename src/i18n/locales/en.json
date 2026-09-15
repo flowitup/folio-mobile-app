@@ -125,7 +125,6 @@
     "myCompanies": "My companies",
     "paymentMethods": "Payment methods",
     "laborRoles": "Labor roles",
-    "personsMerge": "Merge persons",
     "adminCompanies": "All companies (admin)",
     "users": {
       "permissionDenied": "You don't have authorization to change roles of users."

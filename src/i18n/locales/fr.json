@@ -125,7 +125,6 @@
     "myCompanies": "Mes sociétés",
     "paymentMethods": "Moyens de paiement",
     "laborRoles": "Rôles main-d'œuvre",
-    "personsMerge": "Fusionner des personnes",
     "adminCompanies": "Toutes les sociétés (admin)",
     "users": {
       "permissionDenied": "Vous n'avez pas l'autorisation de modifier les rôles des utilisateurs."
