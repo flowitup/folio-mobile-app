@@ -253,6 +253,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
           ) : null}
           <Select
             testID="worker-role"
+            clearable
             label={t("labor.workers.role")}
             placeholder={t("labor.workers.roleNone")}
             value={roleId}
