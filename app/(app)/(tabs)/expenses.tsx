@@ -37,6 +37,9 @@ import { DARK, INK_BLOCK, useTokens } from "@/theme/tokens";
 import { useInkStatusBar } from "@/theme/use-ink-status-bar";
 
 type Filter = "all" | Exclude<InvoiceType, "return">;
+/** Diameter of the floating add button below — keep in step with its `h-14 w-14`. */
+const FAB_SIZE = 56;
+
 const FILTERS: Filter[] = [
   "all",
   "released_funds",
@@ -74,6 +77,9 @@ function ExpensesTabContent() {
   const canViewBudget = useProjectCan(projectId, "project:view_budget");
   const billing = useBillingAccess();
   const chatEnabled = useChatEnabled();
+  // The add button floats over the sheet, so the sheet has to end above it — otherwise the
+  // last row (the export button) sits under it and its right end cannot be tapped.
+  const fabOffset = tabBarHeight + 12 + (chatEnabled ? 64 : 0);
   useRefetchOnFocus(invoices.refetch);
   const exportSheet = useRef<BottomSheetModal>(null);
 
@@ -133,7 +139,7 @@ function ExpensesTabContent() {
     <View className="flex-1">
       <InkSheetScreen
         gap={14}
-        bottomPadding={96}
+        bottomPadding={fabOffset + FAB_SIZE + 12}
         header={
           <View
             className="flex-row items-center gap-2 bg-ink-block pl-5 pr-4"
@@ -301,7 +307,7 @@ function ExpensesTabContent() {
           onPress={() => router.push(`/projects/${projectId}/invoices/new`)}
           className="absolute right-5 h-14 w-14 items-center justify-center rounded-full bg-ink-block-accent active:opacity-80"
           style={{
-            bottom: tabBarHeight + 12 + (chatEnabled ? 64 : 0),
+            bottom: fabOffset,
             boxShadow: INK_FAB_SHADOW,
           }}
         >
