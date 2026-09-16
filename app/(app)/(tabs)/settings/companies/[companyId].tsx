@@ -138,7 +138,7 @@ export default function CompanyManageScreen() {
             </Text>
             <Button
               testID="company-edit"
-              label={t("companies.admin.manage.edit.save")}
+              label={t("common.edit")}
               className="mt-3"
               onPress={() => editSheet.current?.present()}
             />
