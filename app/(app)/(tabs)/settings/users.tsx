@@ -17,8 +17,10 @@ import { Input } from "@/components/ui/input";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
+import { showToast } from "@/components/ui/toast";
 import { useAdminUserSearch, useUpdateUser } from "@/features/admin/admin-api";
 import type { UserSearchItem } from "@/features/admin/admin-api";
+import { normalizePhone } from "@/lib/auth/phone-number";
 
 /** Platform ops: search a user by email/name and edit their identity fields. */
 export default function AdminUsersScreen() {
@@ -153,14 +155,22 @@ export default function AdminUsersScreen() {
             testID="user-edit-submit"
             label={t("common.save")}
             loading={updateUser.isPending}
-            onPress={() =>
-              selected &&
+            onPress={() => {
+              if (!selected) return;
+              // Sign-in is French-only, and rejecting the number server-side raises its own
+              // English sentence in a toast over a translated screen.
+              const typed = editPhone.trim();
+              const phone = typed ? normalizePhone(typed) : null;
+              if (typed && !phone) {
+                showToast(t("login.invalidPhone"), "error");
+                return;
+              }
               updateUser.mutate(
                 {
                   userId: selected.id,
                   email: editEmail.trim(),
                   display_name: editName.trim() || null,
-                  phone: editPhone.trim() || null,
+                  phone,
                 },
                 {
                   onSuccess: (updated) => {
@@ -168,8 +178,8 @@ export default function AdminUsersScreen() {
                     editSheet.current?.dismiss();
                   },
                 },
-              )
-            }
+              );
+            }}
           />
         </View>
       </Sheet>
