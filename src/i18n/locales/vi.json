@@ -998,10 +998,6 @@
           "delete": "Xóa",
           "payments": "Phương thức thanh toán"
         },
-        "edit": {
-          "save": "Lưu thay đổi",
-          "savedToast": "Đã lưu công ty."
-        },
         "attached": {
           "nameEmail": "Tên / Email",
           "attachedAt": "Ngày liên kết",

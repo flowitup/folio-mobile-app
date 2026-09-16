@@ -998,10 +998,6 @@
           "delete": "Supprimer",
           "payments": "Moyens de paiement"
         },
-        "edit": {
-          "save": "Enregistrer les modifications",
-          "savedToast": "Société enregistrée."
-        },
         "attached": {
           "nameEmail": "Nom / E-mail",
           "attachedAt": "Rattaché le",
