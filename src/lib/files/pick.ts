@@ -15,15 +15,41 @@ export type PickResult =
   | { status: "canceled" }
   | { status: "denied" };
 
-function imageAssetToFile(asset: ImagePicker.ImagePickerAsset): PickedFile {
+/**
+ * Neither picker gives back the picture's own name on Android: the photo picker reports its
+ * MediaStore row id ("29.png") and the cache copy it makes is named with a bare UUID. Listing
+ * a document under either is no help to anyone, so treat them as no name at all and fall back
+ * to the dated default. A name with any word in it — "IMG_20260916.jpg", "plan-rdc.pdf" — is
+ * kept as the user knows it.
+ */
+const MEANINGLESS_NAME =
+  /^(\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(\.[A-Za-z0-9]+)?$/i;
+
+/** `2026-09-16-0339` — readable in a file list, and distinct enough between two picks. */
+function stamp(now: Date): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return [
+    now.getFullYear(),
+    pad(now.getMonth() + 1),
+    pad(now.getDate()),
+    `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`,
+  ].join("-");
+}
+
+export function imageAssetToFile(
+  asset: ImagePicker.ImagePickerAsset,
+  now: Date = new Date(),
+): PickedFile {
   const isVideo = asset.type === "video";
   const mimeType = asset.mimeType ?? (isVideo ? "video/mp4" : "image/jpeg");
   const extension = mimeType.split("/")[1] ?? (isVideo ? "mp4" : "jpg");
+  const given =
+    asset.fileName && !MEANINGLESS_NAME.test(asset.fileName)
+      ? asset.fileName
+      : null;
   return {
     uri: asset.uri,
-    name:
-      asset.fileName ??
-      `${isVideo ? "video" : "photo"}-${Date.now()}.${extension}`,
+    name: given ?? `${isVideo ? "video" : "photo"}-${stamp(now)}.${extension}`,
     mimeType,
     size: asset.fileSize,
   };
@@ -55,7 +81,10 @@ export async function pickImages(
       ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
   });
   if (result.canceled) return { status: "canceled" };
-  return { status: "picked", files: result.assets.map(imageAssetToFile) };
+  return {
+    status: "picked",
+    files: result.assets.map((asset) => imageAssetToFile(asset)),
+  };
 }
 
 /** Opens the system document picker (PDF, images, spreadsheets…). */
