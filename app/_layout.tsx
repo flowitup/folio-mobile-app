@@ -27,6 +27,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider, useAuth } from "@/auth/auth-context";
+import { DismissSheetsOnRouteChange } from "@/components/shell/dismiss-sheets-on-route-change";
 import { ToastProvider } from "@/components/ui/toast";
 import { ThemePreferenceProvider } from "@/theme/theme-preference";
 import { useTokens } from "@/theme/tokens";
@@ -103,6 +104,7 @@ export default function RootLayout() {
                 behind its host. Native Modals still mount their own ToastViewport. */}
               <ToastProvider>
                 <BottomSheetModalProvider>
+                  <DismissSheetsOnRouteChange />
                   <StatusBar style="auto" />
                   <RootNavigator fontsReady={fontsReady} />
                 </BottomSheetModalProvider>
