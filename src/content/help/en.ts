@@ -35,7 +35,7 @@ export const helpCatalogueEn: HelpCatalogue = [
       "Tap the project name at the top, then pick a site from the list — each row shows its remaining budget.",
       "In that same panel, “+ New project” creates a site: name, address, budget and budget source.",
       "As a manager the four tabs are Overview, Expenses, Labor and Planning. As a worker they are Attendance, Salary, Profile and Planning.",
-      "Managers get a “Menu” item for everything else: quotes and invoices, the product library, company members, and the project sections — documents, photos, notes, salaries, chiffrage, analyses, members and settings. Workers do not have it, so the topics below that start from the Menu are theirs to read rather than to follow.",
+      "Managers get a “Menu” item for everything else: quotes and invoices, the product library, company members, and the project sections — documents, photos, notes, salaries, chiffrage, analyses, project members and settings. Workers do not have it, so the topics below that start from the Menu are theirs to read rather than to follow.",
       "Tap your initials for Settings, the language picker (English, Français, Tiếng Việt) and “Sign out”.",
       "Tap the bell for anything waiting on you, and the question mark for this guide.",
     ],
