@@ -1132,7 +1132,11 @@
       "codeLabel": "Mã công ty",
       "hint": "8 ký tự, do quản trị viên công ty cung cấp.",
       "submit": "Tham gia",
-      "successToast": "Bạn đã tham gia công ty."
+      "successToast": "Bạn đã tham gia công ty.",
+      "errors": {
+        "unknownCode": "Mã này không tồn tại hoặc không còn hiệu lực.",
+        "alreadyMember": "Bạn đã thuộc công ty này."
+      }
     },
     "members": {
       "title": "Thành viên công ty",

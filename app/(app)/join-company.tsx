@@ -19,6 +19,7 @@ import {
   useMyCompanies,
 } from "@/features/companies/companies-api";
 import { normalizeJoinCode } from "@/lib/companies/join-code";
+import { joinErrorKey } from "@/lib/companies/join-error-message";
 import { useTokens } from "@/theme/tokens";
 
 /**
@@ -51,7 +52,10 @@ export default function JoinCompanyScreen() {
           if (router.canGoBack() && canGoBack) router.back();
           else router.replace("/");
         },
-        onError: (caught) => setError((caught as Error).message),
+        onError: (caught) => {
+          const key = joinErrorKey(caught);
+          setError(key ? t(key) : (caught as Error).message);
+        },
       },
     );
   }
