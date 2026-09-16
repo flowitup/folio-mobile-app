@@ -11,6 +11,8 @@ import {
 } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { CHAT_FAB_RESERVE } from "@/components/shell/chat-fab";
+import { useChatEnabled } from "@/features/chat/chat-api";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { Segmented } from "@/components/ui/chip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -95,6 +97,7 @@ function LaborTabContent() {
   const router = useRouter();
   const tokens = useTokens();
   const { user } = useAuth();
+  const chatEnabled = useChatEnabled();
   const params = useLocalSearchParams<{ segment?: string }>();
   const { projectId, project: selected } = useSelectedProject();
   const id = projectId;
@@ -285,9 +288,15 @@ function LaborTabContent() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        testID="labor-scroll"
         className="flex-1"
-        contentContainerClassName="px-4 pb-6 pt-3.5"
-        contentContainerStyle={{ gap: 16 }}
+        contentContainerClassName="px-4 pt-3.5"
+        // The chat button floats over this tab, and the last row — the export button —
+        // is tall enough to reach under it, where it cannot be tapped.
+        contentContainerStyle={{
+          gap: 16,
+          paddingBottom: chatEnabled ? CHAT_FAB_RESERVE : 24,
+        }}
       >
         <View className="flex-row items-end justify-between">
           <View>
