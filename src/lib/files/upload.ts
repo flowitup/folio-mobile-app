@@ -1,4 +1,4 @@
-import { File } from "expo-file-system";
+import { Directory, File, Paths } from "expo-file-system";
 
 import { authedFetch } from "@/api/authed-fetch";
 import { API_BASE_URL } from "@/config/env";
@@ -6,9 +6,29 @@ import { ApiError } from "@/lib/query/api-error";
 
 import type { PickedFile } from "./pick";
 
-/** Expo's fetch accepts expo-file-system `File` objects (Blob-compatible) as multipart parts. */
+/** Where a picked file is copied when its own name is not the one to upload it under. */
+const RENAMED = new Directory(Paths.cache, "upload-names");
+
+/**
+ * Expo's fetch accepts expo-file-system `File` objects (Blob-compatible) as multipart parts,
+ * and the part is named after the file on disk — the third argument to `FormData.append` is
+ * ignored. Android's photo picker hands over a cache copy named with a bare UUID, so pictures
+ * arrived stored under that hex instead of the name the user sees. Copy the file next to a
+ * correctly named sibling when the two differ; the cache directory is the system's to reclaim.
+ */
 function toFormPart(file: PickedFile): Blob {
-  return new File(file.uri) as unknown as Blob;
+  const source = new File(file.uri);
+  if (source.name === file.name) return source as unknown as Blob;
+  try {
+    RENAMED.create({ intermediates: true, idempotent: true });
+    const target = new File(RENAMED, file.name);
+    if (target.exists) target.delete();
+    source.copy(target);
+    return target as unknown as Blob;
+  } catch {
+    // Never fail an upload over the file's name: send it under the picker's own.
+    return source as unknown as Blob;
+  }
 }
 
 async function throwIfFailed(
