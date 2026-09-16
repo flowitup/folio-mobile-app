@@ -1132,7 +1132,11 @@
       "codeLabel": "Company code",
       "hint": "8 characters, given by the company administrator.",
       "submit": "Join",
-      "successToast": "You joined the company."
+      "successToast": "You joined the company.",
+      "errors": {
+        "unknownCode": "That code is unknown or no longer valid.",
+        "alreadyMember": "You already belong to this company."
+      }
     },
     "members": {
       "title": "Company members",

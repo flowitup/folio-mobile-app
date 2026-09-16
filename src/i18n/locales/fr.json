@@ -1132,7 +1132,11 @@
       "codeLabel": "Code société",
       "hint": "8 caractères, fournis par l'administrateur de la société.",
       "submit": "Rejoindre",
-      "successToast": "Vous avez rejoint la société."
+      "successToast": "Vous avez rejoint la société.",
+      "errors": {
+        "unknownCode": "Ce code est inconnu ou n'est plus valide.",
+        "alreadyMember": "Vous appartenez déjà à cette société."
+      }
     },
     "members": {
       "title": "Membres de l'entreprise",
