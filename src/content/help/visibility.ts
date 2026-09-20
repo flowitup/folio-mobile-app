@@ -31,6 +31,7 @@ const MANAGER_ONLY = new Set([
   "company-members",
   "project-members",
   "library",
+  "inventory",
   "chiffrage",
   "documents",
   "photos",

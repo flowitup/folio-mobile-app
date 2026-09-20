@@ -33,8 +33,8 @@ scrolling ink hero with the headline figure (`InkFigure`, ring gauge drawn with 
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | Overview, Expenses, Labor, Planning tabs                      | `app/(app)/(tabs)/{index,expenses,labor,planning}.tsx`                                               |
 | Top bar: project switcher, notifications bell, account avatar | `src/components/shell/project-top-bar.tsx` + `*-sheet.tsx`                                           |
-| Menu tab (billing, library, project sections, settings)       | `src/components/shell/menu-sheet.tsx`                                                                |
-| Hidden stack routes (no tab entry)                            | `billing/*`, `library/*`, `settings/*`, `projects/[id]/*` under `app/(app)/(tabs)/`                  |
+| Menu tab (billing, library, inventory, project sections…)     | `src/components/shell/menu-sheet.tsx`                                                                |
+| Hidden stack routes (no tab entry)                            | `billing/*`, `library/*`, `inventory/*`, `settings/*`, `projects/[id]/*` under `app/(app)/(tabs)/`   |
 | Team chat overlay                                             | `app/(app)/chat.tsx` (slides in from the right), floating button `src/components/shell/chat-fab.tsx` |
 | Invitation deep link                                          | `app/accept-invite/[token].tsx`                                                                      |
 
@@ -54,6 +54,47 @@ chat routes answer 404 when it is off).
   on send, and when a new incoming message arrives while it is open.
 - Images load through `AuthedImage` (Bearer header, with an authenticated-fetch fallback).
 
+## Equipment inventory
+
+Menu → "Kho thiết bị" lists the company's tools and machines (drills, screwdrivers, ladders…):
+how many there are, whether each is **working** or **damaged**, and where it is — a company
+**warehouse** (name + address) or **on site** (a project). One row is one batch of identical
+things in one place and one condition; the screen groups rows by place, sums units on the tiles,
+and filters by place / condition / text (`src/lib/inventory/inventory-helpers.ts`, unit-tested).
+
+| Surface                             | Route / component                                                                  |
+| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| List, summary, filters, create/edit | `app/(app)/(tabs)/inventory/index.tsx` + `src/features/inventory/inventory-item-*` |
+| Warehouses (name, address, units)   | `app/(app)/(tabs)/inventory/warehouses.tsx` + `warehouse-form-sheet.tsx`           |
+| Hooks and query keys                | `src/features/inventory/inventory-api.ts`                                          |
+
+### Backend contract (not yet served by `folio-back-end`)
+
+The client is written against the `/api/v1/inventory/*` routes declared in `openapi/folio-openapi.json`
+(tag `inventory`), company-scoped exactly like `/api/v1/bibliotheque`: `?company_id=` on reads
+(caller's primary company when absent), `company_id` in the body on creates, membership checked
+in the use-case, writes gated by a `inventory:manage` permission (same tiers as `bibliotheque:manage`).
+Until the backend ships these routes the screens show their error state.
+
+| Method & path                                 | Body / query                                                                                                                | Answer                                    |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `GET /inventory/warehouses`                   | `?company_id`                                                                                                               | `{ items: Warehouse[] }`                  |
+| `POST /inventory/warehouses`                  | `{ company_id, name, address? }`                                                                                            | `201 Warehouse`                           |
+| `PATCH /inventory/warehouses/{warehouse_id}`  | `{ name?, address? }`                                                                                                       | `Warehouse`                               |
+| `DELETE /inventory/warehouses/{warehouse_id}` | —                                                                                                                           | `204`; `409` while items are stored there |
+| `GET /inventory/items`                        | `?company_id` (+ optional `location_type`, `warehouse_id`, `project_id`, `condition`, `q`; the app filters locally)         | `{ items: InventoryItem[], total }`       |
+| `POST /inventory/items`                       | `{ company_id, name, quantity, condition, location_type, warehouse_id?, project_id?, category?, reference?, description? }` | `201 InventoryItem`                       |
+| `GET /inventory/items/{item_id}`              | —                                                                                                                           | `InventoryItem`                           |
+| `PATCH /inventory/items/{item_id}`            | any subset of the create body (minus `company_id`); absent key = unchanged, `null` = cleared                                | `InventoryItem`                           |
+| `DELETE /inventory/items/{item_id}`           | —                                                                                                                           | `204`                                     |
+
+`Warehouse`: `id, company_id, name, address | null, created_at, updated_at`.
+`InventoryItem`: `id, company_id, name, category | null` (`power_tool | hand_tool | measuring | access | safety | machine | other`),
+`reference | null, description | null, quantity` (integer ≥ 0), `condition` (`working | damaged`),
+`location_type` (`warehouse | site`), `warehouse_id | null` (required when `warehouse`), `project_id | null`
+(required when `site`; must belong to the company), `created_at, updated_at`. Types live in
+`src/features/inventory/inventory-types.ts`.
+
 ## Layout
 
 ```
@@ -63,7 +104,7 @@ app/                        Expo Router routes
   (app)/_layout.tsx         stack: tabs + chat overlay
   (app)/chat.tsx            team chat
   (app)/(tabs)/_layout.tsx  floating tab bar, shell sheets, chat button, hidden routes
-  (app)/(tabs)/…            project tabs, billing/, library/, settings/, projects/[id]/<section>
+  (app)/(tabs)/…            project tabs, billing/, library/, inventory/, settings/, projects/[id]/<section>
   accept-invite/[token].tsx
 src/
   api/                      client.ts (typed client + refresh middleware), authed-fetch.ts, generated/schema.d.ts

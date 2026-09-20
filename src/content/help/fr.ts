@@ -310,6 +310,26 @@ export const helpCatalogueFr: HelpCatalogue = [
     ],
   },
   {
+    id: "inventory",
+    title: "L'inventaire du matériel",
+    purpose:
+      "Tous les outils et machines de la société — perceuses, visseuses, échelles — avec leur nombre, leur état et leur emplacement : un dépôt avec son adresse, ou un chantier.",
+    steps: [
+      "Ouvrez Menu → « Inventaire du matériel ». Les tuiles en haut comptent les unités au total, en état, hors service, en dépôt et sur chantier.",
+      "Touchez « Dépôts » pour ajouter les endroits où la société range ses outils, chacun avec un nom et une adresse ; un dépôt qui contient encore des unités ne peut pas être supprimé.",
+      "Touchez « Ajouter » : nom — obligatoire — catégorie, quantité, en état ou hors service, puis l'emplacement : un dépôt ou l'un de vos chantiers. Une référence ou un numéro de série et des notes sont facultatifs.",
+      "La liste est groupée par emplacement, dépôts en premier. Utilisez le champ de recherche, le sélecteur « Partout / Dépôt / Sur chantier » et les puces d'état pour la filtrer.",
+      "Touchez une ligne pour la modifier — la passer hors service après une casse, la déplacer du dépôt vers un chantier, corriger la quantité.",
+      "Depuis ce même formulaire, « Supprimer » retire la ligne après confirmation.",
+    ],
+    whoCanDoIt:
+      "Toute personne qui peut ouvrir le Menu atteint l'inventaire. C'est le serveur qui décide si vos modifications sont acceptées, et il vous prévient quand elles ne le sont pas.",
+    gotchas: [
+      "Une ligne est un lot d'objets identiques, au même endroit et dans le même état : trois perceuses en état au dépôt et une perceuse cassée sur un chantier font deux lignes.",
+      "Les compteurs de la ligne du Menu viennent de votre première société, qui n'est pas forcément celle du chantier.",
+    ],
+  },
+  {
     id: "chiffrage",
     title: "Chiffrer les matériaux",
     purpose:

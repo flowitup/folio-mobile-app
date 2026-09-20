@@ -19,10 +19,12 @@ import {
   useBillingAccess,
   useMyCompanies,
 } from "@/features/companies/companies-api";
+import { useInventoryItems } from "@/features/inventory/inventory-api";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useProducts, useSuppliers } from "@/features/library/library-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
+import { summarizeInventory } from "@/lib/inventory/inventory-helpers";
 import { useTokens } from "@/theme/tokens";
 
 /**
@@ -93,7 +95,7 @@ function MenuRow({
 }
 
 /**
- * Menu tab sheet: cross-project areas (Báo giá & hóa đơn, Thư viện sản phẩm) plus the project
+ * Menu tab sheet: cross-project areas (Báo giá & hóa đơn, Thư viện sản phẩm, Kho thiết bị) plus the project
  * sections that are not tabs, so nothing the old section bar offered is lost.
  */
 export function MenuSheet() {
@@ -116,6 +118,7 @@ export function MenuSheet() {
     page: 1,
   });
   const suppliers = useSuppliers(companyId);
+  const inventory = useInventoryItems(companyId);
 
   const go = (path: string) => {
     closeSheet();
@@ -133,6 +136,15 @@ export function MenuSheet() {
           suppliers: suppliers.data.length,
         })
       : undefined;
+  const inventorySummary = inventory.data
+    ? summarizeInventory(inventory.data.items)
+    : null;
+  const inventorySub = inventorySummary
+    ? t("shell.inventorySub", {
+        units: inventorySummary.quantity,
+        damaged: inventorySummary.damaged,
+      })
+    : undefined;
 
   return (
     <ShellSheet open={sheet === "menu"} testID="menu-sheet">
@@ -154,6 +166,13 @@ export function MenuSheet() {
             title={t("library.title")}
             subtitle={librarySub}
             onPress={() => go("/library")}
+          />
+          <MenuRow
+            testID="menu-inventory"
+            icon="tool"
+            title={t("inventory.title")}
+            subtitle={inventorySub}
+            onPress={() => go("/inventory")}
             last={!companyAdmin}
           />
           {companyAdmin ? (

@@ -2620,6 +2620,258 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/inventory/items": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          company_id?: string;
+          location_type?: "warehouse" | "site";
+          warehouse_id?: string;
+          project_id?: string;
+          condition?: "working" | "damaged";
+          q?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CreateInventoryItemRequest"];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/inventory/items/{item_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          item_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          item_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Deleted */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          item_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateInventoryItemRequest"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    trace?: never;
+  };
+  "/api/v1/inventory/warehouses": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          company_id?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CreateWarehouseRequest"];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/inventory/warehouses/{warehouse_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          warehouse_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Deleted */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          warehouse_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateWarehouseRequest"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    trace?: never;
+  };
   "/api/v1/invitations": {
     parameters: {
       query?: never;
@@ -7630,6 +7882,32 @@ export interface components {
        */
       tva_number: string | null;
     };
+    /** CreateInventoryItemRequest */
+    CreateInventoryItemRequest: {
+      /** Format: uuid */
+      company_id: string;
+      name: string;
+      category?:
+        | (
+            | "power_tool"
+            | "hand_tool"
+            | "measuring"
+            | "access"
+            | "safety"
+            | "machine"
+            | "other"
+          )
+        | null;
+      reference?: string | null;
+      description?: string | null;
+      quantity: number;
+      /** @enum {string} */
+      condition: "working" | "damaged";
+      /** @enum {string} */
+      location_type: "warehouse" | "site";
+      warehouse_id?: string | null;
+      project_id?: string | null;
+    };
     /**
      * CreateInviteRequest
      * @description POST /invitations request body.
@@ -7874,6 +8152,13 @@ export interface components {
        * @default null
        */
       terms: string | null;
+    };
+    /** CreateWarehouseRequest */
+    CreateWarehouseRequest: {
+      /** Format: uuid */
+      company_id: string;
+      name: string;
+      address?: string | null;
     };
     /**
      * CreateWorkerRequest
@@ -8949,6 +9234,30 @@ export interface components {
        */
       tva_number: string | null;
     };
+    /** UpdateInventoryItemRequest */
+    UpdateInventoryItemRequest: {
+      name?: string;
+      category?:
+        | (
+            | "power_tool"
+            | "hand_tool"
+            | "measuring"
+            | "access"
+            | "safety"
+            | "machine"
+            | "other"
+          )
+        | null;
+      reference?: string | null;
+      description?: string | null;
+      quantity?: number;
+      /** @enum {string} */
+      condition?: "working" | "damaged";
+      /** @enum {string} */
+      location_type?: "warehouse" | "site";
+      warehouse_id?: string | null;
+      project_id?: string | null;
+    };
     /**
      * UpdateInvoiceSchema
      * @description Request body for partially updating an invoice.
@@ -9282,6 +9591,11 @@ export interface components {
        * @default null
        */
       terms: string | null;
+    };
+    /** UpdateWarehouseRequest */
+    UpdateWarehouseRequest: {
+      name?: string;
+      address?: string | null;
     };
     /**
      * UpdateWorkerRequest

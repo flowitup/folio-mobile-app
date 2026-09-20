@@ -958,6 +958,98 @@
       "delete": "Supprimer"
     }
   },
+  "inventory": {
+    "title": "Inventaire du matériel",
+    "addItem": "Ajouter",
+    "createTitle": "Ajouter du matériel",
+    "editTitle": "Modifier le matériel",
+    "searchPlaceholder": "Chercher un outil, une référence…",
+    "loadError": "Impossible de charger l'inventaire.",
+    "empty": "Aucun matériel pour l'instant. Ajoutez votre premier outil ou machine.",
+    "noResults": "Rien ne correspond à ces filtres.",
+    "unknownLocation": "Emplacement inconnu",
+    "uncategorized": "Sans catégorie",
+    "units_one": "{{count}} unité",
+    "units_other": "{{count}} unités",
+    "deleteConfirm": "Supprimer « {{name}} » ?",
+    "deleteHint": "La ligne disparaît de l'inventaire. Cette action est irréversible.",
+    "summary": {
+      "total": "Total"
+    },
+    "condition": {
+      "working": "En état",
+      "damaged": "Hors service"
+    },
+    "location": {
+      "warehouse": "Dépôt",
+      "site": "Sur chantier"
+    },
+    "filters": {
+      "everywhere": "Partout",
+      "anyCondition": "Tout état"
+    },
+    "categories": {
+      "power_tool": "Outillage électroportatif",
+      "hand_tool": "Outillage à main",
+      "measuring": "Mesure",
+      "access": "Échelles & échafaudages",
+      "safety": "Sécurité / EPI",
+      "machine": "Machines",
+      "other": "Autre"
+    },
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "ex. Perceuse Bosch, visseuse Makita",
+      "category": "Catégorie",
+      "quantity": "Quantité",
+      "condition": "État",
+      "location": "Où se trouve-t-il ?",
+      "warehouse": "Dépôt",
+      "site": "Chantier",
+      "sitePlaceholder": "Choisir un chantier",
+      "reference": "Référence / numéro de série",
+      "referenceHint": "Facultatif — un numéro de série ou votre propre marquage",
+      "description": "Notes"
+    },
+    "validation": {
+      "nameRequired": "Donnez un nom au matériel.",
+      "quantityInvalid": "La quantité doit être un nombre entier, 0 ou plus.",
+      "warehouseRequired": "Choisissez un dépôt.",
+      "siteRequired": "Choisissez un chantier.",
+      "noWarehouseYet": "Aucun dépôt pour l'instant — créez-en un depuis « Dépôts » sur l'écran de l'inventaire, ou laissez le matériel sur un chantier.",
+      "warehouseNameRequired": "Donnez un nom au dépôt."
+    },
+    "actions": {
+      "create": "Ajouter à l'inventaire"
+    },
+    "toast": {
+      "created": "Matériel ajouté.",
+      "deleted": "Matériel retiré.",
+      "warehouseCreated": "Dépôt ajouté.",
+      "warehouseDeleted": "Dépôt supprimé."
+    },
+    "warehouses": {
+      "title": "Dépôts",
+      "count_one": "{{count}} dépôt",
+      "count_other": "{{count}} dépôts",
+      "add": "Ajouter un dépôt",
+      "createTitle": "Nouveau dépôt",
+      "editTitle": "Modifier le dépôt",
+      "empty": "Aucun dépôt pour l'instant. Ajoutez l'endroit où la société range ses outils.",
+      "noAddress": "Sans adresse",
+      "deleteConfirm": "Supprimer « {{name}} » ?",
+      "deleteBlocked": "Ce dépôt contient encore {{count}} unité(s). Déplacez-les ou retirez-les d'abord ; le serveur refuse de supprimer un dépôt utilisé.",
+      "fields": {
+        "name": "Nom",
+        "namePlaceholder": "ex. Dépôt principal",
+        "address": "Adresse",
+        "addressPlaceholder": "Rue, ville"
+      },
+      "actions": {
+        "create": "Ajouter le dépôt"
+      }
+    }
+  },
   "companies": {
     "masking": {
       "tooltip": "Visible uniquement par les administrateurs"
@@ -1443,7 +1535,8 @@
     "billingSub": "Devis · Factures",
     "librarySub": "{{products}} produits · {{suppliers}} fournisseurs",
     "projectSectionsSub": "Documents, photos, notes…",
-    "billingTitle": "Devis & factures"
+    "billingTitle": "Devis & factures",
+    "inventorySub": "{{units}} unités · {{damaged}} hors service"
   },
   "expenses": {
     "add": "Ajouter",

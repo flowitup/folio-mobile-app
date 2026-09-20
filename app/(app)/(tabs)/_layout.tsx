@@ -16,6 +16,7 @@ import { useTokens } from "@/theme/tokens";
 const HIDDEN_ROUTES = [
   "billing",
   "library",
+  "inventory",
   "settings",
   "company",
   "projects/[id]",

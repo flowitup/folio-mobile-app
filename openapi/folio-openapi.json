@@ -787,6 +787,57 @@
         "title": "CreateCompanyRequest",
         "type": "object"
       },
+      "CreateInventoryItemRequest": {
+        "properties": {
+          "company_id": { "format": "uuid", "type": "string" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "category": {
+            "anyOf": [
+              {
+                "enum": [
+                  "power_tool",
+                  "hand_tool",
+                  "measuring",
+                  "access",
+                  "safety",
+                  "machine",
+                  "other"
+                ],
+                "type": "string"
+              },
+              { "type": "null" }
+            ]
+          },
+          "reference": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }]
+          },
+          "quantity": { "type": "integer", "minimum": 0 },
+          "condition": { "enum": ["working", "damaged"], "type": "string" },
+          "location_type": { "enum": ["warehouse", "site"], "type": "string" },
+          "warehouse_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ]
+          },
+          "project_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": [
+          "company_id",
+          "name",
+          "quantity",
+          "condition",
+          "location_type"
+        ],
+        "title": "CreateInventoryItemRequest",
+        "type": "object"
+      },
       "CreateInviteRequest": {
         "description": "POST /invitations request body.",
         "properties": {
@@ -1123,6 +1174,16 @@
         },
         "required": ["kind", "name"],
         "title": "CreateTemplateRequest",
+        "type": "object"
+      },
+      "CreateWarehouseRequest": {
+        "properties": {
+          "company_id": { "format": "uuid", "type": "string" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "address": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+        },
+        "required": ["company_id", "name"],
+        "title": "CreateWarehouseRequest",
         "type": "object"
       },
       "CreateWorkerRequest": {
@@ -2650,6 +2711,50 @@
         "title": "UpdateCompanyRequest",
         "type": "object"
       },
+      "UpdateInventoryItemRequest": {
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "category": {
+            "anyOf": [
+              {
+                "enum": [
+                  "power_tool",
+                  "hand_tool",
+                  "measuring",
+                  "access",
+                  "safety",
+                  "machine",
+                  "other"
+                ],
+                "type": "string"
+              },
+              { "type": "null" }
+            ]
+          },
+          "reference": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }]
+          },
+          "quantity": { "type": "integer", "minimum": 0 },
+          "condition": { "enum": ["working", "damaged"], "type": "string" },
+          "location_type": { "enum": ["warehouse", "site"], "type": "string" },
+          "warehouse_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ]
+          },
+          "project_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": [],
+        "title": "UpdateInventoryItemRequest",
+        "type": "object"
+      },
       "UpdateInvoiceSchema": {
         "description": "Request body for partially updating an invoice.\n\npayment_method_id, refunds_invoice_id, service_month, settled_via,\napplied_to_invoice_id, and worker_id use exclude_unset semantics:\n  - field absent  \u2192 do not touch that field\n  - field = null  \u2192 clear the field\n  - field = value \u2192 set to that value\nMixed-sign unit_price is allowed for materials_services and return types.",
         "properties": {
@@ -3085,6 +3190,15 @@
           }
         },
         "title": "UpdateTemplateRequest",
+        "type": "object"
+      },
+      "UpdateWarehouseRequest": {
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "address": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+        },
+        "required": [],
+        "title": "UpdateWarehouseRequest",
         "type": "object"
       },
       "UpdateWorkerRequest": {
@@ -4821,6 +4935,185 @@
         "security": [{ "bearerAuth": [] }],
         "summary": "Feature flags of this deployment",
         "tags": ["features"]
+      }
+    },
+    "/api/v1/inventory/items": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "company_id",
+            "required": false,
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "in": "query",
+            "name": "location_type",
+            "required": false,
+            "schema": { "enum": ["warehouse", "site"], "type": "string" }
+          },
+          {
+            "in": "query",
+            "name": "warehouse_id",
+            "required": false,
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": { "format": "uuid", "type": "string" }
+          },
+          {
+            "in": "query",
+            "name": "condition",
+            "required": false,
+            "schema": { "enum": ["working", "damaged"], "type": "string" }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["inventory"]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInventoryItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "201": { "description": "Created" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["inventory"]
+      }
+    },
+    "/api/v1/inventory/items/{item_id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": { "204": { "description": "Deleted" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["inventory"]
+      },
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["inventory"]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInventoryItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["inventory"]
+      }
+    },
+    "/api/v1/inventory/warehouses": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "company_id",
+            "required": false,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["inventory"]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWarehouseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "201": { "description": "Created" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["inventory"]
+      }
+    },
+    "/api/v1/inventory/warehouses/{warehouse_id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "warehouse_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": { "204": { "description": "Deleted" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["inventory"]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "warehouse_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWarehouseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["inventory"]
       }
     },
     "/api/v1/invitations": {

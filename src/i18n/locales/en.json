@@ -958,6 +958,98 @@
       "delete": "Delete"
     }
   },
+  "inventory": {
+    "title": "Equipment inventory",
+    "addItem": "Add item",
+    "createTitle": "Add equipment",
+    "editTitle": "Edit equipment",
+    "searchPlaceholder": "Search tools, references…",
+    "loadError": "Could not load the inventory.",
+    "empty": "No equipment yet. Add your first tool or machine.",
+    "noResults": "Nothing matches these filters.",
+    "unknownLocation": "Unknown location",
+    "uncategorized": "Uncategorized",
+    "units_one": "{{count}} unit",
+    "units_other": "{{count}} units",
+    "deleteConfirm": "Delete “{{name}}”?",
+    "deleteHint": "The row disappears from the inventory. This cannot be undone.",
+    "summary": {
+      "total": "Total"
+    },
+    "condition": {
+      "working": "Working",
+      "damaged": "Damaged"
+    },
+    "location": {
+      "warehouse": "Warehouse",
+      "site": "On site"
+    },
+    "filters": {
+      "everywhere": "Everywhere",
+      "anyCondition": "Any condition"
+    },
+    "categories": {
+      "power_tool": "Power tools",
+      "hand_tool": "Hand tools",
+      "measuring": "Measuring",
+      "access": "Ladders & scaffolding",
+      "safety": "Safety gear",
+      "machine": "Machines",
+      "other": "Other"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Bosch drill, Makita screwdriver",
+      "category": "Category",
+      "quantity": "Quantity",
+      "condition": "Condition",
+      "location": "Where is it?",
+      "warehouse": "Warehouse",
+      "site": "Site",
+      "sitePlaceholder": "Pick a site",
+      "reference": "Reference / serial number",
+      "referenceHint": "Optional — a serial number or your own tag",
+      "description": "Notes"
+    },
+    "validation": {
+      "nameRequired": "Give the equipment a name.",
+      "quantityInvalid": "Quantity must be a whole number, 0 or more.",
+      "warehouseRequired": "Pick a warehouse.",
+      "siteRequired": "Pick a site.",
+      "noWarehouseYet": "No warehouse yet — create one from “Warehouses” on the inventory screen, or keep the equipment on a site.",
+      "warehouseNameRequired": "Give the warehouse a name."
+    },
+    "actions": {
+      "create": "Add to inventory"
+    },
+    "toast": {
+      "created": "Equipment added.",
+      "deleted": "Equipment removed.",
+      "warehouseCreated": "Warehouse added.",
+      "warehouseDeleted": "Warehouse deleted."
+    },
+    "warehouses": {
+      "title": "Warehouses",
+      "count_one": "{{count}} warehouse",
+      "count_other": "{{count}} warehouses",
+      "add": "Add warehouse",
+      "createTitle": "New warehouse",
+      "editTitle": "Edit warehouse",
+      "empty": "No warehouse yet. Add the place where the company keeps its tools.",
+      "noAddress": "No address",
+      "deleteConfirm": "Delete “{{name}}”?",
+      "deleteBlocked": "This warehouse still holds {{count}} unit(s). Move or remove them first; the server refuses to delete a warehouse in use.",
+      "fields": {
+        "name": "Name",
+        "namePlaceholder": "e.g. Main warehouse",
+        "address": "Address",
+        "addressPlaceholder": "Street, city"
+      },
+      "actions": {
+        "create": "Add warehouse"
+      }
+    }
+  },
   "companies": {
     "masking": {
       "tooltip": "Visible to admins only"
@@ -1443,7 +1535,8 @@
     "billingSub": "Quotes · Invoices",
     "librarySub": "{{products}} products · {{suppliers}} suppliers",
     "projectSectionsSub": "Documents, photos, notes…",
-    "billingTitle": "Quotes & invoices"
+    "billingTitle": "Quotes & invoices",
+    "inventorySub": "{{units}} units · {{damaged}} damaged"
   },
   "expenses": {
     "add": "Add",
