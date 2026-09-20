@@ -1036,6 +1036,7 @@
       "createTitle": "New warehouse",
       "editTitle": "Edit warehouse",
       "empty": "No warehouse yet. Add the place where the company keeps its tools.",
+      "loadError": "Could not load the warehouses.",
       "noAddress": "No address",
       "deleteConfirm": "Delete “{{name}}”?",
       "deleteBlocked": "This warehouse still holds {{count}} unit(s). Move or remove them first; the server refuses to delete a warehouse in use.",

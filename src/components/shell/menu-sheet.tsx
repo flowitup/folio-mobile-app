@@ -118,7 +118,8 @@ export function MenuSheet() {
     page: 1,
   });
   const suppliers = useSuppliers(companyId);
-  const inventory = useInventoryItems(companyId);
+  // Only fetched while the Menu is open: the count feeds a subtitle, not the shell.
+  const inventory = useInventoryItems(companyId, { enabled: sheet === "menu" });
 
   const go = (path: string) => {
     closeSheet();

@@ -2,11 +2,15 @@ import type {
   InventoryItem,
   Warehouse,
 } from "@/features/inventory/inventory-types";
+import i18n from "@/i18n";
 import {
+  defaultSiteId,
   filterInventoryItems,
   groupInventoryByLocation,
+  localizeInventoryCategory,
   parseQuantity,
   summarizeInventory,
+  unitsByWarehouse,
 } from "@/lib/inventory/inventory-helpers";
 
 const WAREHOUSE: Warehouse = {
@@ -180,5 +184,48 @@ describe("parseQuantity", () => {
     expect(parseQuantity("-2")).toBeNull();
     expect(parseQuantity("+2")).toBeNull();
     expect(parseQuantity("abc")).toBeNull();
+  });
+});
+
+describe("unitsByWarehouse", () => {
+  it("sums whole units per warehouse the same way the screen tiles do", () => {
+    const units = unitsByWarehouse([
+      ...ITEMS,
+      item({ id: "e", quantity: 2.5, warehouse_id: "w2" }),
+      item({ id: "f", quantity: -1, warehouse_id: "w2" }),
+    ]);
+    expect(units.get("w1")).toBe(4);
+    expect(units.get("w2")).toBe(2);
+    expect(units.has("p1")).toBe(false);
+  });
+});
+
+describe("defaultSiteId", () => {
+  const sites = [
+    { id: "p1", name: "A" },
+    { id: "p2", name: "B" },
+  ];
+
+  it("keeps the preferred project only when it is one of the sites offered", () => {
+    expect(defaultSiteId("p2", sites)).toBe("p2");
+    expect(defaultSiteId("p-other-company", sites)).toBe("p1");
+    expect(defaultSiteId(null, sites)).toBe("p1");
+    expect(defaultSiteId("p1", [])).toBeNull();
+  });
+});
+
+describe("localizeInventoryCategory", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("en");
+  });
+
+  it("labels known slugs, names the absence, and passes unknown values through", () => {
+    expect(localizeInventoryCategory(i18n.t, "power_tool")).toBe(
+      i18n.t("inventory.categories.power_tool"),
+    );
+    expect(localizeInventoryCategory(i18n.t, null)).toBe(
+      i18n.t("inventory.uncategorized"),
+    );
+    expect(localizeInventoryCategory(i18n.t, "legacy")).toBe("legacy");
   });
 });

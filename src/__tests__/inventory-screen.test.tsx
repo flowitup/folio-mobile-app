@@ -1,3 +1,4 @@
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import i18n from "@/i18n";
@@ -8,6 +9,7 @@ import {
 } from "./helpers/release-qa-fixtures";
 
 import InventoryScreen from "../../app/(app)/(tabs)/inventory/index";
+import WarehousesScreen from "../../app/(app)/(tabs)/inventory/warehouses";
 import { MenuSheet } from "@/components/shell/menu-sheet";
 import type {
   InventoryItem,
@@ -110,14 +112,24 @@ jest.mock("@/features/projects/selected-project", () => ({
 }));
 
 const mockGet = jest.fn();
+const mockPost = jest.fn();
+const mockPatch = jest.fn();
 jest.mock("@/api/client", () => ({
-  api: { GET: (...args: unknown[]) => mockGet(...args) },
+  api: {
+    GET: (...args: unknown[]) => mockGet(...args),
+    POST: (...args: unknown[]) => mockPost(...args),
+    PATCH: (...args: unknown[]) => mockPatch(...args),
+  },
 }));
 
 beforeEach(async () => {
   await i18n.changeLanguage("en");
   mockPush.mockReset();
   mockGet.mockReset();
+  mockPost.mockReset();
+  mockPatch.mockReset();
+  mockPost.mockImplementation(async () => ok({ id: "new" }));
+  mockPatch.mockImplementation(async () => ok({ id: "drill" }));
   mockGet.mockImplementation(async (path: string) => {
     switch (path) {
       case "/api/v1/projects":
@@ -250,6 +262,129 @@ describe("inventory screen", () => {
 
     await fireEvent.press(screen.getByTestId("inventory-warehouses"));
     expect(mockPush).toHaveBeenCalledWith("/inventory/warehouses");
+  });
+});
+
+describe("inventory form", () => {
+  it("presents the sheet once its fresh instance is mounted, then posts a new row on this company's site", async () => {
+    const present = jest.spyOn(BottomSheetModal.prototype, "present");
+    await renderWithProviders(<InventoryScreen />);
+    await screen.findByTestId("inventory-item-drill");
+    expect(present).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByTestId("inventory-add"));
+    await waitFor(() => expect(present).toHaveBeenCalledTimes(1));
+    expect(screen.getByText(i18n.t("inventory.createTitle"))).toBeTruthy();
+
+    await fireEvent.changeText(screen.getByTestId("inventory-name"), "Máy cắt");
+    await fireEvent.changeText(screen.getByTestId("inventory-quantity"), "2");
+    await fireEvent.press(screen.getByTestId("inventory-location-type-site"));
+    await fireEvent.press(screen.getByTestId("inventory-submit"));
+
+    await waitFor(() =>
+      expect(mockPost).toHaveBeenCalledWith(
+        "/api/v1/inventory/items",
+        expect.objectContaining({
+          body: {
+            company_id: COMPANY_ID,
+            name: "Máy cắt",
+            category: null,
+            reference: null,
+            description: null,
+            quantity: 2,
+            condition: "working",
+            location_type: "site",
+            warehouse_id: null,
+            project_id: "p1",
+          },
+        }),
+      ),
+    );
+    present.mockRestore();
+  });
+
+  it("rejects a blank name and a non-integer quantity without calling the API", async () => {
+    await renderWithProviders(<InventoryScreen />);
+    await screen.findByTestId("inventory-item-drill");
+
+    await fireEvent.press(screen.getByTestId("inventory-add"));
+    await fireEvent.changeText(screen.getByTestId("inventory-quantity"), "1.5");
+    await fireEvent.press(screen.getByTestId("inventory-submit"));
+
+    expect(
+      screen.getByText(i18n.t("inventory.validation.nameRequired")),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(i18n.t("inventory.validation.quantityInvalid")),
+    ).toBeTruthy();
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("patches only what changed when a row is edited", async () => {
+    await renderWithProviders(<InventoryScreen />);
+    await fireEvent.press(await screen.findByTestId("inventory-item-drill"));
+    expect(screen.getByText(i18n.t("inventory.editTitle"))).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId("inventory-condition-damaged"));
+    await fireEvent.press(screen.getByTestId("inventory-submit"));
+
+    await waitFor(() =>
+      expect(mockPatch).toHaveBeenCalledWith(
+        "/api/v1/inventory/items/{item_id}",
+        expect.objectContaining({
+          params: { path: { item_id: "drill" } },
+          body: { condition: "damaged" },
+        }),
+      ),
+    );
+  });
+});
+
+describe("warehouses screen", () => {
+  it("lists each warehouse with its address and the units it holds", async () => {
+    await renderWithProviders(<WarehousesScreen />);
+
+    const row = await screen.findByTestId("warehouse-w1");
+    expect(row).toHaveTextContent(containing("Kho Bình Thạnh"));
+    expect(row).toHaveTextContent(containing("12 Nguyễn Hữu Cảnh"));
+    expect(screen.getByTestId("warehouse-w1-units")).toHaveTextContent(
+      i18n.t("inventory.units", { count: 3 }),
+    );
+  });
+
+  it("warns how many units a warehouse still holds before deleting it", async () => {
+    await renderWithProviders(<WarehousesScreen />);
+    await screen.findByTestId("warehouse-w1");
+
+    await fireEvent.press(screen.getByTestId("warehouse-delete-w1"));
+    expect(screen.getByTestId("confirm-dialog")).toHaveTextContent(
+      containing(i18n.t("inventory.warehouses.deleteBlocked", { count: 3 })),
+    );
+  });
+
+  it("shows an error state with a retry when the warehouses cannot be loaded", async () => {
+    mockGet.mockImplementation(async (path: string) => {
+      if (path === "/api/v1/inventory/warehouses")
+        return {
+          error: { error: "ServerError", message: "boom" },
+          response: { status: 500, statusText: "Server Error" },
+        };
+      if (path === "/api/v1/companies")
+        return ok({
+          items: [
+            {
+              company: { id: COMPANY_ID, legal_name: "Folio QA" },
+              access: { is_primary: true, attached_at: "x", role: "manager" },
+            },
+          ],
+        });
+      return ok({ items: [] });
+    });
+    await renderWithProviders(<WarehousesScreen />);
+
+    expect(await screen.findByTestId("error-state")).toHaveTextContent(
+      containing(i18n.t("inventory.warehouses.loadError")),
+    );
   });
 });
 

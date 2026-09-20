@@ -1036,6 +1036,7 @@
       "createTitle": "Kho mới",
       "editTitle": "Sửa kho",
       "empty": "Chưa có kho nào. Thêm nơi công ty cất giữ máy móc, dụng cụ.",
+      "loadError": "Không tải được danh sách kho.",
       "noAddress": "Chưa có địa chỉ",
       "deleteConfirm": "Xóa “{{name}}”?",
       "deleteBlocked": "Kho này vẫn còn {{count}} cái. Hãy chuyển hoặc xóa chúng trước; máy chủ sẽ từ chối xóa kho đang có đồ.",

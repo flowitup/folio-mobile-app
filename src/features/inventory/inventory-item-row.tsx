@@ -3,19 +3,9 @@ import { Pressable, Text, View } from "react-native";
 
 import { Badge } from "@/components/ui/primitives";
 import { RowChevron } from "@/components/ui/typography";
+import { localizeInventoryCategory } from "@/lib/inventory/inventory-helpers";
 
-import { isInventoryCategorySlug } from "./inventory-types";
 import type { InventoryItem } from "./inventory-types";
-
-/** Known slug → i18n label; null → "uncategorised"; unknown legacy value → raw. */
-export function localizeInventoryCategory(
-  t: (key: string) => string,
-  value: string | null | undefined,
-): string {
-  if (!value) return t("inventory.uncategorized");
-  if (isInventoryCategorySlug(value)) return t(`inventory.categories.${value}`);
-  return value;
-}
 
 type Props = {
   item: InventoryItem;

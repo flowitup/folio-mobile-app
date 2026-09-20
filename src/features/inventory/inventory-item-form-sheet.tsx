@@ -9,10 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { Eyebrow } from "@/components/ui/typography";
-import { parseQuantity } from "@/lib/inventory/inventory-helpers";
+import {
+  defaultSiteId,
+  parseQuantity,
+} from "@/lib/inventory/inventory-helpers";
 import type { SiteRef } from "@/lib/inventory/inventory-helpers";
 
-import { INVENTORY_CATEGORY_SLUGS } from "./inventory-types";
+import {
+  INVENTORY_CATEGORY_SLUGS,
+  isInventoryCategorySlug,
+} from "./inventory-types";
 import type {
   CreateInventoryItemPayload,
   InventoryCondition,
@@ -75,8 +81,10 @@ export const InventoryItemFormSheet = forwardRef<BottomSheetModal, Props>(
     const [warehouseId, setWarehouseId] = useState<string | null>(
       initial?.warehouse_id ?? warehouses[0]?.id ?? null,
     );
+    // A row being edited keeps its own site even if it is no longer listed; a new row only
+    // ever starts on a site of this company.
     const [projectId, setProjectId] = useState<string | null>(
-      initial?.project_id ?? defaultProjectId ?? sites[0]?.id ?? null,
+      initial?.project_id ?? defaultSiteId(defaultProjectId, sites),
     );
     const [reference, setReference] = useState(initial?.reference ?? "");
     const [description, setDescription] = useState(initial?.description ?? "");
@@ -95,7 +103,7 @@ export const InventoryItemFormSheet = forwardRef<BottomSheetModal, Props>(
       setErrors(next);
       if (Object.keys(next).length > 0 || parsedQuantity === null) return;
 
-      const categoryValue = category === "__none__" ? null : category;
+      const categoryValue = isInventoryCategorySlug(category) ? category : null;
       const payload: CreateInventoryItemPayload = {
         name: name.trim(),
         category: categoryValue,

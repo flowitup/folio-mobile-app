@@ -81,7 +81,7 @@ export type UpdateWarehousePayload = Partial<CreateWarehousePayload>;
 
 export interface CreateInventoryItemPayload {
   name: string;
-  category?: string | null;
+  category?: InventoryCategorySlug | null;
   reference?: string | null;
   description?: string | null;
   quantity: number;
