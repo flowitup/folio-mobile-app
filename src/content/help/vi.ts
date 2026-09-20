@@ -308,6 +308,26 @@ export const helpCatalogueVi: HelpCatalogue = [
     ],
   },
   {
+    id: "inventory",
+    title: "Kho thiết bị",
+    purpose:
+      "Toàn bộ máy móc, dụng cụ của công ty — máy khoan, máy vặn vít, thang — kèm số lượng, tình trạng còn dùng được hay đã hỏng, và đang ở đâu: một kho có địa chỉ, hoặc một công trường.",
+    steps: [
+      "Mở Menu → “Kho thiết bị”. Các ô phía trên đếm tổng số cái, số dùng được, số hỏng, số ở kho và số ở công trường.",
+      "Bấm “Kho hàng” để thêm những nơi công ty cất đồ, mỗi kho có tên và địa chỉ; kho vẫn còn đồ thì không xóa được.",
+      "Bấm “Thêm đồ”: tên — bắt buộc — loại, số lượng, dùng được hay hỏng, rồi vị trí: một kho hoặc một công trường của bạn. Mã / số sê-ri và ghi chú là tùy chọn.",
+      "Danh sách được gom theo vị trí, kho xếp trước. Dùng ô tìm kiếm, nút chọn “Mọi nơi / Ở kho / Ở công trường” và các thẻ tình trạng để lọc.",
+      "Bấm vào một dòng để sửa bất cứ gì — đánh dấu hỏng sau khi đồ bị hư, chuyển từ kho ra công trường, chỉnh lại số lượng.",
+      "Ngay trong biểu mẫu đó, “Xóa” sẽ gỡ dòng sau khi bạn xác nhận.",
+    ],
+    whoCanDoIt:
+      "Ai mở được Menu đều vào được kho thiết bị. Máy chủ quyết định có nhận thay đổi của bạn không và sẽ báo lại nếu không nhận.",
+    gotchas: [
+      "Một dòng là một lô đồ giống nhau, cùng một chỗ và cùng một tình trạng: ba máy khoan dùng được ở kho và một máy khoan hỏng ở công trường là hai dòng.",
+      "Các con số trên dòng Menu lấy từ công ty đầu tiên của bạn, có thể không phải công ty của công trình này.",
+    ],
+  },
+  {
     id: "chiffrage",
     title: "Báo giá vật tư",
     purpose:

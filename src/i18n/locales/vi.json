@@ -958,6 +958,98 @@
       "delete": "Xóa"
     }
   },
+  "inventory": {
+    "title": "Kho thiết bị",
+    "addItem": "Thêm đồ",
+    "createTitle": "Thêm thiết bị",
+    "editTitle": "Sửa thiết bị",
+    "searchPlaceholder": "Tìm máy, dụng cụ, mã số…",
+    "loadError": "Không tải được kho thiết bị.",
+    "empty": "Chưa có thiết bị nào. Thêm máy hoặc dụng cụ đầu tiên của bạn.",
+    "noResults": "Không có gì khớp với bộ lọc này.",
+    "unknownLocation": "Không rõ vị trí",
+    "uncategorized": "Chưa phân loại",
+    "units_one": "{{count}} cái",
+    "units_other": "{{count}} cái",
+    "deleteConfirm": "Xóa “{{name}}”?",
+    "deleteHint": "Dòng này sẽ biến mất khỏi kho. Không thể hoàn tác.",
+    "summary": {
+      "total": "Tổng"
+    },
+    "condition": {
+      "working": "Dùng được",
+      "damaged": "Hỏng"
+    },
+    "location": {
+      "warehouse": "Ở kho",
+      "site": "Ở công trường"
+    },
+    "filters": {
+      "everywhere": "Mọi nơi",
+      "anyCondition": "Mọi tình trạng"
+    },
+    "categories": {
+      "power_tool": "Máy cầm tay (khoan, vặn vít…)",
+      "hand_tool": "Dụng cụ tay",
+      "measuring": "Đo đạc",
+      "access": "Thang & giàn giáo",
+      "safety": "Bảo hộ lao động",
+      "machine": "Máy móc",
+      "other": "Khác"
+    },
+    "fields": {
+      "name": "Tên",
+      "namePlaceholder": "vd. Máy khoan Bosch, máy vặn vít Makita",
+      "category": "Loại",
+      "quantity": "Số lượng",
+      "condition": "Tình trạng",
+      "location": "Đồ đang ở đâu?",
+      "warehouse": "Kho",
+      "site": "Công trường",
+      "sitePlaceholder": "Chọn công trường",
+      "reference": "Mã / số sê-ri",
+      "referenceHint": "Không bắt buộc — số sê-ri hoặc mã đánh dấu riêng",
+      "description": "Ghi chú"
+    },
+    "validation": {
+      "nameRequired": "Hãy đặt tên cho thiết bị.",
+      "quantityInvalid": "Số lượng phải là số nguyên, từ 0 trở lên.",
+      "warehouseRequired": "Hãy chọn một kho.",
+      "siteRequired": "Hãy chọn một công trường.",
+      "noWarehouseYet": "Chưa có kho nào — tạo kho từ mục “Kho hàng” trên màn hình kho thiết bị, hoặc để đồ ở công trường.",
+      "warehouseNameRequired": "Hãy đặt tên cho kho."
+    },
+    "actions": {
+      "create": "Thêm vào kho"
+    },
+    "toast": {
+      "created": "Đã thêm thiết bị.",
+      "deleted": "Đã xóa thiết bị.",
+      "warehouseCreated": "Đã thêm kho.",
+      "warehouseDeleted": "Đã xóa kho."
+    },
+    "warehouses": {
+      "title": "Kho hàng",
+      "count_one": "{{count}} kho",
+      "count_other": "{{count}} kho",
+      "add": "Thêm kho",
+      "createTitle": "Kho mới",
+      "editTitle": "Sửa kho",
+      "empty": "Chưa có kho nào. Thêm nơi công ty cất giữ máy móc, dụng cụ.",
+      "noAddress": "Chưa có địa chỉ",
+      "deleteConfirm": "Xóa “{{name}}”?",
+      "deleteBlocked": "Kho này vẫn còn {{count}} cái. Hãy chuyển hoặc xóa chúng trước; máy chủ sẽ từ chối xóa kho đang có đồ.",
+      "fields": {
+        "name": "Tên kho",
+        "namePlaceholder": "vd. Kho chính",
+        "address": "Địa chỉ",
+        "addressPlaceholder": "Số nhà, đường, quận / thành phố"
+      },
+      "actions": {
+        "create": "Thêm kho"
+      }
+    }
+  },
   "companies": {
     "masking": {
       "tooltip": "Chỉ quản trị viên mới nhìn thấy"
@@ -1443,7 +1535,8 @@
     "billingSub": "Báo giá · Hóa đơn",
     "librarySub": "{{products}} sản phẩm · {{suppliers}} nhà cung cấp",
     "projectSectionsSub": "Tài liệu, ảnh, ghi chú…",
-    "billingTitle": "Báo giá & hóa đơn"
+    "billingTitle": "Báo giá & hóa đơn",
+    "inventorySub": "{{units}} cái · {{damaged}} hỏng"
   },
   "expenses": {
     "add": "Thêm",

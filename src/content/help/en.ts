@@ -309,6 +309,26 @@ export const helpCatalogueEn: HelpCatalogue = [
     ],
   },
   {
+    id: "inventory",
+    title: "The equipment inventory",
+    purpose:
+      "Every tool and machine the company owns — drills, screwdrivers, ladders — with how many there are, whether they work, and where they are: a warehouse with its address, or a site.",
+    steps: [
+      "Open Menu → “Equipment inventory”. The tiles at the top count the units in total, working, damaged, in a warehouse and on site.",
+      "Tap “Warehouses” to add the places the company keeps its tools, each with a name and an address; a warehouse still holding units cannot be deleted.",
+      "Tap “Add item”: name — required — category, quantity, working or damaged, then where it is: a warehouse or one of your sites. A reference or serial number and notes are optional.",
+      "The list is grouped by place, warehouses first. Use the search field, the “Everywhere / Warehouse / On site” switch and the condition chips to narrow it.",
+      "Tap a row to change anything about it — mark it damaged after it breaks, move it from the warehouse to a site, adjust the quantity.",
+      "From that same form, “Delete” removes the row after a confirmation.",
+    ],
+    whoCanDoIt:
+      "Everyone who can open the Menu reaches the inventory. The server decides whether your changes are accepted and tells you if they are not.",
+    gotchas: [
+      "One row is one batch of identical things in one place and one condition: three working drills at the warehouse and one broken drill on a site are two rows.",
+      "The counts on the Menu row come from your first company, which may not be the one this site belongs to.",
+    ],
+  },
+  {
     id: "chiffrage",
     title: "Pricing materials",
     purpose:
