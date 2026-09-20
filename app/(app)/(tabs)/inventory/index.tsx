@@ -1,6 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
@@ -47,6 +47,14 @@ import { useTokens } from "@/theme/tokens";
 
 type LocationFilter = InventoryLocationType | "all";
 type ConditionFilter = InventoryCondition | "all";
+
+/**
+ * One opening of the form sheet. The sheet is remounted (keyed) for every opening so its
+ * fields start from `item` — or blank — and it is presented from an effect, once that fresh
+ * instance is mounted: calling `present()` in the same handler that changes the key would
+ * open the instance React is about to unmount.
+ */
+type FormSession = { item: InventoryItem | null; nonce: number };
 
 function SummaryTile({
   label,
@@ -105,9 +113,12 @@ export default function InventoryScreen() {
   const [condition, setCondition] = useState<ConditionFilter>("all");
   const [search, setSearch] = useState("");
   const formSheet = useRef<BottomSheetModal>(null);
-  const [editing, setEditing] = useState<InventoryItem | null>(null);
-  const [formKey, setFormKey] = useState(0);
+  const [session, setSession] = useState<FormSession | null>(null);
   const [deleting, setDeleting] = useState<InventoryItem | null>(null);
+
+  useEffect(() => {
+    if (session) formSheet.current?.present();
+  }, [session]);
 
   // Sites are the company's projects; the address is what the crew recognises on a row.
   const sites = useMemo<SiteRef[]>(
@@ -138,17 +149,9 @@ export default function InventoryScreen() {
     [all, location, condition, search, warehouses.data, sites],
   );
 
-  function openCreate() {
-    setEditing(null);
-    setFormKey((k) => k + 1);
-    formSheet.current?.present();
-  }
-
-  function openEdit(item: InventoryItem) {
-    setEditing(item);
-    setFormKey((k) => k + 1);
-    formSheet.current?.present();
-  }
+  const openForm = (item: InventoryItem | null) =>
+    setSession((previous) => ({ item, nonce: (previous?.nonce ?? 0) + 1 }));
+  const editing = session?.item ?? null;
 
   function submit(
     payload: CreateInventoryItemPayload | UpdateInventoryItemPayload,
@@ -181,7 +184,7 @@ export default function InventoryScreen() {
             testID="inventory-add"
             label={`＋ ${t("inventory.addItem")}`}
             size="sm"
-            onPress={openCreate}
+            onPress={() => openForm(null)}
           />
         }
       />
@@ -201,6 +204,7 @@ export default function InventoryScreen() {
               setCompanyId(id);
               setLocation("all");
               setCondition("all");
+              setSearch("");
             }}
           />
         ) : null}
@@ -210,6 +214,13 @@ export default function InventoryScreen() {
             message={t("inventory.loadError")}
             retryLabel={t("common.retry")}
             onRetry={() => void items.refetch()}
+          />
+        ) : null}
+        {warehouses.isError ? (
+          <ErrorState
+            message={t("inventory.warehouses.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void warehouses.refetch()}
           />
         ) : null}
 
@@ -296,8 +307,14 @@ export default function InventoryScreen() {
                 onChange={setCondition}
                 options={[
                   { value: "all", label: t("inventory.filters.anyCondition") },
-                  { value: "working", label: t("inventory.condition.working") },
-                  { value: "damaged", label: t("inventory.condition.damaged") },
+                  {
+                    value: "working",
+                    label: t("inventory.condition.working"),
+                  },
+                  {
+                    value: "damaged",
+                    label: t("inventory.condition.damaged"),
+                  },
                 ]}
               />
             </View>
@@ -315,7 +332,7 @@ export default function InventoryScreen() {
                       testID="inventory-add-empty"
                       label={t("inventory.addItem")}
                       size="sm"
-                      onPress={openCreate}
+                      onPress={() => openForm(null)}
                     />
                   ) : undefined
                 }
@@ -357,7 +374,7 @@ export default function InventoryScreen() {
                       key={item.id}
                       item={item}
                       last={index === group.items.length - 1}
-                      onPress={() => openEdit(item)}
+                      onPress={() => openForm(item)}
                     />
                   ))}
                 </Card>
@@ -368,7 +385,7 @@ export default function InventoryScreen() {
       </ScrollView>
 
       <InventoryItemFormSheet
-        key={`${editing?.id ?? "create"}-${formKey}`}
+        key={`${editing?.id ?? "create"}-${session?.nonce ?? 0}`}
         ref={formSheet}
         warehouses={warehouses.data ?? []}
         sites={sites}

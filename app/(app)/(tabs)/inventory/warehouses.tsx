@@ -1,12 +1,17 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
-import { Card, EmptyState, ListRow } from "@/components/ui/primitives";
+import {
+  Card,
+  EmptyState,
+  ErrorState,
+  ListRow,
+} from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { useMyCompanies } from "@/features/companies/companies-api";
@@ -23,7 +28,11 @@ import type {
   Warehouse,
 } from "@/features/inventory/inventory-types";
 import { WarehouseFormSheet } from "@/features/inventory/warehouse-form-sheet";
+import { unitsByWarehouse } from "@/lib/inventory/inventory-helpers";
 import { useTokens } from "@/theme/tokens";
+
+/** One opening of the form sheet; see the same type on the inventory screen. */
+type FormSession = { warehouse: Warehouse | null; nonce: number };
 
 /**
  * The company's warehouses: name and address, with how many units each one holds. A warehouse
@@ -43,33 +52,24 @@ export default function WarehousesScreen() {
   const remove = useDeleteWarehouse();
 
   const formSheet = useRef<BottomSheetModal>(null);
-  const [editing, setEditing] = useState<Warehouse | null>(null);
-  const [formKey, setFormKey] = useState(0);
+  const [session, setSession] = useState<FormSession | null>(null);
   const [deleting, setDeleting] = useState<Warehouse | null>(null);
 
-  // Units per warehouse, so a row says what deleting it would strand.
-  const unitsByWarehouse = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const item of items.data?.items ?? [])
-      if (item.location_type === "warehouse" && item.warehouse_id)
-        map.set(
-          item.warehouse_id,
-          (map.get(item.warehouse_id) ?? 0) + Math.max(0, item.quantity),
-        );
-    return map;
-  }, [items.data]);
+  useEffect(() => {
+    if (session) formSheet.current?.present();
+  }, [session]);
 
-  function openCreate() {
-    setEditing(null);
-    setFormKey((k) => k + 1);
-    formSheet.current?.present();
-  }
+  const units = useMemo(
+    () => unitsByWarehouse(items.data?.items ?? []),
+    [items.data],
+  );
 
-  function openEdit(warehouse: Warehouse) {
-    setEditing(warehouse);
-    setFormKey((k) => k + 1);
-    formSheet.current?.present();
-  }
+  const openForm = (warehouse: Warehouse | null) =>
+    setSession((previous) => ({
+      warehouse,
+      nonce: (previous?.nonce ?? 0) + 1,
+    }));
+  const editing = session?.warehouse ?? null;
 
   function submit(payload: CreateWarehousePayload | UpdateWarehousePayload) {
     const done = { onSuccess: () => formSheet.current?.dismiss() };
@@ -78,7 +78,7 @@ export default function WarehousesScreen() {
     update.mutate({ id: editing.id, ...payload }, done);
   }
 
-  const deletingUnits = deleting ? (unitsByWarehouse.get(deleting.id) ?? 0) : 0;
+  const deletingUnits = deleting ? (units.get(deleting.id) ?? 0) : 0;
 
   return (
     <View className="flex-1 bg-paper">
@@ -90,7 +90,7 @@ export default function WarehousesScreen() {
             testID="warehouse-add"
             label={`＋ ${t("inventory.warehouses.add")}`}
             size="sm"
-            onPress={openCreate}
+            onPress={() => openForm(null)}
           />
         }
       />
@@ -109,6 +109,13 @@ export default function WarehousesScreen() {
         {warehouses.isPending && effectiveCompany ? (
           <ActivityIndicator className="my-8" />
         ) : null}
+        {warehouses.isError ? (
+          <ErrorState
+            message={t("inventory.warehouses.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void warehouses.refetch()}
+          />
+        ) : null}
         {warehouses.data && warehouses.data.length === 0 ? (
           <EmptyState
             message={t("inventory.warehouses.empty")}
@@ -117,7 +124,7 @@ export default function WarehousesScreen() {
                 testID="warehouse-add-empty"
                 label={t("inventory.warehouses.add")}
                 size="sm"
-                onPress={openCreate}
+                onPress={() => openForm(null)}
               />
             }
           />
@@ -140,9 +147,12 @@ export default function WarehousesScreen() {
                 }
                 right={
                   <View className="flex-row items-center gap-2">
-                    <Text className="font-mono text-[12px] text-muted">
+                    <Text
+                      testID={`warehouse-${warehouse.id}-units`}
+                      className="font-mono text-[12px] text-muted"
+                    >
                       {t("inventory.units", {
-                        count: unitsByWarehouse.get(warehouse.id) ?? 0,
+                        count: units.get(warehouse.id) ?? 0,
                       })}
                     </Text>
                     <Button
@@ -154,7 +164,7 @@ export default function WarehousesScreen() {
                     />
                   </View>
                 }
-                onPress={() => openEdit(warehouse)}
+                onPress={() => openForm(warehouse)}
                 chevron
               />
             ))}
@@ -163,7 +173,7 @@ export default function WarehousesScreen() {
       </ScrollView>
 
       <WarehouseFormSheet
-        key={`${editing?.id ?? "create"}-${formKey}`}
+        key={`${editing?.id ?? "create"}-${session?.nonce ?? 0}`}
         ref={formSheet}
         initial={editing ?? undefined}
         submitting={create.isPending || update.isPending}

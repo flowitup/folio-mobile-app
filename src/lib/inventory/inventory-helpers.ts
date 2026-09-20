@@ -1,9 +1,27 @@
+import type { TFunction } from "i18next";
+
+import { isInventoryCategorySlug } from "@/features/inventory/inventory-types";
 import type {
   InventoryCondition,
   InventoryItem,
   InventoryLocationType,
   Warehouse,
 } from "@/features/inventory/inventory-types";
+
+/** Known slug → i18n label; null → "uncategorised"; unknown legacy value → raw. */
+export function localizeInventoryCategory(
+  t: TFunction,
+  value: string | null | undefined,
+): string {
+  if (!value) return t("inventory.uncategorized");
+  if (isInventoryCategorySlug(value)) return t(`inventory.categories.${value}`);
+  return value;
+}
+
+/** Whole, non-negative units of a row — the one normalisation every roll-up uses. */
+function units(item: InventoryItem): number {
+  return Math.max(0, Math.floor(item.quantity));
+}
 
 /** What the list screen's controls narrow the inventory by. `all` leaves a dimension open. */
 export type InventoryFilters = {
@@ -60,7 +78,7 @@ export function summarizeInventory(
     onSite: 0,
   };
   for (const item of items) {
-    const quantity = Math.max(0, Math.floor(item.quantity));
+    const quantity = units(item);
     summary.quantity += quantity;
     if (item.condition === "damaged") summary.damaged += quantity;
     else summary.working += quantity;
@@ -124,7 +142,7 @@ export function groupInventoryByLocation(
       quantity: 0,
     };
     group.items.push(item);
-    group.quantity += Math.max(0, Math.floor(item.quantity));
+    group.quantity += units(item);
     groups.set(key, group);
   }
 
@@ -139,6 +157,34 @@ export function groupInventoryByLocation(
       (a, b) =>
         rank(a) - rank(b) || (a.title ?? "").localeCompare(b.title ?? ""),
     );
+}
+
+/** Units stored per warehouse id, so a warehouse row can say what deleting it would strand. */
+export function unitsByWarehouse(
+  items: readonly InventoryItem[],
+): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const item of items)
+    if (item.location_type === "warehouse" && item.warehouse_id)
+      map.set(
+        item.warehouse_id,
+        (map.get(item.warehouse_id) ?? 0) + units(item),
+      );
+  return map;
+}
+
+/**
+ * The site a new row lands on by default: the shell's selected project when it is one of the
+ * sites offered, else the first site. The selected project may belong to another company than
+ * the inventory being edited, and a row must never point at a project outside its company.
+ */
+export function defaultSiteId(
+  preferred: string | null | undefined,
+  sites: readonly SiteRef[],
+): string | null {
+  if (preferred && sites.some((site) => site.id === preferred))
+    return preferred;
+  return sites[0]?.id ?? null;
 }
 
 /**

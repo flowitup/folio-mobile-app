@@ -19,26 +19,34 @@ import type {
  * Company-scoped like the product library: `company_id` travels as a query parameter on reads
  * and in the body on creates. The whole inventory of a company is fetched at once (a crew's
  * tool list stays in the hundreds) and the screens filter it locally, so the pickers answer
- * without a round trip.
+ * without a round trip. Requests are typed by the generated schema; responses are not (the
+ * spec leaves them untyped, like the library's), so `unwrapAs` asserts their shape.
  */
 export const inventoryKeys = {
   all: ["inventory"] as const,
   warehouses: (companyId: string) =>
     ["inventory", "warehouses", companyId] as const,
   items: (companyId: string) => ["inventory", "items", companyId] as const,
-  detail: (id: string) => ["inventory", "item", id] as const,
 };
 
 const base = "/api/v1/inventory" as const;
 
-export function useWarehouses(companyId: string | null) {
+type QueryOptions = {
+  /** Extra gate on top of "a company is known" (e.g. only while the Menu is open). */
+  enabled?: boolean;
+};
+
+export function useWarehouses(
+  companyId: string | null,
+  options: QueryOptions = {},
+) {
   return useQuery({
     queryKey: inventoryKeys.warehouses(companyId ?? ""),
-    enabled: Boolean(companyId),
+    enabled: Boolean(companyId) && options.enabled !== false,
     queryFn: async () =>
       unwrapAs<{ items: Warehouse[] }>(
         await api.GET(`${base}/warehouses`, {
-          params: { query: { company_id: companyId } } as never,
+          params: { query: { company_id: companyId! } },
         }),
       ).items,
   });
@@ -50,7 +58,7 @@ export function useCreateWarehouse(companyId: string | null) {
     mutationFn: async (body) =>
       unwrapAs<Warehouse>(
         await api.POST(`${base}/warehouses`, {
-          body: { company_id: companyId, ...body } as never,
+          body: { company_id: companyId!, ...body },
         }),
       ),
     invalidates: [inventoryKeys.all],
@@ -65,7 +73,7 @@ export function useUpdateWarehouse() {
       unwrapAs<Warehouse>(
         await api.PATCH(`${base}/warehouses/{warehouse_id}`, {
           params: { path: { warehouse_id: id } },
-          body: body as never,
+          body,
         }),
       ),
     invalidates: [inventoryKeys.all],
@@ -87,15 +95,22 @@ export function useDeleteWarehouse() {
   });
 }
 
-export function useInventoryItems(companyId: string | null) {
+/**
+ * No `placeholderData` here, unlike the paged library list: the key changes with the company,
+ * and keeping the previous company's rows on screen while the next one loads would show its
+ * totals under the wrong warehouses.
+ */
+export function useInventoryItems(
+  companyId: string | null,
+  options: QueryOptions = {},
+) {
   return useQuery({
     queryKey: inventoryKeys.items(companyId ?? ""),
-    enabled: Boolean(companyId),
-    placeholderData: (previous) => previous,
+    enabled: Boolean(companyId) && options.enabled !== false,
     queryFn: async () => {
       const body = unwrapAs<Partial<InventoryListResult>>(
         await api.GET(`${base}/items`, {
-          params: { query: { company_id: companyId } } as never,
+          params: { query: { company_id: companyId! } },
         }),
       );
       const items = Array.isArray(body.items) ? body.items : [];
@@ -113,7 +128,7 @@ export function useCreateInventoryItem(companyId: string | null) {
     mutationFn: async (body) =>
       unwrapAs<InventoryItem>(
         await api.POST(`${base}/items`, {
-          body: { company_id: companyId, ...body } as never,
+          body: { company_id: companyId!, ...body },
         }),
       ),
     invalidates: [inventoryKeys.all],
@@ -131,7 +146,7 @@ export function useUpdateInventoryItem() {
       unwrapAs<InventoryItem>(
         await api.PATCH(`${base}/items/{item_id}`, {
           params: { path: { item_id: id } },
-          body: body as never,
+          body,
         }),
       ),
     invalidates: [inventoryKeys.all],
