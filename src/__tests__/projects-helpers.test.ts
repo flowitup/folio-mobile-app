@@ -65,6 +65,11 @@ describe("customLabel", () => {
     ).toBe("");
   });
 
+  it("is empty when the label is the address cut to the name column", () => {
+    const address = "a".repeat(400);
+    expect(customLabel({ name: address.slice(0, 255), address })).toBe("");
+  });
+
   it("is the stored name when the user chose one", () => {
     expect(
       customLabel({ name: "Chantier Arcueil", address: "12 rue des Lilas" }),

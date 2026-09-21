@@ -48,12 +48,13 @@ type Props = {
 
 /**
  * The label the user chose, if any. A project labelled by its address (the
- * backend's fallback for a blank name stores name === address) has no custom
- * label, so its name field opens empty and stays address-labelled when saved
- * blank.
+ * backend's fallback for a blank name stores the address, cut to the 255-char
+ * name column) has no custom label, so its name field opens empty and stays
+ * address-labelled when saved blank.
  */
 export function customLabel(project: Pick<Project, "name" | "address">) {
-  return project.name === project.address ? "" : project.name;
+  const addressLabel = (project.address ?? "").slice(0, 255);
+  return addressLabel && project.name === addressLabel ? "" : project.name;
 }
 
 function toDraft(project?: Project) {
