@@ -1,7 +1,8 @@
 /**
  * Rendering + interaction tests for the three assistant content widgets (`AssistantCard`,
- * `AssistantChoice`, `AssistantJobStatus`) and their gating in `ChatMessageList`: they only
- * ever replace the plain bubble inside the assistant channel, for an assistant-authored message.
+ * `AssistantChoice`, `AssistantJobStatus`) and their gating in `ChatMessageList`: they replace
+ * the plain bubble for any assistant-authored message, whichever channel it landed in (company,
+ * project or admin — the assistant has no dedicated channel of its own).
  */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -18,7 +19,7 @@ import {
   AssistantChoice,
   AssistantJobStatus,
 } from "@/features/chat/assistant-cards";
-import type { ChatChannel, ChatMessage } from "@/features/chat/chat-api";
+import type { ChatMessage } from "@/features/chat/chat-api";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
 
 const mockPush = jest.fn();
@@ -29,6 +30,11 @@ jest.mock("expo-router", () => ({
 const mockSelectProjectOnNextShell = jest.fn();
 jest.mock("@/features/projects/selected-project", () => ({
   selectProjectOnNextShell: (id: string) => mockSelectProjectOnNextShell(id),
+}));
+
+let mockUserId: string | undefined = "u1";
+jest.mock("@/auth/auth-context", () => ({
+  useAuth: () => ({ user: mockUserId ? { id: mockUserId } : null }),
 }));
 
 // The thumbnail is a native Image loader with an async token fetch; irrelevant here.
@@ -74,29 +80,12 @@ async function renderWithClient(node: ReactElement) {
   );
 }
 
-const ASSISTANT_CHANNEL: ChatChannel = {
-  id: "ch-assistant",
-  key: "assistant:u1",
-  kind: "assistant",
-  last_message_at: null,
-  member_count: 1,
-  name: "Assistant",
-  unread_count: 0,
-};
-
-const COMPANY_CHANNEL: ChatChannel = {
-  ...ASSISTANT_CHANNEL,
-  id: "ch-company",
-  key: "company:c1",
-  kind: "company",
-};
-
 function assistantMessage(overrides: Partial<ChatMessage>): ChatMessage {
   return {
     id: "m1",
-    channel_key: "assistant:u1",
+    channel_key: "project:p1",
     sender_id: null,
-    sender_name: "Assistant",
+    sender_name: "Folio",
     body: "fallback text",
     attachment: null,
     created_at: "2026-09-21T10:00:00+00:00",
@@ -111,6 +100,10 @@ function assistantMessage(overrides: Partial<ChatMessage>): ChatMessage {
 
 beforeAll(async () => {
   await i18n.changeLanguage("en");
+});
+
+beforeEach(() => {
+  mockUserId = "u1";
 });
 
 beforeEach(() => {
@@ -206,6 +199,7 @@ describe("AssistantChoice", () => {
           ],
           answered: null,
           answeredPayload: null,
+          addressedTo: null,
         }}
       />,
     );
@@ -246,6 +240,7 @@ describe("AssistantChoice", () => {
           ],
           answered: "cancel",
           answeredPayload: null,
+          addressedTo: null,
         }}
       />,
     );
@@ -287,6 +282,7 @@ describe("AssistantChoice", () => {
           ],
           answered: null,
           answeredPayload: null,
+          addressedTo: null,
         }}
       />,
     );
@@ -311,6 +307,72 @@ describe("AssistantChoice", () => {
         },
       }),
     );
+  });
+
+  it("disables every option with a muted hint when addressed to someone else", async () => {
+    mockUserId = "u2";
+    const message = assistantMessage({
+      id: "choice-3",
+      content_type: "choice",
+    });
+
+    await renderWithClient(
+      <AssistantChoice
+        message={message}
+        payload={{
+          prompt: "Quel chantier ?",
+          options: [{ label: "Tour", action: "confirm", payload: {} }],
+          answered: null,
+          answeredPayload: null,
+          addressedTo: "u1",
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByTestId("assistant-choice-option-confirm").props
+        .accessibilityState.disabled,
+    ).toBe(true);
+    expect(screen.getByTestId("assistant-choice-not-addressed")).toBeTruthy();
+    expect(screen.queryByTestId("assistant-choice-answered")).toBeNull();
+
+    await fireEvent.press(
+      screen.getByTestId("assistant-choice-option-confirm"),
+    );
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("keeps the options tappable for the user the choice is addressed to", async () => {
+    mockUserId = "u1";
+    mockPost.mockResolvedValue({ data: { accepted: true } });
+    const message = assistantMessage({
+      id: "choice-4",
+      content_type: "choice",
+    });
+
+    await renderWithClient(
+      <AssistantChoice
+        message={message}
+        payload={{
+          prompt: "Quel chantier ?",
+          options: [{ label: "Tour", action: "confirm", payload: {} }],
+          answered: null,
+          answeredPayload: null,
+          addressedTo: "u1",
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByTestId("assistant-choice-option-confirm").props
+        .accessibilityState.disabled,
+    ).toBe(false);
+    expect(screen.queryByTestId("assistant-choice-not-addressed")).toBeNull();
+
+    await fireEvent.press(
+      screen.getByTestId("assistant-choice-option-confirm"),
+    );
+    await waitFor(() => expect(mockPost).toHaveBeenCalled());
   });
 });
 
@@ -350,20 +412,19 @@ describe("AssistantJobStatus", () => {
 });
 
 describe("ChatMessageList assistant gating", () => {
-  it("shows a plain text assistant message under the Assistant name", async () => {
+  it("shows a plain text assistant message under the Folio name, inside a project channel", async () => {
     await render(
       <ChatMessageList
         messages={[
           assistantMessage({ content_type: "text", body: "Bonjour !" }),
         ]}
-        channel={ASSISTANT_CHANNEL}
       />,
     );
-    expect(screen.getByText("Assistant")).toBeTruthy();
+    expect(screen.getByText("Folio")).toBeTruthy();
     expect(screen.getByText("Bonjour !")).toBeTruthy();
   });
 
-  it("renders the card widget for a card message inside the assistant channel", async () => {
+  it("renders the card widget for a card message from the assistant, inside a project channel", async () => {
     await render(
       <ChatMessageList
         messages={[
@@ -378,17 +439,18 @@ describe("ChatMessageList assistant gating", () => {
             },
           }),
         ]}
-        channel={ASSISTANT_CHANNEL}
       />,
     );
     expect(screen.getByTestId("assistant-card")).toBeTruthy();
   });
 
-  it("leaves a non-assistant channel's messages as plain bubbles even with a card-shaped payload", async () => {
+  it("leaves a user message as a plain bubble even with a card-shaped payload", async () => {
     await render(
       <ChatMessageList
         messages={[
           assistantMessage({
+            sender_type: "user",
+            sender_id: "u1",
             content_type: "card",
             payload: {
               card: { type: "material", id: "mat-1", title: "Ciment" },
@@ -396,10 +458,40 @@ describe("ChatMessageList assistant gating", () => {
             body: "Ciment",
           }),
         ]}
-        channel={COMPANY_CHANNEL}
       />,
     );
     expect(screen.queryByTestId("assistant-card")).toBeNull();
     expect(screen.getByText("Ciment")).toBeTruthy();
+  });
+
+  it('wires the "Hỏi tiếp" button under an assistant message to onReplyToAssistant', async () => {
+    const onReplyToAssistant = jest.fn();
+    const message = assistantMessage({ content_type: "text", body: "Salut" });
+    await render(
+      <ChatMessageList
+        messages={[message]}
+        onReplyToAssistant={onReplyToAssistant}
+      />,
+    );
+
+    await fireEvent.press(screen.getByTestId("chat-reply-assistant"));
+
+    expect(onReplyToAssistant).toHaveBeenCalledWith(message);
+  });
+
+  it("does not show the reply button under a user message", async () => {
+    await render(
+      <ChatMessageList
+        messages={[
+          assistantMessage({
+            sender_type: "user",
+            sender_id: "u1",
+            content_type: "text",
+            body: "Bonjour",
+          }),
+        ]}
+      />,
+    );
+    expect(screen.queryByTestId("chat-reply-assistant")).toBeNull();
   });
 });
