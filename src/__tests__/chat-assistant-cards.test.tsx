@@ -94,6 +94,7 @@ function assistantMessage(overrides: Partial<ChatMessage>): ChatMessage {
     content_type: "text",
     payload: null,
     reply_to_id: null,
+    mentions_assistant: false,
     ...overrides,
   };
 }

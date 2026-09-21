@@ -95,10 +95,10 @@ export function useSendChatMessage(channelKey: string) {
       return unwrapAs<ChatMessage>(
         await api.POST("/api/v1/chat/channels/{channel_key}/messages", {
           params: { path: { channel_key: channelKey } },
-          // `reply_to_id` is not on the generated `SendMessageBody` yet (hand-typed ahead of
-          // the OpenAPI regen); the generated `lang` is marked required-nullable (the spec
+          // Both `lang` and `reply_to_id` are generated as required-nullable (the spec
           // generator's reading of `Optional[str] = None`) though the wire contract accepts
-          // its absence, so both are only ever added to the object when the caller passes them.
+          // their absence, so both are only ever added to the object when the caller passes
+          // them, hence the cast below.
           body: {
             body: body.trim(),
             ...(lang ? { lang } : {}),

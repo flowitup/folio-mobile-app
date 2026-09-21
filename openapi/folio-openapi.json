@@ -244,6 +244,83 @@
         "title": "AssignMemberRequest",
         "type": "object"
       },
+      "AssistantAuditListResponse": {
+        "properties": {
+          "items": {
+            "items": { "$ref": "#/components/schemas/AssistantAuditRow" },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "title": "AssistantAuditListResponse",
+        "type": "object"
+      },
+      "AssistantAuditRow": {
+        "description": "One row of GET /assistant/audit \u2014 the web supervision page's list item.",
+        "properties": {
+          "channel_key": { "title": "Channel Key", "type": "string" },
+          "cost_usd": {
+            "anyOf": [
+              { "type": "number" },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "feature": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Feature"
+          },
+          "id": { "format": "uuid", "title": "Id", "type": "string" },
+          "intent": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Intent"
+          },
+          "outcome": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Outcome"
+          },
+          "refused_reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Refused Reason"
+          },
+          "trace_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Trace Id"
+          },
+          "user_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "title": "User Id"
+          },
+          "user_name": { "title": "User Name", "type": "string" }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "channel_key",
+          "user_id",
+          "user_name",
+          "intent",
+          "feature",
+          "outcome",
+          "refused_reason",
+          "cost_usd",
+          "trace_id"
+        ],
+        "title": "AssistantAuditRow",
+        "type": "object"
+      },
       "AttachUserToCompanyResponse": {
         "additionalProperties": false,
         "description": "Response of POST /companies/<id>/access/<user_id>.\n\nSame shape whether the call created the row or found the user already\nattached (idempotent) \u2014 the current state of the access row either way.",
@@ -1787,6 +1864,11 @@
           },
           "created_at": { "title": "Created At", "type": "string" },
           "id": { "title": "Id", "type": "string" },
+          "mentions_assistant": {
+            "default": false,
+            "title": "Mentions Assistant",
+            "type": "boolean"
+          },
           "mine": { "title": "Mine", "type": "boolean" },
           "payload": {
             "anyOf": [
@@ -2382,7 +2464,7 @@
       },
       "SendMessageBody": {
         "additionalProperties": false,
-        "description": "JSON body of POST /chat/channels/<key>/messages (text-only messages).\n\nMessages with an image or a voice note use multipart/form-data instead: ``body`` text\npart + ``file`` (+ optional ``lang`` form field).",
+        "description": "JSON body of POST /chat/channels/<key>/messages (text-only messages).\n\nMessages with an image or a voice note use multipart/form-data instead: ``body`` text\npart + ``file`` (+ optional ``lang``/``reply_to_id`` form fields).",
         "properties": {
           "body": {
             "maxLength": 4000,
@@ -2397,6 +2479,14 @@
             ],
             "default": null,
             "title": "Lang"
+          },
+          "reply_to_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Reply To Id"
           }
         },
         "required": ["body"],
@@ -3606,6 +3696,25 @@
         },
         "security": [{ "bearerAuth": [] }],
         "summary": "Answer an assistant choice message",
+        "tags": ["assistant"]
+      }
+    },
+    "/api/v1/assistant/audit": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantAuditListResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List the assistant's supervision log for a company (admin only)",
         "tags": ["assistant"]
       }
     },
