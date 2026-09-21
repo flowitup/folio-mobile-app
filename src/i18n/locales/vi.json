@@ -1354,7 +1354,9 @@
     "loadError": "Không tải được phương thức thanh toán. Vui lòng thử lại.",
     "noMethodsReadOnly": "Chưa có phương thức thanh toán nào được thiết lập.",
     "readOnlyNote": "Cách hoá đơn được thanh toán cho công ty này. Chỉ quản trị viên mới có thể thêm, đổi tên hoặc xoá phương thức.",
-    "inactive": "Ngừng dùng"
+    "inactive": "Ngừng dùng",
+    "deactivate": "Vô hiệu hoá",
+    "activate": "Kích hoạt lại"
   },
   "admin": {
     "bulkAdd": {

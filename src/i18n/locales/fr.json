@@ -1354,7 +1354,9 @@
     "loadError": "Impossible de charger les moyens de paiement. Veuillez réessayer.",
     "noMethodsReadOnly": "Aucun moyen de paiement n’a encore été configuré.",
     "readOnlyNote": "Comment les factures peuvent être payées pour cette société. Seul un administrateur peut ajouter, renommer ou supprimer un moyen.",
-    "inactive": "Inactif"
+    "inactive": "Inactif",
+    "deactivate": "Désactiver",
+    "activate": "Réactiver"
   },
   "admin": {
     "bulkAdd": {

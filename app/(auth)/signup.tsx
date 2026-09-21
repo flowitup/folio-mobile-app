@@ -115,7 +115,7 @@ export default function SignupScreen() {
                 autoComplete="tel"
                 keyboardType="phone-pad"
                 textContentType="telephoneNumber"
-                placeholder="06 12 34 56 78"
+                placeholder="6 12 34 56 78"
                 placeholderTextColor={tokens.muted2}
                 value={phoneInput}
                 onChangeText={setPhoneInput}

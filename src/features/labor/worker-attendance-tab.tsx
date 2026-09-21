@@ -1,6 +1,12 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
 import { can } from "@/auth/permissions";
@@ -420,7 +426,11 @@ export function WorkerAttendanceTab() {
             <EmptyState message={t("worker.empty")} />
           ) : null}
           {monthEntries.map((entry) => (
-            <EntryRow key={entry.id} entry={entry} />
+            <EntryRow
+              key={entry.id}
+              entry={entry}
+              onPress={() => setPickedDay(entry.date)}
+            />
           ))}
         </View>
       </ScrollView>
@@ -464,13 +474,22 @@ function Kpi({
   );
 }
 
-function EntryRow({ entry }: { entry: LaborEntry }) {
+/** A month row selects its day (the day card and roster above follow), like a calendar tap. */
+function EntryRow({
+  entry,
+  onPress,
+}: {
+  entry: LaborEntry;
+  onPress: () => void;
+}) {
   const { t } = useTranslation();
   const pending = entry.status === "pending";
   return (
-    <View
+    <Pressable
       testID={`worker-entry-${entry.id}`}
-      className="flex-row items-center justify-between rounded-[14px] border border-line bg-card px-3.5 py-3"
+      onPress={onPress}
+      accessibilityRole="button"
+      className="flex-row items-center justify-between rounded-[14px] border border-line bg-card px-3.5 py-3 active:opacity-70"
     >
       <View className="min-w-0 flex-1">
         <Text className="font-sans-medium text-[14px] text-ink">
@@ -490,6 +509,6 @@ function EntryRow({ entry }: { entry: LaborEntry }) {
         }
         tone={pending || entry.change_requested_at ? "warning" : "success"}
       />
-    </View>
+    </Pressable>
   );
 }

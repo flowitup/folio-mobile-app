@@ -32,7 +32,7 @@ import {
   computePendingRefunds,
   computeSpentTotal,
 } from "@/lib/dashboard/overview-metrics";
-import { toIsoDate } from "@/lib/format/date";
+import { parseIsoDate, toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { INK_BLOCK } from "@/theme/tokens";
 
@@ -58,8 +58,12 @@ function OverviewTabContent() {
   useRefetchOnFocus(invoices.refetch);
   useRefetchOnFocus(tasks.refetch);
 
-  const referenceDate = useMemo(() => new Date(), []);
-  const todayIso = useMemo(() => toIsoDate(referenceDate), [referenceDate]);
+  // Keyed on the calendar day so an app left open across midnight moves on with it.
+  const todayIso = toIsoDate(new Date());
+  const referenceDate = useMemo(
+    () => parseIsoDate(todayIso) ?? new Date(),
+    [todayIso],
+  );
   const todayEntries = useLaborEntries(projectId, todayIso, todayIso);
   useRefetchOnFocus(todayEntries.refetch);
   const workersOnSite = useMemo(

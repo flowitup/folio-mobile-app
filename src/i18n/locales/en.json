@@ -1354,7 +1354,9 @@
     "loadError": "Could not load payment methods. Please try again.",
     "noMethodsReadOnly": "No payment methods have been set up yet.",
     "readOnlyNote": "How invoices can be paid for this company. Only an administrator can add, rename or remove a method.",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "deactivate": "Deactivate",
+    "activate": "Activate"
   },
   "admin": {
     "bulkAdd": {
