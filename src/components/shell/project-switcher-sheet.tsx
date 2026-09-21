@@ -169,8 +169,8 @@ export function ProjectSwitcherSheet() {
         onSubmit={(values) =>
           createProject.mutate(
             {
-              name: values.name,
               address: values.address,
+              name: values.name || null,
               budget: values.budget ?? null,
               budget_source: values.budget_source ?? null,
               company_id: ownerCompanyId,

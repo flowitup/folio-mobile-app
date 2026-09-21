@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Card } from "@/components/ui/primitives";
 import {
+  customLabel,
   ProjectFormSheet,
   toUpdateBody,
 } from "@/features/projects/project-form-sheet";
@@ -63,8 +64,11 @@ export default function ProjectSettingsSection() {
   return (
     <ScrollView className="flex-1 bg-paper" contentContainerClassName="p-4">
       <Card className="mb-4">
-        <Field label={t("project.form.name")} value={data.name} />
         <Field label={t("project.form.address")} value={data.address ?? ""} />
+        <Field
+          label={t("project.form.nameOptional")}
+          value={customLabel(data)}
+        />
         {canViewBudget ? (
           <>
             <Field

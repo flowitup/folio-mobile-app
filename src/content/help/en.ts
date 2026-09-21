@@ -33,7 +33,7 @@ export const helpCatalogueEn: HelpCatalogue = [
       "One project is selected at a time and the whole app talks about that project. The tab bar holds four project screens; everything else lives behind Menu.",
     steps: [
       "Tap the project name at the top, then pick a site from the list — each row shows its remaining budget.",
-      "In that same panel, “+ New project” creates a site: name, address, budget and budget source.",
+      "In that same panel, “+ New project” creates a site: address, optional name, budget and budget source.",
       "As a manager the four tabs are Overview, Expenses, Labor and Planning. As a worker they are Attendance, Salary, Profile and Planning.",
       "Managers get a “Menu” item for everything else: quotes and invoices, the product library, company members, and the project sections — documents, photos, notes, salaries, chiffrage, analyses, project members and settings. Workers do not have it, so the topics below that start from the Menu are theirs to read rather than to follow.",
       "Tap your initials for Settings, the language picker (English, Français, Tiếng Việt) and “Sign out”.",

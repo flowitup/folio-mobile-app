@@ -1027,12 +1027,10 @@
         "description": "Request body for creating a project.",
         "properties": {
           "address": {
-            "anyOf": [
-              { "maxLength": 500, "type": "string" },
-              { "type": "null" }
-            ],
-            "default": null,
-            "title": "Address"
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Address",
+            "type": "string"
           },
           "budget": {
             "anyOf": [
@@ -1063,13 +1061,15 @@
             "title": "Company Id"
           },
           "name": {
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name",
-            "type": "string"
+            "anyOf": [
+              { "maxLength": 255, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Name"
           }
         },
-        "required": ["name"],
+        "required": ["address"],
         "title": "CreateProjectRequest",
         "type": "object"
       },
@@ -3058,7 +3058,7 @@
           },
           "name": {
             "anyOf": [
-              { "maxLength": 255, "minLength": 1, "type": "string" },
+              { "maxLength": 255, "type": "string" },
               { "type": "null" }
             ],
             "default": null,
