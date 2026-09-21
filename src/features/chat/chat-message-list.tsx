@@ -4,7 +4,16 @@ import { Text, View } from "react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Icon } from "@/components/ui/icon";
-import type { ChatMember, ChatMessage } from "@/features/chat/chat-api";
+import {
+  AssistantCard,
+  AssistantChoice,
+  AssistantJobStatus,
+} from "@/features/chat/assistant-cards";
+import type {
+  ChatChannel,
+  ChatMember,
+  ChatMessage,
+} from "@/features/chat/chat-api";
 import { ChatVoiceBubble } from "@/features/chat/chat-voice-note";
 import {
   dayDividerLabel,
@@ -12,14 +21,21 @@ import {
   showsSender,
   timeOf,
 } from "@/lib/chat/group-messages-by-day";
+import {
+  parseCardPayload,
+  parseChoicePayload,
+  parseJobStatusPayload,
+} from "@/lib/chat/assistant";
 import { isVoiceNote } from "@/lib/chat/voice-note";
 import { useTokens, workerColor } from "@/theme/tokens";
 
-/** Stable avatar color per sender, cycling the design palette. */
+/** Stable avatar color per sender, cycling the design palette; the assistant (no `sender_id`)
+ * always gets the same fixed accent color instead of a hash-derived one. */
 function senderColor(
-  senderId: string,
+  senderId: string | null,
   tokens: ReturnType<typeof useTokens>,
 ): string {
+  if (senderId === null) return tokens.accent;
   let hash = 0;
   for (const char of senderId) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
   return workerColor(tokens, null, hash);
@@ -70,10 +86,12 @@ function MessageRow({
   message,
   showSender,
   seenBy,
+  isAssistantChannel,
 }: {
   message: ChatMessage;
   showSender: boolean;
   seenBy: ChatMember[] | undefined;
+  isAssistantChannel: boolean;
 }) {
   const tokens = useTokens();
   const mine = message.mine;
@@ -82,6 +100,24 @@ function MessageRow({
     message.attachment !== null &&
     message.attachment !== undefined &&
     isVoiceNote(message.attachment.content_type);
+  // Rich assistant content replaces the plain text bubble; a malformed payload (should not
+  // happen against the real backend) falls back to the text bubble below instead of nothing.
+  const isAssistantMessage =
+    isAssistantChannel && message.sender_type === "assistant";
+  const cardPayload =
+    isAssistantMessage && message.content_type === "card"
+      ? parseCardPayload(message.payload)
+      : null;
+  const choicePayload =
+    isAssistantMessage && message.content_type === "choice"
+      ? parseChoicePayload(message.payload)
+      : null;
+  const jobPayload =
+    isAssistantMessage && message.content_type === "job_status"
+      ? parseJobStatusPayload(message.payload)
+      : null;
+  const showsBodyBubble =
+    message.body && !cardPayload && !choicePayload && !jobPayload;
   return (
     <View
       className={`flex-row items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
@@ -105,7 +141,7 @@ function MessageRow({
             {message.sender_name}
           </Text>
         ) : null}
-        {message.body ? (
+        {showsBodyBubble ? (
           <View
             className={`px-3 py-[9px] ${mine ? "bg-positive" : "border border-line bg-card"}`}
             style={{
@@ -122,6 +158,11 @@ function MessageRow({
             </Text>
           </View>
         ) : null}
+        {cardPayload ? <AssistantCard payload={cardPayload} /> : null}
+        {choicePayload ? (
+          <AssistantChoice message={message} payload={choicePayload} />
+        ) : null}
+        {jobPayload ? <AssistantJobStatus payload={jobPayload} /> : null}
         {voiceNote ? <ChatVoiceBubble message={message} mine={mine} /> : null}
         {message.attachment && !voiceNote ? (
           <View className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card">
@@ -162,12 +203,16 @@ function MessageRow({
 export function ChatMessageList({
   messages,
   seen,
+  channel,
 }: {
   messages: ChatMessage[];
   seen?: Map<string, ChatMember[]>;
+  /** The channel these messages belong to; assistant content types only render here. */
+  channel?: ChatChannel | null;
 }) {
   const { t } = useTranslation();
   const groups = groupMessagesByDay(messages);
+  const isAssistantChannel = channel?.kind === "assistant";
   return (
     <View className="gap-2.5" testID="chat-message-list">
       {groups.map((group) => {
@@ -185,6 +230,7 @@ export function ChatMessageList({
                 message={message}
                 showSender={showsSender(group.messages, index)}
                 seenBy={seen?.get(message.id)}
+                isAssistantChannel={isAssistantChannel}
               />
             ))}
           </View>

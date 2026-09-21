@@ -84,6 +84,14 @@
         "title": "AccountDeletionBlockedResponse",
         "type": "object"
       },
+      "ActionAcceptedResponse": {
+        "properties": {
+          "accepted": { "title": "Accepted", "type": "boolean" }
+        },
+        "required": ["accepted"],
+        "title": "ActionAcceptedResponse",
+        "type": "object"
+      },
       "AddMemberByPhoneRequest": {
         "additionalProperties": false,
         "description": "Request body for POST /companies/<id>/members.\n\n``person_id`` lets the caller resend the request after a 409\n(several un-linked candidates matched the phone) to pick one explicitly.",
@@ -1243,8 +1251,11 @@
       },
       "FeaturesResponse": {
         "description": "Feature flags of this deployment, as seen by the apps.",
-        "properties": { "chat": { "title": "Chat", "type": "boolean" } },
-        "required": ["chat"],
+        "properties": {
+          "assistant": { "title": "Assistant", "type": "boolean" },
+          "chat": { "title": "Chat", "type": "boolean" }
+        },
+        "required": ["chat", "assistant"],
         "title": "FeaturesResponse",
         "type": "object"
       },
@@ -1769,11 +1780,37 @@
             "title": "Body"
           },
           "channel_key": { "title": "Channel Key", "type": "string" },
+          "content_type": {
+            "enum": ["text", "photo", "card", "choice", "job_status"],
+            "title": "Content Type",
+            "type": "string"
+          },
           "created_at": { "title": "Created At", "type": "string" },
           "id": { "title": "Id", "type": "string" },
           "mine": { "title": "Mine", "type": "boolean" },
-          "sender_id": { "title": "Sender Id", "type": "string" },
-          "sender_name": { "title": "Sender Name", "type": "string" }
+          "payload": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Payload"
+          },
+          "reply_to_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "default": null,
+            "title": "Reply To Id"
+          },
+          "sender_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Sender Id"
+          },
+          "sender_name": { "title": "Sender Name", "type": "string" },
+          "sender_type": {
+            "enum": ["user", "assistant", "system"],
+            "title": "Sender Type",
+            "type": "string"
+          }
         },
         "required": [
           "id",
@@ -1783,7 +1820,9 @@
           "body",
           "attachment",
           "created_at",
-          "mine"
+          "mine",
+          "sender_type",
+          "content_type"
         ],
         "title": "MessageResponse",
         "type": "object"
@@ -2343,13 +2382,21 @@
       },
       "SendMessageBody": {
         "additionalProperties": false,
-        "description": "JSON body of POST /chat/channels/<key>/messages (text-only messages).\n\nMessages with an image or a voice note use multipart/form-data instead: ``body`` text\npart + ``file``.",
+        "description": "JSON body of POST /chat/channels/<key>/messages (text-only messages).\n\nMessages with an image or a voice note use multipart/form-data instead: ``body`` text\npart + ``file`` (+ optional ``lang`` form field).",
         "properties": {
           "body": {
             "maxLength": 4000,
             "minLength": 1,
             "title": "Body",
             "type": "string"
+          },
+          "lang": {
+            "anyOf": [
+              { "enum": ["vi", "fr", "en"], "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Lang"
           }
         },
         "required": ["body"],
@@ -2453,6 +2500,31 @@
         },
         "required": ["phone", "code", "display_name"],
         "title": "SignupVerifyBody",
+        "type": "object"
+      },
+      "SubmitActionBody": {
+        "additionalProperties": false,
+        "description": "JSON body of POST /assistant/actions (a tapped choice option).",
+        "properties": {
+          "action": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Action",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "reply_to_id": {
+            "format": "uuid",
+            "title": "Reply To Id",
+            "type": "string"
+          }
+        },
+        "required": ["action", "reply_to_id"],
+        "title": "SubmitActionBody",
         "type": "object"
       },
       "UnregisterPushDeviceRequest": {
@@ -3508,6 +3580,33 @@
         "security": [{ "bearerAuth": [] }],
         "summary": "Revoke one of the caller's API keys",
         "tags": ["api-keys"]
+      }
+    },
+    "/api/v1/assistant/actions": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SubmitActionBody" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionAcceptedResponse"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Answer an assistant choice message",
+        "tags": ["assistant"]
       }
     },
     "/api/v1/attachments/{attachment_id}": {
