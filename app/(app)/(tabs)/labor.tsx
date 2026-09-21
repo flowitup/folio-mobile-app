@@ -90,6 +90,8 @@ const SEGMENTS: Segment[] = ["calendar", "workers", "payments"];
 /** Attendance segment view (web ViewToggle): month grid + day card, or the flat day list. */
 type AttendanceView = "calendar" | "list";
 const ATTENDANCE_VIEWS: AttendanceView[] = ["calendar", "list"];
+/** Breathing room kept above the calendar when a day tap scrolls it to the top. */
+const CALENDAR_SCROLL_MARGIN = 8;
 
 /** Nhân công: month stepper, segmented Chấm công / Nhân công / Thanh toán, calendar + day card, worker and payment cards. */
 function LaborTabContent() {
@@ -109,6 +111,19 @@ function LaborTabContent() {
   const today = useMemo(() => toIsoDate(new Date()), []);
   const [selectedDay, setSelectedDay] = useState<string>(today);
   const selectedHoliday = frenchHolidayKeyForIso(selectedDay);
+  const scrollRef = useRef<ScrollView>(null);
+  // Content offset of the calendar block, refreshed by its onLayout.
+  const calendarTop = useRef(0);
+
+  // The day card sits under a six-row grid, below the fold on a phone: picking a day used to
+  // change a card the user could not see. Bring the grid to the top so the card follows it.
+  const selectDay = (iso: string) => {
+    setSelectedDay(iso);
+    scrollRef.current?.scrollTo({
+      y: Math.max(0, calendarTop.current - CALENDAR_SCROLL_MARGIN),
+      animated: true,
+    });
+  };
 
   // "Trả ›" on the overview lands on the payments segment.
   useEffect(() => {
@@ -288,6 +303,7 @@ function LaborTabContent() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        ref={scrollRef}
         testID="labor-scroll"
         className="flex-1"
         contentContainerClassName="px-4 pt-3.5"
@@ -355,13 +371,20 @@ function LaborTabContent() {
                 }}
               />
             ) : (
-              <AttendanceCalendar
-                month={month}
-                entries={entries.data ?? []}
-                colorOf={colorOf}
-                selected={selectedDay}
-                onSelectDay={setSelectedDay}
-              />
+              <View
+                testID="attendance-calendar-block"
+                onLayout={(event) => {
+                  calendarTop.current = event.nativeEvent.layout.y;
+                }}
+              >
+                <AttendanceCalendar
+                  month={month}
+                  entries={entries.data ?? []}
+                  colorOf={colorOf}
+                  selected={selectedDay}
+                  onSelectDay={selectDay}
+                />
+              </View>
             )}
             <LaborDayCard
               title={dayCardTitle(selectedDay, localeTag())}
