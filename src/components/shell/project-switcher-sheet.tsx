@@ -11,7 +11,7 @@ import { Eyebrow } from "@/components/ui/typography";
 import { useMyCompanies } from "@/features/companies/companies-api";
 import { ProjectFormSheet } from "@/features/projects/project-form-sheet";
 import type { ProjectFormSheetHandle } from "@/features/projects/project-form-sheet";
-import { useCreateProject } from "@/features/projects/projects-api";
+import { projectCan, useCreateProject } from "@/features/projects/projects-api";
 import type { Project } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatMoney } from "@/lib/format/money";
@@ -25,6 +25,7 @@ import { projectDisplayName } from "@/lib/projects/project-display-name";
 export function projectRowMeta(
   project: Project,
   t: (key: string, options?: Record<string, unknown>) => string,
+  canSeeSpend = true,
 ): {
   meta: string;
   remain: string;
@@ -37,7 +38,14 @@ export function projectRowMeta(
   const spent = project.spent_invoiced ?? project.spent ?? 0;
   // A null spend is the backend hiding money from this caller (no `project:view_budget` /
   // spend permission): show nothing rather than assert a zero.
-  const spendHidden = project.spent == null;
+  const spendHidden = !canSeeSpend || project.spent == null;
+  if (!canSeeSpend)
+    return {
+      meta: t("shell.membersCount", { count: project.user_count ?? 0 }),
+      remain: "",
+      tone: "muted",
+      pct: null,
+    };
   // The row title already shows the address (the project label), so the meta
   // line only carries the member count and budget state.
   const parts = [t("shell.membersCount", { count: project.user_count ?? 0 })];
@@ -121,7 +129,16 @@ export function ProjectSwitcherSheet() {
         <View className="overflow-hidden rounded-xl border border-line bg-card">
           <ScrollView style={{ maxHeight: 340 }} bounces={false}>
             {projects.map((project) => {
-              const row = projectRowMeta(project, t);
+              const row = projectRowMeta(
+                project,
+                t,
+                projectCan(project, "project:view_budget", user?.permissions) ||
+                  projectCan(
+                    project,
+                    "project:manage_invoices",
+                    user?.permissions,
+                  ),
+              );
               const current = project.id === projectId;
               return (
                 <Pressable

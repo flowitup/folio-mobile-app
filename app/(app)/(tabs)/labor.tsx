@@ -264,6 +264,11 @@ function LaborTabContent() {
     "project:manage_labor",
     user?.permissions,
   );
+  const canViewPay = projectCan(
+    project.data,
+    "project:view_pay",
+    user?.permissions,
+  );
 
   async function submitBulk(bulkEntries: BulkLogEntry[], acknowledge = false) {
     if (!acknowledge) {
@@ -360,6 +365,7 @@ function LaborTabContent() {
               days={summary.data?.total_days ?? 0}
               cost={summary.data?.total_cost ?? 0}
               unpaid={unpaid}
+              showPay={canViewPay}
             />
             <Segmented<AttendanceView>
               testID="attendance-view"

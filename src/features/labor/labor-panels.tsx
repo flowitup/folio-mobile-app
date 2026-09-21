@@ -31,10 +31,16 @@ export function shiftChip(entry: LaborEntry, t: (key: string) => string) {
   return { label: `+${entry.supplement_hours} h`, tone: "accent" as const };
 }
 
-type KpiProps = { days: number; cost: number; unpaid: number };
+type KpiProps = {
+  days: number;
+  cost: number;
+  unpaid: number;
+  /** Without `project:view_pay` only the day count is shown. */
+  showPay?: boolean;
+};
 
 /** Three KPI cards: Ngày công · Chi phí · Chưa trả (warning tint). */
-export function LaborKpis({ days, cost, unpaid }: KpiProps) {
+export function LaborKpis({ days, cost, unpaid, showPay = true }: KpiProps) {
   const { t } = useTranslation();
   return (
     <View className="flex-row gap-2">
@@ -51,32 +57,36 @@ export function LaborKpis({ days, cost, unpaid }: KpiProps) {
           {days}
         </Text>
       </Card>
-      <Card radius={14} elevated className="flex-1 p-3">
-        <Text className="font-sans text-[11.5px] text-muted">
-          {t("labor.kpi.cost")}
-        </Text>
-        <Text
-          className="mt-0.5 font-mono text-xl text-ink"
-          testID="labor-kpi-cost"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {formatMoney(cost)}
-        </Text>
-      </Card>
-      <View className="flex-1 rounded-[14px] border border-line bg-warning-tint p-3">
-        <Text className="font-sans text-[11.5px] text-warning">
-          {t("labor.kpi.unpaid")}
-        </Text>
-        <Text
-          className="mt-0.5 font-mono text-xl text-warning"
-          testID="labor-kpi-unpaid"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {formatMoney(unpaid)}
-        </Text>
-      </View>
+      {showPay ? (
+        <>
+          <Card radius={14} elevated className="flex-1 p-3">
+            <Text className="font-sans text-[11.5px] text-muted">
+              {t("labor.kpi.cost")}
+            </Text>
+            <Text
+              className="mt-0.5 font-mono text-xl text-ink"
+              testID="labor-kpi-cost"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {formatMoney(cost)}
+            </Text>
+          </Card>
+          <View className="flex-1 rounded-[14px] border border-line bg-warning-tint p-3">
+            <Text className="font-sans text-[11.5px] text-warning">
+              {t("labor.kpi.unpaid")}
+            </Text>
+            <Text
+              className="mt-0.5 font-mono text-xl text-warning"
+              testID="labor-kpi-unpaid"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {formatMoney(unpaid)}
+            </Text>
+          </View>
+        </>
+      ) : null}
     </View>
   );
 }

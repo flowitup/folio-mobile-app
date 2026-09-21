@@ -55,6 +55,9 @@ function OverviewTabContent() {
   // Recording an invoice — an expense or a release of funds — is `project:manage_invoices`
   // on the backend, so the two quick actions that open the invoice form need it too.
   const canManageInvoices = useProjectCan(projectId, "project:manage_invoices");
+  // A manager keeps the spend side without the budget; a plain member sees no money at all
+  // (the backend answers zeros, not nulls, so the permission is the only reliable signal).
+  const canSeeSpend = canViewBudget || canManageInvoices;
   useRefetchOnFocus(invoices.refetch);
   useRefetchOnFocus(tasks.refetch);
 
@@ -127,6 +130,7 @@ function OverviewTabContent() {
             onPayLabor={payLabor}
             canViewBudget={canViewBudget}
             canManageInvoices={canManageInvoices}
+            showMoney={canSeeSpend}
           />
         ) : (
           <View className="h-24 items-center justify-center">
@@ -156,24 +160,28 @@ function OverviewTabContent() {
       ) : null}
       {ready && project ? (
         <>
-          <OverviewDueTiles
-            laborUnpaid={project.labor_unpaid ?? 0}
-            pendingRefundCount={metrics.pendingCompany.count}
-            pendingRefundTotal={metrics.pendingCompany.total}
-            onPayLabor={payLabor}
-            onOpenRefunds={() =>
-              billing.allowed
-                ? router.push("/billing/refundable")
-                : router.navigate("/(app)/(tabs)/expenses")
-            }
-          />
-          <MonthSpendCard
-            buckets={metrics.buckets}
-            currentMonthKey={metrics.monthDelta.current.key}
-            totalCurrent={metrics.monthDelta.current.total}
-            totalDeltaPct={metrics.monthDelta.deltaPct}
-            onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
-          />
+          {canSeeSpend ? (
+            <>
+              <OverviewDueTiles
+                laborUnpaid={project.labor_unpaid ?? 0}
+                pendingRefundCount={metrics.pendingCompany.count}
+                pendingRefundTotal={metrics.pendingCompany.total}
+                onPayLabor={payLabor}
+                onOpenRefunds={() =>
+                  billing.allowed
+                    ? router.push("/billing/refundable")
+                    : router.navigate("/(app)/(tabs)/expenses")
+                }
+              />
+              <MonthSpendCard
+                buckets={metrics.buckets}
+                currentMonthKey={metrics.monthDelta.current.key}
+                totalCurrent={metrics.monthDelta.current.total}
+                totalDeltaPct={metrics.monthDelta.deltaPct}
+                onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+              />
+            </>
+          ) : null}
           <AgendaCard
             groups={agenda}
             onOpenPlanning={() => router.navigate("/(app)/(tabs)/planning")}

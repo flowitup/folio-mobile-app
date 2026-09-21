@@ -42,4 +42,10 @@ describe("projectRowMeta", () => {
     expect(meta.pct).toBe(50);
     expect(meta.tone).toBe("ink");
   });
+
+  it("shows no spend line to a caller without a money permission", () => {
+    const meta = projectRowMeta(row(1280), t, false);
+    expect(meta.remain).toBe("");
+    expect(meta.pct).toBeNull();
+  });
 });
