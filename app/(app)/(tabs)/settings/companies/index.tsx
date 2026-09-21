@@ -41,14 +41,14 @@ export default function MyCompaniesScreen() {
         title={t("companies.my.title")}
         back
         right={
-          superadmin ? (
-            <Button
-              testID="company-create"
-              label={`＋ ${t("companies.x.create")}`}
-              size="sm"
-              onPress={() => createSheet.current?.present()}
-            />
-          ) : null
+          // `POST /companies` is self-service and onboarding already offers it, so every
+          // signed-in user creates a company from here; only managing one stays gated.
+          <Button
+            testID="company-create"
+            label={`＋ ${t("companies.x.create")}`}
+            size="sm"
+            onPress={() => createSheet.current?.present()}
+          />
         }
       />
       <ScrollView contentContainerClassName="p-4 pb-12">

@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 
+import { useAuthConfig } from "@/auth/auth-config";
 import { useAuth } from "@/auth/auth-context";
 import { can } from "@/auth/permissions";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
@@ -125,7 +126,12 @@ export function WorkerAttendanceTab() {
   ).length;
   const selectedEntry = monthEntries.find((e) => e.date === selectedDay);
   // The backend refuses anything older than today − SELF_ATTENDANCE_MAX_BACKDATE_DAYS.
-  const dayInSelfLogWindow = canSelfLogDay(selectedDay, today);
+  const authConfig = useAuthConfig();
+  // The deployment publishes the window on /auth/config; the constant is the fallback.
+  const backdateDays =
+    authConfig.data?.self_attendance_max_backdate_days ??
+    SELF_ATTENDANCE_MAX_BACKDATE_DAYS;
+  const dayInSelfLogWindow = canSelfLogDay(selectedDay, today, backdateDays);
   const canLogSelected = dayInSelfLogWindow && !selectedEntry;
   const colorOf = () => tokens.positive;
 
@@ -361,7 +367,7 @@ export function WorkerAttendanceTab() {
                     className="mt-2 font-sans text-[12px] text-muted"
                   >
                     {t("worker.futureDay", {
-                      days: SELF_ATTENDANCE_MAX_BACKDATE_DAYS,
+                      days: backdateDays,
                     })}
                   </Text>
                 ) : null}

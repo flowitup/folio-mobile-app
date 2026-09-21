@@ -58,7 +58,7 @@ export function useCreateWarehouse(companyId: string | null) {
     mutationFn: async (body) =>
       unwrapAs<Warehouse>(
         await api.POST(`${base}/warehouses`, {
-          body: { company_id: companyId!, ...body },
+          body: { company_id: companyId!, ...body } as never,
         }),
       ),
     invalidates: [inventoryKeys.all],
@@ -73,7 +73,7 @@ export function useUpdateWarehouse() {
       unwrapAs<Warehouse>(
         await api.PATCH(`${base}/warehouses/{warehouse_id}`, {
           params: { path: { warehouse_id: id } },
-          body,
+          body: body as never,
         }),
       ),
     invalidates: [inventoryKeys.all],
@@ -128,7 +128,7 @@ export function useCreateInventoryItem(companyId: string | null) {
     mutationFn: async (body) =>
       unwrapAs<InventoryItem>(
         await api.POST(`${base}/items`, {
-          body: { company_id: companyId!, ...body },
+          body: { company_id: companyId!, ...body } as never,
         }),
       ),
     invalidates: [inventoryKeys.all],
@@ -146,7 +146,7 @@ export function useUpdateInventoryItem() {
       unwrapAs<InventoryItem>(
         await api.PATCH(`${base}/items/{item_id}`, {
           params: { path: { item_id: id } },
-          body,
+          body: body as never,
         }),
       ),
     invalidates: [inventoryKeys.all],

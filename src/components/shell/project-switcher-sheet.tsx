@@ -32,7 +32,9 @@ export function projectRowMeta(
   /** Share of the budget already spent; null when there is no budget to measure against. */
   pct: number | null;
 } {
-  const spent = project.spent ?? 0;
+  // Amount from the invoice ledger (`spent_invoiced`, what the overview sums); `spent` only
+  // tells whether money is visible to this caller at all.
+  const spent = project.spent_invoiced ?? project.spent ?? 0;
   // A null spend is the backend hiding money from this caller (no `project:view_budget` /
   // spend permission): show nothing rather than assert a zero.
   const spendHidden = project.spent == null;

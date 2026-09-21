@@ -430,10 +430,14 @@
       "AuthConfigResponse": {
         "description": "GET /auth/config \u2014 what this deployment offers, read by the apps before sign-in.",
         "properties": {
+          "self_attendance_max_backdate_days": {
+            "title": "Self Attendance Max Backdate Days",
+            "type": "integer"
+          },
           "session": { "title": "Session", "type": "string" },
           "signup": { "title": "Signup", "type": "boolean" }
         },
-        "required": ["session", "signup"],
+        "required": ["session", "signup", "self_attendance_max_backdate_days"],
         "title": "AuthConfigResponse",
         "type": "object"
       },
@@ -872,10 +876,10 @@
         "title": "CreateCompanyRequest",
         "type": "object"
       },
-      "CreateInventoryItemRequest": {
+      "CreateInventoryItemSchema": {
+        "additionalProperties": false,
+        "description": "Request body for POST /api/v1/inventory/items.",
         "properties": {
-          "company_id": { "format": "uuid", "type": "string" },
-          "name": { "type": "string", "minLength": 1, "maxLength": 200 },
           "category": {
             "anyOf": [
               {
@@ -891,26 +895,63 @@
                 "type": "string"
               },
               { "type": "null" }
-            ]
+            ],
+            "default": null,
+            "title": "Category"
           },
-          "reference": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+          "company_id": {
+            "format": "uuid",
+            "title": "Company Id",
+            "type": "string"
+          },
+          "condition": {
+            "enum": ["working", "damaged"],
+            "title": "Condition",
+            "type": "string"
+          },
           "description": {
-            "anyOf": [{ "type": "string" }, { "type": "null" }]
-          },
-          "quantity": { "type": "integer", "minimum": 0 },
-          "condition": { "enum": ["working", "damaged"], "type": "string" },
-          "location_type": { "enum": ["warehouse", "site"], "type": "string" },
-          "warehouse_id": {
             "anyOf": [
-              { "format": "uuid", "type": "string" },
+              { "maxLength": 2000, "type": "string" },
               { "type": "null" }
-            ]
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "location_type": {
+            "enum": ["warehouse", "site"],
+            "title": "Location Type",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           },
           "project_id": {
             "anyOf": [
               { "format": "uuid", "type": "string" },
               { "type": "null" }
-            ]
+            ],
+            "default": null,
+            "title": "Project Id"
+          },
+          "quantity": { "minimum": 0, "title": "Quantity", "type": "integer" },
+          "reference": {
+            "anyOf": [
+              { "maxLength": 120, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Reference"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Warehouse Id"
           }
         },
         "required": [
@@ -920,7 +961,7 @@
           "condition",
           "location_type"
         ],
-        "title": "CreateInventoryItemRequest",
+        "title": "CreateInventoryItemSchema",
         "type": "object"
       },
       "CreateInviteRequest": {
@@ -1261,14 +1302,32 @@
         "title": "CreateTemplateRequest",
         "type": "object"
       },
-      "CreateWarehouseRequest": {
+      "CreateWarehouseSchema": {
+        "additionalProperties": false,
+        "description": "Request body for POST /api/v1/inventory/warehouses.",
         "properties": {
-          "company_id": { "format": "uuid", "type": "string" },
-          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
-          "address": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+          "address": {
+            "anyOf": [
+              { "maxLength": 500, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Address"
+          },
+          "company_id": {
+            "format": "uuid",
+            "title": "Company Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
         },
         "required": ["company_id", "name"],
-        "title": "CreateWarehouseRequest",
+        "title": "CreateWarehouseSchema",
         "type": "object"
       },
       "CreateWorkerRequest": {
@@ -1324,6 +1383,29 @@
           }
         },
         "title": "CreateWorkerRequest",
+        "type": "object"
+      },
+      "DocumentUploaderSchema": {
+        "description": "One person who has a document in this project.",
+        "properties": {
+          "display_name": { "title": "Display Name", "type": "string" },
+          "user_id": { "format": "uuid", "title": "User Id", "type": "string" }
+        },
+        "required": ["user_id", "display_name"],
+        "title": "DocumentUploaderSchema",
+        "type": "object"
+      },
+      "DocumentUploadersResponse": {
+        "description": "GET /projects/<id>/documents/uploaders \u2014 the uploader filter's options.",
+        "properties": {
+          "items": {
+            "items": { "$ref": "#/components/schemas/DocumentUploaderSchema" },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "title": "DocumentUploadersResponse",
         "type": "object"
       },
       "FeaturesResponse": {
@@ -1910,7 +1992,7 @@
         "type": "object"
       },
       "MoveTaskSchema": {
-        "description": "Atomic drag-drop endpoint payload.",
+        "description": "Atomic drag-drop endpoint payload.\n\nThe neighbours describe the gap the card is dropped into, in the lane named\nby `status` \u2014 the same lane the card already sits in when it is only\nreordered. Sending neither appends the card to the end of that lane.",
         "properties": {
           "after_id": {
             "anyOf": [
@@ -1918,6 +2000,7 @@
               { "type": "null" }
             ],
             "default": null,
+            "description": "Task that ends up directly BELOW the moved one; null when dropped at the end.",
             "title": "After Id"
           },
           "before_id": {
@@ -1926,6 +2009,7 @@
               { "type": "null" }
             ],
             "default": null,
+            "description": "Task that ends up directly ABOVE the moved one; null when dropped at the top.",
             "title": "Before Id"
           },
           "status": {
@@ -2213,6 +2297,11 @@
           "spent_by_credits": {
             "default": 0,
             "title": "Spent By Credits",
+            "type": "number"
+          },
+          "spent_invoiced": {
+            "default": 0,
+            "title": "Spent Invoiced",
             "type": "number"
           },
           "spent_personal": {
@@ -2873,9 +2962,10 @@
         "title": "UpdateCompanyRequest",
         "type": "object"
       },
-      "UpdateInventoryItemRequest": {
+      "UpdateInventoryItemSchema": {
+        "additionalProperties": false,
+        "description": "Request body for PATCH /api/v1/inventory/items/<id>; absent key = unchanged, null = cleared.",
         "properties": {
-          "name": { "type": "string", "minLength": 1, "maxLength": 200 },
           "category": {
             "anyOf": [
               {
@@ -2891,30 +2981,73 @@
                 "type": "string"
               },
               { "type": "null" }
-            ]
+            ],
+            "default": null,
+            "title": "Category"
           },
-          "reference": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
-          "description": {
-            "anyOf": [{ "type": "string" }, { "type": "null" }]
-          },
-          "quantity": { "type": "integer", "minimum": 0 },
-          "condition": { "enum": ["working", "damaged"], "type": "string" },
-          "location_type": { "enum": ["warehouse", "site"], "type": "string" },
-          "warehouse_id": {
+          "condition": {
             "anyOf": [
-              { "format": "uuid", "type": "string" },
+              { "enum": ["working", "damaged"], "type": "string" },
               { "type": "null" }
-            ]
+            ],
+            "default": null,
+            "title": "Condition"
+          },
+          "description": {
+            "anyOf": [
+              { "maxLength": 2000, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "location_type": {
+            "anyOf": [
+              { "enum": ["warehouse", "site"], "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Location Type"
+          },
+          "name": {
+            "anyOf": [
+              { "maxLength": 200, "minLength": 1, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Name"
           },
           "project_id": {
             "anyOf": [
               { "format": "uuid", "type": "string" },
               { "type": "null" }
-            ]
+            ],
+            "default": null,
+            "title": "Project Id"
+          },
+          "quantity": {
+            "anyOf": [{ "minimum": 0, "type": "integer" }, { "type": "null" }],
+            "default": null,
+            "title": "Quantity"
+          },
+          "reference": {
+            "anyOf": [
+              { "maxLength": 120, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Reference"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Warehouse Id"
           }
         },
-        "required": [],
-        "title": "UpdateInventoryItemRequest",
+        "title": "UpdateInventoryItemSchema",
         "type": "object"
       },
       "UpdateInvoiceSchema": {
@@ -3354,13 +3487,28 @@
         "title": "UpdateTemplateRequest",
         "type": "object"
       },
-      "UpdateWarehouseRequest": {
+      "UpdateWarehouseSchema": {
+        "additionalProperties": false,
+        "description": "Request body for PATCH /api/v1/inventory/warehouses/<id>; absent key = unchanged, null = cleared.",
         "properties": {
-          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
-          "address": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+          "address": {
+            "anyOf": [
+              { "maxLength": 500, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Address"
+          },
+          "name": {
+            "anyOf": [
+              { "maxLength": 120, "minLength": 1, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Name"
+          }
         },
-        "required": [],
-        "title": "UpdateWarehouseRequest",
+        "title": "UpdateWarehouseSchema",
         "type": "object"
       },
       "UpdateWorkerRequest": {
@@ -5152,41 +5300,81 @@
             "in": "query",
             "name": "company_id",
             "required": false,
-            "schema": { "format": "uuid", "type": "string" }
+            "schema": {
+              "anyOf": [
+                { "format": "uuid", "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Company Id"
+            }
           },
           {
             "in": "query",
             "name": "location_type",
             "required": false,
-            "schema": { "enum": ["warehouse", "site"], "type": "string" }
+            "schema": {
+              "anyOf": [
+                { "enum": ["warehouse", "site"], "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Location Type"
+            }
           },
           {
             "in": "query",
             "name": "warehouse_id",
             "required": false,
-            "schema": { "format": "uuid", "type": "string" }
+            "schema": {
+              "anyOf": [
+                { "format": "uuid", "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Warehouse Id"
+            }
           },
           {
             "in": "query",
             "name": "project_id",
             "required": false,
-            "schema": { "format": "uuid", "type": "string" }
+            "schema": {
+              "anyOf": [
+                { "format": "uuid", "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Project Id"
+            }
           },
           {
             "in": "query",
             "name": "condition",
             "required": false,
-            "schema": { "enum": ["working", "damaged"], "type": "string" }
+            "schema": {
+              "anyOf": [
+                { "enum": ["working", "damaged"], "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Condition"
+            }
           },
           {
             "in": "query",
             "name": "q",
             "required": false,
-            "schema": { "type": "string" }
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "default": null,
+              "title": "Q"
+            }
           }
         ],
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
+        "summary": "List the company's equipment",
         "tags": ["inventory"]
       },
       "post": {
@@ -5194,14 +5382,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateInventoryItemRequest"
+                "$ref": "#/components/schemas/CreateInventoryItemSchema"
               }
             }
           },
           "required": true
         },
-        "responses": { "201": { "description": "Created" } },
+        "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
+        "summary": "Add equipment to the inventory",
         "tags": ["inventory"]
       }
     },
@@ -5215,8 +5404,9 @@
             "schema": { "format": "uuid", "type": "string" }
           }
         ],
-        "responses": { "204": { "description": "Deleted" } },
+        "responses": { "204": { "description": "No Content" } },
         "security": [{ "bearerAuth": [] }],
+        "summary": "Remove an inventory row",
         "tags": ["inventory"]
       },
       "get": {
@@ -5230,6 +5420,7 @@
         ],
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
+        "summary": "One inventory row",
         "tags": ["inventory"]
       },
       "patch": {
@@ -5245,7 +5436,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateInventoryItemRequest"
+                "$ref": "#/components/schemas/UpdateInventoryItemSchema"
               }
             }
           },
@@ -5253,6 +5444,7 @@
         },
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
+        "summary": "Edit an inventory row",
         "tags": ["inventory"]
       }
     },
@@ -5263,26 +5455,33 @@
             "in": "query",
             "name": "company_id",
             "required": false,
-            "schema": { "format": "uuid", "type": "string" }
+            "schema": {
+              "anyOf": [
+                { "format": "uuid", "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Company Id"
+            }
           }
         ],
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
+        "summary": "List the company's warehouses",
         "tags": ["inventory"]
       },
       "post": {
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateWarehouseRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateWarehouseSchema" }
             }
           },
           "required": true
         },
-        "responses": { "201": { "description": "Created" } },
+        "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
+        "summary": "Create a warehouse",
         "tags": ["inventory"]
       }
     },
@@ -5296,8 +5495,9 @@
             "schema": { "format": "uuid", "type": "string" }
           }
         ],
-        "responses": { "204": { "description": "Deleted" } },
+        "responses": { "204": { "description": "No Content" } },
         "security": [{ "bearerAuth": [] }],
+        "summary": "Delete an empty warehouse",
         "tags": ["inventory"]
       },
       "patch": {
@@ -5312,15 +5512,14 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateWarehouseRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdateWarehouseSchema" }
             }
           },
           "required": true
         },
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
+        "summary": "Edit a warehouse",
         "tags": ["inventory"]
       }
     },
@@ -6726,6 +6925,33 @@
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
         "summary": "List all tags used in a project's documents",
+        "tags": ["project_documents"]
+      }
+    },
+    "/api/v1/projects/{project_id}/documents/uploaders": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentUploadersResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List the distinct uploaders of a project's documents",
         "tags": ["project_documents"]
       }
     },

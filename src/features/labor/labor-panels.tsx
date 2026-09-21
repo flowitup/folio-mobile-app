@@ -146,6 +146,8 @@ export function LaborEntryRow({
 }
 
 type DayCardProps = {
+  /** Without `project:manage_labor` the card is read-only: no logging, no entry editing. */
+  canManage?: boolean;
   title: string;
   /** Secondary line under the title, e.g. the public-holiday name. */
   subtitle?: string | null;
@@ -167,6 +169,7 @@ export function LaborDayCard({
   onEntry,
   onLog,
   onDetails,
+  canManage = true,
 }: DayCardProps) {
   const { t } = useTranslation();
   const tokens = useTokens();
@@ -201,22 +204,24 @@ export function LaborDayCard({
             entry={entry}
             color={colorOf(entry.worker_id)}
             role={roleOf(entry.worker_id)}
-            onPress={onEntry}
+            onPress={canManage ? onEntry : () => undefined}
             testID={`day-entry-${entry.id}`}
           />
         ))}
       </View>
-      <Pressable
-        testID="day-log"
-        accessibilityRole="button"
-        onPress={onLog}
-        className="mt-3.5 h-11 flex-row items-center justify-center gap-2 rounded-xl bg-ink active:opacity-70"
-      >
-        <Icon name="check" size={15} color={tokens.onInk} />
-        <Text className="font-sans-semibold text-[14px] text-on-ink">
-          {t("labor.calendar.logDay")}
-        </Text>
-      </Pressable>
+      {canManage ? (
+        <Pressable
+          testID="day-log"
+          accessibilityRole="button"
+          onPress={onLog}
+          className="mt-3.5 h-11 flex-row items-center justify-center gap-2 rounded-xl bg-ink active:opacity-70"
+        >
+          <Icon name="check" size={15} color={tokens.onInk} />
+          <Text className="font-sans-semibold text-[14px] text-on-ink">
+            {t("labor.calendar.logDay")}
+          </Text>
+        </Pressable>
+      ) : null}
       <Pressable
         testID="day-details"
         accessibilityRole="button"
@@ -232,6 +237,8 @@ export function LaborDayCard({
 }
 
 type WorkersPanelProps = {
+  /** Without `project:manage_labor` the roster is read-only: no adding, no worker actions. */
+  canManage?: boolean;
   workers: ColoredWorker[];
   daysOf: (workerId: string) => number;
   onWorker: (worker: Worker) => void;
@@ -244,6 +251,7 @@ export function WorkersPanel({
   daysOf,
   onWorker,
   onAdd,
+  canManage = true,
 }: WorkersPanelProps) {
   const { t } = useTranslation();
   return (
@@ -294,16 +302,18 @@ export function WorkersPanel({
           </Card>
         </Pressable>
       ))}
-      <Pressable
-        testID="worker-add"
-        accessibilityRole="button"
-        onPress={onAdd}
-        className="h-[46px] items-center justify-center rounded-[14px] border-[1.5px] border-dashed border-line-2 active:opacity-70"
-      >
-        <Text className="font-sans-medium text-[14px] text-accent-ink">
-          + {t("labor.workers.add")}
-        </Text>
-      </Pressable>
+      {canManage ? (
+        <Pressable
+          testID="worker-add"
+          accessibilityRole="button"
+          onPress={onAdd}
+          className="h-[46px] items-center justify-center rounded-[14px] border-[1.5px] border-dashed border-line-2 active:opacity-70"
+        >
+          <Text className="font-sans-medium text-[14px] text-accent-ink">
+            + {t("labor.workers.add")}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

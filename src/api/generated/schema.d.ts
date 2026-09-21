@@ -2703,15 +2703,16 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** List the company's equipment */
     get: {
       parameters: {
         query?: {
-          company_id?: string;
-          location_type?: "warehouse" | "site";
-          warehouse_id?: string;
-          project_id?: string;
-          condition?: "working" | "damaged";
-          q?: string;
+          company_id?: string | null;
+          location_type?: ("warehouse" | "site") | null;
+          warehouse_id?: string | null;
+          project_id?: string | null;
+          condition?: ("working" | "damaged") | null;
+          q?: string | null;
         };
         header?: never;
         path?: never;
@@ -2729,6 +2730,7 @@ export interface paths {
       };
     };
     put?: never;
+    /** Add equipment to the inventory */
     post: {
       parameters: {
         query?: never;
@@ -2738,12 +2740,12 @@ export interface paths {
       };
       requestBody: {
         content: {
-          "application/json": components["schemas"]["CreateInventoryItemRequest"];
+          "application/json": components["schemas"]["CreateInventoryItemSchema"];
         };
       };
       responses: {
-        /** @description Created */
-        201: {
+        /** @description Success */
+        200: {
           headers: {
             [name: string]: unknown;
           };
@@ -2764,6 +2766,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** One inventory row */
     get: {
       parameters: {
         query?: never;
@@ -2786,6 +2789,7 @@ export interface paths {
     };
     put?: never;
     post?: never;
+    /** Remove an inventory row */
     delete: {
       parameters: {
         query?: never;
@@ -2797,7 +2801,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Deleted */
+        /** @description No Content */
         204: {
           headers: {
             [name: string]: unknown;
@@ -2808,6 +2812,7 @@ export interface paths {
     };
     options?: never;
     head?: never;
+    /** Edit an inventory row */
     patch: {
       parameters: {
         query?: never;
@@ -2819,7 +2824,7 @@ export interface paths {
       };
       requestBody: {
         content: {
-          "application/json": components["schemas"]["UpdateInventoryItemRequest"];
+          "application/json": components["schemas"]["UpdateInventoryItemSchema"];
         };
       };
       responses: {
@@ -2841,10 +2846,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** List the company's warehouses */
     get: {
       parameters: {
         query?: {
-          company_id?: string;
+          company_id?: string | null;
         };
         header?: never;
         path?: never;
@@ -2862,6 +2868,7 @@ export interface paths {
       };
     };
     put?: never;
+    /** Create a warehouse */
     post: {
       parameters: {
         query?: never;
@@ -2871,12 +2878,12 @@ export interface paths {
       };
       requestBody: {
         content: {
-          "application/json": components["schemas"]["CreateWarehouseRequest"];
+          "application/json": components["schemas"]["CreateWarehouseSchema"];
         };
       };
       responses: {
-        /** @description Created */
-        201: {
+        /** @description Success */
+        200: {
           headers: {
             [name: string]: unknown;
           };
@@ -2900,6 +2907,7 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
+    /** Delete an empty warehouse */
     delete: {
       parameters: {
         query?: never;
@@ -2911,7 +2919,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Deleted */
+        /** @description No Content */
         204: {
           headers: {
             [name: string]: unknown;
@@ -2922,6 +2930,7 @@ export interface paths {
     };
     options?: never;
     head?: never;
+    /** Edit a warehouse */
     patch: {
       parameters: {
         query?: never;
@@ -2933,7 +2942,7 @@ export interface paths {
       };
       requestBody: {
         content: {
-          "application/json": components["schemas"]["UpdateWarehouseRequest"];
+          "application/json": components["schemas"]["UpdateWarehouseSchema"];
         };
       };
       responses: {
@@ -5026,6 +5035,44 @@ export interface paths {
             [name: string]: unknown;
           };
           content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/documents/uploaders": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the distinct uploaders of a project's documents */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          project_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["DocumentUploadersResponse"];
+          };
         };
       };
     };
@@ -7707,6 +7754,8 @@ export interface components {
      * @description GET /auth/config — what this deployment offers, read by the apps before sign-in.
      */
     AuthConfigResponse: {
+      /** Self Attendance Max Backdate Days */
+      self_attendance_max_backdate_days: number;
       /** Session */
       session: string;
       /** Signup */
@@ -8002,12 +8051,16 @@ export interface components {
        */
       tva_number: string | null;
     };
-    /** CreateInventoryItemRequest */
-    CreateInventoryItemRequest: {
-      /** Format: uuid */
-      company_id: string;
-      name: string;
-      category?:
+    /**
+     * CreateInventoryItemSchema
+     * @description Request body for POST /api/v1/inventory/items.
+     */
+    CreateInventoryItemSchema: {
+      /**
+       * Category
+       * @default null
+       */
+      category:
         | (
             | "power_tool"
             | "hand_tool"
@@ -8018,15 +8071,45 @@ export interface components {
             | "other"
           )
         | null;
-      reference?: string | null;
-      description?: string | null;
-      quantity: number;
-      /** @enum {string} */
+      /**
+       * Company Id
+       * Format: uuid
+       */
+      company_id: string;
+      /**
+       * Condition
+       * @enum {string}
+       */
       condition: "working" | "damaged";
-      /** @enum {string} */
+      /**
+       * Description
+       * @default null
+       */
+      description: string | null;
+      /**
+       * Location Type
+       * @enum {string}
+       */
       location_type: "warehouse" | "site";
-      warehouse_id?: string | null;
-      project_id?: string | null;
+      /** Name */
+      name: string;
+      /**
+       * Project Id
+       * @default null
+       */
+      project_id: string | null;
+      /** Quantity */
+      quantity: number;
+      /**
+       * Reference
+       * @default null
+       */
+      reference: string | null;
+      /**
+       * Warehouse Id
+       * @default null
+       */
+      warehouse_id: string | null;
     };
     /**
      * CreateInviteRequest
@@ -8273,12 +8356,23 @@ export interface components {
        */
       terms: string | null;
     };
-    /** CreateWarehouseRequest */
-    CreateWarehouseRequest: {
-      /** Format: uuid */
+    /**
+     * CreateWarehouseSchema
+     * @description Request body for POST /api/v1/inventory/warehouses.
+     */
+    CreateWarehouseSchema: {
+      /**
+       * Address
+       * @default null
+       */
+      address: string | null;
+      /**
+       * Company Id
+       * Format: uuid
+       */
       company_id: string;
+      /** Name */
       name: string;
-      address?: string | null;
     };
     /**
      * CreateWorkerRequest
@@ -8327,6 +8421,27 @@ export interface components {
        * @default null
        */
       user_id: string | null;
+    };
+    /**
+     * DocumentUploaderSchema
+     * @description One person who has a document in this project.
+     */
+    DocumentUploaderSchema: {
+      /** Display Name */
+      display_name: string;
+      /**
+       * User Id
+       * Format: uuid
+       */
+      user_id: string;
+    };
+    /**
+     * DocumentUploadersResponse
+     * @description GET /projects/<id>/documents/uploaders — the uploader filter's options.
+     */
+    DocumentUploadersResponse: {
+      /** Items */
+      items: components["schemas"]["DocumentUploaderSchema"][];
     };
     /**
      * FeaturesResponse
@@ -8738,15 +8853,21 @@ export interface components {
     /**
      * MoveTaskSchema
      * @description Atomic drag-drop endpoint payload.
+     *
+     *     The neighbours describe the gap the card is dropped into, in the lane named
+     *     by `status` — the same lane the card already sits in when it is only
+     *     reordered. Sending neither appends the card to the end of that lane.
      */
     MoveTaskSchema: {
       /**
        * After Id
+       * @description Task that ends up directly BELOW the moved one; null when dropped at the end.
        * @default null
        */
       after_id: string | null;
       /**
        * Before Id
+       * @description Task that ends up directly ABOVE the moved one; null when dropped at the top.
        * @default null
        */
       before_id: string | null;
@@ -8969,6 +9090,11 @@ export interface components {
        * @default 0
        */
       spent_by_credits: number;
+      /**
+       * Spent Invoiced
+       * @default 0
+       */
+      spent_invoiced: number;
       /**
        * Spent Personal
        * @default 0
@@ -9410,10 +9536,16 @@ export interface components {
        */
       tva_number: string | null;
     };
-    /** UpdateInventoryItemRequest */
-    UpdateInventoryItemRequest: {
-      name?: string;
-      category?:
+    /**
+     * UpdateInventoryItemSchema
+     * @description Request body for PATCH /api/v1/inventory/items/<id>; absent key = unchanged, null = cleared.
+     */
+    UpdateInventoryItemSchema: {
+      /**
+       * Category
+       * @default null
+       */
+      category:
         | (
             | "power_tool"
             | "hand_tool"
@@ -9424,15 +9556,46 @@ export interface components {
             | "other"
           )
         | null;
-      reference?: string | null;
-      description?: string | null;
-      quantity?: number;
-      /** @enum {string} */
-      condition?: "working" | "damaged";
-      /** @enum {string} */
-      location_type?: "warehouse" | "site";
-      warehouse_id?: string | null;
-      project_id?: string | null;
+      /**
+       * Condition
+       * @default null
+       */
+      condition: ("working" | "damaged") | null;
+      /**
+       * Description
+       * @default null
+       */
+      description: string | null;
+      /**
+       * Location Type
+       * @default null
+       */
+      location_type: ("warehouse" | "site") | null;
+      /**
+       * Name
+       * @default null
+       */
+      name: string | null;
+      /**
+       * Project Id
+       * @default null
+       */
+      project_id: string | null;
+      /**
+       * Quantity
+       * @default null
+       */
+      quantity: number | null;
+      /**
+       * Reference
+       * @default null
+       */
+      reference: string | null;
+      /**
+       * Warehouse Id
+       * @default null
+       */
+      warehouse_id: string | null;
     };
     /**
      * UpdateInvoiceSchema
@@ -9768,10 +9931,21 @@ export interface components {
        */
       terms: string | null;
     };
-    /** UpdateWarehouseRequest */
-    UpdateWarehouseRequest: {
-      name?: string;
-      address?: string | null;
+    /**
+     * UpdateWarehouseSchema
+     * @description Request body for PATCH /api/v1/inventory/warehouses/<id>; absent key = unchanged, null = cleared.
+     */
+    UpdateWarehouseSchema: {
+      /**
+       * Address
+       * @default null
+       */
+      address: string | null;
+      /**
+       * Name
+       * @default null
+       */
+      name: string | null;
     };
     /**
      * UpdateWorkerRequest

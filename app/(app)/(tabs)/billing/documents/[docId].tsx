@@ -175,7 +175,9 @@ export default function BillingDocumentScreen() {
             variant="secondary"
             onPress={() => cloneSheet.current?.present()}
           />
-          {doc.kind === "devis" && doc.status === "accepted" ? (
+          {doc.kind === "devis" &&
+          doc.status === "accepted" &&
+          !doc.converted_to_facture_id ? (
             <Button
               testID="doc-convert"
               label={t("billing.actions.convert")}

@@ -27,6 +27,7 @@ import {
   openDocument,
   useDeleteDocument,
   useDocumentTags,
+  useDocumentUploaders,
   useDocuments,
   useRenameDocument,
   useSetDocumentTags,
@@ -40,7 +41,6 @@ import type {
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
-import { useMembers } from "@/features/projects/members-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
@@ -88,7 +88,8 @@ export default function ProjectDocumentsSection() {
     },
     canAccess,
   );
-  const members = useMembers(id, canAccess);
+  // Built from the documents themselves: an unassigned company admin who uploaded is listed too.
+  const uploaders = useDocumentUploaders(id, canAccess);
   const totalPages = Math.max(
     1,
     Math.ceil((documents.data?.total ?? 0) / (documents.data?.per_page ?? 25)),
@@ -218,9 +219,9 @@ export default function ProjectDocumentsSection() {
               value={uploader ?? "__all__"}
               options={[
                 { value: "__all__", label: t("documents.allUploaders") },
-                ...(members.data ?? []).map((member) => ({
-                  value: member.user_id,
-                  label: member.display_name ?? member.email,
+                ...(uploaders.data ?? []).map((who) => ({
+                  value: who.user_id,
+                  label: who.display_name,
                 })),
               ]}
               onChange={(value) => {

@@ -258,6 +258,12 @@ function LaborTabContent() {
     "project:manage_invoices",
     user?.permissions,
   );
+  // An unlinked member reaches this tab in the normal shell; every write here needs manage_labor.
+  const canManageLabor = projectCan(
+    project.data,
+    "project:manage_labor",
+    user?.permissions,
+  );
 
   async function submitBulk(bulkEntries: BulkLogEntry[], acknowledge = false) {
     if (!acknowledge) {
@@ -394,6 +400,7 @@ function LaborTabContent() {
               </View>
             )}
             <LaborDayCard
+              canManage={canManageLabor}
               title={dayCardTitle(selectedDay, localeTag())}
               subtitle={
                 selectedHoliday
@@ -426,6 +433,7 @@ function LaborTabContent() {
 
         {segment === "workers" ? (
           <WorkersPanel
+            canManage={canManageLabor}
             workers={coloredWorkers}
             daysOf={(workerId) => daysByWorker.get(workerId) ?? 0}
             onWorker={(worker) => {

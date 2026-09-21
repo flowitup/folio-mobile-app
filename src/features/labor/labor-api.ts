@@ -85,10 +85,11 @@ function ownAttendanceInvalidations(projectId: string) {
 
 // ---- workers ----------------------------------------------------------------
 
-export function useWorkers(projectId: string) {
+/** `enabled` lets a caller that only sometimes needs the roster skip the request. */
+export function useWorkers(projectId: string, enabled = true) {
   return useQuery({
     queryKey: laborKeys.workers(projectId),
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId) && enabled,
     queryFn: async () =>
       unwrapAs<{ workers?: Worker[] }>(
         await api.GET("/api/v1/projects/{project_id}/workers", {

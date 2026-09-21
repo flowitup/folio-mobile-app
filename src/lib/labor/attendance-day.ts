@@ -37,11 +37,18 @@ export function dayInMonth(
 }
 
 /** Oldest day a worker may still self-log, inclusive. */
-export function earliestSelfLogDay(today: string): string {
-  return shiftDay(today, -SELF_ATTENDANCE_MAX_BACKDATE_DAYS);
+export function earliestSelfLogDay(
+  today: string,
+  days: number = SELF_ATTENDANCE_MAX_BACKDATE_DAYS,
+): string {
+  return shiftDay(today, -days);
 }
 
 /** Whether `day` sits inside the self-log window (not in the future, not past the backdate limit). */
-export function canSelfLogDay(day: string, today: string): boolean {
-  return day <= today && day >= earliestSelfLogDay(today);
+export function canSelfLogDay(
+  day: string,
+  today: string,
+  days: number = SELF_ATTENDANCE_MAX_BACKDATE_DAYS,
+): boolean {
+  return day <= today && day >= earliestSelfLogDay(today, days);
 }

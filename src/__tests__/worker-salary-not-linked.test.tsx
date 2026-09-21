@@ -4,6 +4,7 @@ import i18n from "@/i18n";
 import { ok, renderWithProviders } from "./helpers/release-qa-fixtures";
 
 import ExpensesTab from "../../app/(app)/(tabs)/expenses";
+import { WorkerSalaryTab } from "@/features/labor/worker-salary-tab";
 import type { Worker } from "@/features/labor/labor-types";
 
 /**
@@ -112,8 +113,10 @@ beforeEach(() => {
 });
 
 describe("worker salary tab without a linked worker", () => {
+  // The shell keeps a member nobody linked on the full project screens (#100), so the tab is
+  // rendered directly: what is under test is its own not-linked card.
   it("tells the member their account is not linked yet", async () => {
-    await renderWithProviders(<ExpensesTab />);
+    await renderWithProviders(<WorkerSalaryTab />);
 
     expect(await screen.findByTestId("worker-salary-title")).toBeTruthy();
     expect(
