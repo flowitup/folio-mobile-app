@@ -13,7 +13,8 @@
     "edit": "Modifier",
     "back": "Retour",
     "remove": "Retirer",
-    "email": "E-mail"
+    "email": "E-mail",
+    "change": "Changer"
   },
   "login": {
     "title": "Se connecter\nà Folio",
@@ -193,7 +194,9 @@
       "empty": "Tous les membres de l'entreprise sont déjà affectés, ou aucun n'a encore de compte lié.",
       "noCompany": "Ce chantier n'a pas encore d'entreprise.",
       "loadError": "Impossible de charger l'annuaire de l'entreprise."
-    }
+    },
+    "loadError": "Impossible de charger les membres.",
+    "revokeConfirm": "Annuler l'invitation envoyée à {{email}} ?"
   },
   "invoices": {
     "all": "Tout",
@@ -248,7 +251,9 @@
       "format": "Format",
       "from": "Du mois",
       "to": "Au mois",
-      "run": "Télécharger"
+      "run": "Télécharger",
+      "rangeInvalid": "Le mois de fin ne peut pas précéder le mois de début.",
+      "rangeTooLong": "Exportez au maximum {{max}} mois à la fois."
     },
     "attachments": {
       "title": "Pièces jointes ({{count}})",
@@ -293,7 +298,9 @@
       "addItem": "Ajouter une ligne",
       "notes": "Notes",
       "highlight": "Surlignage",
-      "create": "Créer la facture"
+      "create": "Créer la facture",
+      "quantityPositive": "Chaque ligne doit avoir une quantité supérieure à 0.",
+      "settledViaNone": "Pas encore réglé"
     },
     "summary": {
       "totalExpenses": "Total dépenses",
@@ -334,7 +341,8 @@
       "info": "Détails",
       "noHighlight": "Sans couleur",
       "attachmentsEmpty": "Aucune pièce jointe"
-    }
+    },
+    "restricted": "Les factures sont réservées aux responsables du chantier."
   },
   "labor": {
     "tabs": {
@@ -368,8 +376,8 @@
       "roleNone": "Sans rôle",
       "none": "Aucun ouvrier.",
       "created": "Ouvrier ajouté.",
-      "deleted": "Ouvrier retiré.",
-      "deleteConfirm": "Retirer {{name}} ?",
+      "deleted": "Ouvrier désactivé.",
+      "deleteConfirm": "Désactiver {{name}} ?",
       "deleteHint": "Son historique de présence reste sur le chantier.",
       "inactive": "inactif",
       "day": "jour",
@@ -378,7 +386,8 @@
       "accountNone": "Non relié",
       "fromCompany": "Ouvrier de l'entreprise",
       "fromCompanyNew": "Nouvelle personne",
-      "fromCompanyHint": "annuaire de l'entreprise"
+      "fromCompanyHint": "annuaire de l'entreprise",
+      "deactivate": "Désactiver"
     },
     "rates": {
       "link": "Taux",
@@ -388,7 +397,9 @@
       "add": "Ajouter un changement",
       "impact_zero": "Aucun jour pointé depuis le {{date}}",
       "impact_one": "Recalcule 1 jour déjà pointé depuis le {{date}}",
-      "impact_other": "Recalcule {{count}} jours déjà pointés depuis le {{date}}"
+      "impact_other": "Recalcule {{count}} jours déjà pointés depuis le {{date}}",
+      "deleteConfirm": "Supprimer le changement de tarif du {{date}} ({{rate}}) ?",
+      "deleted": "Changement de tarif supprimé."
     },
     "log": {
       "open": "Saisir la journée",
@@ -406,12 +417,16 @@
       "effectiveCost": "Coût actuel : {{amount}}",
       "conflictTitle": "Déjà saisi ailleurs",
       "conflictGeneric": "Certains ouvriers sont saisis sur un autre chantier le même jour.",
-      "conflictConfirm": "Saisir quand même"
+      "conflictConfirm": "Saisir quand même",
+      "emptyRowHint": "Choisissez un type de journée ou ajoutez des heures avant d'enregistrer.",
+      "overrideNeedsShiftHint": "Un montant forcé nécessite un type de journée."
     },
     "activities": {
       "title": "Activités",
       "placeholder": "Nouvelle activité…",
-      "add": "Ajouter l'activité"
+      "add": "Ajouter l'activité",
+      "deleteConfirm": "Supprimer l'activité « {{title}} » ?",
+      "deleted": "Activité supprimée."
     },
     "description": {
       "title": "Description de la journée"
@@ -445,7 +460,8 @@
     "export": {
       "title": "Exporter la main-d'œuvre",
       "worker": "Ouvrier",
-      "allWorkers": "Tous les ouvriers"
+      "allWorkers": "Tous les ouvriers",
+      "rangeInvalid": "Choisissez un mois de début avant le mois de fin, {{months}} mois maximum."
     },
     "segments": {
       "calendar": "Pointage",
@@ -478,6 +494,9 @@
     "roles": {
       "tho_chinh": "Ouvrier principal",
       "tho_phu": "Ouvrier auxiliaire"
+    },
+    "entry": {
+      "deleteConfirm": "Supprimer ce pointage ?"
     }
   },
   "documents": {
@@ -507,7 +526,8 @@
       "size": "Taille",
       "uploader": "Auteur"
     },
-    "allUploaders": "Tous les auteurs"
+    "allUploaders": "Tous les auteurs",
+    "loadError": "Impossible de charger les documents."
   },
   "photos": {
     "add": "Ajouter des photos",
@@ -518,7 +538,8 @@
     "caption": "Légende",
     "share": "Partager",
     "videoHint": "Vidéo — utilisez Partager pour l'ouvrir.",
-    "loadMore": "Charger plus"
+    "loadMore": "Charger plus",
+    "loadError": "Impossible de charger les photos."
   },
   "notes": {
     "create": "Nouvelle note",
@@ -541,7 +562,8 @@
       "decision": "Décision",
       "call": "Appel",
       "general": "Général"
-    }
+    },
+    "loadError": "Impossible de charger le journal."
   },
   "notifications": {
     "title": "Rappels ({{count}})",
@@ -595,7 +617,8 @@
       "medium": "Moyenne",
       "high": "Haute",
       "urgent": "Urgente"
-    }
+    },
+    "loadError": "Impossible de charger les tâches."
   },
   "chiffrage": {
     "totalHt": "Total HT",
@@ -649,7 +672,8 @@
     "libraryNone": "Aucun produit trouvé.",
     "imageFromUrl": "Image depuis une URL",
     "imageUrl": "URL de l'image",
-    "takePhoto": "Prendre une photo"
+    "takePhoto": "Prendre une photo",
+    "noneReadOnly": "Aucun poste pour le moment."
   },
   "analyses": {
     "upload": "Ajouter une analyse",
@@ -664,7 +688,8 @@
     "pickFile": "Choisir le rapport HTML",
     "summary": "Résumé",
     "sourceUrl": "URL source",
-    "searchPlaceholder": "Rechercher une analyse"
+    "searchPlaceholder": "Rechercher une analyse",
+    "loadError": "Impossible de charger les analyses."
   },
   "billing": {
     "title": "Facturation",
@@ -840,7 +865,9 @@
         "search": "Rechercher chantier, numéro, destinataire",
         "none": "Aucune dépense candidate.",
         "confirm": "Ajouter {{count}}",
-        "partial": "Certaines dépenses n'ont pas pu être ajoutées."
+        "partial": "Certaines dépenses n'ont pas pu être ajoutées.",
+        "added": "{{count}} dépense(s) ajoutée(s).",
+        "addFailed": "Aucune dépense n'a pu être ajoutée."
       }
     }
   },
@@ -958,7 +985,8 @@
       "create": "Ajouter le produit",
       "cancel": "Annuler",
       "delete": "Supprimer"
-    }
+    },
+    "loadError": "Impossible de charger la bibliothèque."
   },
   "inventory": {
     "title": "Inventaire du matériel",
@@ -1019,7 +1047,8 @@
       "warehouseRequired": "Choisissez un dépôt.",
       "siteRequired": "Choisissez un chantier.",
       "noWarehouseYet": "Aucun dépôt pour l'instant — créez-en un depuis « Dépôts » sur l'écran de l'inventaire, ou laissez le matériel sur un chantier.",
-      "warehouseNameRequired": "Donnez un nom au dépôt."
+      "warehouseNameRequired": "Donnez un nom au dépôt.",
+      "noSiteYet": "Aucun chantier pour l'instant — cette société n'a aucun projet où poser le matériel, gardez-le dans un dépôt."
     },
     "actions": {
       "create": "Ajouter à l'inventaire"
@@ -1254,7 +1283,9 @@
         "empty": "L'annuaire de cette entreprise est vide.",
         "selectedCount": "{{count}} sélectionné(s)",
         "submit": "Importer la sélection",
-        "successToast": "Membres importés."
+        "successToast": "Membres importés.",
+        "skippedToast_one": "{{imported}} importé(s) · 1 était déjà membre.",
+        "skippedToast_other": "{{imported}} importé(s) · {{count}} étaient déjà membres."
       },
       "grants": {
         "open": "Permissions personnalisées",
@@ -1520,7 +1551,8 @@
     "payments": "Paiements",
     "paidToast": "Paiement enregistré.",
     "unpaidToast": "Paiements supprimés.",
-    "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement."
+    "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement.",
+    "noMonth": "Sans mois renseigné"
   },
   "shell": {
     "switchProject": "Changer de chantier",
@@ -1642,7 +1674,7 @@
     "logToday": "Pointer aujourd'hui",
     "logDay": "Pointer le {{date}}",
     "submit": "Pointer ce jour",
-    "futureDay": "Vous ne pouvez pointer qu'aujourd'hui ou un jour passé.",
+    "futureDay": "Vous pouvez pointer aujourd'hui ou l'un des {{days}} derniers jours.",
     "logged": "Pointage envoyé — en attente de validation par votre responsable.",
     "notLinked": "Votre compte n'est pas encore relié à un ouvrier sur ce chantier. Demandez à votre responsable.",
     "monthList": "Jours ce mois-ci",

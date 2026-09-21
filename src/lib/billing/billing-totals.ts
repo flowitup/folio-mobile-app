@@ -1,5 +1,7 @@
 /** Live-preview totals for a billing document, same float algorithm as the web totals card. */
 
+import { parseMoneyInput } from "@/lib/format/money";
+
 export type TotalsItem = {
   quantity: string;
   unit_price: string;
@@ -16,10 +18,9 @@ export type BillingTotals = {
 };
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
-const num = (value: string) => {
-  const parsed = Number(String(value).replace(",", "."));
-  return Number.isFinite(parsed) ? parsed : 0;
-};
+// Same parser as the editor's validation, so an amount the form accepts ("1 234,50") is the
+// amount the live totals show rather than a silent zero.
+const num = (value: string) => parseMoneyInput(String(value)) ?? 0;
 
 export function lineTotalHt(item: TotalsItem): number {
   return round2(num(item.quantity) * num(item.unit_price));

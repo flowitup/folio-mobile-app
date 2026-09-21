@@ -7,7 +7,12 @@ import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { AssignMemberSheet } from "@/features/projects/assign-member-sheet";
 import {
   useInvitations,
@@ -15,7 +20,10 @@ import {
   useRevokeInvitation,
   useUnassignMember,
 } from "@/features/projects/members-api";
-import type { ProjectMember } from "@/features/projects/members-api";
+import type {
+  Invitation,
+  ProjectMember,
+} from "@/features/projects/members-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -44,12 +52,32 @@ export default function ProjectMembersSection() {
 
   const assignSheet = useRef<BottomSheetModal>(null);
   const [removing, setRemoving] = useState<ProjectMember | null>(null);
+  const [revoking, setRevoking] = useState<Invitation | null>(null);
 
-  const canManage =
-    projectCan(project.data, "project:manage_users", user?.permissions) ||
-    projectCan(project.data, "project:invite", user?.permissions);
+  // Assigning and unassigning are `project:manage_users` alone on the backend; `project:invite`
+  // only opens the legacy invitation list, which is why it no longer widens this gate.
+  const canManage = projectCan(
+    project.data,
+    "project:manage_users",
+    user?.permissions,
+  );
+  const canInvite = projectCan(
+    project.data,
+    "project:invite",
+    user?.permissions,
+  );
 
   if (members.isPending) return <ActivityIndicator className="mt-8" />;
+  if (members.isError)
+    return (
+      <View className="flex-1 bg-paper">
+        <ErrorState
+          message={t("members.loadError")}
+          retryLabel={t("common.retry")}
+          onRetry={() => void members.refetch()}
+        />
+      </View>
+    );
 
   return (
     <ScrollView className="flex-1 bg-paper" contentContainerClassName="p-4">
@@ -124,15 +152,13 @@ export default function ProjectMembersSection() {
                     })}
                   </Text>
                 </View>
-                {canManage && invitation.status === "pending" ? (
+                {canInvite && invitation.status === "pending" ? (
                   <Button
                     testID={`invitation-revoke-${invitation.id}`}
                     label={t("members.revoke")}
                     variant="secondary"
                     size="sm"
-                    onPress={() =>
-                      revoke.mutate({ invitationId: invitation.id })
-                    }
+                    onPress={() => setRevoking(invitation)}
                   />
                 ) : (
                   <Badge label={invitation.status} />
@@ -154,6 +180,22 @@ export default function ProjectMembersSection() {
         />
       ) : null}
 
+      <ConfirmDialog
+        visible={revoking !== null}
+        title={t("members.revokeConfirm", { email: revoking?.email ?? "" })}
+        confirmLabel={t("members.revoke")}
+        cancelLabel={t("common.cancel")}
+        destructive
+        loading={revoke.isPending}
+        onCancel={() => setRevoking(null)}
+        onConfirm={() =>
+          revoking &&
+          revoke.mutate(
+            { invitationId: revoking.id },
+            { onSettled: () => setRevoking(null) },
+          )
+        }
+      />
       <ConfirmDialog
         visible={removing !== null}
         title={t("members.removeConfirm", { email: removing?.email ?? "" })}

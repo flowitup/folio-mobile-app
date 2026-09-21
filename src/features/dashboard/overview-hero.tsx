@@ -23,6 +23,12 @@ type Props = {
    * "release funds" action, which the backend refuses anyway.
    */
   canViewBudget?: boolean;
+  /**
+   * Whether the caller holds `project:manage_invoices`. False drops both actions that open
+   * the invoice form — recording an expense and releasing funds — because `POST /invoices`
+   * refuses them either way.
+   */
+  canManageInvoices?: boolean;
   onAddInvoice: () => void;
   onAddRelease: () => void;
   onPayLabor: () => void;
@@ -43,6 +49,7 @@ export function OverviewHero({
   onAddRelease,
   onPayLabor,
   canViewBudget = true,
+  canManageInvoices = true,
 }: Props) {
   const { t } = useTranslation();
   const share = (value: number) =>
@@ -112,21 +119,23 @@ export function OverviewHero({
         ) : null}
       </View>
       <View className="flex-row gap-2 px-5 pb-6">
-        <Pressable
-          testID="overview-add-invoice"
-          accessibilityRole="button"
-          onPress={onAddInvoice}
-          className="h-11 flex-1 flex-row items-center justify-center gap-1.5 rounded-xl bg-ink-block-accent active:opacity-70"
-        >
-          <Icon name="plus" size={15} color={INK_BLOCK.bg} />
-          <Text
-            className="font-sans-semibold text-[13px]"
-            style={{ color: INK_BLOCK.bg }}
+        {canManageInvoices ? (
+          <Pressable
+            testID="overview-add-invoice"
+            accessibilityRole="button"
+            onPress={onAddInvoice}
+            className="h-11 flex-1 flex-row items-center justify-center gap-1.5 rounded-xl bg-ink-block-accent active:opacity-70"
           >
-            {t("dashboard.overview.addInvoice")}
-          </Text>
-        </Pressable>
-        {canViewBudget ? (
+            <Icon name="plus" size={15} color={INK_BLOCK.bg} />
+            <Text
+              className="font-sans-semibold text-[13px]"
+              style={{ color: INK_BLOCK.bg }}
+            >
+              {t("dashboard.overview.addInvoice")}
+            </Text>
+          </Pressable>
+        ) : null}
+        {canViewBudget && canManageInvoices ? (
           <Pressable
             testID="overview-add-release"
             accessibilityRole="button"

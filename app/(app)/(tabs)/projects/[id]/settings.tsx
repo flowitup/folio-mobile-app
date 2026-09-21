@@ -47,12 +47,10 @@ export default function ProjectSettingsSection() {
     return <Text className="p-4 text-danger">{t("home.loadError")}</Text>;
 
   const data = project.data;
-  const canEdit =
-    projectCan(data, "project:update", user?.permissions) ||
-    data.owner_id === user?.id;
-  const canDelete =
-    projectCan(data, "project:delete", user?.permissions) ||
-    data.owner_id === user?.id;
+  // The owner is an ordinary assignee on the backend — creating a project grants no standing
+  // exception — so the scoped permissions are the whole answer here too.
+  const canEdit = projectCan(data, "project:update", user?.permissions);
+  const canDelete = projectCan(data, "project:delete", user?.permissions);
   // Financing side: the backend returns a null budget without
   // `project:view_budget`, so the rows are dropped rather than shown blank.
   const canViewBudget = projectCan(

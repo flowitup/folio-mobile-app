@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -47,6 +48,7 @@ const ROLE_OPTIONS: CompanyRole[] = ["admin", "manager", "member"];
 export default function CompanyManageScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { user } = useAuth();
   const { companyId } = useLocalSearchParams<{ companyId: string }>();
   const company = useCompany(companyId);
   const users = useAttachedUsers(companyId);
@@ -159,13 +161,10 @@ export default function CompanyManageScreen() {
                 accessibilityRole="button"
                 onPress={() =>
                   void Share.share({
-                    message: t(
-                      "companies.admin.manage.joinCode.shareMessage",
-                      {
-                        company: data.legal_name,
-                        code: formatJoinCode(data.join_code ?? ""),
-                      },
-                    ),
+                    message: t("companies.admin.manage.joinCode.shareMessage", {
+                      company: data.legal_name,
+                      code: formatJoinCode(data.join_code ?? ""),
+                    }),
                   })
                 }
                 className="mb-3 items-center rounded-[10px] border border-line-2 bg-paper-2 py-3 active:opacity-70"
@@ -216,9 +215,7 @@ export default function CompanyManageScreen() {
                   loading={revokeJoinCode.isPending}
                   onPress={() =>
                     setConfirm({
-                      title: t(
-                        "companies.admin.manage.joinCode.revokeConfirm",
-                      ),
+                      title: t("companies.admin.manage.joinCode.revokeConfirm"),
                       run: () =>
                         companyId && revokeJoinCode.mutate({ companyId }),
                     })
@@ -259,34 +256,38 @@ export default function CompanyManageScreen() {
                     ? ` · ${t("companies.admin.manage.attached.primaryBadge")}`
                     : ""}
                 </Text>
-                <View className="mt-2 flex-row items-center gap-2">
-                  <View className="flex-1">
-                    <Select<CompanyRole>
-                      testID={`member-role-${member.user_id}`}
-                      value={member.role}
-                      options={ROLE_OPTIONS.map((role) => ({
-                        value: role,
-                        label: t(`companies.x.${role}`),
-                      }))}
-                      onChange={(role) =>
-                        companyId &&
-                        role !== member.role &&
-                        setRole.mutate({
-                          companyId,
-                          userId: member.user_id,
-                          role,
-                        })
-                      }
+                {/* Never on the caller's own row: demoting or booting yourself here is a
+                    dead end the backend refuses anyway (same rule as `MemberRow`). */}
+                {member.user_id === user?.id ? null : (
+                  <View className="mt-2 flex-row items-center gap-2">
+                    <View className="flex-1">
+                      <Select<CompanyRole>
+                        testID={`member-role-${member.user_id}`}
+                        value={member.role}
+                        options={ROLE_OPTIONS.map((role) => ({
+                          value: role,
+                          label: t(`companies.x.${role}`),
+                        }))}
+                        onChange={(role) =>
+                          companyId &&
+                          role !== member.role &&
+                          setRole.mutate({
+                            companyId,
+                            userId: member.user_id,
+                            role,
+                          })
+                        }
+                      />
+                    </View>
+                    <Button
+                      testID={`member-boot-${member.user_id}`}
+                      label={t("companies.admin.manage.attached.boot")}
+                      size="sm"
+                      variant="danger"
+                      onPress={() => setBooting(member)}
                     />
                   </View>
-                  <Button
-                    testID={`member-boot-${member.user_id}`}
-                    label={t("companies.admin.manage.attached.boot")}
-                    size="sm"
-                    variant="danger"
-                    onPress={() => setBooting(member)}
-                  />
-                </View>
+                )}
               </Card>
             ))}
           </View>

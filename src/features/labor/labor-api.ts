@@ -203,6 +203,7 @@ export function useCreateRateChange(projectId: string) {
 }
 
 export function useDeleteRateChange(projectId: string) {
+  const { t } = useTranslation();
   return useApiMutation<{ workerId: string; rateChangeId: string }>({
     mutationFn: async ({ workerId, rateChangeId }) =>
       unwrapVoid(
@@ -223,6 +224,7 @@ export function useDeleteRateChange(projectId: string) {
       laborKeys.workers(projectId),
       ...laborInvalidations(projectId),
     ],
+    successMessage: t("labor.rates.deleted"),
   });
 }
 
@@ -464,6 +466,7 @@ export function useUpdateActivity(projectId: string) {
 }
 
 export function useDeleteActivity(projectId: string) {
+  const { t } = useTranslation();
   return useApiMutation<{ activityId: string }>({
     mutationFn: async ({ activityId }) =>
       unwrapVoid(
@@ -477,6 +480,7 @@ export function useDeleteActivity(projectId: string) {
         ),
       ),
     invalidates: [laborKeys.activities(projectId)],
+    successMessage: t("labor.activities.deleted"),
   });
 }
 

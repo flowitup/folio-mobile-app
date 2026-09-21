@@ -14,7 +14,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import {
@@ -152,7 +157,14 @@ export default function ProjectNotesSection() {
           ) : null}
         </View>
         {notes.isPending ? <ActivityIndicator className="mt-8" /> : null}
-        {!notes.isPending && sections.length === 0 ? (
+        {notes.isError ? (
+          <ErrorState
+            message={t("notes.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void notes.refetch()}
+          />
+        ) : null}
+        {!notes.isPending && !notes.isError && sections.length === 0 ? (
           <EmptyState message={t("notes.none")} />
         ) : null}
         {sections.map(([day, items]) => (

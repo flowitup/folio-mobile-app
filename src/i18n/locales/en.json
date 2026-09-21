@@ -13,7 +13,8 @@
     "edit": "Edit",
     "back": "Back",
     "remove": "Remove",
-    "email": "Email"
+    "email": "Email",
+    "change": "Change"
   },
   "login": {
     "title": "Sign in to\nFolio",
@@ -193,7 +194,9 @@
       "empty": "Every company member is already assigned, or none are linked to an account yet.",
       "noCompany": "This project has no company yet.",
       "loadError": "Could not load the company directory."
-    }
+    },
+    "loadError": "Could not load the members.",
+    "revokeConfirm": "Revoke the invitation sent to {{email}}?"
   },
   "invoices": {
     "all": "All",
@@ -248,7 +251,9 @@
       "format": "Format",
       "from": "From month",
       "to": "To month",
-      "run": "Download"
+      "run": "Download",
+      "rangeInvalid": "The end month cannot come before the start month.",
+      "rangeTooLong": "Export at most {{max}} months at a time."
     },
     "attachments": {
       "title": "Attachments ({{count}})",
@@ -293,7 +298,9 @@
       "addItem": "Add item",
       "notes": "Notes",
       "highlight": "Highlight",
-      "create": "Create invoice"
+      "create": "Create invoice",
+      "quantityPositive": "Every line needs a quantity greater than 0.",
+      "settledViaNone": "Not settled yet"
     },
     "summary": {
       "totalExpenses": "Total expenses",
@@ -334,7 +341,8 @@
       "info": "Details",
       "noHighlight": "No highlight",
       "attachmentsEmpty": "No attachments yet"
-    }
+    },
+    "restricted": "Invoices are reserved for the project managers."
   },
   "labor": {
     "tabs": {
@@ -368,8 +376,8 @@
       "roleNone": "No role",
       "none": "No workers yet.",
       "created": "Worker added.",
-      "deleted": "Worker removed.",
-      "deleteConfirm": "Remove {{name}}?",
+      "deleted": "Worker deactivated.",
+      "deleteConfirm": "Deactivate {{name}}?",
       "deleteHint": "Their attendance history stays on the project.",
       "inactive": "inactive",
       "day": "day",
@@ -378,7 +386,8 @@
       "accountNone": "Not linked",
       "fromCompany": "Company worker",
       "fromCompanyNew": "Someone new",
-      "fromCompanyHint": "from the company directory"
+      "fromCompanyHint": "from the company directory",
+      "deactivate": "Deactivate"
     },
     "rates": {
       "link": "Rates",
@@ -388,7 +397,9 @@
       "add": "Add rate change",
       "impact_zero": "No days logged yet from {{date}}",
       "impact_one": "Re-prices 1 day already logged since {{date}}",
-      "impact_other": "Re-prices {{count}} days already logged since {{date}}"
+      "impact_other": "Re-prices {{count}} days already logged since {{date}}",
+      "deleteConfirm": "Remove the rate change of {{date}} ({{rate}})?",
+      "deleted": "Rate change removed."
     },
     "log": {
       "open": "Log a day",
@@ -406,12 +417,16 @@
       "effectiveCost": "Current cost: {{amount}}",
       "conflictTitle": "Already logged elsewhere",
       "conflictGeneric": "Some workers are logged on another project the same day.",
-      "conflictConfirm": "Log anyway"
+      "conflictConfirm": "Log anyway",
+      "emptyRowHint": "Pick a shift or add extra hours before saving.",
+      "overrideNeedsShiftHint": "An amount override needs a shift."
     },
     "activities": {
       "title": "Activities",
       "placeholder": "New activity…",
-      "add": "Add activity"
+      "add": "Add activity",
+      "deleteConfirm": "Remove the activity \"{{title}}\"?",
+      "deleted": "Activity removed."
     },
     "description": {
       "title": "Day description"
@@ -445,7 +460,8 @@
     "export": {
       "title": "Export labor",
       "worker": "Worker",
-      "allWorkers": "All workers"
+      "allWorkers": "All workers",
+      "rangeInvalid": "Pick a start month before the end month, {{months}} months at most."
     },
     "segments": {
       "calendar": "Attendance",
@@ -478,6 +494,9 @@
     "roles": {
       "tho_chinh": "Lead worker",
       "tho_phu": "Assistant worker"
+    },
+    "entry": {
+      "deleteConfirm": "Delete this attendance entry?"
     }
   },
   "documents": {
@@ -507,7 +526,8 @@
       "size": "Size",
       "uploader": "Uploader"
     },
-    "allUploaders": "All uploaders"
+    "allUploaders": "All uploaders",
+    "loadError": "Could not load the documents."
   },
   "photos": {
     "add": "Add photos",
@@ -518,7 +538,8 @@
     "caption": "Caption",
     "share": "Share",
     "videoHint": "Video — use Share to open it.",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "loadError": "Could not load the photos."
   },
   "notes": {
     "create": "New note",
@@ -541,7 +562,8 @@
       "decision": "Decision",
       "call": "Call",
       "general": "General"
-    }
+    },
+    "loadError": "Could not load the journal."
   },
   "notifications": {
     "title": "Reminders ({{count}})",
@@ -595,7 +617,8 @@
       "medium": "Medium",
       "high": "High",
       "urgent": "Urgent"
-    }
+    },
+    "loadError": "Could not load the tasks."
   },
   "chiffrage": {
     "totalHt": "Total excl. VAT",
@@ -649,7 +672,8 @@
     "libraryNone": "No product found.",
     "imageFromUrl": "Image from URL",
     "imageUrl": "Image URL",
-    "takePhoto": "Take a photo"
+    "takePhoto": "Take a photo",
+    "noneReadOnly": "No postes yet."
   },
   "analyses": {
     "upload": "Add analysis",
@@ -664,7 +688,8 @@
     "pickFile": "Choose HTML report",
     "summary": "Summary",
     "sourceUrl": "Source URL",
-    "searchPlaceholder": "Search analyses"
+    "searchPlaceholder": "Search analyses",
+    "loadError": "Could not load the analyses."
   },
   "billing": {
     "title": "Billing",
@@ -840,7 +865,9 @@
         "search": "Search project, number, recipient",
         "none": "No candidate expense.",
         "confirm": "Add {{count}}",
-        "partial": "Some expenses could not be added."
+        "partial": "Some expenses could not be added.",
+        "added": "{{count}} expense(s) added.",
+        "addFailed": "No expense could be added."
       }
     }
   },
@@ -958,7 +985,8 @@
       "create": "Add product",
       "cancel": "Cancel",
       "delete": "Delete"
-    }
+    },
+    "loadError": "Could not load the library."
   },
   "inventory": {
     "title": "Equipment inventory",
@@ -1019,7 +1047,8 @@
       "warehouseRequired": "Pick a warehouse.",
       "siteRequired": "Pick a site.",
       "noWarehouseYet": "No warehouse yet — create one from “Warehouses” on the inventory screen, or keep the equipment on a site.",
-      "warehouseNameRequired": "Give the warehouse a name."
+      "warehouseNameRequired": "Give the warehouse a name.",
+      "noSiteYet": "No site yet — this company has no project to put the equipment on, so keep it in a warehouse."
     },
     "actions": {
       "create": "Add to inventory"
@@ -1254,7 +1283,9 @@
         "empty": "This company's directory is empty.",
         "selectedCount": "{{count}} selected",
         "submit": "Import selected",
-        "successToast": "Members imported."
+        "successToast": "Members imported.",
+        "skippedToast_one": "{{imported}} imported · 1 was already a member.",
+        "skippedToast_other": "{{imported}} imported · {{count}} were already members."
       },
       "grants": {
         "open": "Custom permissions",
@@ -1520,7 +1551,8 @@
     "payments": "Payments",
     "paidToast": "Payment recorded.",
     "unpaidToast": "Payments removed.",
-    "readOnly": "Only an admin or manager can change the paid status."
+    "readOnly": "Only an admin or manager can change the paid status.",
+    "noMonth": "No month recorded"
   },
   "shell": {
     "switchProject": "Switch project",
@@ -1642,7 +1674,7 @@
     "logToday": "Log today",
     "logDay": "Log {{date}}",
     "submit": "Log this day",
-    "futureDay": "You can only log today or an earlier day.",
+    "futureDay": "You can log today or any of the last {{days}} days.",
     "logged": "Attendance sent — waiting for your manager to validate.",
     "notLinked": "Your account is not linked to a worker on this site yet. Ask your manager.",
     "monthList": "Days this month",

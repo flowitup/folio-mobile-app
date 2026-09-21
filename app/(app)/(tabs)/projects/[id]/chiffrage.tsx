@@ -33,6 +33,7 @@ import type {
 import { LibraryProductPickerSheet } from "@/features/chiffrage/library-product-picker-sheet";
 import type { PickedProduct } from "@/features/chiffrage/library-product-picker-sheet";
 import { useProject } from "@/features/projects/projects-api";
+import { useProjectCan } from "@/features/projects/use-project-can";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -40,10 +41,16 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 type SheetKind =
   "poste" | "article" | "quote" | "store" | "room" | "unit" | null;
 
-/** Material provisioning (chiffrage): postes → articles (by room) → quotes per shop; totals and shop baskets. */
+/**
+ * Material provisioning (chiffrage): postes → articles (by room) → quotes per shop; totals and
+ * shop baskets. Every member reads the estimate; every write — creating or editing a poste,
+ * article, quote, shop, room or unit, selecting a quote, attaching an article image — needs
+ * `project:manage_invoices`, so without it the screen keeps the figures and drops the controls.
+ */
 export default function ProjectChiffrageSection() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const canManage = useProjectCan(id, "project:manage_invoices");
   const tree = useChiffrage(id);
   const units = useChiffrageUnits(id);
   const actions = useChiffrageActions(id);
@@ -232,25 +239,32 @@ export default function ProjectChiffrageSection() {
       key={quote.id}
       className={`mt-1 flex-row items-center rounded border px-2 py-1 ${quote.is_selected ? "border-primary bg-paper-2" : "border-border"}`}
     >
-      <Pressable
-        testID={`quote-select-${quote.id}`}
-        onPress={() => actions.selectQuote.mutate({ quoteId: quote.id })}
-        className="mr-2"
-      >
-        <Text className="text-base">{quote.is_selected ? "◉" : "○"}</Text>
-      </Pressable>
+      {canManage ? (
+        <Pressable
+          testID={`quote-select-${quote.id}`}
+          onPress={() => actions.selectQuote.mutate({ quoteId: quote.id })}
+          className="mr-2"
+        >
+          <Text className="text-base">{quote.is_selected ? "◉" : "○"}</Text>
+        </Pressable>
+      ) : (
+        <Text className="mr-2 text-base">{quote.is_selected ? "◉" : "○"}</Text>
+      )}
       <Pressable
         className="flex-1"
-        onPress={() =>
-          open("quote", quote.id, article.id, {
-            unit_price_ht: String(quote.unit_price_ht),
-            tva_rate: String(quote.tva_rate),
-            store_id: quote.store_id ?? "",
-            supplier_name: quote.supplier_name ?? "",
-            library_product_id: quote.library_product_id ?? "",
-            product_url: quote.product_url ?? "",
-            note: quote.note ?? "",
-          })
+        onPress={
+          canManage
+            ? () =>
+                open("quote", quote.id, article.id, {
+                  unit_price_ht: String(quote.unit_price_ht),
+                  tva_rate: String(quote.tva_rate),
+                  store_id: quote.store_id ?? "",
+                  supplier_name: quote.supplier_name ?? "",
+                  library_product_id: quote.library_product_id ?? "",
+                  product_url: quote.product_url ?? "",
+                  note: quote.note ?? "",
+                })
+            : undefined
         }
       >
         <Text className="text-sm text-primary">
@@ -264,17 +278,19 @@ export default function ProjectChiffrageSection() {
           <Text className="text-xs text-muted-foreground">{quote.note}</Text>
         ) : null}
       </Pressable>
-      <Pressable
-        testID={`quote-delete-${quote.id}`}
-        onPress={() =>
-          setConfirm({
-            title: t("chiffrage.deleteQuote"),
-            run: () => actions.deleteQuote.mutate({ quoteId: quote.id }),
-          })
-        }
-      >
-        <Text className="text-xs text-danger">✕</Text>
-      </Pressable>
+      {canManage ? (
+        <Pressable
+          testID={`quote-delete-${quote.id}`}
+          onPress={() =>
+            setConfirm({
+              title: t("chiffrage.deleteQuote"),
+              run: () => actions.deleteQuote.mutate({ quoteId: quote.id }),
+            })
+          }
+        >
+          <Text className="text-xs text-danger">✕</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 
@@ -314,82 +330,90 @@ export default function ProjectChiffrageSection() {
         {expanded ? (
           <View className="mt-2">
             {article.quotes.map((quote) => renderQuote(article, quote))}
-            <View className="mt-2 flex-row flex-wrap gap-3">
-              <Pressable
-                testID={`article-add-quote-${article.id}`}
-                onPress={() =>
-                  open("quote", null, article.id, { tva_rate: "20" })
-                }
-              >
-                <Text className="text-sm text-primary">
-                  {t("chiffrage.addQuote")}
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() =>
-                  open("article", article.id, poste.id, {
-                    name: article.name,
-                    quantity: String(article.quantity),
-                    unit: article.unit ?? "",
-                    room_id: article.room_id ?? "",
-                    note: article.note ?? "",
-                  })
-                }
-              >
-                <Text className="text-sm text-primary">{t("common.edit")}</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => void pickArticleImage(article, "library")}
-              >
-                <Text className="text-sm text-primary">
-                  {t("chiffrage.image")}
-                </Text>
-              </Pressable>
-              <Pressable
-                testID={`article-camera-${article.id}`}
-                onPress={() => void pickArticleImage(article, "camera")}
-              >
-                <Text className="text-sm text-primary">
-                  {t("chiffrage.takePhoto")}
-                </Text>
-              </Pressable>
-              <Pressable
-                testID={`article-image-url-${article.id}`}
-                onPress={() => {
-                  setImageArticle(article);
-                  setImageUrl("");
-                  urlSheet.current?.present();
-                }}
-              >
-                <Text className="text-sm text-primary">
-                  {t("chiffrage.imageFromUrl")}
-                </Text>
-              </Pressable>
-              {image ? (
+            {canManage ? (
+              <View className="mt-2 flex-row flex-wrap gap-3">
                 <Pressable
+                  testID={`article-add-quote-${article.id}`}
                   onPress={() =>
-                    actions.deleteArticleImage.mutate({ articleId: article.id })
+                    open("quote", null, article.id, { tva_rate: "20" })
                   }
                 >
-                  <Text className="text-sm text-muted-foreground">
-                    {t("chiffrage.removeImage")}
+                  <Text className="text-sm text-primary">
+                    {t("chiffrage.addQuote")}
                   </Text>
                 </Pressable>
-              ) : null}
-              <Pressable
-                onPress={() =>
-                  setConfirm({
-                    title: t("chiffrage.deleteArticle", { name: article.name }),
-                    run: () =>
-                      actions.deleteArticle.mutate({ articleId: article.id }),
-                  })
-                }
-              >
-                <Text className="text-sm text-danger">
-                  {t("common.delete")}
-                </Text>
-              </Pressable>
-            </View>
+                <Pressable
+                  onPress={() =>
+                    open("article", article.id, poste.id, {
+                      name: article.name,
+                      quantity: String(article.quantity),
+                      unit: article.unit ?? "",
+                      room_id: article.room_id ?? "",
+                      note: article.note ?? "",
+                    })
+                  }
+                >
+                  <Text className="text-sm text-primary">
+                    {t("common.edit")}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => void pickArticleImage(article, "library")}
+                >
+                  <Text className="text-sm text-primary">
+                    {t("chiffrage.image")}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  testID={`article-camera-${article.id}`}
+                  onPress={() => void pickArticleImage(article, "camera")}
+                >
+                  <Text className="text-sm text-primary">
+                    {t("chiffrage.takePhoto")}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  testID={`article-image-url-${article.id}`}
+                  onPress={() => {
+                    setImageArticle(article);
+                    setImageUrl("");
+                    urlSheet.current?.present();
+                  }}
+                >
+                  <Text className="text-sm text-primary">
+                    {t("chiffrage.imageFromUrl")}
+                  </Text>
+                </Pressable>
+                {image ? (
+                  <Pressable
+                    onPress={() =>
+                      actions.deleteArticleImage.mutate({
+                        articleId: article.id,
+                      })
+                    }
+                  >
+                    <Text className="text-sm text-muted-foreground">
+                      {t("chiffrage.removeImage")}
+                    </Text>
+                  </Pressable>
+                ) : null}
+                <Pressable
+                  onPress={() =>
+                    setConfirm({
+                      title: t("chiffrage.deleteArticle", {
+                        name: article.name,
+                      }),
+                      run: () =>
+                        actions.deleteArticle.mutate({ articleId: article.id }),
+                    })
+                  }
+                >
+                  <Text className="text-sm text-danger">
+                    {t("common.delete")}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
           </View>
         ) : null}
       </Card>
@@ -435,53 +459,66 @@ export default function ProjectChiffrageSection() {
             </Text>
           ))}
         </Card>
-        <View className="mb-3 flex-row flex-wrap gap-2">
-          <Button
-            testID="chiffrage-add-poste"
-            label={t("chiffrage.addPoste")}
-            size="sm"
-            onPress={() => open("poste")}
-          />
-          <Button
-            testID="chiffrage-add-store"
-            label={t("chiffrage.addStore")}
-            size="sm"
-            variant="secondary"
-            onPress={() => open("store")}
-          />
-          <Button
-            testID="chiffrage-add-room"
-            label={t("chiffrage.addRoom")}
-            size="sm"
-            variant="secondary"
-            onPress={() => open("room")}
-          />
-          <Button
-            testID="chiffrage-add-unit"
-            label={t("chiffrage.addUnit")}
-            size="sm"
-            variant="secondary"
-            onPress={() => open("unit")}
-          />
-        </View>
-        {data.stores.length > 0 ? (
+        {canManage ? (
+          <View className="mb-3 flex-row flex-wrap gap-2">
+            <Button
+              testID="chiffrage-add-poste"
+              label={t("chiffrage.addPoste")}
+              size="sm"
+              onPress={() => open("poste")}
+            />
+            <Button
+              testID="chiffrage-add-store"
+              label={t("chiffrage.addStore")}
+              size="sm"
+              variant="secondary"
+              onPress={() => open("store")}
+            />
+            <Button
+              testID="chiffrage-add-room"
+              label={t("chiffrage.addRoom")}
+              size="sm"
+              variant="secondary"
+              onPress={() => open("room")}
+            />
+            <Button
+              testID="chiffrage-add-unit"
+              label={t("chiffrage.addUnit")}
+              size="sm"
+              variant="secondary"
+              onPress={() => open("unit")}
+            />
+          </View>
+        ) : null}
+        {/* Shops and rooms are independent lists: a room declared before any shop exists must
+            still be visible, and editable, on its own. */}
+        {data.stores.length > 0 || data.rooms.length > 0 ? (
           <View className="mb-3 flex-row flex-wrap gap-1">
             {data.stores.map((store: ChiffrageStore) => (
               <Pressable
                 key={store.id}
-                onPress={() =>
-                  open("store", store.id, null, {
-                    name: store.name,
-                    address: store.address ?? "",
-                    website_url: store.website_url ?? "",
-                  })
+                testID={`chiffrage-store-${store.id}`}
+                onPress={
+                  canManage
+                    ? () =>
+                        open("store", store.id, null, {
+                          name: store.name,
+                          address: store.address ?? "",
+                          website_url: store.website_url ?? "",
+                        })
+                    : undefined
                 }
-                onLongPress={() =>
-                  setConfirm({
-                    title: t("chiffrage.deleteStore", { name: store.name }),
-                    run: () =>
-                      actions.deleteStore.mutate({ storeId: store.id }),
-                  })
+                onLongPress={
+                  canManage
+                    ? () =>
+                        setConfirm({
+                          title: t("chiffrage.deleteStore", {
+                            name: store.name,
+                          }),
+                          run: () =>
+                            actions.deleteStore.mutate({ storeId: store.id }),
+                        })
+                    : undefined
                 }
               >
                 <Badge label={store.name} />
@@ -490,12 +527,21 @@ export default function ProjectChiffrageSection() {
             {data.rooms.map((room) => (
               <Pressable
                 key={room.id}
-                onPress={() => open("room", room.id, null, { name: room.name })}
-                onLongPress={() =>
-                  setConfirm({
-                    title: t("chiffrage.deleteRoom", { name: room.name }),
-                    run: () => actions.deleteRoom.mutate({ roomId: room.id }),
-                  })
+                testID={`chiffrage-room-${room.id}`}
+                onPress={
+                  canManage
+                    ? () => open("room", room.id, null, { name: room.name })
+                    : undefined
+                }
+                onLongPress={
+                  canManage
+                    ? () =>
+                        setConfirm({
+                          title: t("chiffrage.deleteRoom", { name: room.name }),
+                          run: () =>
+                            actions.deleteRoom.mutate({ roomId: room.id }),
+                        })
+                    : undefined
                 }
               >
                 <Badge label={`⌂ ${room.name}`} tone="success" />
@@ -504,18 +550,23 @@ export default function ProjectChiffrageSection() {
           </View>
         ) : null}
         {data.postes.length === 0 ? (
-          <EmptyState message={t("chiffrage.none")} />
+          <EmptyState
+            message={t(canManage ? "chiffrage.none" : "chiffrage.noneReadOnly")}
+          />
         ) : null}
         {data.postes.map((poste, index) => (
           <View key={poste.id} className="mb-4">
             <View className="flex-row items-center justify-between border-b border-border py-2">
               <Pressable
                 className="flex-1"
-                onPress={() =>
-                  open("poste", poste.id, null, {
-                    name: poste.name,
-                    note: poste.note ?? "",
-                  })
+                onPress={
+                  canManage
+                    ? () =>
+                        open("poste", poste.id, null, {
+                          name: poste.name,
+                          note: poste.note ?? "",
+                        })
+                    : undefined
                 }
               >
                 <Text className="text-lg font-semibold text-primary">
@@ -531,72 +582,74 @@ export default function ProjectChiffrageSection() {
                 {formatMoney(poste.subtotal_ttc)}
               </Text>
             </View>
-            <View className="my-2 flex-row flex-wrap gap-3">
-              <Pressable
-                testID={`poste-add-article-${poste.id}`}
-                onPress={() =>
-                  open("article", null, poste.id, { quantity: "1" })
-                }
-              >
-                <Text className="text-sm text-primary">
-                  {t("chiffrage.addArticle")}
-                </Text>
-              </Pressable>
-              <Pressable onPress={() => open("store", null, poste.id)}>
-                <Text className="text-sm text-primary">
-                  {t("chiffrage.addStoreToPoste")}
-                </Text>
-              </Pressable>
-              <Pressable
-                disabled={index === 0}
-                onPress={() =>
-                  actions.reorderPoste.mutate({
-                    posteId: poste.id,
-                    beforeId: data.postes[index - 1]?.id,
-                  })
-                }
-              >
-                <Text
-                  className={
-                    index === 0 ? "text-muted-foreground" : "text-primary"
+            {canManage ? (
+              <View className="my-2 flex-row flex-wrap gap-3">
+                <Pressable
+                  testID={`poste-add-article-${poste.id}`}
+                  onPress={() =>
+                    open("article", null, poste.id, { quantity: "1" })
                   }
                 >
-                  ↑
-                </Text>
-              </Pressable>
-              <Pressable
-                disabled={index === data.postes.length - 1}
-                onPress={() =>
-                  actions.reorderPoste.mutate({
-                    posteId: poste.id,
-                    afterId: data.postes[index + 1]?.id,
-                  })
-                }
-              >
-                <Text
-                  className={
-                    index === data.postes.length - 1
-                      ? "text-muted-foreground"
-                      : "text-primary"
+                  <Text className="text-sm text-primary">
+                    {t("chiffrage.addArticle")}
+                  </Text>
+                </Pressable>
+                <Pressable onPress={() => open("store", null, poste.id)}>
+                  <Text className="text-sm text-primary">
+                    {t("chiffrage.addStoreToPoste")}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  disabled={index === 0}
+                  onPress={() =>
+                    actions.reorderPoste.mutate({
+                      posteId: poste.id,
+                      beforeId: data.postes[index - 1]?.id,
+                    })
                   }
                 >
-                  ↓
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() =>
-                  setConfirm({
-                    title: t("chiffrage.deletePoste", { name: poste.name }),
-                    run: () =>
-                      actions.deletePoste.mutate({ posteId: poste.id }),
-                  })
-                }
-              >
-                <Text className="text-sm text-danger">
-                  {t("common.delete")}
-                </Text>
-              </Pressable>
-            </View>
+                  <Text
+                    className={
+                      index === 0 ? "text-muted-foreground" : "text-primary"
+                    }
+                  >
+                    ↑
+                  </Text>
+                </Pressable>
+                <Pressable
+                  disabled={index === data.postes.length - 1}
+                  onPress={() =>
+                    actions.reorderPoste.mutate({
+                      posteId: poste.id,
+                      afterId: data.postes[index + 1]?.id,
+                    })
+                  }
+                >
+                  <Text
+                    className={
+                      index === data.postes.length - 1
+                        ? "text-muted-foreground"
+                        : "text-primary"
+                    }
+                  >
+                    ↓
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() =>
+                    setConfirm({
+                      title: t("chiffrage.deletePoste", { name: poste.name }),
+                      run: () =>
+                        actions.deletePoste.mutate({ posteId: poste.id }),
+                    })
+                  }
+                >
+                  <Text className="text-sm text-danger">
+                    {t("common.delete")}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
             {poste.articles.map((article) => renderArticle(poste, article))}
             {poste.store_baskets.length > 0 ? (
               <Text className="text-xs text-muted-foreground">
@@ -612,197 +665,201 @@ export default function ProjectChiffrageSection() {
         ))}
       </ScrollView>
 
-      <Sheet
-        ref={sheet}
-        title={kind ? t(`chiffrage.sheet.${kind}`) : ""}
-        snapPoints={["80%"]}
-      >
-        <ScrollView
-          contentContainerClassName="p-4"
-          keyboardShouldPersistTaps="handled"
-        >
-          {kind === "quote" ? (
-            <>
-              <Button
-                testID="quote-pick-library"
-                label={t("chiffrage.pickFromLibrary")}
-                variant="secondary"
-                size="sm"
-                className="mb-3"
-                onPress={() => pickerSheet.current?.present()}
-              />
-              <Input
-                testID="quote-price"
-                label={t("chiffrage.unitPriceHt")}
-                value={draft.unit_price_ht ?? ""}
-                onChangeText={set("unit_price_ht")}
-                keyboardType="decimal-pad"
-                autoFocus
-              />
-              <Input
-                testID="quote-tva"
-                label={t("invoices.form.vatRate")}
-                value={draft.tva_rate ?? "20"}
-                onChangeText={set("tva_rate")}
-                keyboardType="decimal-pad"
-              />
-              <Select
-                testID="quote-store"
-                clearable
-                label={t("chiffrage.shop")}
-                placeholder={t("chiffrage.noShop")}
-                value={draft.store_id || null}
-                options={storeOptions}
-                onChange={(next) => set("store_id")(next ?? "")}
-              />
-              <Input
-                testID="quote-supplier"
-                label={t("chiffrage.supplierName")}
-                value={draft.supplier_name ?? ""}
-                onChangeText={set("supplier_name")}
-              />
-              <Input
-                testID="quote-url"
-                label={t("chiffrage.productUrl")}
-                value={draft.product_url ?? ""}
-                onChangeText={set("product_url")}
-                autoCapitalize="none"
-                keyboardType="url"
-              />
-              <Input
-                testID="quote-note"
-                label={t("invoices.form.notes")}
-                value={draft.note ?? ""}
-                onChangeText={set("note")}
-                multiline
-              />
-            </>
-          ) : (
-            <>
-              <Input
-                testID="chiffrage-name"
-                label={
-                  kind === "unit"
-                    ? t("chiffrage.unitSymbol")
-                    : t("project.form.name")
-                }
-                value={draft.name ?? ""}
-                onChangeText={set("name")}
-                autoFocus
-              />
-              {kind === "article" ? (
+      {canManage ? (
+        <>
+          <Sheet
+            ref={sheet}
+            title={kind ? t(`chiffrage.sheet.${kind}`) : ""}
+            snapPoints={["80%"]}
+          >
+            <ScrollView
+              contentContainerClassName="p-4"
+              keyboardShouldPersistTaps="handled"
+            >
+              {kind === "quote" ? (
                 <>
+                  <Button
+                    testID="quote-pick-library"
+                    label={t("chiffrage.pickFromLibrary")}
+                    variant="secondary"
+                    size="sm"
+                    className="mb-3"
+                    onPress={() => pickerSheet.current?.present()}
+                  />
                   <Input
-                    testID="article-quantity"
-                    label={t("invoices.form.quantity")}
-                    value={draft.quantity ?? "1"}
-                    onChangeText={set("quantity")}
+                    testID="quote-price"
+                    label={t("chiffrage.unitPriceHt")}
+                    value={draft.unit_price_ht ?? ""}
+                    onChangeText={set("unit_price_ht")}
+                    keyboardType="decimal-pad"
+                    autoFocus
+                  />
+                  <Input
+                    testID="quote-tva"
+                    label={t("invoices.form.vatRate")}
+                    value={draft.tva_rate ?? "20"}
+                    onChangeText={set("tva_rate")}
                     keyboardType="decimal-pad"
                   />
                   <Select
-                    testID="article-unit"
+                    testID="quote-store"
                     clearable
-                    label={t("chiffrage.unit")}
-                    placeholder="—"
-                    value={draft.unit || null}
-                    options={unitOptions}
-                    onChange={(next) => set("unit")(next ?? "")}
-                  />
-                  <Select
-                    testID="article-room"
-                    clearable
-                    label={t("chiffrage.room")}
-                    placeholder={t("chiffrage.noRoom")}
-                    value={draft.room_id || null}
-                    options={roomOptions}
-                    onChange={(next) => set("room_id")(next ?? "")}
-                  />
-                </>
-              ) : null}
-              {kind === "store" ? (
-                <>
-                  <Input
-                    testID="store-address"
-                    label={t("project.form.address")}
-                    value={draft.address ?? ""}
-                    onChangeText={set("address")}
+                    label={t("chiffrage.shop")}
+                    placeholder={t("chiffrage.noShop")}
+                    value={draft.store_id || null}
+                    options={storeOptions}
+                    onChange={(next) => set("store_id")(next ?? "")}
                   />
                   <Input
-                    testID="store-url"
-                    label={t("chiffrage.website")}
-                    value={draft.website_url ?? ""}
-                    onChangeText={set("website_url")}
+                    testID="quote-supplier"
+                    label={t("chiffrage.supplierName")}
+                    value={draft.supplier_name ?? ""}
+                    onChangeText={set("supplier_name")}
+                  />
+                  <Input
+                    testID="quote-url"
+                    label={t("chiffrage.productUrl")}
+                    value={draft.product_url ?? ""}
+                    onChangeText={set("product_url")}
                     autoCapitalize="none"
                     keyboardType="url"
                   />
+                  <Input
+                    testID="quote-note"
+                    label={t("invoices.form.notes")}
+                    value={draft.note ?? ""}
+                    onChangeText={set("note")}
+                    multiline
+                  />
                 </>
-              ) : null}
-              {kind === "poste" || kind === "article" ? (
-                <Input
-                  testID="chiffrage-note"
-                  label={t("invoices.form.notes")}
-                  value={draft.note ?? ""}
-                  onChangeText={set("note")}
-                  multiline
-                />
-              ) : null}
-            </>
-          )}
-          <Button
-            testID="chiffrage-submit"
-            label={t("common.save")}
-            loading={busy}
-            onPress={submit}
+              ) : (
+                <>
+                  <Input
+                    testID="chiffrage-name"
+                    label={
+                      kind === "unit"
+                        ? t("chiffrage.unitSymbol")
+                        : t("project.form.name")
+                    }
+                    value={draft.name ?? ""}
+                    onChangeText={set("name")}
+                    autoFocus
+                  />
+                  {kind === "article" ? (
+                    <>
+                      <Input
+                        testID="article-quantity"
+                        label={t("invoices.form.quantity")}
+                        value={draft.quantity ?? "1"}
+                        onChangeText={set("quantity")}
+                        keyboardType="decimal-pad"
+                      />
+                      <Select
+                        testID="article-unit"
+                        clearable
+                        label={t("chiffrage.unit")}
+                        placeholder="—"
+                        value={draft.unit || null}
+                        options={unitOptions}
+                        onChange={(next) => set("unit")(next ?? "")}
+                      />
+                      <Select
+                        testID="article-room"
+                        clearable
+                        label={t("chiffrage.room")}
+                        placeholder={t("chiffrage.noRoom")}
+                        value={draft.room_id || null}
+                        options={roomOptions}
+                        onChange={(next) => set("room_id")(next ?? "")}
+                      />
+                    </>
+                  ) : null}
+                  {kind === "store" ? (
+                    <>
+                      <Input
+                        testID="store-address"
+                        label={t("project.form.address")}
+                        value={draft.address ?? ""}
+                        onChangeText={set("address")}
+                      />
+                      <Input
+                        testID="store-url"
+                        label={t("chiffrage.website")}
+                        value={draft.website_url ?? ""}
+                        onChangeText={set("website_url")}
+                        autoCapitalize="none"
+                        keyboardType="url"
+                      />
+                    </>
+                  ) : null}
+                  {kind === "poste" || kind === "article" ? (
+                    <Input
+                      testID="chiffrage-note"
+                      label={t("invoices.form.notes")}
+                      value={draft.note ?? ""}
+                      onChangeText={set("note")}
+                      multiline
+                    />
+                  ) : null}
+                </>
+              )}
+              <Button
+                testID="chiffrage-submit"
+                label={t("common.save")}
+                loading={busy}
+                onPress={submit}
+              />
+            </ScrollView>
+          </Sheet>
+          <LibraryProductPickerSheet
+            ref={pickerSheet}
+            companyId={project.data?.company_id ?? null}
+            onPick={applyLibraryPick}
           />
-        </ScrollView>
-      </Sheet>
-      <LibraryProductPickerSheet
-        ref={pickerSheet}
-        companyId={project.data?.company_id ?? null}
-        onPick={applyLibraryPick}
-      />
-      <Sheet
-        ref={urlSheet}
-        title={t("chiffrage.imageFromUrl")}
-        snapPoints={["40%"]}
-      >
-        <View className="p-4">
-          <Input
-            testID="article-image-url-input"
-            label={t("chiffrage.imageUrl")}
-            value={imageUrl}
-            onChangeText={setImageUrl}
-            autoCapitalize="none"
-            keyboardType="url"
-            placeholder="https://"
+          <Sheet
+            ref={urlSheet}
+            title={t("chiffrage.imageFromUrl")}
+            snapPoints={["40%"]}
+          >
+            <View className="p-4">
+              <Input
+                testID="article-image-url-input"
+                label={t("chiffrage.imageUrl")}
+                value={imageUrl}
+                onChangeText={setImageUrl}
+                autoCapitalize="none"
+                keyboardType="url"
+                placeholder="https://"
+              />
+              <Button
+                testID="article-image-url-submit"
+                label={t("common.save")}
+                loading={actions.setArticleImageFromUrl.isPending}
+                disabled={!imageUrl.trim()}
+                onPress={() =>
+                  imageArticle &&
+                  actions.setArticleImageFromUrl.mutate(
+                    { articleId: imageArticle.id, url: imageUrl.trim() },
+                    { onSuccess: () => urlSheet.current?.dismiss() },
+                  )
+                }
+              />
+            </View>
+          </Sheet>
+          <ConfirmDialog
+            visible={confirm !== null}
+            title={confirm?.title ?? ""}
+            confirmLabel={t("common.delete")}
+            cancelLabel={t("common.cancel")}
+            destructive
+            onCancel={() => setConfirm(null)}
+            onConfirm={() => {
+              confirm?.run();
+              setConfirm(null);
+            }}
           />
-          <Button
-            testID="article-image-url-submit"
-            label={t("common.save")}
-            loading={actions.setArticleImageFromUrl.isPending}
-            disabled={!imageUrl.trim()}
-            onPress={() =>
-              imageArticle &&
-              actions.setArticleImageFromUrl.mutate(
-                { articleId: imageArticle.id, url: imageUrl.trim() },
-                { onSuccess: () => urlSheet.current?.dismiss() },
-              )
-            }
-          />
-        </View>
-      </Sheet>
-      <ConfirmDialog
-        visible={confirm !== null}
-        title={confirm?.title ?? ""}
-        confirmLabel={t("common.delete")}
-        cancelLabel={t("common.cancel")}
-        destructive
-        onCancel={() => setConfirm(null)}
-        onConfirm={() => {
-          confirm?.run();
-          setConfirm(null);
-        }}
-      />
+        </>
+      ) : null}
     </View>
   );
 }

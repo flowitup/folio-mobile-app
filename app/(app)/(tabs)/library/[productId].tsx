@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 
+import { useCan } from "@/auth/use-can";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +54,7 @@ export default function LibraryProductScreen() {
   const [imageUrl, setImageUrl] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [confirmName, setConfirmName] = useState("");
+  const canManage = useCan("bibliotheque:manage");
 
   if (query.isPending)
     return (
@@ -95,7 +97,11 @@ export default function LibraryProductScreen() {
     };
     if (Object.keys(payload).length > 0)
       update.mutate({ id: product.id, ...payload }, { onSuccess: done });
-    else done();
+    else {
+      // Nothing changed: still confirm, so saving always feels the same.
+      showToast(t("common.saved"), "success");
+      done();
+    }
   }
 
   async function takePhoto() {
@@ -116,12 +122,14 @@ export default function LibraryProductScreen() {
         title={product.name}
         back
         right={
-          <Button
-            testID="product-edit"
-            label={t("common.edit")}
-            size="sm"
-            onPress={() => editSheet.current?.present()}
-          />
+          canManage ? (
+            <Button
+              testID="product-edit"
+              label={t("common.edit")}
+              size="sm"
+              onPress={() => editSheet.current?.present()}
+            />
+          ) : undefined
         }
       />
       <ScrollView contentContainerClassName="p-4 pb-12">
@@ -137,33 +145,38 @@ export default function LibraryProductScreen() {
             <Text className="text-4xl text-muted-foreground">▣</Text>
           )}
         </View>
-        <View className="my-3 flex-row flex-wrap gap-2">
-          <Button
-            testID="product-photo"
-            label={t("library.takePhoto")}
-            size="sm"
-            variant="secondary"
-            loading={uploadImage.isPending}
-            onPress={() => void takePhoto()}
-          />
-          <Button
-            testID="product-image-url"
-            label={t("library.imageFromUrl")}
-            size="sm"
-            variant="secondary"
-            onPress={() => urlSheet.current?.present()}
-          />
-          <Button
-            testID="product-delete"
-            label={t("common.delete")}
-            size="sm"
-            variant="danger"
-            onPress={() => {
-              setConfirmName("");
-              setDeleting(true);
-            }}
-          />
-        </View>
+        {canManage ? (
+          <View className="my-3 flex-row flex-wrap gap-2">
+            <Button
+              testID="product-photo"
+              label={t("library.takePhoto")}
+              size="sm"
+              variant="secondary"
+              loading={uploadImage.isPending}
+              onPress={() => void takePhoto()}
+            />
+            <Button
+              testID="product-image-url"
+              label={t("library.imageFromUrl")}
+              size="sm"
+              variant="secondary"
+              onPress={() => urlSheet.current?.present()}
+            />
+            <Button
+              testID="product-delete"
+              label={t("common.delete")}
+              size="sm"
+              variant="danger"
+              onPress={() => {
+                setConfirmName("");
+                setDeleting(true);
+              }}
+            />
+          </View>
+        ) : (
+          // Read-only: keep the gap the action row used to hold under the image.
+          <View className="my-3" />
+        )}
         <Card className="mb-3">
           <Text className="text-xs text-muted-foreground">
             {t("library.supplier")}
@@ -267,6 +280,7 @@ export default function LibraryProductScreen() {
             testID="image-url-submit"
             label={t("common.save")}
             loading={imageFromUrl.isPending}
+            disabled={!imageUrl.trim()}
             onPress={() =>
               imageFromUrl.mutate(
                 {
@@ -274,7 +288,12 @@ export default function LibraryProductScreen() {
                   url: imageUrl.trim(),
                   force: product.has_image,
                 },
-                { onSuccess: () => urlSheet.current?.dismiss() },
+                {
+                  onSuccess: () => {
+                    setImageUrl("");
+                    urlSheet.current?.dismiss();
+                  },
+                },
               )
             }
           />

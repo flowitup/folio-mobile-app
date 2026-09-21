@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -66,9 +66,9 @@ export default function BillingHub() {
   // focus, which is exactly what `enabled` is there to prevent.
   useRefetchOnFocus(access.allowed ? list.refetch : NOOP_REFETCH);
 
+  const needle = search.trim().toLowerCase();
   const documents = useMemo(() => {
     const all = list.data?.pages.flatMap((page) => page.items) ?? [];
-    const needle = search.trim().toLowerCase();
     return needle
       ? all.filter(
           (d) =>
@@ -76,7 +76,17 @@ export default function BillingHub() {
             d.recipient_name.toLowerCase().includes(needle),
         )
       : all;
-  }, [list.data, search]);
+  }, [list.data, needle]);
+  // The API has no search parameter, so the filter only ever sees the pages already
+  // downloaded: a match on page three reads as "no document" until the list is exhausted.
+  // While a needle is set, keep pulling the next page so the empty state means what it says.
+  // A failed page stops the loop (otherwise it would retry forever) and hands control back
+  // to the manual "load more" button below.
+  const { fetchNextPage, isFetchingNextPage, isFetchNextPageError } = list;
+  const searching = needle !== "" && list.hasNextPage && !isFetchNextPageError;
+  useEffect(() => {
+    if (searching && !isFetchingNextPage) void fetchNextPage();
+  }, [searching, isFetchingNextPage, fetchNextPage]);
 
   return (
     <View className="flex-1 bg-paper">
@@ -138,7 +148,7 @@ export default function BillingHub() {
             />
           </View>
 
-          {list.isPending ? (
+          {list.isPending || searching ? (
             <ActivityIndicator className="mt-4" color={tokens.ink} />
           ) : null}
           {list.isError ? (
@@ -148,7 +158,7 @@ export default function BillingHub() {
               onRetry={() => void list.refetch()}
             />
           ) : null}
-          {list.data && documents.length === 0 ? (
+          {list.data && documents.length === 0 && !searching ? (
             <EmptyState message={t("billing.list.none")} />
           ) : null}
           {documents.length > 0 ? (
@@ -190,7 +200,7 @@ export default function BillingHub() {
               ))}
             </Card>
           ) : null}
-          {list.hasNextPage ? (
+          {list.hasNextPage && !searching ? (
             <Button
               testID="billing-load-more"
               label={t("billing.list.loadMore")}

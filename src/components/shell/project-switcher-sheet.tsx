@@ -29,13 +29,24 @@ export function projectRowMeta(
   meta: string;
   remain: string;
   tone: "ink" | "negative" | "muted";
-  pct: number;
+  /** Share of the budget already spent; null when there is no budget to measure against. */
+  pct: number | null;
 } {
-  const budget = project.budget ?? 0;
   const spent = project.spent ?? 0;
   // The row title already shows the address (the project label), so the meta
   // line only carries the member count and budget state.
   const parts = [t("shell.membersCount", { count: project.user_count ?? 0 })];
+  // A null budget is the backend hiding it from a caller without `project:view_budget`, not a
+  // project without one: say nothing about the budget and draw no gauge against a figure we
+  // were not given. Only a budget the caller can read, and that is zero, is really unset.
+  if (project.budget == null)
+    return {
+      meta: parts.join(" · "),
+      remain: t("shell.spentNoBudget", { amount: formatMoney(spent) }),
+      tone: "muted",
+      pct: null,
+    };
+  const budget = Number(project.budget);
   if (budget <= 0) {
     parts.push(t("shell.noBudget"));
     return {
@@ -132,12 +143,14 @@ export function ProjectSwitcherSheet() {
                         {row.remain}
                       </Text>
                     </View>
-                    <View className="mt-[5px] h-[3px] overflow-hidden rounded-sm bg-paper-2">
-                      <View
-                        className={`h-[3px] ${row.tone === "negative" ? "bg-negative" : "bg-ink"}`}
-                        style={{ width: `${row.pct}%` }}
-                      />
-                    </View>
+                    {row.pct !== null ? (
+                      <View className="mt-[5px] h-[3px] overflow-hidden rounded-sm bg-paper-2">
+                        <View
+                          className={`h-[3px] ${row.tone === "negative" ? "bg-negative" : "bg-ink"}`}
+                          style={{ width: `${row.pct}%` }}
+                        />
+                      </View>
+                    ) : null}
                     <Text
                       className="mt-1 font-sans text-[11px] text-muted"
                       numberOfLines={1}

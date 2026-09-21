@@ -52,6 +52,9 @@ function OverviewTabContent() {
   // released-funds total without `project:view_budget`, so the hero drops the
   // figures measured against them instead of drawing them from zeros.
   const canViewBudget = useProjectCan(projectId, "project:view_budget");
+  // Recording an invoice — an expense or a release of funds — is `project:manage_invoices`
+  // on the backend, so the two quick actions that open the invoice form need it too.
+  const canManageInvoices = useProjectCan(projectId, "project:manage_invoices");
   useRefetchOnFocus(invoices.refetch);
   useRefetchOnFocus(tasks.refetch);
 
@@ -84,10 +87,13 @@ function OverviewTabContent() {
   );
 
   const ready = Boolean(project && invoices.data);
+  // The labor tab applies `segment` from an effect keyed on the params it receives, so a
+  // repeated tap must carry a value that changed — otherwise the second one is a no-op once
+  // the user has moved to another segment themselves.
   const payLabor = () =>
     router.navigate({
       pathname: "/(app)/(tabs)/labor",
-      params: { segment: "payments" },
+      params: { segment: "payments", focus: Date.now().toString() },
     });
 
   return (
@@ -116,6 +122,7 @@ function OverviewTabContent() {
             }
             onPayLabor={payLabor}
             canViewBudget={canViewBudget}
+            canManageInvoices={canManageInvoices}
           />
         ) : (
           <View className="h-24 items-center justify-center">

@@ -144,6 +144,26 @@ export function InvoiceForm({
   );
   const totals = invoiceTotals(numericLines);
 
+  /**
+   * Active methods plus, when editing, the one this invoice was written with. A method
+   * deactivated since then is gone from the list, and dropping it would leave the field on
+   * its placeholder while `payment_method_id` stayed in the payload — a save that fails with
+   * nothing on screen to explain it. It stays selected, and any active one may replace it.
+   */
+  const paymentMethodOptions = useMemo(() => {
+    const options = (paymentMethods.data ?? [])
+      .filter((method) => method.is_active)
+      .map((method) => ({ value: method.id, label: method.label }));
+    const own = initial?.payment_method_id;
+    if (own && !options.some((option) => option.value === own))
+      options.push({
+        value: own,
+        label:
+          initial?.payment_method_label ?? t("invoices.form.paymentMethodNone"),
+      });
+    return options;
+  }, [paymentMethods.data, initial, t]);
+
   const selectedWorker = workers.data?.find((worker) => worker.id === workerId);
   const laborWithWorker = type === "labor" && Boolean(workerId);
 
@@ -164,6 +184,10 @@ export function InvoiceForm({
       return setError(t("invoices.form.serviceMonthRequired"));
     const items = numericLines.filter((line) => line.description);
     if (items.length === 0) return setError(t("invoices.form.itemsRequired"));
+    // The backend answers 422 on a quantity of zero or less; an unparsable one already
+    // reads as 0 above, so a described line with a typo in its quantity is caught here too.
+    if (items.some((line) => !(line.quantity > 0)))
+      return setError(t("invoices.form.quantityPositive"));
     setError(null);
 
     const payload: CreateInvoicePayload = {
@@ -270,9 +294,7 @@ export function InvoiceForm({
           label={t("invoices.form.paymentMethod")}
           placeholder={t("invoices.form.paymentMethodNone")}
           value={paymentMethodId}
-          options={(paymentMethods.data ?? [])
-            .filter((m) => m.is_active)
-            .map((m) => ({ value: m.id, label: m.label }))}
+          options={paymentMethodOptions}
           onChange={setPaymentMethodId}
         />
       ) : null}
@@ -295,8 +317,9 @@ export function InvoiceForm({
           />
           <Select<SettledVia>
             testID="invoice-settled-via"
+            clearable
             label={t("invoices.form.settledVia")}
-            placeholder={t("invoices.form.settledViaCash")}
+            placeholder={t("invoices.form.settledViaNone")}
             value={settledVia}
             options={[
               { value: "cash", label: t("invoices.form.settledViaCash") },

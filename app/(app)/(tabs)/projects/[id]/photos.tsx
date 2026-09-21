@@ -16,7 +16,7 @@ import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { EmptyState } from "@/components/ui/primitives";
+import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
 import { ToastViewport, showToast } from "@/components/ui/toast";
 import {
@@ -89,7 +89,14 @@ export default function ProjectPhotosSection() {
           />
         ) : null}
         {photos.isPending ? <ActivityIndicator className="mt-8" /> : null}
-        {!photos.isPending && groups.length === 0 ? (
+        {photos.isError ? (
+          <ErrorState
+            message={t("photos.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void photos.refetch()}
+          />
+        ) : null}
+        {!photos.isPending && !photos.isError && groups.length === 0 ? (
           <EmptyState message={t("photos.none")} />
         ) : null}
         {groups.map(([day, items]) => (

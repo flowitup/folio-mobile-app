@@ -69,7 +69,12 @@ export default function AdminUsersScreen() {
           placeholder={t("admin.bulkAdd.userSearch.placeholder")}
           placeholderTextColor="#a3a3a3"
           value={search}
-          onChangeText={setSearch}
+          // Typing again means "look for someone else": without dropping the selection the
+          // results stayed hidden behind the selected card and could never be reached again.
+          onChangeText={(text) => {
+            setSearch(text);
+            setSelected(null);
+          }}
           autoCapitalize="none"
           autoCorrect={false}
         />
@@ -109,19 +114,27 @@ export default function AdminUsersScreen() {
                 email: selected.email,
               })}
             </Text>
-            <Button
-              testID="user-edit"
-              label={t("common.edit")}
-              size="sm"
-              variant="secondary"
-              className="mt-2"
-              onPress={() => {
-                setEditEmail(selected.email);
-                setEditName(selected.display_name ?? "");
-                setEditPhone(selected.phone ?? "");
-                editSheet.current?.present();
-              }}
-            />
+            <View className="mt-2 flex-row gap-2">
+              <Button
+                testID="user-edit"
+                label={t("common.edit")}
+                size="sm"
+                variant="secondary"
+                onPress={() => {
+                  setEditEmail(selected.email);
+                  setEditName(selected.display_name ?? "");
+                  setEditPhone(selected.phone ?? "");
+                  editSheet.current?.present();
+                }}
+              />
+              <Button
+                testID="user-change"
+                label={t("common.change")}
+                size="sm"
+                variant="secondary"
+                onPress={() => setSelected(null)}
+              />
+            </View>
           </Card>
         ) : null}
       </ScrollView>

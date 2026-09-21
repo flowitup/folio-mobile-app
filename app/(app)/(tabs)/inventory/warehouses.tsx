@@ -1,8 +1,10 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
+import { useCan } from "@/auth/use-can";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
@@ -14,6 +16,7 @@ import {
 } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
+import { showToast } from "@/components/ui/toast";
 import { useMyCompanies } from "@/features/companies/companies-api";
 import {
   useCreateWarehouse,
@@ -42,8 +45,13 @@ export default function WarehousesScreen() {
   const { t } = useTranslation();
   const tokens = useTokens();
   const companies = useMyCompanies();
-  const [companyId, setCompanyId] = useState<string | null>(null);
+  // The inventory screen hands over the company it was showing; without it the first one wins.
+  const params = useLocalSearchParams<{ companyId?: string }>();
+  const [companyId, setCompanyId] = useState<string | null>(
+    params.companyId ?? null,
+  );
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
+  const canManage = useCan("inventory:manage");
 
   const warehouses = useWarehouses(effectiveCompany);
   const items = useInventoryItems(effectiveCompany);
@@ -74,7 +82,11 @@ export default function WarehousesScreen() {
   function submit(payload: CreateWarehousePayload | UpdateWarehousePayload) {
     const done = { onSuccess: () => formSheet.current?.dismiss() };
     if (!editing) return create.mutate(payload as CreateWarehousePayload, done);
-    if (Object.keys(payload).length === 0) return formSheet.current?.dismiss();
+    // Nothing changed: still confirm, so saving always feels the same.
+    if (Object.keys(payload).length === 0) {
+      showToast(t("common.saved"), "success");
+      return formSheet.current?.dismiss();
+    }
     update.mutate({ id: editing.id, ...payload }, done);
   }
 
@@ -86,12 +98,14 @@ export default function WarehousesScreen() {
         title={t("inventory.warehouses.title")}
         back
         right={
-          <Button
-            testID="warehouse-add"
-            label={`＋ ${t("inventory.warehouses.add")}`}
-            size="sm"
-            onPress={() => openForm(null)}
-          />
+          canManage ? (
+            <Button
+              testID="warehouse-add"
+              label={`＋ ${t("inventory.warehouses.add")}`}
+              size="sm"
+              onPress={() => openForm(null)}
+            />
+          ) : undefined
         }
       />
       <ScrollView contentContainerClassName="p-4 pb-24">
@@ -120,12 +134,14 @@ export default function WarehousesScreen() {
           <EmptyState
             message={t("inventory.warehouses.empty")}
             action={
-              <Button
-                testID="warehouse-add-empty"
-                label={t("inventory.warehouses.add")}
-                size="sm"
-                onPress={() => openForm(null)}
-              />
+              canManage ? (
+                <Button
+                  testID="warehouse-add-empty"
+                  label={t("inventory.warehouses.add")}
+                  size="sm"
+                  onPress={() => openForm(null)}
+                />
+              ) : undefined
             }
           />
         ) : null}
@@ -155,17 +171,19 @@ export default function WarehousesScreen() {
                         count: units.get(warehouse.id) ?? 0,
                       })}
                     </Text>
-                    <Button
-                      testID={`warehouse-delete-${warehouse.id}`}
-                      label={t("common.delete")}
-                      size="sm"
-                      variant="ghost"
-                      onPress={() => setDeleting(warehouse)}
-                    />
+                    {canManage ? (
+                      <Button
+                        testID={`warehouse-delete-${warehouse.id}`}
+                        label={t("common.delete")}
+                        size="sm"
+                        variant="ghost"
+                        onPress={() => setDeleting(warehouse)}
+                      />
+                    ) : null}
                   </View>
                 }
-                onPress={() => openForm(warehouse)}
-                chevron
+                onPress={canManage ? () => openForm(warehouse) : undefined}
+                chevron={canManage}
               />
             ))}
           </Card>
@@ -193,6 +211,8 @@ export default function WarehousesScreen() {
         confirmLabel={t("common.delete")}
         cancelLabel={t("common.cancel")}
         destructive
+        // A warehouse that still holds units cannot go: the dialog only says so.
+        confirmDisabled={deletingUnits > 0}
         loading={remove.isPending}
         onCancel={() => setDeleting(null)}
         onConfirm={() =>

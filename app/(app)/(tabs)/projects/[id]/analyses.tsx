@@ -16,7 +16,12 @@ import { WebView } from "react-native-webview";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { ToastViewport, showToast } from "@/components/ui/toast";
@@ -70,6 +75,7 @@ export default function ProjectAnalysesSection() {
   const [sourceUrl, setSourceUrl] = useState("");
   const [tagsDraft, setTagsDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [viewing, setViewing] = useState<Analysis | null>(null);
   const content = useAnalysisContent(id, viewing?.id ?? null);
   const [deleting, setDeleting] = useState<Analysis | null>(null);
@@ -82,6 +88,7 @@ export default function ProjectAnalysesSection() {
     setSourceUrl(analysis?.source_url ?? "");
     setTagsDraft((analysis?.tags ?? []).join(", "));
     setError(null);
+    setFileError(null);
     formSheet.current?.present();
   }
 
@@ -91,8 +98,11 @@ export default function ProjectAnalysesSection() {
       .split(",")
       .map((v) => v.trim())
       .filter(Boolean);
+    setError(null);
+    setFileError(null);
     if (!trimmed) return setError(t("analyses.titleRequired"));
-    if (!editing && !file) return setError(t("analyses.fileRequired"));
+    // The file is picked several rows above the title input, so its error belongs there.
+    if (!editing && !file) return setFileError(t("analyses.fileRequired"));
     const done = { onSuccess: () => formSheet.current?.dismiss() };
     if (editing)
       update.mutate(
@@ -152,7 +162,14 @@ export default function ProjectAnalysesSection() {
           onChange={(value) => setTag(value === "__all__" ? null : value)}
         />
         {analyses.isPending ? <ActivityIndicator className="mt-8" /> : null}
-        {!analyses.isPending && items.length === 0 ? (
+        {analyses.isError ? (
+          <ErrorState
+            message={t("analyses.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void analyses.refetch()}
+          />
+        ) : null}
+        {!analyses.isPending && !analyses.isError && items.length === 0 ? (
           <EmptyState message={t("analyses.none")} />
         ) : null}
         {items.map((analysis) => (
@@ -228,8 +245,10 @@ export default function ProjectAnalysesSection() {
                     "application/xhtml+xml",
                     "*/*",
                   ]).then((result) => {
-                    if (result.status === "picked") setFile(result.files[0]);
-                    else if (result.status === "denied")
+                    if (result.status === "picked") {
+                      setFile(result.files[0]);
+                      setFileError(null);
+                    } else if (result.status === "denied")
                       showToast(
                         t("invoices.attachments.permissionDenied"),
                         "error",
@@ -237,6 +256,14 @@ export default function ProjectAnalysesSection() {
                   })
                 }
               />
+            ) : null}
+            {fileError ? (
+              <Text
+                testID="analysis-file-error"
+                className="-mt-3 mb-4 text-sm text-danger"
+              >
+                {fileError}
+              </Text>
             ) : null}
             <Input
               testID="analysis-title"

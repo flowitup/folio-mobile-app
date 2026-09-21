@@ -9,7 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
 import { Input } from "@/components/ui/input";
 import { MonthPicker } from "@/components/ui/month-picker";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { showToast } from "@/components/ui/toast";
 import { ScreenTitle } from "@/components/ui/typography";
 import { AttendanceCalendar } from "@/features/labor/attendance-calendar";
@@ -31,6 +36,11 @@ import {
   toIsoDate,
 } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
+import {
+  SELF_ATTENDANCE_MAX_BACKDATE_DAYS,
+  canSelfLogDay,
+  dayInMonth,
+} from "@/lib/labor/attendance-day";
 import { monthRange } from "@/lib/labor/month-range";
 import { classifyOwnEdit } from "@/lib/labor/own-attendance-edit";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -56,7 +66,10 @@ export function WorkerAttendanceTab() {
   const [month, setMonth] = useState(currentMonth());
   const range = useMemo(() => monthRange(month), [month]);
   const today = useMemo(() => toIsoDate(new Date()), []);
-  const [selectedDay, setSelectedDay] = useState(today);
+  // Derived, never reset in an effect: a day picked in another month must not survive the
+  // month stepper, or the log card would offer to log a day the calendar no longer shows.
+  const [pickedDay, setPickedDay] = useState<string | null>(null);
+  const selectedDay = dayInMonth(pickedDay, month, today);
   const [shift, setShift] = useState<ShiftType>("full");
 
   const workers = useWorkers(projectId);
@@ -92,9 +105,11 @@ export function WorkerAttendanceTab() {
   useRefetchOnFocus(roster.refetch);
   useRefetchOnFocus(dayPaySummary.refetch);
 
-  const myWorker =
-    (workers.data ?? []).find((w) => w.user_id === user?.id) ??
-    workers.data?.[0];
+  // Only the worker linked to this account — never a first-row fallback, which would show
+  // (and log against) a colleague's row for a member the backend answers with every worker.
+  const myWorker = user?.id
+    ? (workers.data ?? []).find((w) => w.user_id === user.id)
+    : undefined;
   const monthEntries = useMemo(
     () => [...(entries.data ?? [])].sort((a, b) => (a.date < b.date ? 1 : -1)),
     [entries.data],
@@ -103,11 +118,19 @@ export function WorkerAttendanceTab() {
     (e) => e.status === "pending",
   ).length;
   const selectedEntry = monthEntries.find((e) => e.date === selectedDay);
-  const canLogSelected = selectedDay <= today && !selectedEntry;
+  // The backend refuses anything older than today − SELF_ATTENDANCE_MAX_BACKDATE_DAYS.
+  const dayInSelfLogWindow = canSelfLogDay(selectedDay, today);
+  const canLogSelected = dayInSelfLogWindow && !selectedEntry;
   const colorOf = () => tokens.positive;
 
   function selectDay(iso: string) {
-    setSelectedDay(iso);
+    setPickedDay(iso);
+    setEditing(false);
+  }
+
+  /** Stepping the month re-derives the selected day, so an open edit form no longer matches it. */
+  function selectMonth(next: string) {
+    setMonth(next);
     setEditing(false);
   }
 
@@ -179,12 +202,19 @@ export function WorkerAttendanceTab() {
           <MonthPicker
             testID="worker-month"
             value={month}
-            onChange={setMonth}
+            onChange={selectMonth}
             compact
           />
         </View>
 
-        {workers.isFetched && !myWorker ? (
+        {workers.isError ? (
+          <ErrorState
+            message={t("home.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void workers.refetch()}
+          />
+        ) : null}
+        {workers.isSuccess && !myWorker ? (
           <Card radius={14} testID="worker-not-linked">
             <Text className="font-sans text-[13px] text-muted">
               {t("worker.notLinked")}
@@ -319,9 +349,14 @@ export function WorkerAttendanceTab() {
                     }
                   />
                 </View>
-                {selectedDay > today ? (
-                  <Text className="mt-2 font-sans text-[12px] text-muted">
-                    {t("worker.futureDay")}
+                {!dayInSelfLogWindow ? (
+                  <Text
+                    testID="worker-log-window-hint"
+                    className="mt-2 font-sans text-[12px] text-muted"
+                  >
+                    {t("worker.futureDay", {
+                      days: SELF_ATTENDANCE_MAX_BACKDATE_DAYS,
+                    })}
                   </Text>
                 ) : null}
               </>

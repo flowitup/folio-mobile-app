@@ -1,6 +1,7 @@
 import type { Invoice } from "@/features/invoices/invoice-types";
 import type { MonthlySummaryRow } from "@/features/labor/labor-types";
 import {
+  UNASSIGNED_MONTH,
   buildWorkerSalaryMonths,
   salaryTotals,
 } from "@/lib/labor/worker-salary-months";
@@ -74,5 +75,33 @@ describe("buildWorkerSalaryMonths", () => {
   });
   it("flags months with work but no payment as unpaid", () => {
     expect(buildWorkerSalaryMonths(rows, [], "w2")[0].status).toBe("unpaid");
+  });
+
+  it("keeps payments without a service month in their own bucket, last, and in the total paid", () => {
+    const noMonth = {
+      id: "e",
+      type: "labor",
+      total_amount: 200,
+      service_month: null,
+      worker_id: "w1",
+      issue_date: "2026-09-18",
+    } as unknown as Invoice;
+    const months = buildWorkerSalaryMonths(
+      rows,
+      [inv("a", 600, "2026-08"), noMonth],
+      "w1",
+    );
+
+    expect(months.map((m) => m.month)).toEqual([
+      "2026-09",
+      "2026-08",
+      UNASSIGNED_MONTH,
+    ]);
+    const unassigned = months[months.length - 1];
+    expect(unassigned.paid).toBe(200);
+    expect(unassigned.earned).toBe(0);
+    expect(unassigned.invoices.map((i) => i.id)).toEqual(["e"]);
+    // The screen's "Total paid" now matches the labor tab, which counts every labor invoice.
+    expect(salaryTotals(months).paid).toBe(800);
   });
 });

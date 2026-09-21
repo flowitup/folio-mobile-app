@@ -101,6 +101,9 @@ export function LaborEntryRow({
 }: EntryRowProps) {
   const { t } = useTranslation();
   const chip = shiftChip(entry, t);
+  // A self-logged day is unpriced until a manager validates it: the backend sends 0, which
+  // reads as "worked for free" next to the other rows.
+  const pending = entry.status === "pending";
   return (
     <Pressable
       testID={testID}
@@ -119,10 +122,17 @@ export function LaborEntryRow({
         <Text className="font-sans text-[11.5px] text-muted" numberOfLines={1}>
           {role ?? "—"} ·{" "}
           <Text className="font-mono-regular">
-            {formatMoney(entry.effective_cost)}
+            {pending ? "—" : formatMoney(entry.effective_cost)}
           </Text>
         </Text>
       </View>
+      {pending ? (
+        <Badge
+          testID="entry-pending-badge"
+          label={t("worker.status.pending")}
+          tone="warning"
+        />
+      ) : null}
       {entry.change_requested_at ? (
         <Badge
           testID="entry-change-requested"

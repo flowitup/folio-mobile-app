@@ -75,6 +75,9 @@ function ExpensesTabContent() {
   const [month, setMonth] = useState(currentMonth());
   const invoices = useInvoices(projectId);
   const canViewBudget = useProjectCan(projectId, "project:view_budget");
+  // Writing an invoice needs `project:manage_invoices`; without it the form would only walk
+  // the user into a 403 on submit, so the "+" never appears.
+  const canManageInvoices = useProjectCan(projectId, "project:manage_invoices");
   const billing = useBillingAccess();
   const chatEnabled = useChatEnabled();
   // The add button floats over the sheet, so the sheet has to end above it — otherwise the
@@ -176,7 +179,8 @@ function ExpensesTabContent() {
               tone="ink"
               testID="expenses-month"
               value={month}
-              onChange={(next) => setMonth(next > latestMonth ? month : next)}
+              max={latestMonth}
+              onChange={setMonth}
               prevLabel={t("expenses.prevMonth")}
               nextLabel={t("expenses.nextMonth")}
             />
@@ -299,7 +303,7 @@ function ExpensesTabContent() {
         ) : null}
       </InkSheetScreen>
 
-      {project ? (
+      {project && canManageInvoices ? (
         <Pressable
           testID="invoices-create"
           accessibilityRole="button"

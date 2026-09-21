@@ -12,7 +12,7 @@ import { useAuth } from "@/auth/auth-context";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
-import { Card, EmptyState } from "@/components/ui/primitives";
+import { Card, EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenTitle } from "@/components/ui/typography";
 import { shortDayMonth } from "@/features/dashboard/overview-cards";
 import { projectCan } from "@/features/projects/projects-api";
@@ -143,7 +143,14 @@ export default function PlanningTab() {
         {tasks.isPending ? (
           <ActivityIndicator className="mt-6" color={tokens.ink} />
         ) : null}
-        {!tasks.isPending && laneTasks.length === 0 ? (
+        {tasks.isError ? (
+          <ErrorState
+            message={t("tasks.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void tasks.refetch()}
+          />
+        ) : null}
+        {!tasks.isPending && !tasks.isError && laneTasks.length === 0 ? (
           <EmptyState message={t("tasks.none")} />
         ) : null}
         {laneTasks.length > 0 ? (

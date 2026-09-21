@@ -13,7 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
@@ -112,12 +117,24 @@ export default function ProjectDocumentsSection() {
     editSheet.current?.present();
   }
 
-  const toggleKind = (kind: ProjectDocumentKind) =>
+  // Every filter and every ordering change starts the listing over: page 3 of the previous
+  // narrowing can be past the end of the new one, which reads as an empty section.
+  const toggleKind = (kind: ProjectDocumentKind) => {
+    setPage(1);
     setKinds((current) =>
       current.includes(kind)
         ? current.filter((k) => k !== kind)
         : [...current, kind],
     );
+  };
+  const changeSort = (next: DocumentSort) => {
+    setPage(1);
+    setSort(next);
+  };
+  const toggleOrder = () => {
+    setPage(1);
+    setOrder((current) => (current === "desc" ? "asc" : "desc"));
+  };
   const items = documents.data?.items ?? [];
 
   if (!canAccess)
@@ -209,7 +226,7 @@ export default function ProjectDocumentsSection() {
                 value,
                 label: t(`documents.sort.${value}`),
               }))}
-              onChange={setSort}
+              onChange={changeSort}
             />
           </View>
           <Button
@@ -218,7 +235,7 @@ export default function ProjectDocumentsSection() {
             variant="secondary"
             size="sm"
             className="mb-4"
-            onPress={() => setOrder((o) => (o === "desc" ? "asc" : "desc"))}
+            onPress={toggleOrder}
           />
           <Button
             testID="documents-add"
@@ -231,7 +248,14 @@ export default function ProjectDocumentsSection() {
         </View>
 
         {documents.isPending ? <ActivityIndicator className="mt-8" /> : null}
-        {!documents.isPending && items.length === 0 ? (
+        {documents.isError ? (
+          <ErrorState
+            message={t("documents.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void documents.refetch()}
+          />
+        ) : null}
+        {!documents.isPending && !documents.isError && items.length === 0 ? (
           <EmptyState message={t("documents.none")} />
         ) : null}
         {items.map((document) => (

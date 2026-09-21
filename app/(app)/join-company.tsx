@@ -39,7 +39,10 @@ export default function JoinCompanyScreen() {
   const code = normalizeJoinCode(raw);
   const canJoin = code.length >= 4 && !join.isPending;
   const hasCompany = (companies.data?.length ?? 0) > 0;
-  const canGoBack = another === "1" || hasCompany;
+  // Anything that pushed this screen — the onboarding hub included — leaves history to pop,
+  // and stranding a user without a company there was the bug. Only a root presentation
+  // (sign-up landing straight here) has nowhere to go back to.
+  const canGoBack = another === "1" || hasCompany || router.canGoBack();
 
   function submit() {
     if (!canJoin) return;

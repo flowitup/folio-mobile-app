@@ -29,6 +29,7 @@ import { projectCan, useProject } from "@/features/projects/projects-api";
 import { formatDate, formatMonth } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import {
+  UNASSIGNED_MONTH,
   buildWorkerSalaryMonths,
   salaryTotals,
 } from "@/lib/labor/worker-salary-months";
@@ -215,16 +216,18 @@ export default function ProjectSalariesSection({
           <EmptyState message={t("salaries.noMonths")} />
         ) : null}
         {months.map((row) => (
-          <Card key={row.month} className="mb-2">
+          <Card key={row.month || "unassigned"} className="mb-2">
             <Pressable
-              testID={`salary-month-${row.month}`}
+              testID={`salary-month-${row.month || "unassigned"}`}
               onPress={() =>
                 setExpanded(expanded === row.month ? null : row.month)
               }
             >
               <View className="flex-row items-center justify-between">
                 <Text className="text-base font-semibold capitalize text-primary">
-                  {formatMonth(row.month)}
+                  {row.month === UNASSIGNED_MONTH
+                    ? t("salaries.noMonth")
+                    : formatMonth(row.month)}
                 </Text>
                 <Badge
                   label={t(`salaries.status.${row.status}`)}
@@ -257,7 +260,8 @@ export default function ProjectSalariesSection({
               <View className="mt-2 flex-row gap-2">
                 {row.status !== "paid" &&
                 row.status !== "overpaid" &&
-                row.earned > 0 ? (
+                row.earned > 0 &&
+                row.month !== UNASSIGNED_MONTH ? (
                   <Button
                     testID={`salary-pay-${row.month}`}
                     label={t("salaries.markPaid")}
@@ -267,7 +271,7 @@ export default function ProjectSalariesSection({
                 ) : null}
                 {row.paid > 0 ? (
                   <Button
-                    testID={`salary-unpay-${row.month}`}
+                    testID={`salary-unpay-${row.month || "unassigned"}`}
                     label={t("salaries.markUnpaid")}
                     size="sm"
                     variant="secondary"
@@ -321,7 +325,10 @@ export default function ProjectSalariesSection({
         visible={unpaying !== null}
         title={t("salaries.unpaidConfirm", {
           count: unpaying?.invoices.length ?? 0,
-          month: unpaying ? formatMonth(unpaying.month) : "",
+          month:
+            unpaying && unpaying.month !== UNASSIGNED_MONTH
+              ? formatMonth(unpaying.month)
+              : t("salaries.noMonth"),
         })}
         confirmLabel={t("salaries.markUnpaid")}
         cancelLabel={t("common.cancel")}
