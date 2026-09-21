@@ -124,7 +124,7 @@ export function useAssistantAction(channelKey: string) {
           body: { action, payload, reply_to_id },
         }),
       ),
-    onMutate: async ({ action, reply_to_id }) => {
+    onMutate: async ({ action, payload, reply_to_id }) => {
       await queryClient.cancelQueries({ queryKey: messagesKey });
       const previous = queryClient.getQueryData<ChatMessagesPage>(messagesKey);
       queryClient.setQueryData<ChatMessagesPage | undefined>(
@@ -136,7 +136,11 @@ export function useAssistantAction(channelKey: string) {
               message.id === reply_to_id
                 ? {
                     ...message,
-                    payload: { ...(message.payload ?? {}), answered: action },
+                    payload: {
+                      ...(message.payload ?? {}),
+                      answered: action,
+                      answered_payload: payload ?? {},
+                    },
                   }
                 : message,
             ),

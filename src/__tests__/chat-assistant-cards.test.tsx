@@ -183,6 +183,7 @@ describe("AssistantChoice", () => {
             { label: "Annuler", action: "cancel", payload: {} },
           ],
           answered: null,
+          answeredPayload: null,
         }}
       />,
     );
@@ -222,6 +223,7 @@ describe("AssistantChoice", () => {
             { label: "Annuler", action: "cancel", payload: {} },
           ],
           answered: "cancel",
+          answeredPayload: null,
         }}
       />,
     );
@@ -235,6 +237,58 @@ describe("AssistantChoice", () => {
         .accessibilityState.disabled,
     ).toBe(true);
     expect(screen.getByTestId("assistant-choice-answered")).toBeTruthy();
+  });
+
+  it("fills only the tapped option when several options share one action", async () => {
+    mockPost.mockResolvedValue({ data: { accepted: true } });
+    const message = assistantMessage({
+      id: "choice-2",
+      content_type: "choice",
+    });
+
+    await renderWithClient(
+      <AssistantChoice
+        message={message}
+        payload={{
+          prompt: "Quel chantier ?",
+          options: [
+            {
+              label: "Tour",
+              action: "set_project",
+              payload: { project_id: "a" },
+            },
+            {
+              label: "Riverside",
+              action: "set_project",
+              payload: { project_id: "b" },
+            },
+          ],
+          answered: null,
+          answeredPayload: null,
+        }}
+      />,
+    );
+
+    const [first, second] = screen.getAllByTestId(
+      "assistant-choice-option-set_project",
+    );
+    await fireEvent.press(second);
+
+    await waitFor(() =>
+      expect(second.props.accessibilityState.selected).toBe(true),
+    );
+    expect(first.props.accessibilityState.selected).toBe(false);
+    expect(first.props.accessibilityState.disabled).toBe(true);
+    expect(mockPost).toHaveBeenCalledWith(
+      "/api/v1/assistant/actions",
+      expect.objectContaining({
+        body: {
+          action: "set_project",
+          payload: { project_id: "b" },
+          reply_to_id: "choice-2",
+        },
+      }),
+    );
   });
 });
 

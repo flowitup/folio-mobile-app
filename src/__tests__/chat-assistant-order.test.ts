@@ -1,4 +1,5 @@
 import {
+  isChosenOption,
   orderChannels,
   parseCardPayload,
   parseChoicePayload,
@@ -105,7 +106,31 @@ describe("parseChoicePayload", () => {
         { label: "Annuler", action: "cancel", payload: {} },
       ],
       answered: null,
+      answeredPayload: null,
     });
+  });
+
+  it("keeps the recorded option payload so same-action options can be told apart", () => {
+    const options = [
+      { label: "A", action: "set_project", payload: { project_id: "a" } },
+      { label: "B", action: "set_project", payload: { project_id: "b" } },
+    ];
+    const parsed = parseChoicePayload({
+      prompt: "Quel chantier ?",
+      options,
+      answered: "set_project",
+      answered_payload: { project_id: "b" },
+    });
+    expect(parsed?.answeredPayload).toEqual({ project_id: "b" });
+    expect(isChosenOption(options[0], "set_project", { project_id: "b" })).toBe(
+      false,
+    );
+    expect(isChosenOption(options[1], "set_project", { project_id: "b" })).toBe(
+      true,
+    );
+    // Older servers record only the action: every option with that action counts as chosen.
+    expect(isChosenOption(options[0], "set_project", null)).toBe(true);
+    expect(isChosenOption(options[0], "cancel", null)).toBe(false);
   });
 
   it("carries the server's answered action through unchanged", () => {

@@ -14,6 +14,8 @@ import {
   ASSISTANT_BADGE_I18N_KEY,
   ASSISTANT_BADGE_TONE,
   ASSISTANT_JOB_STATUS_I18N_KEY,
+  type AssistantChoiceOption,
+  isChosenOption,
 } from "@/lib/chat/assistant";
 import type {
   AssistantCardPayload,
@@ -122,8 +124,13 @@ export function AssistantChoice({
   // list above), but nothing here guarantees a subscriber re-renders it from the cache the
   // instant the mutation starts, so the tap has to make its own button state immediately.
   // The server's `payload.answered` (once it arrives) always wins over this guess.
-  const [pendingChoice, setPendingChoice] = useState<string | null>(null);
-  const answered = payload.answered ?? pendingChoice;
+  const [pendingChoice, setPendingChoice] =
+    useState<AssistantChoiceOption | null>(null);
+  const answered = payload.answered ?? pendingChoice?.action ?? null;
+  // A server that only recorded the action (no `answered_payload`) still gets the exact
+  // option from the local tap while this widget lives.
+  const answeredPayload =
+    payload.answeredPayload ?? pendingChoice?.payload ?? null;
 
   return (
     <View
@@ -134,18 +141,18 @@ export function AssistantChoice({
         {payload.prompt}
       </Text>
       <View className="gap-1.5">
-        {payload.options.map((option) => {
-          const chosen = answered === option.action;
+        {payload.options.map((option, index) => {
+          const chosen = isChosenOption(option, answered, answeredPayload);
           const disabled = answered !== null || action.isPending;
           return (
             <Pressable
-              key={option.action}
+              key={`${option.action}-${index}`}
               testID={`assistant-choice-option-${option.action}`}
               accessibilityRole="button"
               accessibilityState={{ disabled, selected: chosen }}
               disabled={disabled}
               onPress={() => {
-                setPendingChoice(option.action);
+                setPendingChoice(option);
                 action.mutate(
                   {
                     action: option.action,

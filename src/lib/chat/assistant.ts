@@ -33,6 +33,41 @@ export interface AssistantChoicePayload {
   prompt: string;
   options: AssistantChoiceOption[];
   answered: string | null;
+  /** The option payload the server recorded with the answer (absent on older servers). */
+  answeredPayload: Record<string, unknown> | null;
+}
+
+/** Stable comparison of two option payloads (key order does not matter). */
+function samePayload(
+  a: Record<string, unknown>,
+  b: Record<string, unknown>,
+): boolean {
+  const normalise = (value: unknown): string =>
+    JSON.stringify(value, (_key, inner) =>
+      isRecord(inner) && !Array.isArray(inner)
+        ? Object.fromEntries(
+            Object.keys(inner)
+              .sort()
+              .map((k) => [k, inner[k]]),
+          )
+        : inner,
+    );
+  return normalise(a) === normalise(b);
+}
+
+/**
+ * Whether `option` is the one that answered the choice. Several options can share an
+ * action (two "set_project" buttons differ only by payload), so the action alone is not
+ * enough; the recorded payload decides when the server (or the local tap) provides it.
+ */
+export function isChosenOption(
+  option: AssistantChoiceOption,
+  answered: string | null,
+  answeredPayload: Record<string, unknown> | null,
+): boolean {
+  if (answered === null || answered !== option.action) return false;
+  if (answeredPayload === null) return true;
+  return samePayload(option.payload, answeredPayload);
 }
 
 export type AssistantJobState =
@@ -125,6 +160,9 @@ export function parseChoicePayload(
     prompt: raw.prompt,
     options,
     answered: typeof raw.answered === "string" ? raw.answered : null,
+    answeredPayload: isRecord(raw.answered_payload)
+      ? raw.answered_payload
+      : null,
   };
 }
 
