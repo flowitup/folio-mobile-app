@@ -1599,6 +1599,24 @@
     "recordingFailed": "Không khởi động được micro.",
     "recordingLost": "Bản ghi đã bị mất."
   },
+  "assistant": {
+    "title": "Trợ lý",
+    "subtitle": "Ảnh hoá đơn, vật tư, dụng cụ ở đâu",
+    "statusQueued": "Đang chờ",
+    "statusRunning": "Đang xử lý…",
+    "statusNotReady": "Chưa sẵn sàng",
+    "statusBlocked": "Bị chặn",
+    "statusDone": "Hoàn tất",
+    "statusFailed": "Thất bại",
+    "statusNotFound": "Không tìm thấy",
+    "badgeConfirmed": "Đã xác nhận",
+    "badgeToConfirm": "Cần xác nhận",
+    "badgeNeedsReview": "Cần kiểm tra",
+    "answered": "Đã trả lời",
+    "openInvoice": "Mở hoá đơn",
+    "openMaterial": "Mở vật tư",
+    "actionFailed": "Không gửi được thao tác."
+  },
   "signup": {
     "title": "Tạo hồ sơ của bạn",
     "subtitle": {

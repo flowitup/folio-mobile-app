@@ -1599,6 +1599,24 @@
     "recordingFailed": "The microphone could not be started.",
     "recordingLost": "The recording was lost."
   },
+  "assistant": {
+    "title": "Assistant",
+    "subtitle": "Receipt photos, materials, where's a tool",
+    "statusQueued": "Queued",
+    "statusRunning": "Working…",
+    "statusNotReady": "Not ready yet",
+    "statusBlocked": "Blocked",
+    "statusDone": "Done",
+    "statusFailed": "Failed",
+    "statusNotFound": "Not found",
+    "badgeConfirmed": "Confirmed",
+    "badgeToConfirm": "To confirm",
+    "badgeNeedsReview": "Needs review",
+    "answered": "Answered",
+    "openInvoice": "Open the invoice",
+    "openMaterial": "Open the material",
+    "actionFailed": "The action could not be sent."
+  },
   "signup": {
     "title": "Create your profile",
     "subtitle": {

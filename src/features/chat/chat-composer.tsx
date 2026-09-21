@@ -28,6 +28,9 @@ type Props = {
   sending: boolean;
   /** Rejects on an API error (already toasted); the draft survives so it can be sent again. */
   onSend: (message: { body: string; file: PickedFile | null }) => Promise<void>;
+  /** Assistant channel: most messages start with a photo, so the camera leads (filled, left)
+   * and the library picker follows; every other channel keeps the library-first layout. */
+  primaryCamera?: boolean;
 };
 
 /**
@@ -38,7 +41,12 @@ type Props = {
  * starts it, the stop button ends it, and the take then sits above the field with a player and
  * a delete button until the reader presses send.
  */
-export function ChatComposer({ disabled, sending, onSend }: Props) {
+export function ChatComposer({
+  disabled,
+  sending,
+  onSend,
+  primaryCamera = false,
+}: Props) {
   const { t } = useTranslation();
   const tokens = useTokens();
   const insets = useSafeAreaInsets();
@@ -174,6 +182,17 @@ export function ChatComposer({ disabled, sending, onSend }: Props) {
           </View>
         ) : (
           <>
+            {primaryCamera ? (
+              <Pressable
+                testID="chat-camera"
+                accessibilityRole="button"
+                accessibilityLabel={t("chat.takePhoto")}
+                onPress={() => void attach("camera")}
+                className="h-10 w-10 items-center justify-center rounded-full bg-ink active:opacity-70"
+              >
+                <Icon name="camera" size={20} color={tokens.onInk} />
+              </Pressable>
+            ) : null}
             <Pressable
               testID="chat-attach"
               accessibilityRole="button"
@@ -194,15 +213,17 @@ export function ChatComposer({ disabled, sending, onSend }: Props) {
               returnKeyType="send"
               onSubmitEditing={() => void submit()}
             />
-            <Pressable
-              testID="chat-camera"
-              accessibilityRole="button"
-              accessibilityLabel={t("chat.takePhoto")}
-              onPress={() => void attach("camera")}
-              className="h-10 w-10 items-center justify-center active:opacity-70"
-            >
-              <Icon name="camera" size={22} color={tokens.ink} />
-            </Pressable>
+            {!primaryCamera ? (
+              <Pressable
+                testID="chat-camera"
+                accessibilityRole="button"
+                accessibilityLabel={t("chat.takePhoto")}
+                onPress={() => void attach("camera")}
+                className="h-10 w-10 items-center justify-center active:opacity-70"
+              >
+                <Icon name="camera" size={22} color={tokens.ink} />
+              </Pressable>
+            ) : null}
           </>
         )}
 

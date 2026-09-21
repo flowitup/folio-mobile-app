@@ -1599,6 +1599,24 @@
     "recordingFailed": "Le micro n'a pas pu démarrer.",
     "recordingLost": "L'enregistrement a été perdu."
   },
+  "assistant": {
+    "title": "Assistant",
+    "subtitle": "Photos de tickets, matériaux, où est un outil",
+    "statusQueued": "En attente",
+    "statusRunning": "En cours…",
+    "statusNotReady": "Pas encore prêt",
+    "statusBlocked": "Bloqué",
+    "statusDone": "Terminé",
+    "statusFailed": "Échec",
+    "statusNotFound": "Introuvable",
+    "badgeConfirmed": "Confirmé",
+    "badgeToConfirm": "À confirmer",
+    "badgeNeedsReview": "À vérifier",
+    "answered": "Répondu",
+    "openInvoice": "Ouvrir la facture",
+    "openMaterial": "Ouvrir le matériau",
+    "actionFailed": "L'action n'a pas pu être envoyée."
+  },
   "signup": {
     "title": "Créez votre profil",
     "subtitle": {
