@@ -14,14 +14,12 @@ import {
   ASSISTANT_BADGE_I18N_KEY,
   ASSISTANT_BADGE_TONE,
   ASSISTANT_JOB_STATUS_I18N_KEY,
+  type AssistantCardPayload,
   type AssistantChoiceOption,
+  type AssistantChoicePayload,
+  type AssistantJobState,
+  type AssistantJobStatusPayload,
   isChosenOption,
-} from "@/lib/chat/assistant";
-import type {
-  AssistantCardPayload,
-  AssistantChoicePayload,
-  AssistantJobState,
-  AssistantJobStatusPayload,
 } from "@/lib/chat/assistant";
 import { ApiError } from "@/lib/query/api-error";
 import { useTokens } from "@/theme/tokens";
@@ -47,9 +45,14 @@ export function AssistantCard({ payload }: { payload: AssistantCardPayload }) {
   const tokens = useTokens();
   const router = useRouter();
 
+  // An invoice screen lives under its project: without a project id there is nowhere to
+  // go, so the card stays informational instead of routing to `/projects/null/...`.
+  const canOpen = payload.type === "material" || payload.projectId !== null;
+
   function open() {
     if (payload.type === "invoice") {
-      if (payload.projectId) selectProjectOnNextShell(payload.projectId);
+      if (!payload.projectId) return;
+      selectProjectOnNextShell(payload.projectId);
       router.push(`/projects/${payload.projectId}/invoices/${payload.id}`);
     } else {
       router.push(`/library/${payload.id}`);
@@ -65,6 +68,8 @@ export function AssistantCard({ payload }: { payload: AssistantCardPayload }) {
           ? "assistant.openInvoice"
           : "assistant.openMaterial",
       )}
+      accessibilityState={{ disabled: !canOpen }}
+      disabled={!canOpen}
       onPress={open}
       className="w-[220px] overflow-hidden rounded-[14px] border border-line bg-card active:opacity-70"
     >

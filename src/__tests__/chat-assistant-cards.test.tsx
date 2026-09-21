@@ -163,6 +163,28 @@ describe("AssistantCard", () => {
     expect(mockSelectProjectOnNextShell).not.toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith("/library/mat-1");
   });
+
+  it("keeps an invoice card without a project id informational (no /projects/null route)", async () => {
+    await renderWithClient(
+      <AssistantCard
+        payload={{
+          type: "invoice",
+          id: "inv-9",
+          projectId: null,
+          title: "Leroy Merlin – 12,00 €",
+          subtitle: null,
+          badge: "needs_review",
+          thumbnailUrl: null,
+        }}
+      />,
+    );
+
+    const card = screen.getByTestId("assistant-card");
+    expect(card.props.accessibilityState.disabled).toBe(true);
+    await fireEvent.press(card);
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockSelectProjectOnNextShell).not.toHaveBeenCalled();
+  });
 });
 
 describe("AssistantChoice", () => {

@@ -101,15 +101,15 @@ export default function ChatScreen() {
   }, [lastMessageId]);
 
   // Sending implies having read the channel; the composer clears itself once this resolves.
-  // `lang` rides along on every send — the backend only keeps it inside the assistant
-  // channel and drops it everywhere else, so there is no need to gate it here.
+  // `lang` goes only to the assistant channel: the backend keeps it there, and a server that
+  // predates the assistant rejects unknown JSON fields on the other channels.
   async function submit(message: {
     body: string;
     file: PickedFile | null;
   }): Promise<void> {
     await send.mutateAsync({
       ...message,
-      lang: i18n.language as SupportedLocale,
+      ...(isAssistantChannel ? { lang: i18n.language as SupportedLocale } : {}),
     });
     if (channelKey) markRead.mutate({ channelKey });
   }

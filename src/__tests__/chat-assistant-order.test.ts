@@ -1,4 +1,5 @@
 import {
+  isApiPath,
   isChosenOption,
   orderChannels,
   parseCardPayload,
@@ -184,5 +185,24 @@ describe("parseJobStatusPayload", () => {
     ).toBeNull();
     expect(parseJobStatusPayload({ state: "done", text: "x" })).toBeNull();
     expect(parseJobStatusPayload(null)).toBeNull();
+  });
+});
+
+describe("card thumbnails", () => {
+  it("keeps only same-origin API paths, never absolute or protocol-relative URLs", () => {
+    expect(isApiPath("/api/v1/bibliotheque/products/p1/image")).toBe(true);
+    expect(isApiPath("https://evil.example/steal")).toBe(false);
+    expect(isApiPath("//evil.example/steal")).toBe(false);
+    expect(isApiPath("/not-api/x")).toBe(false);
+    const base = { type: "material", id: "p1", title: "Ciment" };
+    expect(
+      parseCardPayload({
+        card: { ...base, thumbnail_url: "https://evil.example/steal" },
+      })?.thumbnailUrl,
+    ).toBeNull();
+    expect(
+      parseCardPayload({ card: { ...base, thumbnail_url: "/api/v1/x" } })
+        ?.thumbnailUrl,
+    ).toBe("/api/v1/x");
   });
 });

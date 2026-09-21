@@ -108,6 +108,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+/** A relative path on the Folio API (`/api/...`), never an absolute or protocol-relative URL. */
+export function isApiPath(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.startsWith("/api/") &&
+    !value.startsWith("//")
+  );
+}
+
 /** Parses a `content_type: "card"` payload; `null` on anything malformed (renders as text instead). */
 export function parseCardPayload(raw: RawPayload): AssistantCardPayload | null {
   if (!isRecord(raw) || !isRecord(raw.card)) return null;
@@ -127,8 +136,9 @@ export function parseCardPayload(raw: RawPayload): AssistantCardPayload | null {
     badge: BADGES.includes(card.badge as AssistantCardBadge)
       ? (card.badge as AssistantCardBadge)
       : null,
-    thumbnailUrl:
-      typeof card.thumbnail_url === "string" ? card.thumbnail_url : null,
+    // Only a same-origin API path: `AuthedImage` attaches the bearer token to whatever it
+    // loads, so an absolute URL in this AI-influenced field would hand the token to that host.
+    thumbnailUrl: isApiPath(card.thumbnail_url) ? card.thumbnail_url : null,
   };
 }
 

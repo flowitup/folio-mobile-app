@@ -37,11 +37,6 @@ export function useChatEnabled(): boolean {
   return useFeatures().data?.chat === true;
 }
 
-/** `true` once the backend has confirmed the assistant feature (both AI keys configured). */
-export function useAssistantEnabled(): boolean {
-  return useFeatures().data?.assistant === true;
-}
-
 /** Channels with unread counts; polled while the caller is on screen. */
 export function useChatChannels(enabled: boolean, refetchInterval = 30_000) {
   return useQuery({
@@ -76,8 +71,8 @@ export function useChatMessages(
 }
 
 /** Sends text and/or one image; the message appears on the next poll (or the invalidation).
- * `lang` is the reader's current UI language; the backend only keeps it inside the assistant
- * channel (it is silently dropped everywhere else), so callers can always pass it along. */
+ * `lang` is the reader's current UI language; pass it only for the assistant channel — the
+ * backend keeps it there, and a server predating the assistant rejects it as an unknown field. */
 export function useSendChatMessage(channelKey: string) {
   return useApiMutation<
     { body: string; file?: PickedFile | null; lang?: SupportedLocale },
@@ -93,7 +88,13 @@ export function useSendChatMessage(channelKey: string) {
       return unwrapAs<ChatMessage>(
         await api.POST("/api/v1/chat/channels/{channel_key}/messages", {
           params: { path: { channel_key: channelKey } },
-          body: { body: body.trim(), lang: lang ?? null },
+          // Older servers reject unknown JSON fields (422), so `lang` is only ever added
+          // when the caller passes it — i.e. inside the assistant channel.
+          // The generated type marks `lang` as required-nullable (the spec generator's
+          // reading of `Optional[str] = None`); the wire contract accepts its absence.
+          body: (lang
+            ? { body: body.trim(), lang }
+            : { body: body.trim() }) as never,
         }),
       );
     },
