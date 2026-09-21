@@ -34,7 +34,7 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Un seul chantier est sélectionné à la fois, et toute l'application parle de ce chantier. La barre d'onglets porte quatre écrans de chantier ; tout le reste vit derrière Menu.",
     steps: [
       "Touchez le nom du chantier en haut, puis choisissez un chantier dans la liste — chaque ligne affiche son budget restant.",
-      "Dans ce même panneau, « + Nouveau chantier » crée un chantier : nom, adresse, budget et source du budget.",
+      "Dans ce même panneau, « + Nouveau chantier » crée un chantier : adresse, nom facultatif, budget et source du budget.",
       "En tant que responsable, les quatre onglets sont Aperçu, Dépenses, Main-d'œuvre et Planning. En tant qu'ouvrier, ce sont Présence, Salaire, Profil et Planning.",
       "Les responsables disposent d'un « Menu » pour tout le reste : devis et factures, bibliothèque de produits, membres de l'entreprise, et les sections du chantier — documents, photos, notes, salaires, chiffrage, analyses, membres du chantier et réglages. Les ouvriers ne l'ont pas : les sujets ci-dessous qui partent du Menu sont à lire, pas à suivre.",
       "Touchez vos initiales pour les Paramètres, le choix de la langue (English, Français, Tiếng Việt) et « Se déconnecter ».",

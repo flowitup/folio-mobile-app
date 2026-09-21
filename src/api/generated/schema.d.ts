@@ -8063,11 +8063,8 @@ export interface components {
      * @description Request body for creating a project.
      */
     CreateProjectRequest: {
-      /**
-       * Address
-       * @default null
-       */
-      address: string | null;
+      /** Address */
+      address: string;
       /**
        * Budget
        * @default null
@@ -8083,8 +8080,11 @@ export interface components {
        * @default null
        */
       company_id: string | null;
-      /** Name */
-      name: string;
+      /**
+       * Name
+       * @default null
+       */
+      name: string | null;
     };
     /** CreateTaskSchema */
     CreateTaskSchema: {

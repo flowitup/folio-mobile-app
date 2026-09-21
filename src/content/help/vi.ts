@@ -33,7 +33,7 @@ export const helpCatalogueVi: HelpCatalogue = [
       "Mỗi lúc chỉ chọn một công trình, và cả app đều nói về công trình đó. Thanh tab giữ bốn màn hình của công trình; mọi thứ còn lại nằm trong Menu.",
     steps: [
       "Bấm tên công trình ở trên cùng, rồi chọn một công trình trong danh sách — mỗi dòng cho biết ngân sách còn lại.",
-      "Cũng trong bảng đó, “+ Công trình mới” tạo một công trình: tên, địa chỉ, ngân sách và nguồn ngân sách.",
+      "Cũng trong bảng đó, “+ Công trình mới” tạo một công trình: địa chỉ, tên (tùy chọn), ngân sách và nguồn ngân sách.",
       "Nếu bạn là quản lý, bốn tab là Tổng quan, Chi phí, Nhân công và Kế hoạch. Nếu bạn là thợ, đó là Chấm công, Lương, Hồ sơ và Kế hoạch.",
       "Quản lý có thêm mục “Menu” cho mọi thứ còn lại: báo giá và hóa đơn, thư viện sản phẩm, thành viên công ty, và các mục của công trình — tài liệu, ảnh, ghi chú, lương, chiffrage, phân tích, thành viên công trình và cài đặt. Thợ không có Menu, nên các chủ đề bên dưới bắt đầu từ Menu là để đọc cho biết, không phải để làm theo.",
       "Bấm chữ viết tắt tên bạn để vào Cài đặt, chọn ngôn ngữ (English, Français, Tiếng Việt) và “Đăng xuất”.",

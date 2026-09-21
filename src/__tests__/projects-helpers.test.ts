@@ -1,4 +1,7 @@
-import { toUpdateBody } from "../features/projects/project-form-sheet";
+import {
+  customLabel,
+  toUpdateBody,
+} from "../features/projects/project-form-sheet";
 import { projectCan } from "../features/projects/projects-api";
 import type { Project } from "../features/projects/projects-api";
 
@@ -32,17 +35,39 @@ describe("toUpdateBody", () => {
   it("maps form values to the PUT body with explicit nulls", () => {
     expect(
       toUpdateBody({
+        address: "12 rue des Lilas",
         name: "A",
-        address: null,
         budget: 10,
         budget_source: null,
       }),
     ).toEqual({
+      address: "12 rue des Lilas",
       name: "A",
-      address: null,
       budget: 10,
       budget_source: null,
       invoice_prefix: null,
     });
+  });
+
+  it("sends an empty name so the backend labels the project by its address", () => {
+    expect(toUpdateBody({ address: "12 rue des Lilas", name: "" })).toEqual({
+      address: "12 rue des Lilas",
+      name: "",
+      invoice_prefix: null,
+    });
+  });
+});
+
+describe("customLabel", () => {
+  it("is empty for a project labelled by its address", () => {
+    expect(
+      customLabel({ name: "12 rue des Lilas", address: "12 rue des Lilas" }),
+    ).toBe("");
+  });
+
+  it("is the stored name when the user chose one", () => {
+    expect(
+      customLabel({ name: "Chantier Arcueil", address: "12 rue des Lilas" }),
+    ).toBe("Chantier Arcueil");
   });
 });

@@ -19,8 +19,13 @@ import { projectCan } from "./projects-api";
 import type { Project, UpdateProjectBody } from "./projects-api";
 
 export type ProjectFormValues = {
+  /** Site address — mandatory, it is what identifies the project everywhere. */
+  address: string;
+  /**
+   * Optional label. Empty means "label the project by its address": the
+   * backend stores the address as the name, so nothing ever renders blank.
+   */
   name: string;
-  address: string | null;
   /**
    * Financing side — present only when the caller holds `project:view_budget`.
    * Absent (not null) otherwise: the API refuses a PUT that carries a budget
@@ -41,10 +46,20 @@ type Props = {
   onSubmit: (values: ProjectFormValues) => void;
 };
 
+/**
+ * The label the user chose, if any. A project labelled by its address (the
+ * backend's fallback for a blank name stores name === address) has no custom
+ * label, so its name field opens empty and stays address-labelled when saved
+ * blank.
+ */
+export function customLabel(project: Pick<Project, "name" | "address">) {
+  return project.name === project.address ? "" : project.name;
+}
+
 function toDraft(project?: Project) {
   return {
-    name: project?.name ?? "",
     address: project?.address ?? "",
+    name: project ? customLabel(project) : "",
     budget: project?.budget != null ? String(project.budget) : "",
     budgetSource: project?.budget_source ?? "",
     invoicePrefix: project?.invoice_prefix ?? "",
@@ -64,26 +79,26 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
       : true;
     const sheet = useRef<BottomSheetModal>(null);
     const [draft, setDraft] = useState(() => toDraft(project));
-    const [nameError, setNameError] = useState<string | null>(null);
+    const [addressError, setAddressError] = useState<string | null>(null);
 
     useEffect(() => setDraft(toDraft(project)), [project]);
 
     useImperativeHandle(ref, () => ({
       open: () => {
         setDraft(toDraft(project));
-        setNameError(null);
+        setAddressError(null);
         sheet.current?.present();
       },
       close: () => sheet.current?.dismiss(),
     }));
 
     function submit() {
-      const name = draft.name.trim();
-      if (!name) return setNameError(t("project.form.nameRequired"));
+      const address = draft.address.trim();
+      if (!address) return setAddressError(t("project.form.addressRequired"));
       const budgetText = draft.budget.trim();
       const values: ProjectFormValues = {
-        name,
-        address: draft.address.trim() || null,
+        address,
+        name: draft.name.trim(),
         ...(canViewBudget
           ? {
               budget: budgetText ? parseMoneyInput(budgetText) : null,
@@ -105,18 +120,22 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
       >
         <View className="p-4">
           <Input
-            testID="project-form-name"
-            label={t("project.form.name")}
-            value={draft.name}
-            onChangeText={(name) => setDraft({ ...draft, name })}
-            error={nameError}
-            autoFocus
-          />
-          <Input
             testID="project-form-address"
             label={t("project.form.address")}
             value={draft.address}
-            onChangeText={(address) => setDraft({ ...draft, address })}
+            onChangeText={(address) => {
+              setAddressError(null);
+              setDraft({ ...draft, address });
+            }}
+            error={addressError}
+            autoFocus
+          />
+          <Input
+            testID="project-form-name"
+            label={t("project.form.nameOptional")}
+            value={draft.name}
+            onChangeText={(name) => setDraft({ ...draft, name })}
+            placeholder={t("project.form.namePlaceholder")}
           />
           {canViewBudget ? (
             <>
@@ -170,8 +189,9 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
 /** Maps form values to the PUT body; the API keeps fields absent from the body unchanged. */
 export function toUpdateBody(values: ProjectFormValues): UpdateProjectBody {
   return {
-    name: values.name,
     address: values.address,
+    // An empty name tells the backend to label the project by its address again.
+    name: values.name,
     // Spread rather than assign: a caller without `project:view_budget` sends
     // no budget key at all, and the API 403s a body that carries one.
     ...("budget" in values ? { budget: values.budget } : {}),
