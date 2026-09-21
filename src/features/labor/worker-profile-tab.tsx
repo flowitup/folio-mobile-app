@@ -38,7 +38,7 @@ export function WorkerProfileTab() {
     project,
     isPending: projectPending,
   } = useSelectedProject();
-  const today = useMemo(() => toIsoDate(new Date()), []);
+  const today = toIsoDate(new Date());
 
   const workers = useWorkers(projectId);
   // Only the worker linked to this account — never a first-row fallback: a member granted

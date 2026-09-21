@@ -33,6 +33,9 @@ export function projectRowMeta(
   pct: number | null;
 } {
   const spent = project.spent ?? 0;
+  // A null spend is the backend hiding money from this caller (no `project:view_budget` /
+  // spend permission): show nothing rather than assert a zero.
+  const spendHidden = project.spent == null;
   // The row title already shows the address (the project label), so the meta
   // line only carries the member count and budget state.
   const parts = [t("shell.membersCount", { count: project.user_count ?? 0 })];
@@ -42,7 +45,9 @@ export function projectRowMeta(
   if (project.budget == null)
     return {
       meta: parts.join(" · "),
-      remain: t("shell.spentNoBudget", { amount: formatMoney(spent) }),
+      remain: spendHidden
+        ? ""
+        : t("shell.spentNoBudget", { amount: formatMoney(spent) }),
       tone: "muted",
       pct: null,
     };
@@ -137,11 +142,13 @@ export function ProjectSwitcherSheet() {
                       >
                         {projectDisplayName(project)}
                       </Text>
-                      <Text
-                        className={`ml-2 font-mono text-[14px] ${REMAIN_CLASS[row.tone]}`}
-                      >
-                        {row.remain}
-                      </Text>
+                      {row.remain ? (
+                        <Text
+                          className={`ml-2 font-mono text-[14px] ${REMAIN_CLASS[row.tone]}`}
+                        >
+                          {row.remain}
+                        </Text>
+                      ) : null}
                     </View>
                     {row.pct !== null ? (
                       <View className="mt-[5px] h-[3px] overflow-hidden rounded-sm bg-paper-2">

@@ -91,7 +91,9 @@ export function PaymentMethodsSection({ companyId, readOnly = false }: Props) {
                 {method.label}
               </Text>
             </Pressable>
-            {!method.is_active ? <Badge label="inactive" /> : null}
+            {!method.is_active ? (
+              <Badge label={t("paymentMethods.inactive")} />
+            ) : null}
             {/* A built-in method is seeded with the company and the API always refuses to
                 delete it, so offering the action only ever ends in an error banner. */}
             {!readOnly && !method.is_builtin ? (

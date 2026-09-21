@@ -25,6 +25,7 @@ import type {
   VerifyInviteResponse,
 } from "@/features/invitations/invitations-api";
 import { normalizePhone } from "@/lib/auth/phone-number";
+import { userDisplayName } from "@/lib/auth/user-display-name";
 
 type State =
   | { kind: "loading" }
@@ -209,6 +210,10 @@ export default function AcceptInviteScreen() {
   return (
     <View className="flex-1 bg-paper">
       <ScreenHeader
+        // Only for someone already signed in: they opened the link from inside the app and the
+        // card below offers nothing but signing out. A signed-out invitee has no app behind this
+        // screen, and the header's fallback would push them into the signed-in tabs.
+        back={status === "signedIn"}
         title={t("acceptInvite.title", {
           projectName: state.kind === "ready" ? state.invite.project_name : "…",
         })}
@@ -224,7 +229,10 @@ export default function AcceptInviteScreen() {
             </Text>
             <Text className="my-2 text-sm text-primary">
               {t("acceptInvite.loggedInOther.body", {
-                currentEmail: user?.email ?? "",
+                // Sign-in is phone-only, so `email` is the backend's synthetic
+                // phone-…@no-email… address — meaningless to the reader deciding whether this
+                // is the right account. The number they sign in with is.
+                currentEmail: user?.phone?.trim() || userDisplayName(user),
               })}
             </Text>
             <Button
@@ -251,11 +259,19 @@ export default function AcceptInviteScreen() {
           </Card>
         ) : (
           <View>
-            <Text className="mb-3 text-sm text-primary">
-              {t("acceptInvite.intro", {
-                inviter: state.invite.inviter_name,
-                project: state.invite.project_name,
-                role: state.invite.role_name,
+            <Text className="mb-1 text-sm text-primary">
+              {t("acceptInvite.intro")}
+            </Text>
+            {/* Who invited them and as what: the backend returns both and the copy for it has
+                always existed, but the screen passed them to `intro`, which has no placeholders
+                — so the invitee saw neither. The role goes through the same label map the
+                account sheet uses, rather than the backend's raw English word. */}
+            <Text testID="invite-subtitle" className="mb-3 text-sm text-muted">
+              {t("acceptInvite.subtitle", {
+                inviterName: state.invite.inviter_name,
+                roleName: t(`companies.x.${state.invite.role_name}`, {
+                  defaultValue: state.invite.role_name,
+                }),
               })}
             </Text>
             <Input

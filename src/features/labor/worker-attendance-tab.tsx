@@ -65,7 +65,7 @@ export function WorkerAttendanceTab() {
   } = useSelectedProject();
   const [month, setMonth] = useState(currentMonth());
   const range = useMemo(() => monthRange(month), [month]);
-  const today = useMemo(() => toIsoDate(new Date()), []);
+  const today = toIsoDate(new Date());
   // Derived, never reset in an effect: a day picked in another month must not survive the
   // month stepper, or the log card would offer to log a day the calendar no longer shows.
   const [pickedDay, setPickedDay] = useState<string | null>(null);
@@ -372,6 +372,7 @@ export function WorkerAttendanceTab() {
               returns rate/cost, whatever the caller's permissions); pay is layered in
               separately via `payByWorkerId`, only fetched for a caller with view_pay. */}
           <DayRoster
+            upcoming={selectedDay > today}
             rows={roster.data}
             loading={roster.isPending}
             error={roster.isError}

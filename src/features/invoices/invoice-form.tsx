@@ -166,6 +166,9 @@ export function InvoiceForm({
 
   const selectedWorker = workers.data?.find((worker) => worker.id === workerId);
   const laborWithWorker = type === "labor" && Boolean(workerId);
+  /** Types whose line items may be negative — the web form's `MIXED_SIGN_TYPES`. */
+  const allowsNegativePrice =
+    type === "return" || type === "materials_services";
 
   function updateLine(index: number, patch: Partial<LineDraft>) {
     setLines((current) =>
@@ -373,7 +376,14 @@ export function InvoiceForm({
                 testID={`invoice-item-${index}-price`}
                 label={t("invoices.form.unitPrice")}
                 value={line.unit_price}
-                keyboardType="decimal-pad"
+                // A return nets spend back down, so its lines carry a NEGATIVE unit price
+                // (same mixed-sign rule as the web form). `decimal-pad` has no minus key,
+                // which left an avoir recorded as extra spend; this keyboard has one.
+                keyboardType={
+                  allowsNegativePrice
+                    ? "numbers-and-punctuation"
+                    : "decimal-pad"
+                }
                 onChangeText={(v) => updateLine(index, { unit_price: v })}
               />
             </View>

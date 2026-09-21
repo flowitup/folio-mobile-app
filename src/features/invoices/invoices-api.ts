@@ -167,7 +167,10 @@ export function useAssignInvoiceWorker(projectId: string) {
   });
 }
 
-export function useDeleteInvoice(projectId: string) {
+export function useDeleteInvoice(
+  projectId: string,
+  { silent = false }: { silent?: boolean } = {},
+) {
   const { t } = useTranslation();
   return useApiMutation<{ invoiceId: string }>({
     mutationFn: async ({ invoiceId }) =>
@@ -180,7 +183,7 @@ export function useDeleteInvoice(projectId: string) {
         ),
       ),
     invalidates: [invoiceKeys.all(projectId), ["projects", projectId]],
-    successMessage: t("invoices.deleted"),
+    successMessage: silent ? undefined : t("invoices.deleted"),
   });
 }
 

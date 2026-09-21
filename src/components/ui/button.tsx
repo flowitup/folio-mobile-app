@@ -28,6 +28,15 @@ const LABEL: Record<Variant, string> = {
   ghost: "font-sans-medium text-ink",
 };
 
+// Disabled: muted fill / line and a muted label — `opacity` alone was invisible on the
+// ink and negative variants, which made a blocked action look tappable.
+const CONTAINER_DISABLED: Record<Variant, string> = {
+  primary: "rounded-[10px] bg-line-2",
+  secondary: "rounded-xl border border-line bg-transparent",
+  danger: "rounded-[10px] border border-line bg-transparent",
+  ghost: "rounded-[10px] bg-transparent",
+};
+
 const SIZE: Record<Size, string> = { md: "h-[50px] px-4", sm: "h-10 px-3" };
 const LABEL_SIZE: Record<Size, string> = { md: "text-base", sm: "text-[13px]" };
 
@@ -42,12 +51,13 @@ export function Button({
 }: Props & { className?: string }) {
   const tokens = useTokens();
   const inactive = disabled || loading;
+  const muted = Boolean(disabled) && !loading;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled: Boolean(inactive) }}
       disabled={inactive}
-      className={`flex-row items-center justify-center ${SIZE[size]} ${CONTAINER[variant]} ${inactive ? "opacity-50" : "active:opacity-70"} ${className ?? ""}`}
+      className={`flex-row items-center justify-center ${SIZE[size]} ${muted ? CONTAINER_DISABLED[variant] : CONTAINER[variant]} ${loading ? "opacity-50" : inactive ? "" : "active:opacity-70"} ${className ?? ""}`}
       {...rest}
     >
       {loading ? (
@@ -55,7 +65,11 @@ export function Button({
           color={variant === "primary" ? tokens.onInk : tokens.ink}
         />
       ) : (
-        <Text className={`${LABEL_SIZE[size]} ${LABEL[variant]}`}>{label}</Text>
+        <Text
+          className={`${LABEL_SIZE[size]} ${muted ? "font-sans-medium text-muted" : LABEL[variant]}`}
+        >
+          {label}
+        </Text>
       )}
     </Pressable>
   );

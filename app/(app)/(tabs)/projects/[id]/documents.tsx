@@ -1,6 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -64,11 +64,23 @@ export default function ProjectDocumentsSection() {
   const [sort, setSort] = useState<DocumentSort>("created_at");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const canAccess = useProjectCan(id, "project:update");
+  const tags = useDocumentTags(id, canAccess);
+  // A tag leaves the project the moment its last document is deleted or retagged, and the
+  // chip row disappears with the last tag. Still filtering on it would empty the list with no
+  // chip left on screen to clear it, so only tags the project still offers narrow the list.
+  const knownTags = tags.data;
+  const activeTags = useMemo(
+    () =>
+      knownTags
+        ? selectedTags.filter((value) => knownTags.includes(value))
+        : selectedTags,
+    [selectedTags, knownTags],
+  );
   const documents = useDocuments(
     id,
     {
       kinds: kinds.length ? kinds : undefined,
-      tags: selectedTags.length ? selectedTags : undefined,
+      tags: activeTags.length ? activeTags : undefined,
       uploaderId: uploader,
       sort,
       order,
@@ -87,7 +99,6 @@ export default function ProjectDocumentsSection() {
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
     );
   };
-  const tags = useDocumentTags(id, canAccess);
   const upload = useUploadDocument(id);
   const rename = useRenameDocument(id);
   const setTags = useSetDocumentTags(id);

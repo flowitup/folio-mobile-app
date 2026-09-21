@@ -119,7 +119,10 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
             testID="task-title"
             label={t("tasks.title")}
             value={title}
-            onChangeText={setTitle}
+            onChangeText={(value) => {
+              setTitle(value);
+              setTitleError(null);
+            }}
             error={titleError}
             autoFocus
           />

@@ -72,7 +72,8 @@ export default function ProjectSalariesSection({
   });
   const paymentMethods = usePaymentMethods(project.data?.company_id);
   const createInvoice = useCreateInvoice(id);
-  const deleteInvoice = useDeleteInvoice(id);
+  // Salaries speak of payments, never of invoices: one toast from this screen, none per row.
+  const deleteInvoice = useDeleteInvoice(id, { silent: true });
   useRefetchOnFocus(monthly.refetch);
   useRefetchOnFocus(laborInvoices.refetch);
   const canManage = projectCan(

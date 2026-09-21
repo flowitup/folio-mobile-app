@@ -90,8 +90,6 @@ export default function WarehousesScreen() {
     update.mutate({ id: editing.id, ...payload }, done);
   }
 
-  const deletingUnits = deleting ? (units.get(deleting.id) ?? 0) : 0;
-
   return (
     <View className="flex-1 bg-paper">
       <ScreenHeader
@@ -177,7 +175,20 @@ export default function WarehousesScreen() {
                         label={t("common.delete")}
                         size="sm"
                         variant="ghost"
-                        onPress={() => setDeleting(warehouse)}
+                        // A warehouse that still holds units cannot go. Saying so here
+                        // beats opening a confirmation whose destructive button is inert:
+                        // a disabled button is not visibly different enough to read as one.
+                        onPress={() => {
+                          const held = units.get(warehouse.id) ?? 0;
+                          if (held > 0)
+                            return showToast(
+                              t("inventory.warehouses.deleteBlocked", {
+                                count: held,
+                              }),
+                              "error",
+                            );
+                          setDeleting(warehouse);
+                        }}
                       />
                     ) : null}
                   </View>
@@ -203,16 +214,9 @@ export default function WarehousesScreen() {
         title={t("inventory.warehouses.deleteConfirm", {
           name: deleting?.name ?? "",
         })}
-        message={
-          deletingUnits > 0
-            ? t("inventory.warehouses.deleteBlocked", { count: deletingUnits })
-            : undefined
-        }
         confirmLabel={t("common.delete")}
         cancelLabel={t("common.cancel")}
         destructive
-        // A warehouse that still holds units cannot go: the dialog only says so.
-        confirmDisabled={deletingUnits > 0}
         loading={remove.isPending}
         onCancel={() => setDeleting(null)}
         onConfirm={() =>

@@ -110,10 +110,16 @@ function ExpensesTabContent() {
   }, [rows, filter, month]);
   const summary = useMemo(() => buildPursesSummary(rows), [rows]);
   const headline = useMemo(() => {
+    // The figure above it is the month's SPEND — `expenseSubtotal` leaves the release
+    // rows out — so the count beside it has to leave them out too, or a month with one
+    // disbursement reads "4 items" next to a total that only adds up three of them.
     const countOf = (key: string) =>
       allMonths
         .find((m) => m.monthKey === key)
-        ?.categories.reduce((n, c) => n + c.items.length, 0) ?? 0;
+        ?.categories.reduce(
+          (n, c) => (c.type === "released_funds" ? n : n + c.items.length),
+          0,
+        ) ?? 0;
     const totalOf = (key: string) =>
       allMonths.find((m) => m.monthKey === key)?.expenseSubtotal ?? 0;
     const previous = shiftMonth(month, -1);

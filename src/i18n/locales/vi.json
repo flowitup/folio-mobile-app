@@ -14,7 +14,8 @@
     "back": "Quay lại",
     "remove": "Gỡ",
     "email": "Email",
-    "change": "Đổi"
+    "change": "Đổi",
+    "requestFailed": "Yêu cầu không xử lý được. Vui lòng thử lại."
   },
   "login": {
     "title": "Đăng nhập\nFolio",
@@ -419,7 +420,8 @@
       "conflictGeneric": "Một số nhân công đã chấm công ở công trình khác cùng ngày.",
       "conflictConfirm": "Vẫn chấm công",
       "emptyRowHint": "Chọn loại công hoặc thêm giờ phụ trước khi lưu.",
-      "overrideNeedsShiftHint": "Số tiền ghi đè cần có loại công."
+      "overrideNeedsShiftHint": "Số tiền ghi đè cần có loại công.",
+      "overrideInvalidHint": "Số tiền ghi đè phải là số dương."
     },
     "activities": {
       "title": "Hoạt động",
@@ -730,7 +732,8 @@
       "new": "Mới",
       "templates": "Mẫu",
       "refundable": "Chi phí hoàn lại",
-      "import": "Nhập"
+      "import": "Nhập",
+      "noResults": "Không có tài liệu nào khớp với tìm kiếm này."
     },
     "form": {
       "modes": {
@@ -986,7 +989,8 @@
       "cancel": "Hủy",
       "delete": "Xóa"
     },
-    "loadError": "Không tải được thư viện sản phẩm."
+    "loadError": "Không tải được thư viện sản phẩm.",
+    "imageUrlBlocked": "Địa chỉ ảnh này không được chấp nhận. Hãy dùng liên kết từ trang nhà cung cấp được hỗ trợ."
   },
   "inventory": {
     "title": "Kho thiết bị",
@@ -1349,7 +1353,8 @@
     "noCompanies": "Bạn chưa thuộc công ty nào. Thêm một công ty ở “Công ty của tôi” để quản lý phương thức thanh toán.",
     "loadError": "Không tải được phương thức thanh toán. Vui lòng thử lại.",
     "noMethodsReadOnly": "Chưa có phương thức thanh toán nào được thiết lập.",
-    "readOnlyNote": "Cách hoá đơn được thanh toán cho công ty này. Chỉ quản trị viên mới có thể thêm, đổi tên hoặc xoá phương thức."
+    "readOnlyNote": "Cách hoá đơn được thanh toán cho công ty này. Chỉ quản trị viên mới có thể thêm, đổi tên hoặc xoá phương thức.",
+    "inactive": "Ngừng dùng"
   },
   "admin": {
     "bulkAdd": {
@@ -1701,7 +1706,8 @@
     "roster": {
       "title": "Đội trên công trình — {{date}}",
       "empty": "Hôm nay chưa có ai được xếp lịch.",
-      "loadError": "Không thể tải danh sách hôm nay."
+      "loadError": "Không thể tải danh sách hôm nay.",
+      "upcoming": "Chưa đến"
     },
     "profileTitle": "Hồ sơ của tôi",
     "profileSub": "Vai trò của bạn ở công trình này, lương ngày và lịch sử thay đổi.",

@@ -159,7 +159,11 @@ export default function BillingHub() {
             />
           ) : null}
           {list.data && documents.length === 0 && !searching ? (
-            <EmptyState message={t("billing.list.none")} />
+            <EmptyState
+              message={
+                needle ? t("billing.list.noResults") : t("billing.list.none")
+              }
+            />
           ) : null}
           {documents.length > 0 ? (
             <Card

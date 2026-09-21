@@ -110,7 +110,7 @@ function LaborTabContent() {
     useState<AttendanceView>("calendar");
   const [month, setMonth] = useState(currentMonth());
   const range = useMemo(() => monthRange(month), [month]);
-  const today = useMemo(() => toIsoDate(new Date()), []);
+  const today = toIsoDate(new Date());
   // A day picked in another month must not survive the month stepper, or the day card would
   // show — and log — a day the calendar no longer displays. Derived, never reset in an effect.
   const [pickedDay, setPickedDay] = useState<string | null>(null);

@@ -14,7 +14,8 @@
     "back": "Retour",
     "remove": "Retirer",
     "email": "E-mail",
-    "change": "Changer"
+    "change": "Changer",
+    "requestFailed": "La demande n'a pas pu être traitée. Réessayez."
   },
   "login": {
     "title": "Se connecter\nà Folio",
@@ -419,7 +420,8 @@
       "conflictGeneric": "Certains ouvriers sont saisis sur un autre chantier le même jour.",
       "conflictConfirm": "Saisir quand même",
       "emptyRowHint": "Choisissez un type de journée ou ajoutez des heures avant d'enregistrer.",
-      "overrideNeedsShiftHint": "Un montant forcé nécessite un type de journée."
+      "overrideNeedsShiftHint": "Un montant forcé nécessite un type de journée.",
+      "overrideInvalidHint": "Le montant forcé doit être un nombre positif."
     },
     "activities": {
       "title": "Activités",
@@ -730,7 +732,8 @@
       "new": "Nouveau",
       "templates": "Modèles",
       "refundable": "Remboursables",
-      "import": "Importer"
+      "import": "Importer",
+      "noResults": "Aucun document ne correspond à cette recherche."
     },
     "form": {
       "modes": {
@@ -986,7 +989,8 @@
       "cancel": "Annuler",
       "delete": "Supprimer"
     },
-    "loadError": "Impossible de charger la bibliothèque."
+    "loadError": "Impossible de charger la bibliothèque.",
+    "imageUrlBlocked": "Cette adresse d'image n'est pas acceptée. Utilisez un lien d'un site fournisseur pris en charge."
   },
   "inventory": {
     "title": "Inventaire du matériel",
@@ -1349,7 +1353,8 @@
     "noCompanies": "Vous n’êtes rattaché à aucune société. Ajoutez-en une depuis « Mes sociétés » pour gérer ses moyens de paiement.",
     "loadError": "Impossible de charger les moyens de paiement. Veuillez réessayer.",
     "noMethodsReadOnly": "Aucun moyen de paiement n’a encore été configuré.",
-    "readOnlyNote": "Comment les factures peuvent être payées pour cette société. Seul un administrateur peut ajouter, renommer ou supprimer un moyen."
+    "readOnlyNote": "Comment les factures peuvent être payées pour cette société. Seul un administrateur peut ajouter, renommer ou supprimer un moyen.",
+    "inactive": "Inactif"
   },
   "admin": {
     "bulkAdd": {
@@ -1701,7 +1706,8 @@
     "roster": {
       "title": "Équipe sur place — {{date}}",
       "empty": "Personne n'est prévu aujourd'hui.",
-      "loadError": "Impossible de charger l'effectif du jour."
+      "loadError": "Impossible de charger l'effectif du jour.",
+      "upcoming": "À venir"
     },
     "profileTitle": "Mon profil",
     "profileSub": "Votre rôle sur ce chantier, votre taux journalier et son évolution.",

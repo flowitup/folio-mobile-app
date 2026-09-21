@@ -11,6 +11,7 @@ import {
 import InventoryScreen from "../../app/(app)/(tabs)/inventory/index";
 import WarehousesScreen from "../../app/(app)/(tabs)/inventory/warehouses";
 import { MenuSheet } from "@/components/shell/menu-sheet";
+import { showToast } from "@/components/ui/toast";
 import type {
   InventoryItem,
   Warehouse,
@@ -18,6 +19,13 @@ import type {
 
 // The equipment inventory: rows grouped by where they are, a damaged tool flagged in red, the
 // filters narrowing the list, and the Menu row that leads there with its unit / damaged counts.
+
+// The screens toast outside any rendered tree, so the harness never mounts a viewport:
+// spy on the call instead of looking for the bubble.
+jest.mock("@/components/ui/toast", () => ({
+  ...jest.requireActual("@/components/ui/toast"),
+  showToast: jest.fn(),
+}));
 
 const COMPANY_ID = "c1";
 // A jest.mock factory reads PROJECT, so babel hoists this declaration above COMPANY_ID:
@@ -365,16 +373,18 @@ describe("warehouses screen", () => {
     );
   });
 
-  it("warns how many units a warehouse still holds before deleting it", async () => {
+  it("says how many units a warehouse still holds instead of opening the delete dialog", async () => {
     await renderWithProviders(<WarehousesScreen />);
     await screen.findByTestId("warehouse-w1");
 
     await fireEvent.press(screen.getByTestId("warehouse-delete-w1"));
-    expect(screen.getByTestId("confirm-dialog")).toHaveTextContent(
-      containing(i18n.t("inventory.warehouses.deleteBlocked", { count: 3 })),
+    // The server refuses a warehouse that still holds rows, so the crew is told straight
+    // away rather than being handed a confirmation whose destructive button does nothing.
+    expect(showToast).toHaveBeenCalledWith(
+      i18n.t("inventory.warehouses.deleteBlocked", { count: 3 }),
+      "error",
     );
-    // The server would refuse it, so the dialog only informs.
-    expect(screen.getByTestId("confirm-ok")).toBeDisabled();
+    expect(screen.queryByTestId("confirm-dialog")).toBeNull();
   });
 
   it("shows an error state with a retry when the warehouses cannot be loaded", async () => {

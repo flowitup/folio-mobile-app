@@ -14,7 +14,8 @@
     "back": "Back",
     "remove": "Remove",
     "email": "Email",
-    "change": "Change"
+    "change": "Change",
+    "requestFailed": "The request could not be processed. Please try again."
   },
   "login": {
     "title": "Sign in to\nFolio",
@@ -419,7 +420,8 @@
       "conflictGeneric": "Some workers are logged on another project the same day.",
       "conflictConfirm": "Log anyway",
       "emptyRowHint": "Pick a shift or add extra hours before saving.",
-      "overrideNeedsShiftHint": "An amount override needs a shift."
+      "overrideNeedsShiftHint": "An amount override needs a shift.",
+      "overrideInvalidHint": "The amount override must be a positive number."
     },
     "activities": {
       "title": "Activities",
@@ -730,7 +732,8 @@
       "new": "New",
       "templates": "Templates",
       "refundable": "Refundable",
-      "import": "Import"
+      "import": "Import",
+      "noResults": "No document matches this search."
     },
     "form": {
       "modes": {
@@ -986,7 +989,8 @@
       "cancel": "Cancel",
       "delete": "Delete"
     },
-    "loadError": "Could not load the library."
+    "loadError": "Could not load the library.",
+    "imageUrlBlocked": "This image address is not accepted. Use a link from a supported supplier site."
   },
   "inventory": {
     "title": "Equipment inventory",
@@ -1349,7 +1353,8 @@
     "noCompanies": "You are not attached to any company yet. Add one from “My companies” to manage its payment methods.",
     "loadError": "Could not load payment methods. Please try again.",
     "noMethodsReadOnly": "No payment methods have been set up yet.",
-    "readOnlyNote": "How invoices can be paid for this company. Only an administrator can add, rename or remove a method."
+    "readOnlyNote": "How invoices can be paid for this company. Only an administrator can add, rename or remove a method.",
+    "inactive": "Inactive"
   },
   "admin": {
     "bulkAdd": {
@@ -1701,7 +1706,8 @@
     "roster": {
       "title": "Team on site — {{date}}",
       "empty": "No one is scheduled today.",
-      "loadError": "Could not load today's roster."
+      "loadError": "Could not load today's roster.",
+      "upcoming": "Upcoming"
     },
     "profileTitle": "My profile",
     "profileSub": "Your role on this site, your daily rate and how it has changed.",

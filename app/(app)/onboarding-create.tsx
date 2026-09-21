@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, Text } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,15 @@ export default function OnboardingCreateCompanyScreen() {
     legalName?: string;
     address?: string;
   }>({});
+
+  /** Typing answers the complaint, so the field stops claiming it is still empty. */
+  function clearError(field: keyof typeof errors) {
+    setErrors((current) =>
+      current[field] === undefined
+        ? current
+        : { ...current, [field]: undefined },
+    );
+  }
 
   function submit() {
     const nextErrors: typeof errors = {};
@@ -55,7 +64,10 @@ export default function OnboardingCreateCompanyScreen() {
           label={t("companies.form.fields.legalName.label")}
           placeholder={t("companies.form.fields.legalName.placeholder")}
           value={legalName}
-          onChangeText={setLegalName}
+          onChangeText={(text) => {
+            setLegalName(text);
+            clearError("legalName");
+          }}
           error={errors.legalName}
         />
         <Input
@@ -63,7 +75,10 @@ export default function OnboardingCreateCompanyScreen() {
           label={t("companies.form.fields.address.label")}
           placeholder={t("companies.form.fields.address.placeholder")}
           value={address}
-          onChangeText={setAddress}
+          onChangeText={(text) => {
+            setAddress(text);
+            clearError("address");
+          }}
           multiline
           error={errors.address}
         />
@@ -73,6 +88,22 @@ export default function OnboardingCreateCompanyScreen() {
           loading={create.isPending}
           onPress={submit}
         />
+        {/* The hub offers two ways in and this one had no way out: someone who meant to type a
+            join code could only leave with the iOS edge gesture. The join step has the same
+            link, so both branches of onboarding lead back. */}
+        {router.canGoBack() ? (
+          <Pressable
+            testID="onboarding-create-back"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            className="mt-[18px] self-start"
+            hitSlop={8}
+          >
+            <Text className="font-sans text-[13px] text-ink">
+              {t("common.back")}
+            </Text>
+          </Pressable>
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

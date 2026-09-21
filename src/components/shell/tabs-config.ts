@@ -20,3 +20,18 @@ export const HIDDEN_ROUTES = [
  * "Settings dropped me on Lương".
  */
 export const TABS_BACK_BEHAVIOR = "history" as const;
+
+/**
+ * The tab a `projects/[id]/<section>` screen belongs to, so the bar keeps that tab lit
+ * (an invoice pushed from Chi phí is still the expenses flow); `null` for Menu sections.
+ */
+export function sectionTabOf(
+  sectionRoute: string | undefined,
+): "expenses" | "labor" | "planning" | null {
+  if (!sectionRoute) return null;
+  const head = sectionRoute.split("/")[0];
+  if (head === "invoices") return "expenses";
+  if (head === "labor" || head === "salaries") return "labor";
+  if (head === "planning") return "planning";
+  return null;
+}

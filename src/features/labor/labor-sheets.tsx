@@ -22,6 +22,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { useCompanyPersons } from "@/features/companies/company-members-api";
 import { useMembers } from "@/features/projects/members-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
+import { normalizePhone } from "@/lib/auth/phone-number";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import {
   NEW_PERSON,
@@ -159,7 +160,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
           name: name.trim(),
           // Always sent, empty included: the backend clears the phone on "" but leaves the
           // stored value untouched when the field is missing (and the app still toasts Saved).
-          phone: phone.trim(),
+          phone: normalizePhone(phone) ?? phone.trim(),
           role_id: roleId,
           user_id: userId,
         });
@@ -175,7 +176,10 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         // which stays the single source of truth for who this worker is.
         ...(picked
           ? { person_id: picked.person_id }
-          : { name: name.trim(), phone: phone.trim() || undefined }),
+          : {
+              name: name.trim(),
+              phone: normalizePhone(phone) ?? (phone.trim() || undefined),
+            }),
         daily_rate: dailyRate,
         role_id: roleId ?? undefined,
         user_id: userId ?? undefined,
@@ -231,7 +235,10 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               testID="worker-name"
               label={t("labor.workers.name")}
               value={name}
-              onChangeText={setName}
+              onChangeText={(value) => {
+                setName(value);
+                setError(null);
+              }}
               error={error}
               autoFocus
             />
@@ -241,7 +248,10 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               testID="worker-rate"
               label={t("labor.workers.dailyRate")}
               value={rate}
-              onChangeText={setRate}
+              onChangeText={(value) => {
+                setRate(value);
+                setError(null);
+              }}
               keyboardType="decimal-pad"
               error={picked ? error : undefined}
             />
@@ -323,7 +333,7 @@ export const RateChangesSheet = forwardRef<
   const workers = useWorkers(projectId);
   const fresh =
     workers.data?.find((candidate) => candidate.id === worker?.id) ?? worker;
-  const today = useMemo(() => toIsoDate(new Date()), []);
+  const today = toIsoDate(new Date());
   const logged = useLaborEntries(
     projectId,
     date ?? undefined,
@@ -699,21 +709,39 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
       setNote(entry?.note ?? "");
     }, [entry]);
 
+    // The sheet is mounted once and reused for every row, so the effect above does not
+    // re-run when the same entry is opened twice: reset from the stored entry on open,
+    // or last time's unsaved edits would come back as if they had been saved.
     useImperativeHandle(ref, () => ({
-      open: () => sheet.current?.present(),
+      open: () => {
+        setShift(entry?.shift_type ?? "none");
+        setSupplement(String(entry?.supplement_hours ?? 0));
+        setOverride(
+          entry?.amount_override != null ? String(entry.amount_override) : "",
+        );
+        setNote(entry?.note ?? "");
+        sheet.current?.present();
+      },
       close: () => sheet.current?.dismiss(),
     }));
 
-    // The backend rejects both shapes (web: `canSubmit`), so Save stays inert and says why
+    // The backend rejects these shapes (web: `canSubmit`), so Save stays inert and says why
     // instead of letting the request fail with a raw server message.
     const supplementHours = Math.max(0, Math.min(12, Number(supplement) || 0));
+    const overrideValue = override.trim() ? parseMoneyInput(override) : null;
     const isEmptyRow = shift === "none" && supplementHours === 0;
     const isOverrideWithoutShift = shift === "none" && override.trim() !== "";
+    // A typed override the parser cannot read, or one that is zero or negative, is a 400
+    // from the backend; catch it here so the row is not saved on a silent failure.
+    const isOverrideInvalid =
+      override.trim() !== "" && (overrideValue === null || overrideValue <= 0);
     const blockedReason = isEmptyRow
       ? t("labor.log.emptyRowHint")
       : isOverrideWithoutShift
         ? t("labor.log.overrideNeedsShiftHint")
-        : null;
+        : isOverrideInvalid
+          ? t("labor.log.overrideInvalidHint")
+          : null;
 
     return (
       <Sheet
@@ -780,9 +808,7 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
               onSubmit({
                 shift_type: shift === "none" ? null : shift,
                 supplement_hours: supplementHours,
-                amount_override: override.trim()
-                  ? parseMoneyInput(override)
-                  : null,
+                amount_override: overrideValue,
                 note: note.trim() || null,
               })
             }

@@ -269,7 +269,10 @@ export default function ProjectAnalysesSection() {
               testID="analysis-title"
               label={t("analyses.title")}
               value={title}
-              onChangeText={setTitle}
+              onChangeText={(value) => {
+                setTitle(value);
+                setError(null);
+              }}
               error={error}
             />
             <Input

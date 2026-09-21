@@ -8,6 +8,7 @@ import { PROJECT_TABS } from "@/components/shell/floating-tab-bar";
 import {
   HIDDEN_ROUTES,
   TABS_BACK_BEHAVIOR,
+  sectionTabOf,
 } from "@/components/shell/tabs-config";
 
 /**
@@ -83,5 +84,21 @@ describe("Back after a Menu / Account action", () => {
     nav.open("settings");
     nav.back();
     expect(nav.current()).toBe("index");
+  });
+});
+
+describe("sectionTabOf — the tab a pushed project section keeps lit", () => {
+  it("maps invoice screens to Chi phí and labor screens to Nhân công", () => {
+    expect(sectionTabOf("invoices/new")).toBe("expenses");
+    expect(sectionTabOf("invoices/[invoiceId]/index")).toBe("expenses");
+    expect(sectionTabOf("labor")).toBe("labor");
+    expect(sectionTabOf("salaries")).toBe("labor");
+    expect(sectionTabOf("planning")).toBe("planning");
+  });
+
+  it("leaves Menu sections and an unknown state to the Menu item", () => {
+    expect(sectionTabOf("notes")).toBeNull();
+    expect(sectionTabOf("chiffrage")).toBeNull();
+    expect(sectionTabOf(undefined)).toBeNull();
   });
 });

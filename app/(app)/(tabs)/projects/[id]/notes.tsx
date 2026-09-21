@@ -240,7 +240,10 @@ export default function ProjectNotesSection() {
                 testID="note-title"
                 label={t("notes.title")}
                 value={title}
-                onChangeText={setTitle}
+                onChangeText={(value) => {
+                  setTitle(value);
+                  setTitleError(null);
+                }}
                 error={titleError}
                 autoFocus
               />
