@@ -13,7 +13,9 @@
     "edit": "Sửa",
     "back": "Quay lại",
     "remove": "Gỡ",
-    "email": "Email"
+    "email": "Email",
+    "change": "Đổi",
+    "requestFailed": "Yêu cầu không xử lý được. Vui lòng thử lại."
   },
   "login": {
     "title": "Đăng nhập\nFolio",
@@ -193,7 +195,9 @@
       "empty": "Mọi thành viên công ty đã được phân công, hoặc chưa có ai liên kết tài khoản.",
       "noCompany": "Công trình này chưa có công ty.",
       "loadError": "Không thể tải danh bạ công ty."
-    }
+    },
+    "loadError": "Không tải được thành viên.",
+    "revokeConfirm": "Thu hồi lời mời đã gửi tới {{email}}?"
   },
   "invoices": {
     "all": "Tất cả",
@@ -248,7 +252,9 @@
       "format": "Định dạng",
       "from": "Từ tháng",
       "to": "Đến tháng",
-      "run": "Tải về"
+      "run": "Tải về",
+      "rangeInvalid": "Tháng kết thúc không được trước tháng bắt đầu.",
+      "rangeTooLong": "Mỗi lần xuất tối đa {{max}} tháng."
     },
     "attachments": {
       "title": "Tệp đính kèm ({{count}})",
@@ -293,7 +299,9 @@
       "addItem": "Thêm dòng",
       "notes": "Ghi chú",
       "highlight": "Tô màu",
-      "create": "Tạo hoá đơn"
+      "create": "Tạo hoá đơn",
+      "quantityPositive": "Mỗi dòng phải có số lượng lớn hơn 0.",
+      "settledViaNone": "Chưa thanh toán"
     },
     "summary": {
       "totalExpenses": "Tổng chi phí",
@@ -334,7 +342,8 @@
       "info": "Thông tin",
       "noHighlight": "Không tô",
       "attachmentsEmpty": "Chưa có tệp đính kèm"
-    }
+    },
+    "restricted": "Hóa đơn chỉ dành cho người quản lý công trình."
   },
   "labor": {
     "tabs": {
@@ -368,8 +377,8 @@
       "roleNone": "Không vai trò",
       "none": "Chưa có nhân công.",
       "created": "Đã thêm nhân công.",
-      "deleted": "Đã gỡ nhân công.",
-      "deleteConfirm": "Gỡ {{name}}?",
+      "deleted": "Đã ngừng hoạt động thợ.",
+      "deleteConfirm": "Ngừng hoạt động {{name}}?",
       "deleteHint": "Lịch sử chấm công vẫn được giữ.",
       "inactive": "ngừng",
       "day": "ngày",
@@ -378,7 +387,8 @@
       "accountNone": "Không gắn",
       "fromCompany": "Thợ của công ty",
       "fromCompanyNew": "Người mới",
-      "fromCompanyHint": "từ danh bạ công ty"
+      "fromCompanyHint": "từ danh bạ công ty",
+      "deactivate": "Ngừng hoạt động"
     },
     "rates": {
       "link": "Đơn giá",
@@ -388,14 +398,16 @@
       "add": "Thêm thay đổi",
       "impact_zero": "Chưa có ngày công nào từ {{date}}",
       "impact_one": "Tính lại 1 ngày công đã chấm từ {{date}}",
-      "impact_other": "Tính lại {{count}} ngày công đã chấm từ {{date}}"
+      "impact_other": "Tính lại {{count}} ngày công đã chấm từ {{date}}",
+      "deleteConfirm": "Xóa thay đổi đơn giá ngày {{date}} ({{rate}})?",
+      "deleted": "Đã xóa thay đổi đơn giá."
     },
     "log": {
       "open": "Chấm công ngày",
       "title": "Chấm công {{date}}",
       "sameAsLastDay": "Giống ngày trước",
       "noWorkers": "Tất cả nhân công đã được chấm ngày này.",
-      "supplement": "Giờ thêm",
+      "supplement": "Giờ thêm (không tính lương)",
       "submit": "Chấm {{count}} nhân công",
       "saved": "Đã lưu chấm công.",
       "entryDeleted": "Đã xoá bản ghi.",
@@ -406,12 +418,17 @@
       "effectiveCost": "Chi phí hiện tại: {{amount}}",
       "conflictTitle": "Đã chấm công nơi khác",
       "conflictGeneric": "Một số nhân công đã chấm công ở công trình khác cùng ngày.",
-      "conflictConfirm": "Vẫn chấm công"
+      "conflictConfirm": "Vẫn chấm công",
+      "emptyRowHint": "Chọn loại công hoặc thêm giờ phụ trước khi lưu.",
+      "overrideNeedsShiftHint": "Số tiền ghi đè cần có loại công.",
+      "overrideInvalidHint": "Số tiền ghi đè phải là số dương."
     },
     "activities": {
       "title": "Hoạt động",
       "placeholder": "Hoạt động mới…",
-      "add": "Thêm hoạt động"
+      "add": "Thêm hoạt động",
+      "deleteConfirm": "Xóa hoạt động “{{title}}”?",
+      "deleted": "Đã xóa hoạt động."
     },
     "description": {
       "title": "Mô tả ngày"
@@ -445,7 +462,8 @@
     "export": {
       "title": "Xuất nhân công",
       "worker": "Nhân công",
-      "allWorkers": "Tất cả nhân công"
+      "allWorkers": "Tất cả nhân công",
+      "rangeInvalid": "Chọn tháng bắt đầu trước tháng kết thúc, tối đa {{months}} tháng."
     },
     "segments": {
       "calendar": "Chấm công",
@@ -478,6 +496,9 @@
     "roles": {
       "tho_chinh": "Thợ chính",
       "tho_phu": "Thợ phụ"
+    },
+    "entry": {
+      "deleteConfirm": "Xóa bản chấm công này?"
     }
   },
   "documents": {
@@ -507,7 +528,8 @@
       "size": "Kích thước",
       "uploader": "Người tải"
     },
-    "allUploaders": "Mọi người tải lên"
+    "allUploaders": "Mọi người tải lên",
+    "loadError": "Không tải được tài liệu."
   },
   "photos": {
     "add": "Thêm ảnh",
@@ -518,7 +540,8 @@
     "caption": "Chú thích",
     "share": "Chia sẻ",
     "videoHint": "Video — dùng Chia sẻ để mở.",
-    "loadMore": "Tải thêm"
+    "loadMore": "Tải thêm",
+    "loadError": "Không tải được ảnh."
   },
   "notes": {
     "create": "Ghi chú mới",
@@ -541,7 +564,8 @@
       "decision": "Quyết định",
       "call": "Cuộc gọi",
       "general": "Chung"
-    }
+    },
+    "loadError": "Không tải được nhật ký công trình."
   },
   "notifications": {
     "title": "Nhắc nhở ({{count}})",
@@ -580,6 +604,8 @@
     "description": "Mô tả",
     "statusLabel": "Cột",
     "priorityLabel": "Ưu tiên",
+    "assignee": "Người phụ trách",
+    "unassigned": "Chưa giao",
     "dueDate": "Hạn",
     "due": "Hạn {{date}}",
     "labels": "Nhãn",
@@ -595,7 +621,8 @@
       "medium": "Trung bình",
       "high": "Cao",
       "urgent": "Khẩn"
-    }
+    },
+    "loadError": "Không tải được công việc."
   },
   "chiffrage": {
     "totalHt": "Tổng chưa VAT",
@@ -649,7 +676,8 @@
     "libraryNone": "Không tìm thấy sản phẩm.",
     "imageFromUrl": "Ảnh từ URL",
     "imageUrl": "URL ảnh",
-    "takePhoto": "Chụp ảnh"
+    "takePhoto": "Chụp ảnh",
+    "noneReadOnly": "Chưa có hạng mục."
   },
   "analyses": {
     "upload": "Thêm phân tích",
@@ -664,7 +692,8 @@
     "pickFile": "Chọn báo cáo HTML",
     "summary": "Tóm tắt",
     "sourceUrl": "Link nguồn",
-    "searchPlaceholder": "Tìm phân tích"
+    "searchPlaceholder": "Tìm phân tích",
+    "loadError": "Không tải được phân tích."
   },
   "billing": {
     "title": "Hóa đơn",
@@ -705,7 +734,8 @@
       "new": "Mới",
       "templates": "Mẫu",
       "refundable": "Chi phí hoàn lại",
-      "import": "Nhập"
+      "import": "Nhập",
+      "noResults": "Không có tài liệu nào khớp với tìm kiếm này."
     },
     "form": {
       "modes": {
@@ -840,7 +870,9 @@
         "search": "Tìm công trình, số, người nhận",
         "none": "Không có chi phí ứng viên.",
         "confirm": "Thêm {{count}}",
-        "partial": "Một số chi phí không thể thêm."
+        "partial": "Một số chi phí không thể thêm.",
+        "added": "Đã thêm {{count}} chi phí.",
+        "addFailed": "Không thêm được chi phí nào."
       }
     }
   },
@@ -958,7 +990,9 @@
       "create": "Thêm sản phẩm",
       "cancel": "Hủy",
       "delete": "Xóa"
-    }
+    },
+    "loadError": "Không tải được thư viện sản phẩm.",
+    "imageUrlBlocked": "Địa chỉ ảnh này không được chấp nhận. Hãy dùng liên kết từ trang nhà cung cấp được hỗ trợ."
   },
   "inventory": {
     "title": "Kho thiết bị",
@@ -1019,7 +1053,8 @@
       "warehouseRequired": "Hãy chọn một kho.",
       "siteRequired": "Hãy chọn một công trường.",
       "noWarehouseYet": "Chưa có kho nào — tạo kho từ mục “Kho hàng” trên màn hình kho thiết bị, hoặc để đồ ở công trường.",
-      "warehouseNameRequired": "Hãy đặt tên cho kho."
+      "warehouseNameRequired": "Hãy đặt tên cho kho.",
+      "noSiteYet": "Chưa có công trường nào — công ty này chưa có dự án để đặt thiết bị, hãy để đồ ở kho."
     },
     "actions": {
       "create": "Thêm vào kho"
@@ -1254,7 +1289,9 @@
         "empty": "Danh bạ của công ty này đang trống.",
         "selectedCount": "Đã chọn {{count}}",
         "submit": "Nhập mục đã chọn",
-        "successToast": "Đã nhập thành viên."
+        "successToast": "Đã nhập thành viên.",
+        "skippedToast_one": "Đã nhập {{imported}} · 1 người đã là thành viên.",
+        "skippedToast_other": "Đã nhập {{imported}} · {{count}} người đã là thành viên."
       },
       "grants": {
         "open": "Quyền tuỳ chỉnh",
@@ -1318,7 +1355,10 @@
     "noCompanies": "Bạn chưa thuộc công ty nào. Thêm một công ty ở “Công ty của tôi” để quản lý phương thức thanh toán.",
     "loadError": "Không tải được phương thức thanh toán. Vui lòng thử lại.",
     "noMethodsReadOnly": "Chưa có phương thức thanh toán nào được thiết lập.",
-    "readOnlyNote": "Cách hoá đơn được thanh toán cho công ty này. Chỉ quản trị viên mới có thể thêm, đổi tên hoặc xoá phương thức."
+    "readOnlyNote": "Cách hoá đơn được thanh toán cho công ty này. Chỉ quản trị viên mới có thể thêm, đổi tên hoặc xoá phương thức.",
+    "inactive": "Ngừng dùng",
+    "deactivate": "Vô hiệu hoá",
+    "activate": "Kích hoạt lại"
   },
   "admin": {
     "bulkAdd": {
@@ -1520,7 +1560,8 @@
     "payments": "Thanh toán",
     "paidToast": "Đã ghi nhận thanh toán.",
     "unpaidToast": "Đã xóa thanh toán.",
-    "readOnly": "Chỉ admin hoặc quản lý mới đổi được trạng thái thanh toán."
+    "readOnly": "Chỉ admin hoặc quản lý mới đổi được trạng thái thanh toán.",
+    "noMonth": "Chưa gán tháng"
   },
   "shell": {
     "switchProject": "Đổi công trình",
@@ -1642,7 +1683,7 @@
     "logToday": "Chấm công hôm nay",
     "logDay": "Chấm công ngày {{date}}",
     "submit": "Chấm ngày này",
-    "futureDay": "Chỉ chấm được hôm nay hoặc ngày đã qua.",
+    "futureDay": "Bạn chỉ có thể chấm công hôm nay hoặc trong {{days}} ngày gần nhất.",
     "logged": "Đã gửi chấm công, chờ quản lý duyệt.",
     "notLinked": "Tài khoản của bạn chưa được gắn với nhân công nào ở công trình này. Hãy hỏi quản lý.",
     "monthList": "Ngày công trong tháng",
@@ -1662,14 +1703,15 @@
     "editSent": "Đã gửi yêu cầu sửa, chờ quản lý duyệt.",
     "editUnchanged": "Không có gì thay đổi: ngày này đã có đúng các giá trị đó.",
     "editDuplicate": "Yêu cầu sửa này đã được gửi và đang chờ quản lý duyệt.",
-    "supplement": "Giờ thêm",
+    "supplement": "Giờ thêm (không tính lương)",
     "note": "Ghi chú",
     "changeRequested": "Chờ duyệt sửa",
     "proposedLine": "Yêu cầu: {{value}}",
     "roster": {
       "title": "Đội trên công trình — {{date}}",
       "empty": "Hôm nay chưa có ai được xếp lịch.",
-      "loadError": "Không thể tải danh sách hôm nay."
+      "loadError": "Không thể tải danh sách hôm nay.",
+      "upcoming": "Chưa đến"
     },
     "profileTitle": "Hồ sơ của tôi",
     "profileSub": "Vai trò của bạn ở công trình này, lương ngày và lịch sử thay đổi.",

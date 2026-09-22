@@ -31,10 +31,16 @@ export function shiftChip(entry: LaborEntry, t: (key: string) => string) {
   return { label: `+${entry.supplement_hours} h`, tone: "accent" as const };
 }
 
-type KpiProps = { days: number; cost: number; unpaid: number };
+type KpiProps = {
+  days: number;
+  cost: number;
+  unpaid: number;
+  /** Without `project:view_pay` only the day count is shown. */
+  showPay?: boolean;
+};
 
 /** Three KPI cards: Ngày công · Chi phí · Chưa trả (warning tint). */
-export function LaborKpis({ days, cost, unpaid }: KpiProps) {
+export function LaborKpis({ days, cost, unpaid, showPay = true }: KpiProps) {
   const { t } = useTranslation();
   return (
     <View className="flex-row gap-2">
@@ -51,32 +57,36 @@ export function LaborKpis({ days, cost, unpaid }: KpiProps) {
           {days}
         </Text>
       </Card>
-      <Card radius={14} elevated className="flex-1 p-3">
-        <Text className="font-sans text-[11.5px] text-muted">
-          {t("labor.kpi.cost")}
-        </Text>
-        <Text
-          className="mt-0.5 font-mono text-xl text-ink"
-          testID="labor-kpi-cost"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {formatMoney(cost)}
-        </Text>
-      </Card>
-      <View className="flex-1 rounded-[14px] border border-line bg-warning-tint p-3">
-        <Text className="font-sans text-[11.5px] text-warning">
-          {t("labor.kpi.unpaid")}
-        </Text>
-        <Text
-          className="mt-0.5 font-mono text-xl text-warning"
-          testID="labor-kpi-unpaid"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {formatMoney(unpaid)}
-        </Text>
-      </View>
+      {showPay ? (
+        <>
+          <Card radius={14} elevated className="flex-1 p-3">
+            <Text className="font-sans text-[11.5px] text-muted">
+              {t("labor.kpi.cost")}
+            </Text>
+            <Text
+              className="mt-0.5 font-mono text-xl text-ink"
+              testID="labor-kpi-cost"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {formatMoney(cost)}
+            </Text>
+          </Card>
+          <View className="flex-1 rounded-[14px] border border-line bg-warning-tint p-3">
+            <Text className="font-sans text-[11.5px] text-warning">
+              {t("labor.kpi.unpaid")}
+            </Text>
+            <Text
+              className="mt-0.5 font-mono text-xl text-warning"
+              testID="labor-kpi-unpaid"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {formatMoney(unpaid)}
+            </Text>
+          </View>
+        </>
+      ) : null}
     </View>
   );
 }
@@ -101,6 +111,9 @@ export function LaborEntryRow({
 }: EntryRowProps) {
   const { t } = useTranslation();
   const chip = shiftChip(entry, t);
+  // A self-logged day is unpriced until a manager validates it: the backend sends 0, which
+  // reads as "worked for free" next to the other rows.
+  const pending = entry.status === "pending";
   return (
     <Pressable
       testID={testID}
@@ -119,10 +132,17 @@ export function LaborEntryRow({
         <Text className="font-sans text-[11.5px] text-muted" numberOfLines={1}>
           {role ?? "—"} ·{" "}
           <Text className="font-mono-regular">
-            {formatMoney(entry.effective_cost)}
+            {pending ? "—" : formatMoney(entry.effective_cost)}
           </Text>
         </Text>
       </View>
+      {pending ? (
+        <Badge
+          testID="entry-pending-badge"
+          label={t("worker.status.pending")}
+          tone="warning"
+        />
+      ) : null}
       {entry.change_requested_at ? (
         <Badge
           testID="entry-change-requested"
@@ -136,6 +156,8 @@ export function LaborEntryRow({
 }
 
 type DayCardProps = {
+  /** Without `project:manage_labor` the card is read-only: no logging, no entry editing. */
+  canManage?: boolean;
   title: string;
   /** Secondary line under the title, e.g. the public-holiday name. */
   subtitle?: string | null;
@@ -157,6 +179,7 @@ export function LaborDayCard({
   onEntry,
   onLog,
   onDetails,
+  canManage = true,
 }: DayCardProps) {
   const { t } = useTranslation();
   const tokens = useTokens();
@@ -191,22 +214,24 @@ export function LaborDayCard({
             entry={entry}
             color={colorOf(entry.worker_id)}
             role={roleOf(entry.worker_id)}
-            onPress={onEntry}
+            onPress={canManage ? onEntry : () => undefined}
             testID={`day-entry-${entry.id}`}
           />
         ))}
       </View>
-      <Pressable
-        testID="day-log"
-        accessibilityRole="button"
-        onPress={onLog}
-        className="mt-3.5 h-11 flex-row items-center justify-center gap-2 rounded-xl bg-ink active:opacity-70"
-      >
-        <Icon name="check" size={15} color={tokens.onInk} />
-        <Text className="font-sans-semibold text-[14px] text-on-ink">
-          {t("labor.calendar.logDay")}
-        </Text>
-      </Pressable>
+      {canManage ? (
+        <Pressable
+          testID="day-log"
+          accessibilityRole="button"
+          onPress={onLog}
+          className="mt-3.5 h-11 flex-row items-center justify-center gap-2 rounded-xl bg-ink active:opacity-70"
+        >
+          <Icon name="check" size={15} color={tokens.onInk} />
+          <Text className="font-sans-semibold text-[14px] text-on-ink">
+            {t("labor.calendar.logDay")}
+          </Text>
+        </Pressable>
+      ) : null}
       <Pressable
         testID="day-details"
         accessibilityRole="button"
@@ -222,6 +247,8 @@ export function LaborDayCard({
 }
 
 type WorkersPanelProps = {
+  /** Without `project:manage_labor` the roster is read-only: no adding, no worker actions. */
+  canManage?: boolean;
   workers: ColoredWorker[];
   daysOf: (workerId: string) => number;
   onWorker: (worker: Worker) => void;
@@ -234,6 +261,7 @@ export function WorkersPanel({
   daysOf,
   onWorker,
   onAdd,
+  canManage = true,
 }: WorkersPanelProps) {
   const { t } = useTranslation();
   return (
@@ -284,16 +312,18 @@ export function WorkersPanel({
           </Card>
         </Pressable>
       ))}
-      <Pressable
-        testID="worker-add"
-        accessibilityRole="button"
-        onPress={onAdd}
-        className="h-[46px] items-center justify-center rounded-[14px] border-[1.5px] border-dashed border-line-2 active:opacity-70"
-      >
-        <Text className="font-sans-medium text-[14px] text-accent-ink">
-          + {t("labor.workers.add")}
-        </Text>
-      </Pressable>
+      {canManage ? (
+        <Pressable
+          testID="worker-add"
+          accessibilityRole="button"
+          onPress={onAdd}
+          className="h-[46px] items-center justify-center rounded-[14px] border-[1.5px] border-dashed border-line-2 active:opacity-70"
+        >
+          <Text className="font-sans-medium text-[14px] text-accent-ink">
+            + {t("labor.workers.add")}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

@@ -28,6 +28,7 @@ import {
   useSetRefundableStatus,
   useUpdateInvoice,
 } from "@/features/invoices/invoices-api";
+import { useBillingAccess } from "@/features/companies/companies-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { buildInvoicePrintHtml } from "@/lib/invoices/invoice-print-html";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
@@ -54,6 +55,9 @@ export default function InvoiceDetailScreen() {
     "project:manage_invoices",
     user?.permissions,
   );
+  // The refund workflow writes through the company-scoped billing endpoint, which only a
+  // company admin may call: `project:manage_invoices` alone earns a 403 there.
+  const billing = useBillingAccess();
   const update = useUpdateInvoice(id, invoiceId);
   const remove = useDeleteInvoice(id);
   const setRefundable = useSetRefundableStatus(id);
@@ -116,13 +120,22 @@ export default function InvoiceDetailScreen() {
     );
 
   const data = invoice.data;
+  // An auto-generated invoice mirrors its billing document and a refunded one is closed:
+  // the backend refuses to edit or delete either, so the controls that would try are gone.
+  const canEdit =
+    canManage &&
+    !data.is_auto_generated &&
+    data.refundable_status !== "refunded";
   const canTransferToCompany =
     canManage &&
+    billing.allowed &&
     data.type === "materials_services" &&
     !data.refundable_status &&
+    !data.paid_by_company &&
     Boolean(project.data?.company_id);
   const awaitingRefund =
     canManage &&
+    billing.allowed &&
     Boolean(data.refundable_status) &&
     data.refundable_status !== "refunded";
 
@@ -135,6 +148,7 @@ export default function InvoiceDetailScreen() {
         <InvoiceDetailActions
           printing={printing}
           canManage={canManage}
+          canEdit={canEdit}
           onPrint={() => void printPdf()}
           onAttach={() => addSheet.current?.present()}
           onEdit={() =>
@@ -178,7 +192,7 @@ export default function InvoiceDetailScreen() {
         />
         <InvoiceHighlightRow
           value={data.highlight_color}
-          disabled={!canManage}
+          disabled={!canEdit}
           onChange={(color) => update.mutate({ highlight_color: color })}
         />
       </InkSheetScreen>

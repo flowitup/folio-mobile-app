@@ -1,4 +1,4 @@
-import { focusManager } from "@tanstack/react-query";
+import { focusManager, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useCallback,
@@ -26,7 +26,7 @@ import {
 
 import type { components } from "@/api/generated/schema";
 import i18n from "@/i18n";
-import { authErrorKey } from "@/lib/auth/auth-error-message";
+import { authErrorKey, AuthRequestError } from "@/lib/auth/auth-error-message";
 import type { AuthFlow } from "@/lib/auth/auth-error-message";
 
 // `is_platform_ops` (D5) is not on the generated `UserResponse` yet — the backend ships it in
@@ -93,32 +93,38 @@ type LoginPayload = components["schemas"]["LoginResponse"];
  */
 export type AdoptableSession = components["schemas"]["AcceptInviteResponse"];
 
-function errorMessage(
+function authError(
   flow: AuthFlow,
   error: unknown,
   response: { status: number } | undefined,
-): string {
+): AuthRequestError {
   // Recognised failures get a translated string; the rest keep the server's own wording,
-  // which is more specific than any catch-all we could write.
+  // which is more specific than any catch-all we could write. The status travels with the
+  // error so a screen can branch on it instead of matching the translated sentence.
   const key = authErrorKey(flow, response?.status);
-  if (key) return i18n.t(key);
-  return (
-    (error as { message?: string } | undefined)?.message ??
-    `HTTP ${response?.status ?? "?"}`
-  );
+  const message = key
+    ? i18n.t(key)
+    : ((error as { message?: string } | undefined)?.message ??
+      `HTTP ${response?.status ?? "?"}`);
+  return new AuthRequestError(message, response?.status);
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [user, setUser] = useState<AuthUser | null>(null);
 
   const signOutLocally = useCallback(async () => {
     await clearStoredTokens();
+    // Every cached query belonged to the account that just left: without this the next
+    // account reads its companies/projects from the cache (30s stale window) and the
+    // onboarding gate decides on someone else's data.
+    queryClient.clear();
     setUser(null);
     setStatus("signedOut");
-  }, []);
+  }, [queryClient]);
 
   // Restore the session on launch: a stored refresh token is enough, the client refreshes on 401.
   useEffect(() => {
@@ -193,7 +199,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       "/api/v1/auth/otp/request",
       { body: { phone } },
     );
-    if (!data) throw new Error(errorMessage("otp", error, response));
+    if (!data) throw authError("otp", error, response);
     return data.expires_in;
   }, []);
 
@@ -203,7 +209,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/otp/verify",
         { body: { phone, code } },
       );
-      if (!data) throw new Error(errorMessage("otp", error, response));
+      if (!data) throw authError("otp", error, response);
       await applyLoginPayload(data);
     },
     [applyLoginPayload],
@@ -224,7 +230,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       "/api/v1/auth/signup/request",
       { body: { phone } },
     );
-    if (!data) throw new Error(errorMessage("signup", error, response));
+    if (!data) throw authError("signup", error, response);
     return data.expires_in;
   }, []);
 
@@ -234,7 +240,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/signup/verify",
         { body: { phone, code, display_name: displayName } },
       );
-      if (!data) throw new Error(errorMessage("signup", error, response));
+      if (!data) throw authError("signup", error, response);
       await applyLoginPayload(data);
     },
     [applyLoginPayload],

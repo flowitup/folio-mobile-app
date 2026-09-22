@@ -28,6 +28,18 @@ const RECORD_KEYS: (keyof ImportRecord)[] = [
 ];
 
 /**
+ * Straightens the curly quotes and non-breaking spaces iOS and desktop mail clients
+ * substitute while the export is copied around: they are invisible to the person pasting
+ * and make `JSON.parse` reject an otherwise valid export.
+ */
+function normalizeJsonPunctuation(text: string): string {
+  return text
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/[\u00A0\u2007\u202F]/g, " ");
+}
+
+/**
  * Parses pasted / picked JSON into an import payload. Accepts the backend body shape
  * (`supplier_name`, `supplier_slug`, `records[]`); `company_id` is injected by the caller.
  * Returns null when the text is not JSON or the required keys are missing.
@@ -38,7 +50,7 @@ export function parseImportPayload(
 ): ImportPayload | null {
   let raw: unknown;
   try {
-    raw = JSON.parse(text);
+    raw = JSON.parse(normalizeJsonPunctuation(text));
   } catch {
     return null;
   }

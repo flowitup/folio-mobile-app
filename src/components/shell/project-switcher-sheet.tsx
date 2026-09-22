@@ -11,7 +11,7 @@ import { Eyebrow } from "@/components/ui/typography";
 import { useMyCompanies } from "@/features/companies/companies-api";
 import { ProjectFormSheet } from "@/features/projects/project-form-sheet";
 import type { ProjectFormSheetHandle } from "@/features/projects/project-form-sheet";
-import { useCreateProject } from "@/features/projects/projects-api";
+import { projectCan, useCreateProject } from "@/features/projects/projects-api";
 import type { Project } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatMoney } from "@/lib/format/money";
@@ -25,17 +25,43 @@ import { projectDisplayName } from "@/lib/projects/project-display-name";
 export function projectRowMeta(
   project: Project,
   t: (key: string, options?: Record<string, unknown>) => string,
+  canSeeSpend = true,
 ): {
   meta: string;
   remain: string;
   tone: "ink" | "negative" | "muted";
-  pct: number;
+  /** Share of the budget already spent; null when there is no budget to measure against. */
+  pct: number | null;
 } {
-  const budget = project.budget ?? 0;
-  const spent = project.spent ?? 0;
+  // Amount from the invoice ledger (`spent_invoiced`, what the overview sums); `spent` only
+  // tells whether money is visible to this caller at all.
+  const spent = project.spent_invoiced ?? project.spent ?? 0;
+  // A null spend is the backend hiding money from this caller (no `project:view_budget` /
+  // spend permission): show nothing rather than assert a zero.
+  const spendHidden = !canSeeSpend || project.spent == null;
+  if (!canSeeSpend)
+    return {
+      meta: t("shell.membersCount", { count: project.user_count ?? 0 }),
+      remain: "",
+      tone: "muted",
+      pct: null,
+    };
   // The row title already shows the address (the project label), so the meta
   // line only carries the member count and budget state.
   const parts = [t("shell.membersCount", { count: project.user_count ?? 0 })];
+  // A null budget is the backend hiding it from a caller without `project:view_budget`, not a
+  // project without one: say nothing about the budget and draw no gauge against a figure we
+  // were not given. Only a budget the caller can read, and that is zero, is really unset.
+  if (project.budget == null)
+    return {
+      meta: parts.join(" · "),
+      remain: spendHidden
+        ? ""
+        : t("shell.spentNoBudget", { amount: formatMoney(spent) }),
+      tone: "muted",
+      pct: null,
+    };
+  const budget = Number(project.budget);
   if (budget <= 0) {
     parts.push(t("shell.noBudget"));
     return {
@@ -103,7 +129,16 @@ export function ProjectSwitcherSheet() {
         <View className="overflow-hidden rounded-xl border border-line bg-card">
           <ScrollView style={{ maxHeight: 340 }} bounces={false}>
             {projects.map((project) => {
-              const row = projectRowMeta(project, t);
+              const row = projectRowMeta(
+                project,
+                t,
+                projectCan(project, "project:view_budget", user?.permissions) ||
+                  projectCan(
+                    project,
+                    "project:manage_invoices",
+                    user?.permissions,
+                  ),
+              );
               const current = project.id === projectId;
               return (
                 <Pressable
@@ -126,18 +161,22 @@ export function ProjectSwitcherSheet() {
                       >
                         {projectDisplayName(project)}
                       </Text>
-                      <Text
-                        className={`ml-2 font-mono text-[14px] ${REMAIN_CLASS[row.tone]}`}
-                      >
-                        {row.remain}
-                      </Text>
+                      {row.remain ? (
+                        <Text
+                          className={`ml-2 font-mono text-[14px] ${REMAIN_CLASS[row.tone]}`}
+                        >
+                          {row.remain}
+                        </Text>
+                      ) : null}
                     </View>
-                    <View className="mt-[5px] h-[3px] overflow-hidden rounded-sm bg-paper-2">
-                      <View
-                        className={`h-[3px] ${row.tone === "negative" ? "bg-negative" : "bg-ink"}`}
-                        style={{ width: `${row.pct}%` }}
-                      />
-                    </View>
+                    {row.pct !== null ? (
+                      <View className="mt-[5px] h-[3px] overflow-hidden rounded-sm bg-paper-2">
+                        <View
+                          className={`h-[3px] ${row.tone === "negative" ? "bg-negative" : "bg-ink"}`}
+                          style={{ width: `${row.pct}%` }}
+                        />
+                      </View>
+                    ) : null}
                     <Text
                       className="mt-1 font-sans text-[11px] text-muted"
                       numberOfLines={1}

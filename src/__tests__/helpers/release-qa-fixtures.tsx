@@ -455,6 +455,7 @@ export const BILLING_DEVIS: BillingDocument = {
   issuer_bic: null,
   issuer_logo_url: null,
   source_devis_id: null,
+  converted_to_facture_id: null,
   total_ht: "1000.00",
   total_tva: "200.00",
   total_ttc: "1200.00",

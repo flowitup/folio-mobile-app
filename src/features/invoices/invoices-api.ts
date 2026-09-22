@@ -167,7 +167,10 @@ export function useAssignInvoiceWorker(projectId: string) {
   });
 }
 
-export function useDeleteInvoice(projectId: string) {
+export function useDeleteInvoice(
+  projectId: string,
+  { silent = false }: { silent?: boolean } = {},
+) {
   const { t } = useTranslation();
   return useApiMutation<{ invoiceId: string }>({
     mutationFn: async ({ invoiceId }) =>
@@ -180,7 +183,7 @@ export function useDeleteInvoice(projectId: string) {
         ),
       ),
     invalidates: [invoiceKeys.all(projectId), ["projects", projectId]],
-    successMessage: t("invoices.deleted"),
+    successMessage: silent ? undefined : t("invoices.deleted"),
   });
 }
 
@@ -313,14 +316,29 @@ export function useLaborPaymentsSummary(projectId: string, enabled = true) {
   });
 }
 
-export function usePaymentMethods(companyId: string | null | undefined) {
+/**
+ * Active methods by default (what invoice pickers offer). The settings screen asks for the
+ * deactivated ones too, otherwise a method switched off could never be switched back on.
+ */
+export function usePaymentMethods(
+  companyId: string | null | undefined,
+  { includeInactive = false }: { includeInactive?: boolean } = {},
+) {
   return useQuery({
-    queryKey: invoiceKeys.paymentMethods(companyId ?? ""),
+    queryKey: [
+      ...invoiceKeys.paymentMethods(companyId ?? ""),
+      includeInactive ? "all" : "active",
+    ],
     enabled: Boolean(companyId),
     queryFn: async () => {
       const data = unwrapAs<{ items?: PaymentMethod[] }>(
         await api.GET("/api/v1/companies/{company_id}/payment-methods", {
-          params: { path: { company_id: companyId! } },
+          params: {
+            path: { company_id: companyId! },
+            ...(includeInactive
+              ? { query: { include_inactive: true } as never }
+              : {}),
+          },
         }),
       );
       return data.items ?? [];

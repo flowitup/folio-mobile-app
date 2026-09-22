@@ -9,11 +9,12 @@ import { Select } from "@/components/ui/select";
 
 import {
   BillingItemsEditor,
+  hasItemErrors,
   itemsFromResponse,
   itemsToPayload,
   validateItems,
 } from "./billing-items-editor";
-import type { ItemDraft } from "./billing-items-editor";
+import type { ItemDraft, ItemErrors } from "./billing-items-editor";
 import { VAT_PRESETS } from "./billing-types";
 import type {
   BillingDocumentKind,
@@ -47,7 +48,7 @@ export function BillingTemplateForm({
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [terms, setTerms] = useState(initial?.terms ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
-  const [itemErrors, setItemErrors] = useState<Record<number, string>>({});
+  const [itemErrors, setItemErrors] = useState<Record<number, ItemErrors>>({});
   const [itemsError, setItemsError] = useState<string | null>(null);
 
   function submit() {
@@ -61,7 +62,7 @@ export function BillingTemplateForm({
     setItemsError(
       missingItems ? t("billing.form.errors.atLeastOneItem") : null,
     );
-    if (!trimmed || missingItems || Object.keys(errors).length > 0) return;
+    if (!trimmed || missingItems || hasItemErrors(errors)) return;
     onSubmit({
       kind,
       name: trimmed,

@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Share, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Badge, Card } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import type { Company, CompanyRole } from "@/features/companies/companies-api";
@@ -33,6 +35,12 @@ export function JoinCodeCard({
   const { t } = useTranslation();
   const setJoinCode = useSetJoinCode();
   const revokeJoinCode = useRevokeJoinCode();
+  // Renewing invalidates the code everyone was given and revoking closes the door: both are
+  // confirmed here, exactly as on the company manage screen.
+  const [confirm, setConfirm] = useState<{
+    title: string;
+    run: () => void;
+  } | null>(null);
 
   return (
     <Card className="mb-4" testID="join-code-card">
@@ -81,7 +89,14 @@ export function JoinCodeCard({
           }
           size="sm"
           loading={setJoinCode.isPending}
-          onPress={() => setJoinCode.mutate({ companyId })}
+          onPress={() =>
+            company?.join_code
+              ? setConfirm({
+                  title: t("companies.admin.manage.joinCode.renewConfirm"),
+                  run: () => setJoinCode.mutate({ companyId }),
+                })
+              : setJoinCode.mutate({ companyId })
+          }
         />
         {company?.join_code ? (
           <Button
@@ -90,10 +105,27 @@ export function JoinCodeCard({
             size="sm"
             variant="danger"
             loading={revokeJoinCode.isPending}
-            onPress={() => revokeJoinCode.mutate({ companyId })}
+            onPress={() =>
+              setConfirm({
+                title: t("companies.admin.manage.joinCode.revokeConfirm"),
+                run: () => revokeJoinCode.mutate({ companyId }),
+              })
+            }
           />
         ) : null}
       </View>
+      <ConfirmDialog
+        visible={confirm !== null}
+        title={confirm?.title ?? ""}
+        confirmLabel={t("common.confirm")}
+        cancelLabel={t("common.cancel")}
+        destructive
+        onCancel={() => setConfirm(null)}
+        onConfirm={() => {
+          confirm?.run();
+          setConfirm(null);
+        }}
+      />
     </Card>
   );
 }

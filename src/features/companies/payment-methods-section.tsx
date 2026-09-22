@@ -22,7 +22,7 @@ type Props = { companyId: string; readOnly?: boolean };
 /** Payment methods of one company: add, rename, toggle company / personal flags, delete (built-ins protected). */
 export function PaymentMethodsSection({ companyId, readOnly = false }: Props) {
   const { t } = useTranslation();
-  const methods = usePaymentMethods(companyId);
+  const methods = usePaymentMethods(companyId, { includeInactive: true });
   const create = useCreatePaymentMethod(companyId);
   const update = useUpdatePaymentMethod(companyId);
   const remove = useDeletePaymentMethod(companyId);
@@ -91,9 +91,29 @@ export function PaymentMethodsSection({ companyId, readOnly = false }: Props) {
                 {method.label}
               </Text>
             </Pressable>
-            {!method.is_active ? <Badge label="inactive" /> : null}
+            {!method.is_active ? (
+              <Badge label={t("paymentMethods.inactive")} />
+            ) : null}
             {/* A built-in method is seeded with the company and the API always refuses to
                 delete it, so offering the action only ever ends in an error banner. */}
+            {!readOnly ? (
+              <Pressable
+                testID={`pm-toggle-active-${method.id}`}
+                onPress={() =>
+                  update.mutate({ id: method.id, is_active: !method.is_active })
+                }
+                hitSlop={8}
+                className="ml-2"
+              >
+                <Text className="text-sm text-muted">
+                  {t(
+                    method.is_active
+                      ? "paymentMethods.deactivate"
+                      : "paymentMethods.activate",
+                  )}
+                </Text>
+              </Pressable>
+            ) : null}
             {!readOnly && !method.is_builtin ? (
               <Pressable
                 testID={`pm-delete-${method.id}`}

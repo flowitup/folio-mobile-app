@@ -228,7 +228,7 @@ export const InventoryItemFormSheet = forwardRef<BottomSheetModal, Props>(
                 {t("inventory.validation.noWarehouseYet")}
               </Text>
             )
-          ) : (
+          ) : sites.length > 0 ? (
             <Select
               testID="inventory-site"
               label={t("inventory.fields.site")}
@@ -242,6 +242,13 @@ export const InventoryItemFormSheet = forwardRef<BottomSheetModal, Props>(
               onChange={setProjectId}
               error={errors.location}
             />
+          ) : (
+            <Text
+              testID="inventory-no-site"
+              className="mb-4 font-sans text-xs text-negative"
+            >
+              {t("inventory.validation.noSiteYet")}
+            </Text>
           )}
           <Input
             testID="inventory-reference"

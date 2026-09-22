@@ -39,9 +39,13 @@ async function fetchExpenses(refundable: boolean, companyId: string | null) {
 }
 
 /** Expenses already tracked for reimbursement (+ aggregated summary). */
-export function useRefundableExpenses(companyId: string | null = null) {
+export function useRefundableExpenses(
+  companyId: string | null = null,
+  enabled = true,
+) {
   return useQuery({
     queryKey: refundableKeys.list(true, companyId),
+    enabled,
     queryFn: () => fetchExpenses(true, companyId),
   });
 }
@@ -58,8 +62,12 @@ export function useRefundableCandidates(
   });
 }
 
-/** Set (or clear with null) the refundable status; `refundedBy` only matters for "refunded". */
-export function useSetRefundable() {
+/**
+ * Set (or clear with null) the refundable status; `refundedBy` only matters for "refunded".
+ * `silent` drops the per-call toast and the default error toast: a bulk caller reports once
+ * for the whole batch instead of once per expense.
+ */
+export function useSetRefundable(silent = false) {
   const { t } = useTranslation();
   return useApiMutation<{
     invoiceId: string;
@@ -77,6 +85,7 @@ export function useSetRefundable() {
         }),
       ),
     invalidates: [refundableKeys.all, ["projects"]],
-    successMessage: t("common.saved"),
+    successMessage: silent ? undefined : t("common.saved"),
+    onError: () => silent,
   });
 }

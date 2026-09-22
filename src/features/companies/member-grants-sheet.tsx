@@ -77,13 +77,18 @@ export const MemberGrantsSheet = forwardRef<BottomSheetModal, Props>(
 
     function submit() {
       if (!userId || !permission) return;
-      setGrant.mutate({
-        companyId,
-        userId,
-        permission,
-        effect,
-        project_id: scope === COMPANY_WIDE ? null : scope,
-      });
+      setGrant.mutate(
+        {
+          companyId,
+          userId,
+          permission,
+          effect,
+          project_id: scope === COMPANY_WIDE ? null : scope,
+        },
+        // The saved grant is now a row above; leaving it in the picker reads as still
+        // pending and a second Save would silently re-send it.
+        { onSuccess: () => setPermission(null) },
+      );
     }
 
     return (

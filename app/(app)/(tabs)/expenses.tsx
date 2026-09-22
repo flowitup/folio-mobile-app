@@ -75,6 +75,9 @@ function ExpensesTabContent() {
   const [month, setMonth] = useState(currentMonth());
   const invoices = useInvoices(projectId);
   const canViewBudget = useProjectCan(projectId, "project:view_budget");
+  // Writing an invoice needs `project:manage_invoices`; without it the form would only walk
+  // the user into a 403 on submit, so the "+" never appears.
+  const canManageInvoices = useProjectCan(projectId, "project:manage_invoices");
   const billing = useBillingAccess();
   const chatEnabled = useChatEnabled();
   // The add button floats over the sheet, so the sheet has to end above it — otherwise the
@@ -107,10 +110,16 @@ function ExpensesTabContent() {
   }, [rows, filter, month]);
   const summary = useMemo(() => buildPursesSummary(rows), [rows]);
   const headline = useMemo(() => {
+    // The figure above it is the month's SPEND — `expenseSubtotal` leaves the release
+    // rows out — so the count beside it has to leave them out too, or a month with one
+    // disbursement reads "4 items" next to a total that only adds up three of them.
     const countOf = (key: string) =>
       allMonths
         .find((m) => m.monthKey === key)
-        ?.categories.reduce((n, c) => n + c.items.length, 0) ?? 0;
+        ?.categories.reduce(
+          (n, c) => (c.type === "released_funds" ? n : n + c.items.length),
+          0,
+        ) ?? 0;
     const totalOf = (key: string) =>
       allMonths.find((m) => m.monthKey === key)?.expenseSubtotal ?? 0;
     const previous = shiftMonth(month, -1);
@@ -176,7 +185,8 @@ function ExpensesTabContent() {
               tone="ink"
               testID="expenses-month"
               value={month}
-              onChange={(next) => setMonth(next > latestMonth ? month : next)}
+              max={latestMonth}
+              onChange={setMonth}
               prevLabel={t("expenses.prevMonth")}
               nextLabel={t("expenses.nextMonth")}
             />
@@ -299,7 +309,7 @@ function ExpensesTabContent() {
         ) : null}
       </InkSheetScreen>
 
-      {project ? (
+      {project && canManageInvoices ? (
         <Pressable
           testID="invoices-create"
           accessibilityRole="button"

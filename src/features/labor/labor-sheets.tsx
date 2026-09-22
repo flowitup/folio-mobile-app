@@ -13,6 +13,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { useAuth } from "@/auth/auth-context";
 import { isCompanyAdminOrManager } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/primitives";
@@ -21,6 +22,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { useCompanyPersons } from "@/features/companies/company-members-api";
 import { useMembers } from "@/features/projects/members-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
+import { normalizePhone } from "@/lib/auth/phone-number";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import {
   NEW_PERSON,
@@ -47,6 +49,7 @@ import type {
   UpdateAttendancePayload,
   UpdateWorkerPayload,
   Worker,
+  WorkerRateChange,
 } from "./labor-types";
 
 export type SheetHandle = { open: () => void; close: () => void };
@@ -155,7 +158,9 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         if (!name.trim()) return setError(t("labor.workers.nameRequired"));
         return onSubmit({
           name: name.trim(),
-          phone: phone.trim() || undefined,
+          // Always sent, empty included: the backend clears the phone on "" but leaves the
+          // stored value untouched when the field is missing (and the app still toasts Saved).
+          phone: normalizePhone(phone) ?? phone.trim(),
           role_id: roleId,
           user_id: userId,
         });
@@ -171,7 +176,10 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         // which stays the single source of truth for who this worker is.
         ...(picked
           ? { person_id: picked.person_id }
-          : { name: name.trim(), phone: phone.trim() || undefined }),
+          : {
+              name: name.trim(),
+              phone: normalizePhone(phone) ?? (phone.trim() || undefined),
+            }),
         daily_rate: dailyRate,
         role_id: roleId ?? undefined,
         user_id: userId ?? undefined,
@@ -227,7 +235,10 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               testID="worker-name"
               label={t("labor.workers.name")}
               value={name}
-              onChangeText={setName}
+              onChangeText={(value) => {
+                setName(value);
+                setError(null);
+              }}
               error={error}
               autoFocus
             />
@@ -237,7 +248,10 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               testID="worker-rate"
               label={t("labor.workers.dailyRate")}
               value={rate}
-              onChangeText={setRate}
+              onChangeText={(value) => {
+                setRate(value);
+                setError(null);
+              }}
               keyboardType="decimal-pad"
               error={picked ? error : undefined}
             />
@@ -309,6 +323,8 @@ export const RateChangesSheet = forwardRef<
   const remove = useDeleteRateChange(projectId);
   const [date, setDate] = useState<string | null>(toIsoDate(new Date()));
   const [rate, setRate] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<WorkerRateChange | null>(null);
   // Days already logged from the picked date onward: the backend re-prices them
   // on read, so show the admin how far back this change reaches before saving.
   // The `worker` prop is captured when the actions sheet opens, so its
@@ -317,7 +333,7 @@ export const RateChangesSheet = forwardRef<
   const workers = useWorkers(projectId);
   const fresh =
     workers.data?.find((candidate) => candidate.id === worker?.id) ?? worker;
-  const today = useMemo(() => toIsoDate(new Date()), []);
+  const today = toIsoDate(new Date());
   const logged = useLaborEntries(
     projectId,
     date ?? undefined,
@@ -330,89 +346,123 @@ export const RateChangesSheet = forwardRef<
     date ?? "",
   );
 
+  // The sheet is mounted once and reused for every worker, so a rate typed for one worker
+  // would otherwise still be in the field when the next one's sheet opens.
   useImperativeHandle(ref, () => ({
-    open: () => sheet.current?.present(),
+    open: () => {
+      setRate("");
+      setDate(toIsoDate(new Date()));
+      setError(null);
+      setRemoving(null);
+      sheet.current?.present();
+    },
     close: () => sheet.current?.dismiss(),
   }));
 
+  function submit() {
+    const dailyRate = parseMoneyInput(rate);
+    if (!dailyRate || dailyRate <= 0)
+      return setError(t("labor.workers.rateRequired"));
+    if (!worker || !date) return;
+    setError(null);
+    create.mutate(
+      { workerId: worker.id, effective_date: date, daily_rate: dailyRate },
+      { onSuccess: () => setRate("") },
+    );
+  }
+
   return (
-    <Sheet
-      ref={sheet}
-      title={t("labor.rates.title", { name: worker?.name ?? "" })}
-      snapPoints={["75%"]}
-    >
-      <View className="p-4">
-        <Text className="mb-3 text-sm text-muted-foreground">
-          {t("labor.rates.current", {
-            rate: formatMoney(
-              fresh ? currentDailyRate(fresh, changes.data ?? [], today) : 0,
-            ),
-          })}
-        </Text>
-        {(changes.data ?? []).map((change) => (
-          <Card
-            key={change.id}
-            className="mb-2 flex-row items-center justify-between"
-          >
-            <Text className="text-sm text-primary">
-              {formatDate(change.effective_date)} →{" "}
-              {formatMoney(change.daily_rate)}
-            </Text>
-            <Pressable
-              testID={`rate-change-delete-${change.id}`}
-              onPress={() =>
-                worker &&
-                remove.mutate({ workerId: worker.id, rateChangeId: change.id })
-              }
-            >
-              <Text className="text-sm text-danger">{t("common.delete")}</Text>
-            </Pressable>
-          </Card>
-        ))}
-        <DatePicker
-          testID="rate-change-date"
-          label={t("labor.rates.effectiveDate")}
-          value={date}
-          onChange={setDate}
-          doneLabel={t("common.ok")}
-        />
-        {date && !logged.isPending ? (
-          <Text
-            testID="rate-change-impact"
-            className="mb-2 text-xs text-muted-foreground"
-          >
-            {t("labor.rates.impact", {
-              count: repricedDays,
-              date: formatDate(date),
+    <>
+      <Sheet
+        ref={sheet}
+        title={t("labor.rates.title", { name: worker?.name ?? "" })}
+        snapPoints={["75%"]}
+      >
+        <View className="p-4">
+          <Text className="mb-3 text-sm text-muted-foreground">
+            {t("labor.rates.current", {
+              rate: formatMoney(
+                fresh ? currentDailyRate(fresh, changes.data ?? [], today) : 0,
+              ),
             })}
           </Text>
-        ) : null}
-        <Input
-          testID="rate-change-rate"
-          label={t("labor.workers.dailyRate")}
-          value={rate}
-          onChangeText={setRate}
-          keyboardType="decimal-pad"
-        />
-        <Button
-          testID="rate-change-submit"
-          label={t("labor.rates.add")}
-          loading={create.isPending}
-          onPress={() => {
-            const dailyRate = parseMoneyInput(rate);
-            if (worker && date && dailyRate && dailyRate > 0)
-              create.mutate(
-                {
-                  workerId: worker.id,
-                  effective_date: date,
-                  daily_rate: dailyRate,
-                },
-                { onSuccess: () => setRate("") },
-              );
-          }}
-        />
-      </View>
-    </Sheet>
+          {(changes.data ?? []).map((change) => (
+            <Card
+              key={change.id}
+              className="mb-2 flex-row items-center justify-between"
+            >
+              <Text className="text-sm text-primary">
+                {formatDate(change.effective_date)} →{" "}
+                {formatMoney(change.daily_rate)}
+              </Text>
+              <Pressable
+                testID={`rate-change-delete-${change.id}`}
+                onPress={() => setRemoving(change)}
+              >
+                <Text className="text-sm text-danger">
+                  {t("common.delete")}
+                </Text>
+              </Pressable>
+            </Card>
+          ))}
+          <DatePicker
+            testID="rate-change-date"
+            label={t("labor.rates.effectiveDate")}
+            value={date}
+            onChange={setDate}
+            doneLabel={t("common.ok")}
+          />
+          {date && !logged.isPending ? (
+            <Text
+              testID="rate-change-impact"
+              className="mb-2 text-xs text-muted-foreground"
+            >
+              {t("labor.rates.impact", {
+                count: repricedDays,
+                date: formatDate(date),
+              })}
+            </Text>
+          ) : null}
+          <Input
+            testID="rate-change-rate"
+            label={t("labor.workers.dailyRate")}
+            value={rate}
+            onChangeText={(value) => {
+              setRate(value);
+              setError(null);
+            }}
+            keyboardType="decimal-pad"
+            error={error}
+          />
+          <Button
+            testID="rate-change-submit"
+            label={t("labor.rates.add")}
+            loading={create.isPending}
+            onPress={submit}
+          />
+        </View>
+      </Sheet>
+      <ConfirmDialog
+        visible={removing !== null}
+        title={t("labor.rates.deleteConfirm", {
+          date: removing ? formatDate(removing.effective_date) : "",
+          rate: formatMoney(removing?.daily_rate ?? 0),
+        })}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+        destructive
+        loading={remove.isPending}
+        onCancel={() => setRemoving(null)}
+        onConfirm={() =>
+          worker &&
+          removing &&
+          remove.mutate(
+            { workerId: worker.id, rateChangeId: removing.id },
+            { onSettled: () => setRemoving(null) },
+          )
+        }
+      />
+    </>
   );
 });
 
@@ -659,10 +709,39 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
       setNote(entry?.note ?? "");
     }, [entry]);
 
+    // The sheet is mounted once and reused for every row, so the effect above does not
+    // re-run when the same entry is opened twice: reset from the stored entry on open,
+    // or last time's unsaved edits would come back as if they had been saved.
     useImperativeHandle(ref, () => ({
-      open: () => sheet.current?.present(),
+      open: () => {
+        setShift(entry?.shift_type ?? "none");
+        setSupplement(String(entry?.supplement_hours ?? 0));
+        setOverride(
+          entry?.amount_override != null ? String(entry.amount_override) : "",
+        );
+        setNote(entry?.note ?? "");
+        sheet.current?.present();
+      },
       close: () => sheet.current?.dismiss(),
     }));
+
+    // The backend rejects these shapes (web: `canSubmit`), so Save stays inert and says why
+    // instead of letting the request fail with a raw server message.
+    const supplementHours = Math.max(0, Math.min(12, Number(supplement) || 0));
+    const overrideValue = override.trim() ? parseMoneyInput(override) : null;
+    const isEmptyRow = shift === "none" && supplementHours === 0;
+    const isOverrideWithoutShift = shift === "none" && override.trim() !== "";
+    // A typed override the parser cannot read, or one that is zero or negative, is a 400
+    // from the backend; catch it here so the row is not saved on a silent failure.
+    const isOverrideInvalid =
+      override.trim() !== "" && (overrideValue === null || overrideValue <= 0);
+    const blockedReason = isEmptyRow
+      ? t("labor.log.emptyRowHint")
+      : isOverrideWithoutShift
+        ? t("labor.log.overrideNeedsShiftHint")
+        : isOverrideInvalid
+          ? t("labor.log.overrideInvalidHint")
+          : null;
 
     return (
       <Sheet
@@ -711,21 +790,25 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
               amount: formatMoney(entry?.effective_cost ?? 0),
             })}
           </Text>
+          {blockedReason ? (
+            <Text
+              testID="entry-blocked-hint"
+              className="mb-2 text-sm text-danger"
+            >
+              {blockedReason}
+            </Text>
+          ) : null}
           <Button
             testID="entry-save"
             label={t("common.save")}
             loading={submitting}
+            disabled={blockedReason !== null}
             className="mb-3"
             onPress={() =>
               onSubmit({
                 shift_type: shift === "none" ? null : shift,
-                supplement_hours: Math.max(
-                  0,
-                  Math.min(12, Number(supplement) || 0),
-                ),
-                amount_override: override.trim()
-                  ? parseMoneyInput(override)
-                  : null,
+                supplement_hours: supplementHours,
+                amount_override: overrideValue,
                 note: note.trim() || null,
               })
             }

@@ -243,9 +243,10 @@ export function ChatMessageList({
         return (
           <View key={group.dayKey} className="gap-2.5">
             <Text className="mb-1 text-center font-sans text-[11px] text-muted">
-              {"token" in label ? t(`chat.${label.token}`) : label.date}
-              {" · "}
-              {`${group.dayKey.slice(8, 10)}/${group.dayKey.slice(5, 7)}`}
+              {/* Today / Yesterday carry the date beside them; an older divider is already the date. */}
+              {"token" in label
+                ? `${t(`chat.${label.token}`)} · ${group.dayKey.slice(8, 10)}/${group.dayKey.slice(5, 7)}`
+                : label.date}
             </Text>
             {group.messages.map((message, index) => (
               <MessageRow

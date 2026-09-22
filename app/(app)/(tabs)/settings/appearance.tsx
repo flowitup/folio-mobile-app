@@ -23,7 +23,7 @@ export default function AppearanceScreen() {
 
   return (
     <View className="flex-1 bg-paper">
-      <ScreenHeader title={t("settings.appearance.title")} />
+      <ScreenHeader title={t("settings.appearance.title")} back />
       <ScrollView contentContainerClassName="p-4 gap-3">
         <Text className="px-1 font-sans text-[13px] text-muted">
           {t("settings.appearance.subtitle")}

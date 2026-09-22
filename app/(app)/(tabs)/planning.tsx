@@ -12,9 +12,10 @@ import { useAuth } from "@/auth/auth-context";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
-import { Card, EmptyState } from "@/components/ui/primitives";
+import { Card, EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenTitle } from "@/components/ui/typography";
 import { shortDayMonth } from "@/features/dashboard/overview-cards";
+import { useMembers } from "@/features/projects/members-api";
 import { projectCan } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { TaskFormSheet } from "@/features/tasks/task-form-sheet";
@@ -28,6 +29,7 @@ import {
   useUpdateTask,
 } from "@/features/tasks/tasks-api";
 import type { Task, TaskStatus } from "@/features/tasks/tasks-api";
+import { userDisplayName } from "@/lib/auth/user-display-name";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
 
@@ -51,6 +53,8 @@ export default function PlanningTab() {
   const { user } = useAuth();
   const canDelete = projectCan(project, "project:update", user?.permissions);
   const tasks = useTasks(projectId);
+  // Assignee options: the people assigned to the project, readable by every role.
+  const members = useMembers(projectId);
   const create = useCreateTask(projectId);
   const update = useUpdateTask(projectId);
   const move = useMoveTask(projectId);
@@ -70,6 +74,13 @@ export default function PlanningTab() {
     return map;
   }, [tasks.data]);
   const laneTasks = byLane.get(lane) ?? [];
+  const assignees = (members.data ?? []).map((member) => ({
+    value: member.user_id,
+    label: userDisplayName(member),
+  }));
+  const assigneeLabel = (task: Task) =>
+    assignees.find((option) => option.value === task.assignee_id)?.label ??
+    null;
   const indexOf = (task: Task) =>
     (byLane.get(task.status) ?? []).findIndex((x) => x.id === task.id);
 
@@ -77,10 +88,12 @@ export default function PlanningTab() {
     const siblings = byLane.get(task.status) ?? [];
     const target = siblings[indexOf(task) + direction];
     if (!target) return;
+    // The API names the neighbours the card ends up with: moving up puts the card that
+    // was above it BELOW it (`after_id`), moving down puts the one below ABOVE it.
     move.mutate(
       direction < 0
-        ? { taskId: task.id, status: task.status, beforeId: target.id }
-        : { taskId: task.id, status: task.status, afterId: target.id },
+        ? { taskId: task.id, status: task.status, afterId: target.id }
+        : { taskId: task.id, status: task.status, beforeId: target.id },
     );
   }
 
@@ -143,7 +156,14 @@ export default function PlanningTab() {
         {tasks.isPending ? (
           <ActivityIndicator className="mt-6" color={tokens.ink} />
         ) : null}
-        {!tasks.isPending && laneTasks.length === 0 ? (
+        {tasks.isError ? (
+          <ErrorState
+            message={t("tasks.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void tasks.refetch()}
+          />
+        ) : null}
+        {!tasks.isPending && !tasks.isError && laneTasks.length === 0 ? (
           <EmptyState message={t("tasks.none")} />
         ) : null}
         {laneTasks.length > 0 ? (
@@ -192,6 +212,15 @@ export default function PlanningTab() {
                       >
                         {t(`tasks.priority.${task.priority}`)}
                       </Text>
+                      {assigneeLabel(task) ? (
+                        <Text
+                          testID={`task-assignee-${task.id}`}
+                          className="font-sans text-[11.5px] text-muted"
+                          numberOfLines={1}
+                        >
+                          {assigneeLabel(task)}
+                        </Text>
+                      ) : null}
                       {task.labels.length > 0 ? (
                         <Text
                           className="font-sans text-[11.5px] text-muted"
@@ -213,6 +242,7 @@ export default function PlanningTab() {
       <TaskFormSheet
         ref={form}
         submitting={create.isPending || update.isPending}
+        assignees={assignees}
         canDelete={canDelete}
         canMoveUp={(task) => indexOf(task) > 0}
         canMoveDown={(task) =>
@@ -230,6 +260,7 @@ export default function PlanningTab() {
                 priority: values.priority,
                 due_date: values.due_date,
                 labels: values.labels,
+                assignee_id: values.assignee_id,
               },
               {
                 onSuccess: () => {
@@ -240,10 +271,7 @@ export default function PlanningTab() {
               },
             );
           else
-            create.mutate(
-              { ...values, assignee_id: null },
-              { onSuccess: () => form.current?.close() },
-            );
+            create.mutate(values, { onSuccess: () => form.current?.close() });
         }}
       />
       <ConfirmDialog

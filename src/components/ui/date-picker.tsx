@@ -5,7 +5,12 @@ import { Modal, Platform, Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { ToastViewport } from "@/components/ui/toast";
-import { formatDate, parseIsoDate, toIsoDate } from "@/lib/format/date";
+import {
+  formatDate,
+  parseIsoDate,
+  toIsoDate,
+  localeTag,
+} from "@/lib/format/date";
 
 type Props = {
   label?: string;
@@ -79,7 +84,12 @@ export function DatePicker({
       </View>
 
       {open && Platform.OS === "android" ? (
-        <DateTimePicker value={draft} mode="date" onChange={handleChange} />
+        <DateTimePicker
+          value={draft}
+          mode="date"
+          locale={localeTag()}
+          onChange={handleChange}
+        />
       ) : null}
 
       {Platform.OS === "ios" ? (
@@ -101,6 +111,7 @@ export function DatePicker({
                 value={draft}
                 mode="date"
                 display="spinner"
+                locale={localeTag()}
                 onChange={handleChange}
               />
               <Button

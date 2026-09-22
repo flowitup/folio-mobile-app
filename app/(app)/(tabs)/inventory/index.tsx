@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
+import { useCan } from "@/auth/use-can";
 import { Button } from "@/components/ui/button";
 import { ChipRow, Segmented } from "@/components/ui/chip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
+import { showToast } from "@/components/ui/toast";
 import { Eyebrow } from "@/components/ui/typography";
 import { useMyCompanies } from "@/features/companies/companies-api";
 import {
@@ -101,6 +103,7 @@ export default function InventoryScreen() {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
   const { projects, projectId } = useSelectedProject();
+  const canManage = useCan("inventory:manage");
 
   const items = useInventoryItems(effectiveCompany);
   const warehouses = useWarehouses(effectiveCompany);
@@ -120,15 +123,14 @@ export default function InventoryScreen() {
     if (session) formSheet.current?.present();
   }, [session]);
 
-  // Sites are the company's projects; the address is what the crew recognises on a row.
+  // Sites are the company's projects; the address is what the crew recognises on a row. A
+  // project attached to no company is never a valid site — the backend refuses it.
   const sites = useMemo<SiteRef[]>(
     () =>
       projects
         .filter(
           (project) =>
-            !effectiveCompany ||
-            !project.company_id ||
-            project.company_id === effectiveCompany,
+            !effectiveCompany || project.company_id === effectiveCompany,
         )
         .map((project) => ({
           id: project.id,
@@ -159,7 +161,11 @@ export default function InventoryScreen() {
     const done = { onSuccess: () => formSheet.current?.dismiss() };
     if (!editing)
       return create.mutate(payload as CreateInventoryItemPayload, done);
-    if (Object.keys(payload).length === 0) return formSheet.current?.dismiss();
+    // Nothing changed: still confirm, so saving always feels the same.
+    if (Object.keys(payload).length === 0) {
+      showToast(t("common.saved"), "success");
+      return formSheet.current?.dismiss();
+    }
     update.mutate({ id: editing.id, ...payload }, done);
   }
 
@@ -180,12 +186,14 @@ export default function InventoryScreen() {
         title={t("inventory.title")}
         back
         right={
-          <Button
-            testID="inventory-add"
-            label={`＋ ${t("inventory.addItem")}`}
-            size="sm"
-            onPress={() => openForm(null)}
-          />
+          canManage ? (
+            <Button
+              testID="inventory-add"
+              label={`＋ ${t("inventory.addItem")}`}
+              size="sm"
+              onPress={() => openForm(null)}
+            />
+          ) : undefined
         }
       />
       <ScrollView
@@ -274,7 +282,14 @@ export default function InventoryScreen() {
                 </View>
               }
               chevron
-              onPress={() => router.push("/inventory/warehouses")}
+              onPress={() =>
+                router.push({
+                  pathname: "/inventory/warehouses",
+                  params: effectiveCompany
+                    ? { companyId: effectiveCompany }
+                    : {},
+                })
+              }
             />
 
             <Input
@@ -327,7 +342,7 @@ export default function InventoryScreen() {
                     : t("inventory.noResults")
                 }
                 action={
-                  all.length === 0 ? (
+                  all.length === 0 && canManage ? (
                     <Button
                       testID="inventory-add-empty"
                       label={t("inventory.addItem")}
@@ -374,7 +389,7 @@ export default function InventoryScreen() {
                       key={item.id}
                       item={item}
                       last={index === group.items.length - 1}
-                      onPress={() => openForm(item)}
+                      onPress={canManage ? () => openForm(item) : undefined}
                     />
                   ))}
                 </Card>

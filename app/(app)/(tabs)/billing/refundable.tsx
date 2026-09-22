@@ -11,7 +11,13 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Badge, Card, Checkbox, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  Checkbox,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
@@ -21,7 +27,10 @@ import {
   useRefundableExpenses,
   useSetRefundable,
 } from "@/features/billing/refundable-api";
-import { useMyCompanies } from "@/features/companies/companies-api";
+import {
+  useBillingAccess,
+  useMyCompanies,
+} from "@/features/companies/companies-api";
 import type {
   RefundableExpense,
   RefundableStatus,
@@ -37,6 +46,9 @@ const STATUSES: RefundableStatus[] = [
   "refunded",
 ];
 const REFUNDED_BY: RefundedBy[] = ["company", "bank", "both"];
+/** Keeps the focus hook's dependency stable while the caller has no access to the list. */
+const NOOP_REFETCH = () => {};
+
 const STATUS_TONE = {
   refundable: "warning",
   refund_pending: "neutral",
@@ -46,11 +58,17 @@ const STATUS_TONE = {
 /** Company-wide materials & services expenses tracked for reimbursement (web refundable-invoices page). */
 export default function RefundableExpensesScreen() {
   const { t } = useTranslation();
+  // The whole screen rides the company-scoped billing API, which only a company admin may
+  // call: without the gate a refused caller just watched a spinner turn into a blank page.
+  const access = useBillingAccess();
   const companies = useMyCompanies();
   const [companyId, setCompanyId] = useState<string | null>(null);
-  const expenses = useRefundableExpenses(companyId);
-  useRefetchOnFocus(expenses.refetch);
+  const expenses = useRefundableExpenses(companyId, access.allowed);
+  // `refetch()` runs even a disabled query, so the focus hook has to respect the gate too.
+  useRefetchOnFocus(access.allowed ? expenses.refetch : NOOP_REFETCH);
   const setRefundable = useSetRefundable();
+  // The bulk "add" loop reports once for the batch, so its writes stay quiet.
+  const bulkSetRefundable = useSetRefundable(true);
   const [pendingRefunded, setPendingRefunded] =
     useState<RefundableExpense | null>(null);
   const [removing, setRemoving] = useState<RefundableExpense | null>(null);
@@ -58,7 +76,10 @@ export default function RefundableExpensesScreen() {
   const refundedBySheet = useRef<BottomSheetModal>(null);
   const addSheet = useRef<BottomSheetModal>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const candidates = useRefundableCandidates(companyId, addOpen);
+  const candidates = useRefundableCandidates(
+    companyId,
+    addOpen && access.allowed,
+  );
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
@@ -86,22 +107,49 @@ export default function RefundableExpensesScreen() {
     setRefundable.mutate({ invoiceId: expense.id, status });
   }
 
+  /**
+   * One toast for the batch, not one per expense, and the sheet always ends up in a state
+   * that matches what happened: it stays open with the selection intact when nothing was
+   * added, so the user can retry, and closes once at least one went through.
+   */
   async function addSelected() {
     setAdding(true);
     const results = await Promise.allSettled(
       [...selected].map((id) =>
-        setRefundable.mutateAsync({ invoiceId: id, status: "refundable" }),
+        bulkSetRefundable.mutateAsync({ invoiceId: id, status: "refundable" }),
       ),
     );
     setAdding(false);
-    const failed = results.filter((r) => r.status === "rejected").length;
-    if (failed > 0 && failed === results.length) return;
-    if (failed > 0) showToast(t("billing.refundable.dialog.partial"), "error");
+    const added = results.filter((r) => r.status === "fulfilled").length;
+    if (added === 0)
+      return showToast(t("billing.refundable.dialog.addFailed"), "error");
+    if (added < results.length)
+      showToast(t("billing.refundable.dialog.partial"), "error");
+    else
+      showToast(
+        t("billing.refundable.dialog.added", { count: added }),
+        "success",
+      );
     setSelected(new Set());
     addSheet.current?.dismiss();
   }
 
   const summary = expenses.data?.summary;
+
+  if (access.loading)
+    return (
+      <View className="flex-1 bg-paper">
+        <ScreenHeader title={t("billing.refundable.title")} back />
+        <ActivityIndicator className="mt-8" />
+      </View>
+    );
+  if (!access.allowed)
+    return (
+      <View className="flex-1 bg-paper">
+        <ScreenHeader title={t("billing.refundable.title")} back />
+        <EmptyState message={t("billing.accessDenied")} />
+      </View>
+    );
 
   return (
     <View className="flex-1 bg-paper">
@@ -160,6 +208,13 @@ export default function RefundableExpensesScreen() {
           </View>
         ) : null}
         {expenses.isPending ? <ActivityIndicator className="mt-8" /> : null}
+        {expenses.isError && !expenses.data ? (
+          <ErrorState
+            message={t("home.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void expenses.refetch()}
+          />
+        ) : null}
         {expenses.data && expenses.data.items.length === 0 ? (
           <EmptyState message={t("billing.refundable.none")} />
         ) : null}

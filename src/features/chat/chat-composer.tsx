@@ -223,6 +223,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, Props>(
               {primaryCamera ? (
                 <Pressable
                   testID="chat-camera"
+                  disabled={disabled}
                   accessibilityRole="button"
                   accessibilityLabel={t("chat.takePhoto")}
                   onPress={() => void attach("camera")}
@@ -233,6 +234,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, Props>(
               ) : null}
               <Pressable
                 testID="chat-attach"
+                disabled={disabled}
                 accessibilityRole="button"
                 accessibilityLabel={t("chat.attachImage")}
                 onPress={() => void attach("library")}
@@ -248,12 +250,14 @@ export const ChatComposer = forwardRef<ChatComposerHandle, Props>(
                 placeholderTextColor={tokens.muted}
                 value={draft}
                 onChangeText={setDraft}
+                editable={!disabled}
                 multiline={false}
                 returnKeyType="send"
                 onSubmitEditing={() => void submit()}
               />
               {!primaryCamera ? (
                 <Pressable
+                  disabled={disabled}
                   testID="chat-camera"
                   accessibilityRole="button"
                   accessibilityLabel={t("chat.takePhoto")}
@@ -268,6 +272,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, Props>(
 
           <Pressable
             testID="chat-record"
+            disabled={disabled}
             accessibilityRole="button"
             accessibilityLabel={t(
               voice.recording ? "chat.stopRecording" : "chat.recordVoice",

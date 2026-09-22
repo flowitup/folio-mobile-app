@@ -11,6 +11,7 @@ import {
 import InventoryScreen from "../../app/(app)/(tabs)/inventory/index";
 import WarehousesScreen from "../../app/(app)/(tabs)/inventory/warehouses";
 import { MenuSheet } from "@/components/shell/menu-sheet";
+import { showToast } from "@/components/ui/toast";
 import type {
   InventoryItem,
   Warehouse,
@@ -19,12 +20,21 @@ import type {
 // The equipment inventory: rows grouped by where they are, a damaged tool flagged in red, the
 // filters narrowing the list, and the Menu row that leads there with its unit / damaged counts.
 
+// The screens toast outside any rendered tree, so the harness never mounts a viewport:
+// spy on the call instead of looking for the bubble.
+jest.mock("@/components/ui/toast", () => ({
+  ...jest.requireActual("@/components/ui/toast"),
+  showToast: jest.fn(),
+}));
+
 const COMPANY_ID = "c1";
+// A jest.mock factory reads PROJECT, so babel hoists this declaration above COMPANY_ID:
+// spell the company out here, or `company_id` lands as undefined and p1 is no site at all.
 const PROJECT = {
   id: "p1",
   name: "Villa Thảo Điền",
   address: "Quận 2, TP.HCM",
-  company_id: COMPANY_ID,
+  company_id: "c1",
   my_permissions: ["project:read", "project:update", "project:manage_labor"],
 };
 
@@ -73,15 +83,21 @@ const ITEMS: InventoryItem[] = [
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, navigate: jest.fn(), back: jest.fn() }),
+  useLocalSearchParams: () => mockSearchParams,
   useFocusEffect: () => undefined,
 }));
+/** The company the inventory screen hands to the warehouses screen. */
+let mockSearchParams: Record<string, string> = {};
 
+// Writes need `inventory:manage`; the suites below flip it to check what a reader sees.
+const MANAGE = ["project:read", "project:update", "inventory:manage"];
+let mockPermissions: string[] = MANAGE;
 jest.mock("@/auth/auth-context", () => ({
   useAuth: () => ({
     user: {
       id: "u1",
       email: "manager@example.com",
-      permissions: ["project:read", "project:update", "project:manage_labor"],
+      permissions: mockPermissions,
       companies: [{ id: "c1", legal_name: "Folio QA", role: "manager" }],
     },
   }),
@@ -124,6 +140,8 @@ jest.mock("@/api/client", () => ({
 
 beforeEach(async () => {
   await i18n.changeLanguage("en");
+  mockPermissions = MANAGE;
+  mockSearchParams = {};
   mockPush.mockReset();
   mockGet.mockReset();
   mockPost.mockReset();
@@ -261,7 +279,10 @@ describe("inventory screen", () => {
     await screen.findByTestId("inventory-item-drill");
 
     await fireEvent.press(screen.getByTestId("inventory-warehouses"));
-    expect(mockPush).toHaveBeenCalledWith("/inventory/warehouses");
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/inventory/warehouses",
+      params: { companyId: COMPANY_ID },
+    });
   });
 });
 
@@ -352,14 +373,18 @@ describe("warehouses screen", () => {
     );
   });
 
-  it("warns how many units a warehouse still holds before deleting it", async () => {
+  it("says how many units a warehouse still holds instead of opening the delete dialog", async () => {
     await renderWithProviders(<WarehousesScreen />);
     await screen.findByTestId("warehouse-w1");
 
     await fireEvent.press(screen.getByTestId("warehouse-delete-w1"));
-    expect(screen.getByTestId("confirm-dialog")).toHaveTextContent(
-      containing(i18n.t("inventory.warehouses.deleteBlocked", { count: 3 })),
+    // The server refuses a warehouse that still holds rows, so the crew is told straight
+    // away rather than being handed a confirmation whose destructive button does nothing.
+    expect(showToast).toHaveBeenCalledWith(
+      i18n.t("inventory.warehouses.deleteBlocked", { count: 3 }),
+      "error",
     );
+    expect(screen.queryByTestId("confirm-dialog")).toBeNull();
   });
 
   it("shows an error state with a retry when the warehouses cannot be loaded", async () => {
@@ -385,6 +410,31 @@ describe("warehouses screen", () => {
     expect(await screen.findByTestId("error-state")).toHaveTextContent(
       containing(i18n.t("inventory.warehouses.loadError")),
     );
+  });
+});
+
+describe("without inventory:manage", () => {
+  beforeEach(() => {
+    mockPermissions = ["project:read"];
+  });
+
+  it("lets the reader browse the inventory but offers no write control", async () => {
+    await renderWithProviders(<InventoryScreen />);
+
+    expect(await screen.findByTestId("inventory-item-drill")).toBeTruthy();
+    expect(screen.queryByTestId("inventory-add")).toBeNull();
+
+    // Tapping a row must not open the edit sheet.
+    await fireEvent.press(screen.getByTestId("inventory-item-drill"));
+    expect(screen.queryByText(i18n.t("inventory.editTitle"))).toBeNull();
+  });
+
+  it("lists the warehouses without the add or delete buttons", async () => {
+    await renderWithProviders(<WarehousesScreen />);
+
+    expect(await screen.findByTestId("warehouse-w1")).toBeTruthy();
+    expect(screen.queryByTestId("warehouse-add")).toBeNull();
+    expect(screen.queryByTestId("warehouse-delete-w1")).toBeNull();
   });
 });
 

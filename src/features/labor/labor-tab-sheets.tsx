@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { MonthPicker } from "@/components/ui/month-picker";
@@ -30,6 +31,7 @@ import type {
   Worker,
 } from "@/features/labor/labor-types";
 import { currentMonth, formatMonth } from "@/lib/format/date";
+import { MAX_EXPORT_MONTHS, isValidMonthRange } from "@/lib/labor/month-range";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import { useTokens } from "@/theme/tokens";
 
@@ -62,13 +64,18 @@ export const WorkerActionsSheet = forwardRef<
       icon: "sliders",
       run: onRates,
     },
-    {
-      key: "delete",
-      label: t("common.delete"),
-      icon: "trash-2",
-      danger: true,
-      run: onDelete,
-    },
+    // "Remove" deactivates the worker; offering it again on an inactive card does nothing.
+    ...(worker && !worker.is_active
+      ? []
+      : [
+          {
+            key: "delete",
+            label: t("labor.workers.deactivate"),
+            icon: "trash-2" as const,
+            danger: true,
+            run: onDelete,
+          },
+        ]),
   ];
   return (
     <Sheet ref={ref} title={worker?.name} snapPoints={["35%"]}>
@@ -119,6 +126,7 @@ export const DayDetailsSheet = forwardRef<
   const setDayDescription = useSetDayDescription(projectId);
   const [activityTitle, setActivityTitle] = useState("");
   const [draft, setDraft] = useState(description);
+  const [removing, setRemoving] = useState<LaborActivity | null>(null);
   // A new day (or a fresh server value) resets the description draft.
   useEffect(() => {
     setDraft(description);
@@ -133,64 +141,84 @@ export const DayDetailsSheet = forwardRef<
     );
 
   return (
-    <Sheet ref={ref} title={t("labor.calendar.details")} snapPoints={["75%"]}>
-      <View className="p-4">
-        <Eyebrow className="mb-1.5">{t("labor.activities.title")}</Eyebrow>
-        {activities.map((activity) => (
-          <Card
-            key={activity.id}
-            className="mb-2 flex-row items-center justify-between px-3.5 py-2.5"
-          >
-            <Text className="flex-1 font-sans text-sm text-ink">
-              {activity.title}
-            </Text>
-            <Pressable
-              testID={`activity-delete-${activity.id}`}
-              onPress={() => deleteActivity.mutate({ activityId: activity.id })}
-              hitSlop={8}
+    <>
+      <Sheet ref={ref} title={t("labor.calendar.details")} snapPoints={["75%"]}>
+        <View className="p-4">
+          <Eyebrow className="mb-1.5">{t("labor.activities.title")}</Eyebrow>
+          {activities.map((activity) => (
+            <Card
+              key={activity.id}
+              className="mb-2 flex-row items-center justify-between px-3.5 py-2.5"
             >
-              <Text className="font-sans text-sm text-negative">
-                {t("common.delete")}
+              <Text className="flex-1 font-sans text-sm text-ink">
+                {activity.title}
               </Text>
-            </Pressable>
-          </Card>
-        ))}
-        <Input
-          testID="activity-title"
-          placeholder={t("labor.activities.placeholder")}
-          value={activityTitle}
-          onChangeText={setActivityTitle}
-          onSubmitEditing={addActivity}
-        />
-        <Button
-          testID="activity-add"
-          label={t("labor.activities.add")}
-          variant="secondary"
-          size="sm"
-          className="mb-4"
-          disabled={!activityTitle.trim()}
-          onPress={addActivity}
-        />
-        <Input
-          testID="day-description"
-          label={t("labor.description.title")}
-          value={draft}
-          onChangeText={setDraft}
-          multiline
-        />
-        <Button
-          testID="day-description-save"
-          label={t("common.save")}
-          variant="secondary"
-          size="sm"
-          loading={setDayDescription.isPending}
-          disabled={draft === description}
-          onPress={() =>
-            setDayDescription.mutate({ date, description: draft.trim() })
-          }
-        />
-      </View>
-    </Sheet>
+              <Pressable
+                testID={`activity-delete-${activity.id}`}
+                onPress={() => setRemoving(activity)}
+                hitSlop={8}
+              >
+                <Text className="font-sans text-sm text-negative">
+                  {t("common.delete")}
+                </Text>
+              </Pressable>
+            </Card>
+          ))}
+          <Input
+            testID="activity-title"
+            placeholder={t("labor.activities.placeholder")}
+            value={activityTitle}
+            onChangeText={setActivityTitle}
+            onSubmitEditing={addActivity}
+          />
+          <Button
+            testID="activity-add"
+            label={t("labor.activities.add")}
+            variant="secondary"
+            size="sm"
+            className="mb-4"
+            disabled={!activityTitle.trim()}
+            onPress={addActivity}
+          />
+          <Input
+            testID="day-description"
+            label={t("labor.description.title")}
+            value={draft}
+            onChangeText={setDraft}
+            multiline
+          />
+          <Button
+            testID="day-description-save"
+            label={t("common.save")}
+            variant="secondary"
+            size="sm"
+            loading={setDayDescription.isPending}
+            disabled={draft === description}
+            onPress={() =>
+              setDayDescription.mutate({ date, description: draft.trim() })
+            }
+          />
+        </View>
+      </Sheet>
+      <ConfirmDialog
+        visible={removing !== null}
+        title={t("labor.activities.deleteConfirm", {
+          title: removing?.title ?? "",
+        })}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+        destructive
+        loading={deleteActivity.isPending}
+        onCancel={() => setRemoving(null)}
+        onConfirm={() =>
+          removing &&
+          deleteActivity.mutate(
+            { activityId: removing.id },
+            { onSettled: () => setRemoving(null) },
+          )
+        }
+      />
+    </>
   );
 });
 
@@ -327,6 +355,8 @@ export const LaborExportSheet = forwardRef<
   const [workerId, setWorkerId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
+  const rangeValid = isValidMonthRange(from, to);
+
   async function run() {
     setExporting(true);
     try {
@@ -357,9 +387,15 @@ export const LaborExportSheet = forwardRef<
           testID="labor-export-from"
           value={from}
           onChange={setFrom}
+          max={to}
         />
         <Eyebrow className="mb-1.5">{t("invoices.export.to")}</Eyebrow>
-        <MonthPicker testID="labor-export-to" value={to} onChange={setTo} />
+        <MonthPicker
+          testID="labor-export-to"
+          value={to}
+          onChange={setTo}
+          min={from}
+        />
         <Select
           testID="labor-export-worker"
           label={t("labor.export.worker")}
@@ -370,10 +406,19 @@ export const LaborExportSheet = forwardRef<
           ]}
           onChange={(value) => setWorkerId(value === "__all__" ? null : value)}
         />
+        {!rangeValid ? (
+          <Text
+            testID="labor-export-range-error"
+            className="mb-2 font-sans text-[12.5px] text-danger"
+          >
+            {t("labor.export.rangeInvalid", { months: MAX_EXPORT_MONTHS })}
+          </Text>
+        ) : null}
         <Button
           testID="labor-export-run"
           label={t("invoices.export.run")}
           loading={exporting}
+          disabled={!rangeValid}
           onPress={() => void run()}
         />
       </View>

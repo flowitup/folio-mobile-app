@@ -9,12 +9,15 @@ import {
   View,
 } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdminOrManager } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { EmptyState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
+import { useMyCompanies } from "@/features/companies/companies-api";
 import {
   useCreateLaborRole,
   useDeleteLaborRole,
@@ -25,9 +28,19 @@ import type { LaborRole } from "@/features/labor/labor-api";
 import { laborRoleLabel } from "@/lib/labor/labor-role-label";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
-/** Labor roles: list with colour swatches, create from the suggested palette, rename / recolour, delete. */
+/**
+ * Labor roles: list with colour swatches, create from the suggested palette, rename / recolour,
+ * delete. Writing is reserved to an admin or manager of the primary company — the backend
+ * answers 403 to anyone else, so the list stays readable but the controls are hidden.
+ */
 export default function LaborRolesScreen() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const companies = useMyCompanies();
+  // The backend scopes labor-role writes to the caller's primary company; no primary flag
+  // means no manageable company, whatever the list order.
+  const primaryCompanyId = companies.data?.find((c) => c.is_primary)?.id;
+  const mayManage = isCompanyAdminOrManager(user, primaryCompanyId);
   const roles = useLaborRoles();
   useRefetchOnFocus(roles.refetch);
   const create = useCreateLaborRole();
@@ -64,12 +77,14 @@ export default function LaborRolesScreen() {
         title={t("laborRoles.title")}
         back
         right={
-          <Button
-            testID="role-create"
-            label={`＋ ${t("laborRoles.new")}`}
-            size="sm"
-            onPress={() => open(null)}
-          />
+          mayManage ? (
+            <Button
+              testID="role-create"
+              label={`＋ ${t("laborRoles.new")}`}
+              size="sm"
+              onPress={() => open(null)}
+            />
+          ) : undefined
         }
       />
       <ScrollView contentContainerClassName="p-4 pb-12">
@@ -78,7 +93,10 @@ export default function LaborRolesScreen() {
           <EmptyState message={t("laborRoles.none")} />
         ) : null}
         {(roles.data?.roles ?? []).map((role) => (
-          <Pressable key={role.id} onLongPress={() => setDeleting(role)}>
+          <Pressable
+            key={role.id}
+            onLongPress={mayManage ? () => setDeleting(role) : undefined}
+          >
             <ListRow
               testID={`role-${role.id}`}
               title={laborRoleLabel(role, t)}
@@ -93,7 +111,7 @@ export default function LaborRolesScreen() {
                   }}
                 />
               }
-              onPress={() => open(role)}
+              onPress={mayManage ? () => open(role) : undefined}
             />
           </Pressable>
         ))}

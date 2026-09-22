@@ -16,6 +16,9 @@ type Props = {
   /** Accessibility labels of the arrows. */
   prevLabel?: string;
   nextLabel?: string;
+  /** Inclusive `YYYY-MM` bounds: the arrow past a bound is dimmed and inert. */
+  min?: string;
+  max?: string;
 };
 
 /** Month stepper pill (card bg, 1px line, 32px arrows) used by labor and invoice month views. */
@@ -27,10 +30,14 @@ export function MonthPicker({
   tone = "paper",
   prevLabel,
   nextLabel,
+  min,
+  max,
 }: Props) {
   const tokens = useTokens();
   const ink = tone === "ink";
   const arrow = ink ? INK_BLOCK.muted : tokens.muted;
+  const prevDisabled = min !== undefined && value <= min;
+  const nextDisabled = max !== undefined && value >= max;
   return (
     <View
       className={`flex-row items-center self-start rounded-full border p-0.5 ${ink ? "border-ink-block-line bg-transparent" : "border-line bg-card"} ${compact ? "" : "mb-3 justify-between self-stretch"}`}
@@ -38,10 +45,12 @@ export function MonthPicker({
     >
       <Pressable
         onPress={() => onChange(shiftMonth(value, -1))}
+        disabled={prevDisabled}
         hitSlop={8}
         accessibilityRole="button"
         accessibilityLabel={prevLabel}
-        className="h-8 w-8 items-center justify-center active:opacity-70"
+        accessibilityState={{ disabled: prevDisabled }}
+        className={`h-8 w-8 items-center justify-center active:opacity-70 ${prevDisabled ? "opacity-30" : ""}`}
         testID={testID ? `${testID}-prev` : undefined}
       >
         <Icon name="chevron-left" size={16} color={arrow} />
@@ -53,10 +62,12 @@ export function MonthPicker({
       </Text>
       <Pressable
         onPress={() => onChange(shiftMonth(value, 1))}
+        disabled={nextDisabled}
         hitSlop={8}
         accessibilityRole="button"
         accessibilityLabel={nextLabel}
-        className="h-8 w-8 items-center justify-center active:opacity-70"
+        accessibilityState={{ disabled: nextDisabled }}
+        className={`h-8 w-8 items-center justify-center active:opacity-70 ${nextDisabled ? "opacity-30" : ""}`}
         testID={testID ? `${testID}-next` : undefined}
       >
         <Icon name="chevron-right" size={16} color={arrow} />

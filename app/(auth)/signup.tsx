@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/typography";
+import { AuthRequestError } from "@/lib/auth/auth-error-message";
 import { normalizePhone } from "@/lib/auth/phone-number";
 import { useTokens } from "@/theme/tokens";
 
@@ -78,8 +79,11 @@ export default function SignupScreen() {
       await signUpWithOtp(phone, code, name.trim());
     } catch (caught) {
       setError((caught as Error).message);
-      // A wrong code sends the user back to the code step.
-      if (/code/i.test((caught as Error).message)) setStep("code");
+      // A wrong or expired code is a 401 — send the user back to the code step. The status
+      // is what decides it: the message is translated, so matching words in it left a
+      // Vietnamese (the default locale) user stranded on the name step.
+      if (caught instanceof AuthRequestError && caught.status === 401)
+        setStep("code");
     } finally {
       setSubmitting(false);
     }
@@ -111,7 +115,7 @@ export default function SignupScreen() {
                 autoComplete="tel"
                 keyboardType="phone-pad"
                 textContentType="telephoneNumber"
-                placeholder="06 12 34 56 78"
+                placeholder="6 12 34 56 78"
                 placeholderTextColor={tokens.muted2}
                 value={phoneInput}
                 onChangeText={setPhoneInput}

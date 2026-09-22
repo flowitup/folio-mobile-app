@@ -23,6 +23,14 @@ type Props = {
    * "release funds" action, which the backend refuses anyway.
    */
   canViewBudget?: boolean;
+  /**
+   * Whether the caller holds `project:manage_invoices`. False drops both actions that open
+   * the invoice form — recording an expense and releasing funds — because `POST /invoices`
+   * refuses them either way.
+   */
+  canManageInvoices?: boolean;
+  /** False for a member who may see neither the ledger nor the budget: figures are omitted. */
+  showMoney?: boolean;
   onAddInvoice: () => void;
   onAddRelease: () => void;
   onPayLabor: () => void;
@@ -43,6 +51,8 @@ export function OverviewHero({
   onAddRelease,
   onPayLabor,
   canViewBudget = true,
+  canManageInvoices = true,
+  showMoney = true,
 }: Props) {
   const { t } = useTranslation();
   const share = (value: number) =>
@@ -51,82 +61,88 @@ export function OverviewHero({
       : 0;
   return (
     <View testID="overview-headline">
-      <View className="flex-row items-center gap-[18px] px-5 pb-[30px] pt-[26px]">
-        <View className="min-w-0 flex-1">
-          <Text className="font-sans text-[11px] uppercase tracking-[1.1px] text-ink-block-muted">
-            {canViewBudget
-              ? t("dashboard.remainingToSpend")
-              : t("invoices.summary.spent")}
-          </Text>
-          <View className="mt-1.5">
-            <InkFigure
-              amount={canViewBudget ? budget.left : spentTotal}
-              negative={canViewBudget && budget.left < 0}
-              testID="overview-remaining"
-            />
+      {showMoney ? (
+        <View className="flex-row items-center gap-[18px] px-5 pb-[30px] pt-[26px]">
+          <View className="min-w-0 flex-1">
+            <Text className="font-sans text-[11px] uppercase tracking-[1.1px] text-ink-block-muted">
+              {canViewBudget
+                ? t("dashboard.remainingToSpend")
+                : t("invoices.summary.spent")}
+            </Text>
+            <View className="mt-1.5">
+              <InkFigure
+                amount={canViewBudget ? budget.left : spentTotal}
+                negative={canViewBudget && budget.left < 0}
+                testID="overview-remaining"
+              />
+            </View>
+            {canViewBudget ? (
+              <Text className="mt-1.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted">
+                {t(
+                  budget.usesBudget
+                    ? "dashboard.overview.spentOfCredit"
+                    : "dashboard.overview.spentOfReleased",
+                  {
+                    spent: formatMoney(spentTotal),
+                    total: formatMoney(budget.denominator),
+                  },
+                )}
+              </Text>
+            ) : null}
+            {bankRemaining !== null ? (
+              <Text
+                className="mt-0.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted"
+                testID="overview-figure-bank"
+              >
+                {t("dashboard.overview.bankRemaining")}{" "}
+                <Text className="font-mono text-on-ink-block">
+                  {formatMoney(bankRemaining)}
+                </Text>
+              </Text>
+            ) : null}
           </View>
           {canViewBudget ? (
-            <Text className="mt-1.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted">
-              {t(
-                budget.usesBudget
-                  ? "dashboard.overview.spentOfCredit"
-                  : "dashboard.overview.spentOfReleased",
-                {
-                  spent: formatMoney(spentTotal),
-                  total: formatMoney(budget.denominator),
-                },
-              )}
-            </Text>
-          ) : null}
-          {bankRemaining !== null ? (
-            <Text
-              className="mt-0.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted"
-              testID="overview-figure-bank"
+            <RingGauge
+              testID="overview-ring"
+              segments={[
+                { pct: share(spentByCredits), color: INK_BLOCK.text },
+                { pct: share(spentPersonal), color: INK_BLOCK.muted },
+              ]}
+              trackColor={INK_BLOCK.tile}
             >
-              {t("dashboard.overview.bankRemaining")}{" "}
-              <Text className="font-mono text-on-ink-block">
-                {formatMoney(bankRemaining)}
+              <Text
+                className="font-mono text-[22px] leading-[26px] text-on-ink-block"
+                testID="overview-ring-pct"
+              >
+                {budget.pct}%
               </Text>
-            </Text>
+              <Text className="font-sans text-[10px] uppercase tracking-[0.8px] text-ink-block-muted">
+                {t("project.spent")}
+              </Text>
+            </RingGauge>
           ) : null}
         </View>
-        {canViewBudget ? (
-          <RingGauge
-            testID="overview-ring"
-            segments={[
-              { pct: share(spentByCredits), color: INK_BLOCK.text },
-              { pct: share(spentPersonal), color: INK_BLOCK.muted },
-            ]}
-            trackColor={INK_BLOCK.tile}
-          >
-            <Text
-              className="font-mono text-[22px] leading-[26px] text-on-ink-block"
-              testID="overview-ring-pct"
-            >
-              {budget.pct}%
-            </Text>
-            <Text className="font-sans text-[10px] uppercase tracking-[0.8px] text-ink-block-muted">
-              {t("project.spent")}
-            </Text>
-          </RingGauge>
-        ) : null}
-      </View>
+      ) : (
+        <View className="h-4" />
+      )}
       <View className="flex-row gap-2 px-5 pb-6">
-        <Pressable
-          testID="overview-add-invoice"
-          accessibilityRole="button"
-          onPress={onAddInvoice}
-          className="h-11 flex-1 flex-row items-center justify-center gap-1.5 rounded-xl bg-ink-block-accent active:opacity-70"
-        >
-          <Icon name="plus" size={15} color={INK_BLOCK.bg} />
-          <Text
-            className="font-sans-semibold text-[13px]"
-            style={{ color: INK_BLOCK.bg }}
+        {canManageInvoices ? (
+          <Pressable
+            testID="overview-add-invoice"
+            accessibilityRole="button"
+            onPress={onAddInvoice}
+            className="h-11 flex-1 flex-row items-center justify-center gap-1.5 rounded-xl bg-ink-block-accent active:opacity-70"
           >
-            {t("dashboard.overview.addInvoice")}
-          </Text>
-        </Pressable>
-        {canViewBudget ? (
+            <Icon name="plus" size={15} color={INK_BLOCK.bg} />
+            <Text
+              className="font-sans-semibold text-[13px]"
+              style={{ color: INK_BLOCK.bg }}
+            >
+              {t("dashboard.overview.addInvoice")}
+            </Text>
+          </Pressable>
+        ) : null}
+        {canViewBudget && canManageInvoices ? (
           <Pressable
             testID="overview-add-release"
             accessibilityRole="button"

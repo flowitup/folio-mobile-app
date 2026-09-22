@@ -8,6 +8,13 @@ import type { MonthlySummaryRow } from "@/features/labor/labor-types";
 
 export type SalaryStatus = "paid" | "partial" | "unpaid" | "overpaid" | "none";
 
+/**
+ * Bucket key for labor payments recorded without a `service_month`. Dropping them made the
+ * screen's "Total paid" disagree with the labor tab, which counts every labor invoice.
+ * Empty so it sorts last, after every real month.
+ */
+export const UNASSIGNED_MONTH = "";
+
 export interface SalaryMonth {
   /** "YYYY-MM" */
   month: string;
@@ -66,13 +73,10 @@ export function buildWorkerSalaryMonths(
     entry.earned = round2(entry.earned + sub.total_cost);
   }
   for (const inv of laborInvoices) {
-    if (
-      inv.type !== "labor" ||
-      inv.worker_id !== workerId ||
-      !inv.service_month
-    )
-      continue;
-    const entry = bucket(inv.service_month.slice(0, 7));
+    if (inv.type !== "labor" || inv.worker_id !== workerId) continue;
+    const entry = bucket(
+      inv.service_month ? inv.service_month.slice(0, 7) : UNASSIGNED_MONTH,
+    );
     entry.paid = round2(entry.paid + inv.total_amount);
     entry.invoices.push(inv);
   }

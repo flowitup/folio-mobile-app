@@ -103,6 +103,20 @@ export function useDocumentTags(projectId: string, enabled = true) {
   });
 }
 
+/** Distinct uploaders of the project's documents — the uploader filter's options. */
+export function useDocumentUploaders(projectId: string, enabled = true) {
+  return useQuery({
+    queryKey: [...documentKeys.all(projectId), "uploaders"],
+    enabled: Boolean(projectId) && enabled,
+    queryFn: async () =>
+      unwrapAs<{ items?: { user_id: string; display_name: string }[] }>(
+        await api.GET("/api/v1/projects/{project_id}/documents/uploaders", {
+          params: { path: { project_id: projectId } },
+        }),
+      ).items ?? [],
+  });
+}
+
 /** Direct multipart upload (`file` part); the presigned flow stays available in `lib/files/upload`. */
 export function useUploadDocument(projectId: string) {
   const { t } = useTranslation();

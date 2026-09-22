@@ -1,4 +1,4 @@
-import { File, Paths } from "expo-file-system";
+import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
 import { authedFetch } from "@/api/authed-fetch";
@@ -41,10 +41,10 @@ export async function downloadAndShare(
   filename: string,
 ): Promise<string> {
   const bytes = await fetchAuthedBytes(path);
-  const target = new File(
-    Paths.cache,
-    `${Date.now()}-${safeFilename(filename)}`,
-  );
+  // The recipient sees the file name, so uniqueness lives in the folder, not in the name.
+  const folder = new Directory(Paths.cache, `share-${Date.now()}`);
+  folder.create();
+  const target = new File(folder, safeFilename(filename));
   target.write(bytes);
 
   if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(target.uri);
