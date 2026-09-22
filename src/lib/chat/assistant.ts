@@ -1,15 +1,8 @@
 /**
- * Pure helpers for the assistant conversation: channel ordering, the three rich content
- * payload shapes (`card` / `choice` / `job_status`), and their badge/status → i18n mappings.
- * Kept dependency-free (no React, no API client) so they are trivial to unit test.
+ * Pure helpers for the assistant conversation: the three rich content payload shapes
+ * (`card` / `choice` / `job_status`), and their badge/status → i18n mappings. Kept
+ * dependency-free (no React, no API client) so they are trivial to unit test.
  */
-
-/** Pins the `assistant` channel first without otherwise reordering the API's own list. */
-export function orderChannels<T extends { kind: string }>(channels: T[]): T[] {
-  const assistant = channels.filter((channel) => channel.kind === "assistant");
-  const rest = channels.filter((channel) => channel.kind !== "assistant");
-  return [...assistant, ...rest];
-}
 
 export type AssistantCardBadge = "confirmed" | "to_confirm" | "needs_review";
 
@@ -35,6 +28,9 @@ export interface AssistantChoicePayload {
   answered: string | null;
   /** The option payload the server recorded with the answer (absent on older servers). */
   answeredPayload: Record<string, unknown> | null;
+  /** The user id this choice was addressed to; `null` on older servers (nobody is excluded).
+   * Hand-typed ahead of the OpenAPI regen — the raw payload is untyped JSON either way. */
+  addressedTo: string | null;
 }
 
 /** Stable comparison of two option payloads (key order does not matter). */
@@ -173,6 +169,7 @@ export function parseChoicePayload(
     answeredPayload: isRecord(raw.answered_payload)
       ? raw.answered_payload
       : null,
+    addressedTo: typeof raw.addressed_to === "string" ? raw.addressed_to : null,
   };
 }
 

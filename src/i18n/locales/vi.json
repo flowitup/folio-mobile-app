@@ -1597,11 +1597,14 @@
     "discardVoice": "Xoá bản ghi",
     "voiceLoadFailed": "Không tải được tin nhắn thoại này.",
     "recordingFailed": "Không khởi động được micro.",
-    "recordingLost": "Bản ghi đã bị mất."
+    "recordingLost": "Bản ghi đã bị mất.",
+    "kindAdmin": "Quản trị",
+    "adminSubtitle": "Tài chính công ty, lương và hoạt động của Folio",
+    "mentionSuggestion": "Nhắc đến Folio",
+    "replyToFolio": "Hỏi tiếp",
+    "replyingTo": "Đang trả lời {{name}}"
   },
   "assistant": {
-    "title": "Trợ lý",
-    "subtitle": "Ảnh hoá đơn, vật tư, dụng cụ ở đâu",
     "statusQueued": "Đang chờ",
     "statusRunning": "Đang xử lý…",
     "statusNotReady": "Chưa sẵn sàng",
@@ -1615,7 +1618,8 @@
     "answered": "Đã trả lời",
     "openInvoice": "Mở hoá đơn",
     "openMaterial": "Mở vật tư",
-    "actionFailed": "Không gửi được thao tác."
+    "actionFailed": "Không gửi được thao tác.",
+    "notAddressed": "Chỉ người hỏi mới chọn được"
   },
   "signup": {
     "title": "Tạo hồ sơ của bạn",

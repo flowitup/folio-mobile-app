@@ -71,30 +71,39 @@ export function useChatMessages(
 }
 
 /** Sends text and/or one image; the message appears on the next poll (or the invalidation).
- * `lang` is the reader's current UI language; pass it only for the assistant channel — the
- * backend keeps it there, and a server predating the assistant rejects it as an unknown field. */
+ * `lang` is the reader's current UI language, sent on every channel now (the backend reads it
+ * everywhere, not just for the assistant). `replyToId` addresses the message to an assistant
+ * reply — the backend counts that as a mention even without `@folio` in the body. */
 export function useSendChatMessage(channelKey: string) {
   return useApiMutation<
-    { body: string; file?: PickedFile | null; lang?: SupportedLocale },
+    {
+      body: string;
+      file?: PickedFile | null;
+      lang?: SupportedLocale;
+      replyToId?: string | null;
+    },
     ChatMessage
   >({
-    mutationFn: async ({ body, file, lang }) => {
+    mutationFn: async ({ body, file, lang, replyToId }) => {
       const path = `/api/v1/chat/channels/${encodeURIComponent(channelKey)}/messages`;
       if (file)
         return uploadMultipart<ChatMessage>(path, [{ field: "file", file }], {
           ...(body.trim() ? { body: body.trim() } : {}),
           ...(lang ? { lang } : {}),
+          ...(replyToId ? { reply_to_id: replyToId } : {}),
         });
       return unwrapAs<ChatMessage>(
         await api.POST("/api/v1/chat/channels/{channel_key}/messages", {
           params: { path: { channel_key: channelKey } },
-          // Older servers reject unknown JSON fields (422), so `lang` is only ever added
-          // when the caller passes it — i.e. inside the assistant channel.
-          // The generated type marks `lang` as required-nullable (the spec generator's
-          // reading of `Optional[str] = None`); the wire contract accepts its absence.
-          body: (lang
-            ? { body: body.trim(), lang }
-            : { body: body.trim() }) as never,
+          // Both `lang` and `reply_to_id` are generated as required-nullable (the spec
+          // generator's reading of `Optional[str] = None`) though the wire contract accepts
+          // their absence, so both are only ever added to the object when the caller passes
+          // them, hence the cast below.
+          body: {
+            body: body.trim(),
+            ...(lang ? { lang } : {}),
+            ...(replyToId ? { reply_to_id: replyToId } : {}),
+          } as never,
         }),
       );
     },

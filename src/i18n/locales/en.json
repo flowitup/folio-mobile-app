@@ -1597,11 +1597,14 @@
     "discardVoice": "Delete the recording",
     "voiceLoadFailed": "This voice message could not be loaded.",
     "recordingFailed": "The microphone could not be started.",
-    "recordingLost": "The recording was lost."
+    "recordingLost": "The recording was lost.",
+    "kindAdmin": "Administration",
+    "adminSubtitle": "Company finance, payroll and Folio activity",
+    "mentionSuggestion": "Mention Folio",
+    "replyToFolio": "Ask again",
+    "replyingTo": "Replying to {{name}}"
   },
   "assistant": {
-    "title": "Assistant",
-    "subtitle": "Receipt photos, materials, where's a tool",
     "statusQueued": "Queued",
     "statusRunning": "Working…",
     "statusNotReady": "Not ready yet",
@@ -1615,7 +1618,8 @@
     "answered": "Answered",
     "openInvoice": "Open the invoice",
     "openMaterial": "Open the material",
-    "actionFailed": "The action could not be sent."
+    "actionFailed": "The action could not be sent.",
+    "notAddressed": "Only the requester can choose"
   },
   "signup": {
     "title": "Create your profile",

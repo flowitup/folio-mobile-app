@@ -1,45 +1,10 @@
 import {
   isApiPath,
   isChosenOption,
-  orderChannels,
   parseCardPayload,
   parseChoicePayload,
   parseJobStatusPayload,
 } from "@/lib/chat/assistant";
-
-describe("orderChannels", () => {
-  it("pins the assistant channel first without otherwise reordering the list", () => {
-    const channels = [
-      { key: "company:1", kind: "company" },
-      { key: "assistant:me", kind: "assistant" },
-      { key: "project:1", kind: "project" },
-    ];
-    expect(orderChannels(channels).map((c) => c.key)).toEqual([
-      "assistant:me",
-      "company:1",
-      "project:1",
-    ]);
-  });
-
-  it("is a no-op when there is no assistant channel", () => {
-    const channels = [
-      { key: "company:1", kind: "company" },
-      { key: "project:1", kind: "project" },
-    ];
-    expect(orderChannels(channels)).toEqual(channels);
-  });
-
-  it("leaves an already-first assistant channel where it is", () => {
-    const channels = [
-      { key: "assistant:me", kind: "assistant" },
-      { key: "company:1", kind: "company" },
-    ];
-    expect(orderChannels(channels).map((c) => c.key)).toEqual([
-      "assistant:me",
-      "company:1",
-    ]);
-  });
-});
 
 describe("parseCardPayload", () => {
   it("parses a full invoice card", () => {
@@ -108,7 +73,21 @@ describe("parseChoicePayload", () => {
       ],
       answered: null,
       answeredPayload: null,
+      addressedTo: null,
     });
+  });
+
+  it("parses the user id the choice is addressed to", () => {
+    const payload = {
+      prompt: "Quel chantier ?",
+      options: [{ label: "A", action: "confirm", payload: {} }],
+      answered: null,
+      addressed_to: "user-1",
+    };
+    expect(parseChoicePayload(payload)?.addressedTo).toBe("user-1");
+    expect(
+      parseChoicePayload({ prompt: "x", options: [] })?.addressedTo,
+    ).toBeNull();
   });
 
   it("keeps the recorded option payload so same-action options can be told apart", () => {

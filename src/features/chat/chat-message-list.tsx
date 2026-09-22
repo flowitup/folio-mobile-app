@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/avatar";
 import { AuthedImage } from "@/components/ui/authed-image";
@@ -9,11 +9,7 @@ import {
   AssistantChoice,
   AssistantJobStatus,
 } from "@/features/chat/assistant-cards";
-import type {
-  ChatChannel,
-  ChatMember,
-  ChatMessage,
-} from "@/features/chat/chat-api";
+import type { ChatMember, ChatMessage } from "@/features/chat/chat-api";
 import { ChatVoiceBubble } from "@/features/chat/chat-voice-note";
 import {
   dayDividerLabel,
@@ -26,6 +22,7 @@ import {
   parseChoicePayload,
   parseJobStatusPayload,
 } from "@/lib/chat/assistant";
+import { splitMention } from "@/lib/chat/mention";
 import { isVoiceNote } from "@/lib/chat/voice-note";
 import { useTokens, workerColor } from "@/theme/tokens";
 
@@ -86,13 +83,15 @@ function MessageRow({
   message,
   showSender,
   seenBy,
-  isAssistantChannel,
+  onReplyToAssistant,
 }: {
   message: ChatMessage;
   showSender: boolean;
   seenBy: ChatMember[] | undefined;
-  isAssistantChannel: boolean;
+  /** Wired to the "Hỏi tiếp" button under an assistant message; sets the composer's reply. */
+  onReplyToAssistant?: (message: ChatMessage) => void;
 }) {
+  const { t } = useTranslation();
   const tokens = useTokens();
   const mine = message.mine;
   // Anything that is not a recording renders as the picture card, as it did before voice notes.
@@ -102,8 +101,9 @@ function MessageRow({
     isVoiceNote(message.attachment.content_type);
   // Rich assistant content replaces the plain text bubble; a malformed payload (should not
   // happen against the real backend) falls back to the text bubble below instead of nothing.
-  const isAssistantMessage =
-    isAssistantChannel && message.sender_type === "assistant";
+  // The assistant now answers inside company/project/admin channels (no dedicated channel of
+  // its own), so this only ever looks at who sent the message.
+  const isAssistantMessage = message.sender_type === "assistant";
   const cardPayload =
     isAssistantMessage && message.content_type === "card"
       ? parseCardPayload(message.payload)
@@ -154,7 +154,18 @@ function MessageRow({
             <Text
               className={`font-sans text-[14px] leading-5 ${mine ? "text-white" : "text-ink"}`}
             >
-              {message.body}
+              {splitMention(message.body ?? "").map((segment, index) =>
+                segment.mention ? (
+                  <Text
+                    key={index}
+                    className={`font-sans-semibold ${mine ? "text-white" : "text-accent"}`}
+                  >
+                    {segment.text}
+                  </Text>
+                ) : (
+                  <Text key={index}>{segment.text}</Text>
+                ),
+              )}
             </Text>
           </View>
         ) : null}
@@ -164,6 +175,19 @@ function MessageRow({
         ) : null}
         {jobPayload ? <AssistantJobStatus payload={jobPayload} /> : null}
         {voiceNote ? <ChatVoiceBubble message={message} mine={mine} /> : null}
+        {isAssistantMessage ? (
+          <Pressable
+            testID="chat-reply-assistant"
+            accessibilityRole="button"
+            hitSlop={6}
+            onPress={() => onReplyToAssistant?.(message)}
+            className="mt-0.5 active:opacity-70"
+          >
+            <Text className="font-sans-medium text-[11.5px] text-accent">
+              {t("chat.replyToFolio")}
+            </Text>
+          </Pressable>
+        ) : null}
         {message.attachment && !voiceNote ? (
           <View className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card">
             <View className="h-[120px] items-center justify-center bg-paper-2">
@@ -203,16 +227,15 @@ function MessageRow({
 export function ChatMessageList({
   messages,
   seen,
-  channel,
+  onReplyToAssistant,
 }: {
   messages: ChatMessage[];
   seen?: Map<string, ChatMember[]>;
-  /** The channel these messages belong to; assistant content types only render here. */
-  channel?: ChatChannel | null;
+  /** Wired to the "Hỏi tiếp" button under each assistant message. */
+  onReplyToAssistant?: (message: ChatMessage) => void;
 }) {
   const { t } = useTranslation();
   const groups = groupMessagesByDay(messages);
-  const isAssistantChannel = channel?.kind === "assistant";
   return (
     <View className="gap-2.5" testID="chat-message-list">
       {groups.map((group) => {
@@ -230,7 +253,7 @@ export function ChatMessageList({
                 message={message}
                 showSender={showsSender(group.messages, index)}
                 seenBy={seen?.get(message.id)}
-                isAssistantChannel={isAssistantChannel}
+                onReplyToAssistant={onReplyToAssistant}
               />
             ))}
           </View>

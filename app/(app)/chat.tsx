@@ -15,6 +15,7 @@ import { useAuth } from "@/auth/auth-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
+import type { ChatMessage } from "@/features/chat/chat-api";
 import {
   useChatChannels,
   useChatEnabled,
@@ -24,10 +25,10 @@ import {
   useSendChatMessage,
 } from "@/features/chat/chat-api";
 import { ChatComposer } from "@/features/chat/chat-composer";
+import type { ChatComposerHandle } from "@/features/chat/chat-composer";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
 import type { PickedFile } from "@/lib/files/pick";
 import type { SupportedLocale } from "@/i18n";
-import { orderChannels } from "@/lib/chat/assistant";
 import { seenByMessage } from "@/lib/chat/seen-by";
 import { useTokens, workerColor } from "@/theme/tokens";
 
@@ -48,29 +49,35 @@ export default function ChatScreen() {
   // features query is what says which — see the disabled branch below.
   const features = useFeatures();
   const channels = useChatChannels(enabled, 15_000);
-  // The API already lists the assistant channel first; this only guarantees it, never
-  // otherwise reorders what the server sent.
-  const orderedChannels = useMemo(
-    () => orderChannels(channels.data ?? []),
-    [channels.data],
-  );
+  const channelList = useMemo(() => channels.data ?? [], [channels.data]);
   const [selected, setSelected] = useState<string | null>(
     params.channel ?? null,
   );
   const channelKey =
-    selected && orderedChannels.some((c) => c.key === selected)
+    selected && channelList.some((c) => c.key === selected)
       ? selected
-      : (orderedChannels[0]?.key ?? null);
+      : (channelList[0]?.key ?? null);
   const messages = useChatMessages(channelKey);
   const markRead = useMarkChatRead();
   const send = useSendChatMessage(channelKey ?? "");
   const scrollRef = useRef<ScrollView>(null);
+  const composerRef = useRef<ChatComposerHandle>(null);
+  // Set by the "Hỏi tiếp" button under an assistant message; cleared on send, on dismissal,
+  // or when the reader switches to a different channel.
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+  // Adjusting state during render (React's documented pattern) rather than in an effect: a
+  // reply left pending on the channel just switched away from must not leak into the next one.
+  const [replyChannelKey, setReplyChannelKey] = useState(channelKey);
+  if (channelKey !== replyChannelKey) {
+    setReplyChannelKey(channelKey);
+    setReplyTo(null);
+  }
 
   const channel = useMemo(
-    () => orderedChannels.find((c) => c.key === channelKey) ?? null,
-    [orderedChannels, channelKey],
+    () => channelList.find((c) => c.key === channelKey) ?? null,
+    [channelList, channelKey],
   );
-  const isAssistantChannel = channel?.kind === "assistant";
+  const isAdminChannel = channel?.kind === "admin";
   const members = messages.data?.members ?? [];
   const items = messages.data?.items ?? [];
   const lastMessageId = items[items.length - 1]?.id;
@@ -101,17 +108,25 @@ export default function ChatScreen() {
   }, [lastMessageId]);
 
   // Sending implies having read the channel; the composer clears itself once this resolves.
-  // `lang` goes only to the assistant channel: the backend keeps it there, and a server that
-  // predates the assistant rejects unknown JSON fields on the other channels.
+  // `lang` (the reader's UI language) now goes on every send, and `replyToId` — when the
+  // reader tapped "Hỏi tiếp" on an assistant message — addresses the assistant even without
+  // typing `@folio`.
   async function submit(message: {
     body: string;
     file: PickedFile | null;
   }): Promise<void> {
     await send.mutateAsync({
       ...message,
-      ...(isAssistantChannel ? { lang: i18n.language as SupportedLocale } : {}),
+      lang: i18n.language as SupportedLocale,
+      ...(replyTo ? { replyToId: replyTo.id } : {}),
     });
+    setReplyTo(null);
     if (channelKey) markRead.mutate({ channelKey });
+  }
+
+  function replyToAssistant(message: ChatMessage): void {
+    setReplyTo(message);
+    composerRef.current?.focus();
   }
 
   return (
@@ -136,42 +151,38 @@ export default function ChatScreen() {
             numberOfLines={1}
             testID="chat-title"
           >
-            {isAssistantChannel
-              ? t("assistant.title")
-              : (channel?.name ?? t("chat.title"))}
+            {channel?.name ?? t("chat.title")}
           </Text>
           <Text className="font-sans text-[11.5px] text-muted">
-            {isAssistantChannel
-              ? t("assistant.subtitle")
+            {isAdminChannel
+              ? t("chat.adminSubtitle")
               : channel
                 ? t("chat.membersCount", { count: channel.member_count })
                 : ""}
           </Text>
         </View>
-        {!isAssistantChannel ? (
-          <View className="flex-row">
-            {members.slice(0, 2).map((member, index) => (
-              <View
-                key={member.id}
-                style={{ marginLeft: index === 0 ? 0 : -8 }}
-                className="rounded-full border-2 border-paper"
-              >
-                <Avatar
-                  name={member.name}
-                  size={26}
-                  color={workerColor(tokens, null, index === 0 ? 0 : 3)}
-                />
-              </View>
-            ))}
-            {members.length > 2 ? (
-              <View className="-ml-2 h-[26px] min-w-[26px] items-center justify-center rounded-full border-2 border-paper bg-paper-2 px-1">
-                <Text className="font-sans-semibold text-[11px] text-ink">
-                  +{members.length - 2}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        ) : null}
+        <View className="flex-row">
+          {members.slice(0, 2).map((member, index) => (
+            <View
+              key={member.id}
+              style={{ marginLeft: index === 0 ? 0 : -8 }}
+              className="rounded-full border-2 border-paper"
+            >
+              <Avatar
+                name={member.name}
+                size={26}
+                color={workerColor(tokens, null, index === 0 ? 0 : 3)}
+              />
+            </View>
+          ))}
+          {members.length > 2 ? (
+            <View className="-ml-2 h-[26px] min-w-[26px] items-center justify-center rounded-full border-2 border-paper bg-paper-2 px-1">
+              <Text className="font-sans-semibold text-[11px] text-ink">
+                +{members.length - 2}
+              </Text>
+            </View>
+          ) : null}
+        </View>
       </View>
 
       {/* Hidden when there is nothing to pick: with no channels this still drew its
@@ -179,12 +190,12 @@ export default function ChatScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className={`max-h-[53px] border-b border-line ${orderedChannels.length === 0 ? "hidden" : ""}`}
+        className={`max-h-[53px] border-b border-line ${channelList.length === 0 ? "hidden" : ""}`}
         contentContainerClassName="flex-row items-center gap-1.5 px-4 py-2.5"
       >
-        {orderedChannels.map((item) => {
+        {channelList.map((item) => {
           const active = item.key === channelKey;
-          const isAssistant = item.kind === "assistant";
+          const isAdmin = item.kind === "admin";
           return (
             <Pressable
               key={item.key}
@@ -194,9 +205,10 @@ export default function ChatScreen() {
               onPress={() => setSelected(item.key)}
               className={`h-8 flex-row items-center gap-1.5 rounded-full border px-3 active:opacity-70 ${active ? "border-ink bg-ink" : "border-line bg-card"}`}
             >
-              {isAssistant ? (
+              {isAdmin ? (
                 <Icon
-                  name="cpu"
+                  testID={`chat-channel-${item.key}-lock`}
+                  name="lock"
                   size={13}
                   color={active ? tokens.onInk : tokens.ink}
                 />
@@ -205,7 +217,7 @@ export default function ChatScreen() {
                 className={`font-sans-medium text-[12.5px] ${active ? "text-on-ink" : "text-ink"}`}
                 numberOfLines={1}
               >
-                {isAssistant ? t("assistant.title") : item.name}
+                {isAdmin ? t("chat.kindAdmin") : item.name}
               </Text>
               {item.unread_count > 0 && !active ? (
                 <View className="h-1.5 w-1.5 rounded-full bg-accent" />
@@ -251,15 +263,42 @@ export default function ChatScreen() {
             </Text>
           ) : null}
           {items.length > 0 ? (
-            <ChatMessageList messages={items} seen={seen} channel={channel} />
+            <ChatMessageList
+              messages={items}
+              seen={seen}
+              onReplyToAssistant={replyToAssistant}
+            />
           ) : null}
         </ScrollView>
 
+        {replyTo ? (
+          <View
+            testID="chat-reply-bar"
+            className="flex-row items-center gap-2 border-t border-line bg-paper-2 px-4 py-2"
+          >
+            <Icon name="corner-up-left" size={14} color={tokens.muted} />
+            <Text
+              className="flex-1 font-sans text-[12px] text-muted"
+              numberOfLines={1}
+            >
+              {t("chat.replyingTo", { name: replyTo.sender_name })}
+            </Text>
+            <Pressable
+              testID="chat-cancel-reply"
+              accessibilityRole="button"
+              onPress={() => setReplyTo(null)}
+              hitSlop={8}
+            >
+              <Icon name="x" size={14} color={tokens.muted} />
+            </Pressable>
+          </View>
+        ) : null}
+
         <ChatComposer
+          ref={composerRef}
           disabled={!channelKey}
           sending={send.isPending}
           onSend={submit}
-          primaryCamera={isAssistantChannel}
         />
       </KeyboardAvoidingView>
     </View>

@@ -1597,11 +1597,14 @@
     "discardVoice": "Supprimer l'enregistrement",
     "voiceLoadFailed": "Ce message vocal n'a pas pu être chargé.",
     "recordingFailed": "Le micro n'a pas pu démarrer.",
-    "recordingLost": "L'enregistrement a été perdu."
+    "recordingLost": "L'enregistrement a été perdu.",
+    "kindAdmin": "Administration",
+    "adminSubtitle": "Finances de l'entreprise, paie et activité de Folio",
+    "mentionSuggestion": "Mentionner Folio",
+    "replyToFolio": "Continuer",
+    "replyingTo": "Réponse à {{name}}"
   },
   "assistant": {
-    "title": "Assistant",
-    "subtitle": "Photos de tickets, matériaux, où est un outil",
     "statusQueued": "En attente",
     "statusRunning": "En cours…",
     "statusNotReady": "Pas encore prêt",
@@ -1615,7 +1618,8 @@
     "answered": "Répondu",
     "openInvoice": "Ouvrir la facture",
     "openMaterial": "Ouvrir le matériau",
-    "actionFailed": "L'action n'a pas pu être envoyée."
+    "actionFailed": "L'action n'a pas pu être envoyée.",
+    "notAddressed": "Seul l'auteur de la demande peut choisir"
   },
   "signup": {
     "title": "Créez votre profil",

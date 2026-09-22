@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Badge } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/icon";
@@ -113,7 +114,8 @@ export function AssistantCard({ payload }: { payload: AssistantCardPayload }) {
  * Assistant "choice" content: the prompt plus one full-width outlined button per option. A
  * tap fires the actions endpoint (optimistic `answered` on the message cache — see
  * `useAssistantAction`); once answered (locally or by the server) every button is inert, the
- * chosen one filled.
+ * chosen one filled. When the choice is `addressed_to` someone else, every button is inert
+ * from the start with a muted hint instead — the server would 403 `NotAddressed` anyway.
  */
 export function AssistantChoice({
   message,
@@ -123,6 +125,7 @@ export function AssistantChoice({
   payload: AssistantChoicePayload;
 }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const action = useAssistantAction(message.channel_key);
   // Local optimistic pick, on top of the query-cache one `useAssistantAction` writes: this
   // widget instance survives across polls of the same message (`key={message.id}` in the
@@ -136,6 +139,8 @@ export function AssistantChoice({
   // option from the local tap while this widget lives.
   const answeredPayload =
     payload.answeredPayload ?? pendingChoice?.payload ?? null;
+  const notAddressed =
+    payload.addressedTo !== null && payload.addressedTo !== user?.id;
 
   return (
     <View
@@ -148,7 +153,8 @@ export function AssistantChoice({
       <View className="gap-1.5">
         {payload.options.map((option, index) => {
           const chosen = isChosenOption(option, answered, answeredPayload);
-          const disabled = answered !== null || action.isPending;
+          const disabled =
+            answered !== null || action.isPending || notAddressed;
           return (
             <Pressable
               key={`${option.action}-${index}`}
@@ -187,7 +193,14 @@ export function AssistantChoice({
           );
         })}
       </View>
-      {answered ? (
+      {notAddressed ? (
+        <Text
+          testID="assistant-choice-not-addressed"
+          className="font-sans text-[11px] text-muted"
+        >
+          {t("assistant.notAddressed")}
+        </Text>
+      ) : answered ? (
         <Text
           testID="assistant-choice-answered"
           className="font-sans text-[11px] text-muted"
