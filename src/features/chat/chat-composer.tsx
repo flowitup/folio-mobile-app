@@ -250,14 +250,15 @@ export const ChatComposer = forwardRef<ChatComposerHandle, Props>(
                 placeholderTextColor={tokens.muted}
                 value={draft}
                 onChangeText={setDraft}
+                editable={!disabled}
                 multiline={false}
                 returnKeyType="send"
                 onSubmitEditing={() => void submit()}
               />
               {!primaryCamera ? (
                 <Pressable
-                   disabled={disabled}
-                 testID="chat-camera"
+                  disabled={disabled}
+                  testID="chat-camera"
                   accessibilityRole="button"
                   accessibilityLabel={t("chat.takePhoto")}
                   onPress={() => void attach("camera")}

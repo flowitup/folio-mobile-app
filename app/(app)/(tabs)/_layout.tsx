@@ -33,7 +33,6 @@ export default function TabsLayout() {
             // The hidden routes (a project section, an invoice detail…) are tab screens, so a
             // back press from their first screen bubbles up here; "history" returns to the tab
             // the user came from instead of the default "firstRoute" (always Overview).
-            backBehavior="history"
             screenOptions={{
               headerShown: false,
               sceneStyle: { backgroundColor: tokens.paper },
