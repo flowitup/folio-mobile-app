@@ -1774,5 +1774,10 @@
       "blockedBody": "Vous êtes le seul administrateur de {{company}}. Nommez un autre administrateur, puis supprimez votre compte.",
       "ok": "OK"
     }
+  },
+  "pdfViewer": {
+    "title": "PDF",
+    "share": "Partager",
+    "loadError": "Impossible d'afficher ce PDF."
   }
 }

@@ -1774,5 +1774,10 @@
       "blockedBody": "Bạn là quản trị viên duy nhất của {{company}}. Hãy chỉ định một quản trị viên khác, sau đó xóa tài khoản của bạn.",
       "ok": "OK"
     }
+  },
+  "pdfViewer": {
+    "title": "PDF",
+    "share": "Chia sẻ",
+    "loadError": "Không thể hiển thị tệp PDF này."
   }
 }

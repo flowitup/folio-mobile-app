@@ -1774,5 +1774,10 @@
       "blockedBody": "You are the only administrator of {{company}}. Make someone else an administrator there, then delete your account.",
       "ok": "OK"
     }
+  },
+  "pdfViewer": {
+    "title": "PDF",
+    "share": "Share",
+    "loadError": "Could not display this PDF."
   }
 }
