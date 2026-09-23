@@ -214,6 +214,7 @@
     },
     "serviceMonthShort": "pour",
     "auto": "auto",
+    "cashAdvance": "avance espèces",
     "paidWithAvoir": "Payé par avoir",
     "refundOf": "Remboursement de",
     "unassignedWorker": "Non attribué",

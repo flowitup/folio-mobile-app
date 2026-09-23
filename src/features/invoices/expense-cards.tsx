@@ -9,6 +9,7 @@ import {
 } from "@/features/dashboard/overview-cards";
 import type { Invoice, InvoiceType } from "@/features/invoices/invoice-types";
 import { formatMoney } from "@/lib/format/money";
+import { ledgerTypeOf } from "@/lib/invoices/group-invoices-by-month";
 import { INK_BLOCK, useTokens } from "@/theme/tokens";
 
 /**
@@ -123,6 +124,8 @@ export function invoiceBadge(
     return { label: t("invoices.form.settledViaAvoir"), tone: "muted" };
   if (invoice.is_auto_generated)
     return { label: t("invoices.auto"), tone: "muted" };
+  if (invoice.type === "released_funds" && invoice.is_cash_advance)
+    return { label: t("invoices.cashAdvance"), tone: "muted" };
   return null;
 }
 
@@ -155,7 +158,8 @@ export function ExpenseRow({
     .filter(Boolean)
     .join(" · ");
   const badge = invoiceBadge(invoice, t);
-  const released = invoice.type === "released_funds";
+  const ledgerType = ledgerTypeOf(invoice);
+  const released = ledgerType === "released_funds";
   const amountClass = released
     ? "text-positive"
     : invoice.total_amount < 0
@@ -171,7 +175,7 @@ export function ExpenseRow({
     >
       <View
         className="h-9 w-1 rounded-sm"
-        style={{ backgroundColor: colors[invoice.type] }}
+        style={{ backgroundColor: colors[ledgerType] }}
       />
       <View className="min-w-0 flex-1">
         <Text

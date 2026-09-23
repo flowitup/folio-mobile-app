@@ -30,7 +30,10 @@ import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { currentMonth, formatMonth, shiftMonth } from "@/lib/format/date";
 import { buildPursesSummary } from "@/lib/invoices/expense-purses";
-import { groupInvoicesByMonth } from "@/lib/invoices/group-invoices-by-month";
+import {
+  groupInvoicesByMonth,
+  ledgerTypeOf,
+} from "@/lib/invoices/group-invoices-by-month";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { DARK, INK_BLOCK, useTokens } from "@/theme/tokens";
@@ -98,7 +101,9 @@ function ExpensesTabContent() {
   // The list shows the selected month first, then the older months.
   const months = useMemo(() => {
     const filtered =
-      filter === "all" ? rows : rows.filter((inv) => inv.type === filter);
+      filter === "all"
+        ? rows
+        : rows.filter((inv) => ledgerTypeOf(inv) === filter);
     return groupInvoicesByMonth(filtered)
       .filter((group) => group.monthKey <= month)
       .map((group) => ({
