@@ -32,23 +32,77 @@ async function fetchAuthedBytes(path: string): Promise<Uint8Array> {
   return new Uint8Array(await response.arrayBuffer());
 }
 
+/** Folders `downloadToCache` creates; `share-` is the name older builds used. */
+const DOWNLOAD_FOLDER = /^(download|share)-(\d+)$/;
+/** Long enough for any app a file was shared to (Drive upload, mail draft) to have read it. */
+const DOWNLOAD_TTL_MS = 60 * 60 * 1000;
+
 /**
- * Downloads an authenticated API resource (xlsx export, pdf, attachment) into the cache
- * directory and opens the OS share sheet on it. Returns the local file URI.
+ * Removes download folders older than the TTL. A download is never deleted when its screen
+ * closes: on Android the share sheet resolves before the receiving app has read the file.
+ * Best effort: the cache is the OS's to purge anyway.
+ */
+export function sweepStaleDownloads(now = Date.now()): void {
+  try {
+    for (const entry of new Directory(Paths.cache).list()) {
+      const match = DOWNLOAD_FOLDER.exec(entry.name);
+      if (
+        match &&
+        entry instanceof Directory &&
+        now - Number(match[2]) > DOWNLOAD_TTL_MS
+      )
+        entry.delete();
+    }
+  } catch {
+    // cache unreadable: nothing to sweep
+  }
+}
+
+/**
+ * Downloads an authenticated API resource (xlsx export, pdf, attachment) into its own cache
+ * folder and returns the local file URI. The file keeps its real name, because a share
+ * recipient sees it, so uniqueness lives in the folder, not in the name.
+ */
+export async function downloadToCache(
+  path: string,
+  filename: string,
+): Promise<string> {
+  const bytes = await fetchAuthedBytes(path);
+  sweepStaleDownloads();
+  const folder = new Directory(Paths.cache, `download-${Date.now()}`);
+  folder.create();
+  const target = new File(folder, safeFilename(filename));
+  target.write(bytes);
+  return target.uri;
+}
+
+/** Opens the OS share sheet on a local file (no-op where sharing is unavailable). */
+export async function shareLocalFile(
+  uri: string,
+  mimeType?: string,
+): Promise<void> {
+  if (!(await Sharing.isAvailableAsync())) return;
+  await Sharing.shareAsync(
+    uri,
+    mimeType === "application/pdf"
+      ? { mimeType, UTI: "com.adobe.pdf" }
+      : mimeType
+        ? { mimeType }
+        : undefined,
+  );
+}
+
+/**
+ * Downloads an authenticated API resource into the cache and opens the OS share sheet on it.
+ * Returns the local file URI.
  */
 export async function downloadAndShare(
   path: string,
   filename: string,
 ): Promise<string> {
-  const bytes = await fetchAuthedBytes(path);
-  // The recipient sees the file name, so uniqueness lives in the folder, not in the name.
-  const folder = new Directory(Paths.cache, `share-${Date.now()}`);
-  folder.create();
-  const target = new File(folder, safeFilename(filename));
-  target.write(bytes);
-
-  if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(target.uri);
-  return target.uri;
+  const uri = await downloadToCache(path, filename);
+  await shareLocalFile(uri);
+  return uri;
 }
 
 /**

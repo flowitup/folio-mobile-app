@@ -1,7 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import * as Print from "expo-print";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import * as Sharing from "expo-sharing";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -30,6 +29,7 @@ import {
 } from "@/features/invoices/invoices-api";
 import { useBillingAccess } from "@/features/companies/companies-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
+import { openPdfViewer } from "@/lib/files/open-file";
 import { buildInvoicePrintHtml } from "@/lib/invoices/invoice-print-html";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { INK_BLOCK } from "@/theme/tokens";
@@ -93,11 +93,11 @@ export default function InvoiceDetailScreen() {
         },
       );
       const { uri } = await Print.printToFileAsync({ html });
-      if (await Sharing.isAvailableAsync())
-        await Sharing.shareAsync(uri, {
-          UTI: "com.adobe.pdf",
-          mimeType: "application/pdf",
-        });
+      // Shown in the app first; its Share button still sends the PDF out.
+      openPdfViewer(
+        uri,
+        invoice.data.invoice_number || t("invoices.print.title"),
+      );
     } catch (caught) {
       showToast((caught as Error).message, "error");
     } finally {

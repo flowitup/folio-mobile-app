@@ -2,7 +2,8 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
-import { downloadAndShare, safeFilename } from "@/lib/files/download";
+import { safeFilename } from "@/lib/files/download";
+import { openFile } from "@/lib/files/open-file";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
@@ -250,12 +251,12 @@ export function useCreateFromTemplate() {
   });
 }
 
-/** Streams the rendered PDF / XLSX through the OS share sheet. */
-export function shareBillingFile(
+/** Rendered PDF opens in the in-app viewer; XLSX goes through the OS share sheet. */
+export function openBillingFile(
   doc: Pick<BillingDocument, "id" | "document_number">,
   format: "pdf" | "xlsx",
 ) {
-  return downloadAndShare(
+  return openFile(
     `/api/v1/billing-documents/${encodeURIComponent(doc.id)}/${format}`,
     safeFilename(`${doc.document_number}.${format}`),
   );

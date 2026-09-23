@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/api/client";
 import { invoiceKeys } from "@/features/invoices/invoices-api";
 import { rosterKeys } from "@/features/labor/roster-api";
-import { downloadAndShare } from "@/lib/files/download";
+import { openFile } from "@/lib/files/open-file";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
@@ -554,7 +554,7 @@ export function exportLabor(
   const path = workerId
     ? `/api/v1/projects/${encodeURIComponent(projectId)}/workers/${encodeURIComponent(workerId)}/labor-export?${query}`
     : `/api/v1/projects/${encodeURIComponent(projectId)}/labor-export?${query}`;
-  return downloadAndShare(path, `labor-${from}-${to}.${format}`);
+  return openFile(path, `labor-${from}-${to}.${format}`);
 }
 
 // ---- labor roles management (settings) --------------------------------------------------------

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
-import { downloadAndShare } from "@/lib/files/download";
+import { openFile } from "@/lib/files/open-file";
 import type { PickedFile } from "@/lib/files/pick";
 import { uploadMultipart } from "@/lib/files/upload";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
@@ -278,11 +278,12 @@ export function useDeleteAttachment(projectId: string, invoiceId: string) {
   });
 }
 
-/** Opens the attachment in the OS share/preview sheet. */
+/** Opens the attachment: a PDF in the in-app viewer, anything else in the OS share sheet. */
 export function openAttachment(attachment: InvoiceAttachment): Promise<string> {
-  return downloadAndShare(
+  return openFile(
     `/api/v1/attachments/${encodeURIComponent(attachment.id)}/download`,
     attachment.filename,
+    attachment.mime_type,
   );
 }
 
@@ -297,7 +298,8 @@ export function exportInvoices(
 ) {
   const query = new URLSearchParams({ from, to, format });
   if (type) query.set("type", type);
-  return downloadAndShare(
+  // A PDF export opens in the in-app viewer (Share is there); xlsx goes to the share sheet.
+  return openFile(
     `/api/v1/projects/${encodeURIComponent(projectId)}/invoices-export?${query.toString()}`,
     `invoices-${from}-${to}.${format}`,
   );
