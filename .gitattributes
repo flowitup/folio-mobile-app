@@ -1,0 +1,2 @@
+# Vendored pdf.js (scripts/vendor-pdfjs.mjs): keep bytes exact, hide from diffs and stats.
+assets/pdfjs/* -text -diff linguist-vendored
