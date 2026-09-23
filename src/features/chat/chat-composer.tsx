@@ -35,6 +35,10 @@ type Props = {
   /** Assistant channel: most messages start with a photo, so the camera leads (filled, left)
    * and the library picker follows; every other channel keeps the library-first layout. */
   primaryCamera?: boolean;
+  /** Whether the backend has the assistant feature on. Off (or still unknown): the `@folio`
+   * suggestion never appears, since suggesting a mention the server would 404 is worse than
+   * not suggesting one at all. Defaults to `true` so existing callers keep their behavior. */
+  assistantEnabled?: boolean;
 };
 
 /**
@@ -47,7 +51,13 @@ type Props = {
  */
 export const ChatComposer = forwardRef<ChatComposerHandle, Props>(
   function ChatComposer(
-    { disabled, sending, onSend, primaryCamera = false },
+    {
+      disabled,
+      sending,
+      onSend,
+      primaryCamera = false,
+      assistantEnabled = true,
+    },
     ref,
   ) {
     const { t } = useTranslation();
@@ -81,7 +91,8 @@ export const ChatComposer = forwardRef<ChatComposerHandle, Props>(
     const draftTailToken = draft.slice(
       Math.max(draft.lastIndexOf(" "), draft.lastIndexOf("\n")) + 1,
     );
-    const showMentionSuggestion = draftTailToken.startsWith("@");
+    const showMentionSuggestion =
+      draftTailToken.startsWith("@") && assistantEnabled;
 
     function insertMentionSuggestion() {
       const prefix = draft.slice(0, draft.length - draftTailToken.length);

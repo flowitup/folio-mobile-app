@@ -22,9 +22,9 @@ import {
 import type { ChatMessage } from "@/features/chat/chat-api";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
 
-const mockPush = jest.fn();
+const mockNavigate = jest.fn();
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ navigate: mockNavigate }),
 }));
 
 const mockSelectProjectOnNextShell = jest.fn();
@@ -57,10 +57,11 @@ jest.mock("expo-audio", () => ({
   }),
 }));
 
+const mockGet = jest.fn();
 const mockPost = jest.fn();
 jest.mock("@/api/client", () => ({
   api: {
-    GET: jest.fn(),
+    GET: (...args: unknown[]) => mockGet(...args),
     POST: (...args: unknown[]) => mockPost(...args),
     PATCH: jest.fn(),
     DELETE: jest.fn(),
@@ -68,6 +69,24 @@ jest.mock("@/api/client", () => ({
 }));
 
 jest.mock("@/components/ui/toast", () => ({ showToast: jest.fn() }));
+
+/** `AssistantCard` reads `useProjects()` to disable cards for projects the user is not on; every test that
+ * mounts it needs `GET /api/v1/projects` to resolve to something, even an empty list, or the
+ * query stays in its unconfigured (permissive) `data: undefined` state throughout the test. */
+function mockProjectsList(ids: string[]) {
+  mockGet.mockImplementation((path: string) => {
+    if (path === "/api/v1/projects")
+      return Promise.resolve({
+        data: { projects: ids.map((id) => ({ id })), total: ids.length },
+        response: { status: 200, statusText: "OK" },
+      });
+    return Promise.resolve({
+      data: undefined,
+      error: { error: "NotFound", message: "not mocked" },
+      response: { status: 404, statusText: "Not Found" },
+    });
+  });
+}
 
 // RNTL 14's `render` resolves asynchronously; every call site below awaits it, or `screen`
 // queries run before the tree is mounted and fail with "render function has not been called".
@@ -109,11 +128,15 @@ beforeEach(() => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockGet.mockReset();
+  // Default: the reader is on the invoice's project, so most tests do not need to think
+  // about the project-membership gate. Tests for that gate call `mockProjectsList` again with a narrower list.
+  mockProjectsList(["proj-1"]);
 });
 
 describe("AssistantCard", () => {
-  it("renders the title and badge, and opens an invoice after selecting its project", async () => {
-    await render(
+  it("renders the title and badge, distinct accessibility label, and opens an invoice on its own project", async () => {
+    await renderWithClient(
       <AssistantCard
         payload={{
           type: "invoice",
@@ -126,19 +149,26 @@ describe("AssistantCard", () => {
         }}
       />,
     );
+    const card = await screen.findByTestId("assistant-card");
     expect(screen.getByTestId("assistant-card-title").props.children).toBe(
       "Facture Point P",
     );
     expect(screen.getByTestId("assistant-card-badge")).toBeTruthy();
+    expect(card.props.accessibilityLabel).toBe(
+      "Open the invoice — Facture Point P",
+    );
 
-    await fireEvent.press(screen.getByTestId("assistant-card"));
+    await fireEvent.press(card);
 
     expect(mockSelectProjectOnNextShell).toHaveBeenCalledWith("proj-1");
-    expect(mockPush).toHaveBeenCalledWith("/projects/proj-1/invoices/inv-1");
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/projects/proj-1/invoices/inv-1",
+    );
   });
 
-  it("opens a material without touching the selected project", async () => {
-    await render(
+  it("opens a material without touching the selected project, regardless of the project list", async () => {
+    mockProjectsList([]);
+    await renderWithClient(
       <AssistantCard
         payload={{
           type: "material",
@@ -152,10 +182,14 @@ describe("AssistantCard", () => {
       />,
     );
 
-    await fireEvent.press(screen.getByTestId("assistant-card"));
+    const card = screen.getByTestId("assistant-card");
+    expect(card.props.accessibilityLabel).toBe(
+      "Open the material — Ciment Lafarge",
+    );
+    await fireEvent.press(card);
 
     expect(mockSelectProjectOnNextShell).not.toHaveBeenCalled();
-    expect(mockPush).toHaveBeenCalledWith("/library/mat-1");
+    expect(mockNavigate).toHaveBeenCalledWith("/library/mat-1");
   });
 
   it("keeps an invoice card without a project id informational (no /projects/null route)", async () => {
@@ -176,8 +210,53 @@ describe("AssistantCard", () => {
     const card = screen.getByTestId("assistant-card");
     expect(card.props.accessibilityState.disabled).toBe(true);
     await fireEvent.press(card);
-    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(mockSelectProjectOnNextShell).not.toHaveBeenCalled();
+  });
+
+  it("keeps an invoice card inert once its project is confirmed absent from the user's projects", async () => {
+    mockProjectsList(["proj-other"]);
+    await renderWithClient(
+      <AssistantCard
+        payload={{
+          type: "invoice",
+          id: "inv-2",
+          projectId: "proj-1",
+          title: "Facture hors chantier",
+          subtitle: null,
+          badge: null,
+          thumbnailUrl: null,
+        }}
+      />,
+    );
+
+    const card = await screen.findByTestId("assistant-card");
+    await waitFor(() =>
+      expect(card.props.accessibilityState.disabled).toBe(true),
+    );
+    await fireEvent.press(card);
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockSelectProjectOnNextShell).not.toHaveBeenCalled();
+  });
+
+  it("stays tappable while the project list is still loading", async () => {
+    mockGet.mockReturnValue(new Promise(() => {})); // never resolves
+    await renderWithClient(
+      <AssistantCard
+        payload={{
+          type: "invoice",
+          id: "inv-3",
+          projectId: "proj-1",
+          title: "Facture en attente",
+          subtitle: null,
+          badge: null,
+          thumbnailUrl: null,
+        }}
+      />,
+    );
+
+    const card = screen.getByTestId("assistant-card");
+    expect(card.props.accessibilityState.disabled).toBe(false);
   });
 });
 
@@ -375,6 +454,81 @@ describe("AssistantChoice", () => {
     );
     await waitFor(() => expect(mockPost).toHaveBeenCalled());
   });
+
+  it("disables every option with a muted hint when the assistant feature is off", async () => {
+    const message = assistantMessage({
+      id: "choice-5",
+      content_type: "choice",
+    });
+
+    await renderWithClient(
+      <AssistantChoice
+        message={message}
+        payload={{
+          prompt: "Quel chantier ?",
+          options: [{ label: "Tour", action: "confirm", payload: {} }],
+          answered: null,
+          answeredPayload: null,
+          addressedTo: null,
+        }}
+        assistantEnabled={false}
+      />,
+    );
+
+    expect(
+      screen.getByTestId("assistant-choice-option-confirm").props
+        .accessibilityState.disabled,
+    ).toBe(true);
+    expect(screen.getByTestId("assistant-choice-disabled")).toBeTruthy();
+    expect(screen.queryByTestId("assistant-choice-not-addressed")).toBeNull();
+    expect(screen.queryByTestId("assistant-choice-answered")).toBeNull();
+
+    await fireEvent.press(
+      screen.getByTestId("assistant-choice-option-confirm"),
+    );
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("rolls back the optimistic pick and lets the reader retry on a 503 (backend could not queue it)", async () => {
+    mockPost.mockResolvedValue({
+      error: { error: "ServiceUnavailable", message: "queue full" },
+      response: { status: 503 },
+    });
+    const message = assistantMessage({
+      id: "choice-6",
+      content_type: "choice",
+    });
+
+    await renderWithClient(
+      <AssistantChoice
+        message={message}
+        payload={{
+          prompt: "Confirmer ?",
+          options: [{ label: "Confirmer", action: "confirm", payload: {} }],
+          answered: null,
+          answeredPayload: null,
+          addressedTo: null,
+        }}
+      />,
+    );
+
+    await fireEvent.press(
+      screen.getByTestId("assistant-choice-option-confirm"),
+    );
+
+    // The rollback restores the unanswered state, so the same button is tappable again — that
+    // retap is the retry.
+    await waitFor(() =>
+      expect(
+        screen.getByTestId("assistant-choice-option-confirm").props
+          .accessibilityState.disabled,
+      ).toBe(false),
+    );
+    expect(
+      screen.getByTestId("assistant-choice-option-confirm").props
+        .accessibilityState.selected,
+    ).toBe(false);
+  });
 });
 
 describe("AssistantJobStatus", () => {
@@ -426,7 +580,7 @@ describe("ChatMessageList assistant gating", () => {
   });
 
   it("renders the card widget for a card message from the assistant, inside a project channel", async () => {
-    await render(
+    await renderWithClient(
       <ChatMessageList
         messages={[
           assistantMessage({
@@ -494,5 +648,42 @@ describe("ChatMessageList assistant gating", () => {
       />,
     );
     expect(screen.queryByTestId("chat-reply-assistant")).toBeNull();
+  });
+
+  it('hides the "Hỏi tiếp" button when the assistant feature is off', async () => {
+    const onReplyToAssistant = jest.fn();
+    await render(
+      <ChatMessageList
+        messages={[assistantMessage({ content_type: "text", body: "Salut" })]}
+        onReplyToAssistant={onReplyToAssistant}
+        assistantEnabled={false}
+      />,
+    );
+
+    expect(screen.queryByTestId("chat-reply-assistant")).toBeNull();
+  });
+
+  it("disables an assistant choice's options when the assistant feature is off", async () => {
+    await renderWithClient(
+      <ChatMessageList
+        messages={[
+          assistantMessage({
+            content_type: "choice",
+            payload: {
+              prompt: "Quel chantier ?",
+              options: [{ label: "Tour", action: "confirm", payload: {} }],
+              answered: null,
+            },
+          }),
+        ]}
+        assistantEnabled={false}
+      />,
+    );
+
+    expect(
+      screen.getByTestId("assistant-choice-option-confirm").props
+        .accessibilityState.disabled,
+    ).toBe(true);
+    expect(screen.getByTestId("assistant-choice-disabled")).toBeTruthy();
   });
 });

@@ -1657,10 +1657,12 @@
     "badgeToConfirm": "Cần xác nhận",
     "badgeNeedsReview": "Cần kiểm tra",
     "answered": "Đã trả lời",
-    "openInvoice": "Mở hoá đơn",
-    "openMaterial": "Mở vật tư",
+    "openInvoice": "Mở hoá đơn — {{title}}",
+    "openMaterial": "Mở vật tư — {{title}}",
     "actionFailed": "Không gửi được thao tác.",
-    "notAddressed": "Chỉ người hỏi mới chọn được"
+    "actionQueueUnavailable": "Folio đang bận, hãy thử lại sau.",
+    "notAddressed": "Chỉ người hỏi mới chọn được",
+    "disabled": "Trợ lý Folio chưa được bật trên máy chủ này."
   },
   "signup": {
     "title": "Tạo hồ sơ của bạn",

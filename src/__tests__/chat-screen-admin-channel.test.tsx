@@ -84,6 +84,7 @@ const CHANNELS = [
 
 jest.mock("@/features/chat/chat-api", () => ({
   useChatEnabled: () => true,
+  useAssistantEnabled: () => true,
   useFeatures: () => ({
     data: { chat: true, assistant: true },
     isPending: false,

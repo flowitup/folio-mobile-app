@@ -1,14 +1,10 @@
 /**
- * "Hỏi tiếp": tapping it under an assistant message shows a dismissible reply bar above the
- * composer, and the next send carries that message's id as `replyToId` — the way a reader can
- * address the assistant again without retyping `@folio`.
+ * End-to-end gating for `features.assistant`: with the flag off, `ChatScreen` never shows an
+ * `@folio` composer suggestion or the "Ask again" reply button under an assistant message —
+ * the backend answers either with 404 `FeatureDisabled`, so both stay hidden instead of
+ * dead-ending there.
  */
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 
@@ -88,14 +84,13 @@ const ASSISTANT_MESSAGE = {
   reply_to_id: null,
 };
 
-const mockSendMutateAsync = jest.fn(async () => ASSISTANT_MESSAGE);
-const mockMarkRead = jest.fn();
-
 jest.mock("@/features/chat/chat-api", () => ({
   useChatEnabled: () => true,
-  useAssistantEnabled: () => true,
+  // Chat itself is on, but the assistant flag is off (or the deployment has no key set) —
+  // the scenario this gate exists for.
+  useAssistantEnabled: () => false,
   useFeatures: () => ({
-    data: { chat: true, assistant: true },
+    data: { chat: true, assistant: false },
     isPending: false,
     isFetched: true,
   }),
@@ -106,11 +101,8 @@ jest.mock("@/features/chat/chat-api", () => ({
     isError: false,
     refetch: jest.fn(),
   }),
-  useMarkChatRead: () => ({ mutate: mockMarkRead }),
-  useSendChatMessage: () => ({
-    mutateAsync: mockSendMutateAsync,
-    isPending: false,
-  }),
+  useMarkChatRead: () => ({ mutate: jest.fn() }),
+  useSendChatMessage: () => ({ mutateAsync: jest.fn(), isPending: false }),
 }));
 
 const SAFE_AREA_METRICS: Metrics = {
@@ -118,13 +110,8 @@ const SAFE_AREA_METRICS: Metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-describe("ChatScreen reply to an assistant message", () => {
-  beforeEach(() => {
-    mockSendMutateAsync.mockClear();
-    mockMarkRead.mockClear();
-  });
-
-  it("shows a dismissible reply bar and sends with replyToId set", async () => {
+describe("ChatScreen with the assistant feature off", () => {
+  it("never shows the reply button under an existing assistant message", async () => {
     await i18n.changeLanguage("en");
     await render(
       <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
@@ -132,31 +119,10 @@ describe("ChatScreen reply to an assistant message", () => {
       </SafeAreaProvider>,
     );
 
-    await fireEvent.press(screen.getByTestId("chat-reply-assistant"));
-
-    expect(screen.getByTestId("chat-reply-bar")).toBeTruthy();
-    expect(screen.getByText("Replying to Folio")).toBeTruthy();
-
-    await fireEvent.changeText(
-      screen.getByTestId("chat-input"),
-      "Merci, une autre question",
-    );
-    await fireEvent.press(screen.getByTestId("chat-send"));
-
-    await waitFor(() => expect(mockSendMutateAsync).toHaveBeenCalledTimes(1));
-    expect(mockSendMutateAsync).toHaveBeenCalledWith(
-      expect.objectContaining({
-        body: "Merci, une autre question",
-        replyToId: "assistant-1",
-      }),
-    );
-    // The reply is consumed by the send; the bar clears itself.
-    await waitFor(() =>
-      expect(screen.queryByTestId("chat-reply-bar")).toBeNull(),
-    );
+    expect(screen.queryByTestId("chat-reply-assistant")).toBeNull();
   });
 
-  it("dismisses the reply bar without sending anything", async () => {
+  it("never suggests @folio while the reader types an @-token", async () => {
     await i18n.changeLanguage("en");
     await render(
       <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
@@ -164,11 +130,8 @@ describe("ChatScreen reply to an assistant message", () => {
       </SafeAreaProvider>,
     );
 
-    await fireEvent.press(screen.getByTestId("chat-reply-assistant"));
-    expect(screen.getByTestId("chat-reply-bar")).toBeTruthy();
+    await fireEvent.changeText(screen.getByTestId("chat-input"), "hey @fo");
 
-    await fireEvent.press(screen.getByTestId("chat-cancel-reply"));
-
-    expect(screen.queryByTestId("chat-reply-bar")).toBeNull();
+    expect(screen.queryByTestId("chat-mention-suggestion")).toBeNull();
   });
 });

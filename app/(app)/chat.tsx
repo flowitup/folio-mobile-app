@@ -17,6 +17,7 @@ import { Icon } from "@/components/ui/icon";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import type { ChatMessage } from "@/features/chat/chat-api";
 import {
+  useAssistantEnabled,
   useChatChannels,
   useChatEnabled,
   useFeatures,
@@ -48,6 +49,9 @@ export default function ChatScreen() {
   // `enabled` is false both while the flag is loading and when chat is off, so the
   // features query is what says which — see the disabled branch below.
   const features = useFeatures();
+  // Off (or still unknown): the composer's `@folio` suggestion, the "Ask again" button and
+  // choice buttons all go inert — the backend answers any of those with 404 `FeatureDisabled`.
+  const assistantEnabled = useAssistantEnabled();
   const channels = useChatChannels(enabled, 15_000);
   const channelList = useMemo(() => channels.data ?? [], [channels.data]);
   const [selected, setSelected] = useState<string | null>(
@@ -267,6 +271,7 @@ export default function ChatScreen() {
               messages={items}
               seen={seen}
               onReplyToAssistant={replyToAssistant}
+              assistantEnabled={assistantEnabled}
             />
           ) : null}
         </ScrollView>
@@ -299,6 +304,7 @@ export default function ChatScreen() {
           disabled={!channelKey}
           sending={send.isPending}
           onSend={submit}
+          assistantEnabled={assistantEnabled}
         />
       </KeyboardAvoidingView>
     </View>

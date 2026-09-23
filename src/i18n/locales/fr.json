@@ -1657,10 +1657,12 @@
     "badgeToConfirm": "À confirmer",
     "badgeNeedsReview": "À vérifier",
     "answered": "Répondu",
-    "openInvoice": "Ouvrir la facture",
-    "openMaterial": "Ouvrir le matériau",
+    "openInvoice": "Ouvrir la facture — {{title}}",
+    "openMaterial": "Ouvrir le matériau — {{title}}",
     "actionFailed": "L'action n'a pas pu être envoyée.",
-    "notAddressed": "Seul l'auteur de la demande peut choisir"
+    "actionQueueUnavailable": "Folio est occupé, réessayez dans un instant.",
+    "notAddressed": "Seul l'auteur de la demande peut choisir",
+    "disabled": "L'assistant Folio n'est pas activé sur ce serveur."
   },
   "signup": {
     "title": "Créez votre profil",

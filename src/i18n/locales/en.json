@@ -1657,10 +1657,12 @@
     "badgeToConfirm": "To confirm",
     "badgeNeedsReview": "Needs review",
     "answered": "Answered",
-    "openInvoice": "Open the invoice",
-    "openMaterial": "Open the material",
+    "openInvoice": "Open the invoice — {{title}}",
+    "openMaterial": "Open the material — {{title}}",
     "actionFailed": "The action could not be sent.",
-    "notAddressed": "Only the requester can choose"
+    "actionQueueUnavailable": "Folio is busy right now. Try again in a moment.",
+    "notAddressed": "Only the requester can choose",
+    "disabled": "The Folio assistant is not enabled on this server."
   },
   "signup": {
     "title": "Create your profile",
