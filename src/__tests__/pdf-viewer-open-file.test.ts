@@ -1,3 +1,7 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import {
   openFile,
   openPdfViewer,
@@ -7,7 +11,10 @@ import {
   PDFJS_VERSION,
   buildPdfJsHtml,
   isPdfFile,
+  PDF_CHUNK_BYTES,
   parsePdfViewerMessage,
+  pdfTransferMessages,
+  toScriptLiteral,
 } from "@/lib/files/pdf";
 
 const mockPush = jest.fn();
@@ -48,21 +55,103 @@ describe("isPdfFile", () => {
   });
 });
 
+const SCRIPTS = {
+  lib: toScriptLiteral("export const lib = 1;"),
+  worker: toScriptLiteral("self.worker = 2;"),
+};
+
+/** Evaluates a JS string literal, as the WebView does with the inlined pdf.js. */
+const evaluate = (literal: string): string =>
+  new Function(`return ${literal};`)() as string;
+
 describe("buildPdfJsHtml", () => {
-  it("embeds the document and pins the pdf.js build", () => {
-    const html = buildPdfJsHtml("JVBERi0xLjQ=", "#efe9de");
-    expect(html).toContain(">JVBERi0xLjQ=</script>");
-    expect(html).toContain(`pdfjs-dist@${PDFJS_VERSION}/legacy/build`);
+  it("inlines the bundled pdf.js and fetches nothing from the network", () => {
+    const html = buildPdfJsHtml("#efe9de", SCRIPTS);
+    expect(html).toContain('var PDFJS_LIB = "export const lib = 1;";');
+    expect(html).toContain('var PDFJS_WORKER = "self.worker = 2;";');
+    expect(html).not.toMatch(/https?:\/\/(?!folio)/);
     expect(html).toContain("isEvalSupported: false");
     expect(html).toContain("background: #efe9de");
     // Classic script + dynamic import: parses on WebViews without top-level await.
     expect(html).not.toContain('type="module"');
     expect(html).toContain('addEventListener("unhandledrejection"');
+    // The document is streamed in after "ready", never embedded in the page.
+    expect(html).toContain('post({ type: "ready" })');
+  });
+});
+
+describe("pdfTransferMessages", () => {
+  const toBase64 = (chunk: Uint8Array) => Buffer.from(chunk).toString("base64");
+
+  it("streams size, standalone base64 chunks and an end marker", () => {
+    const bytes = new Uint8Array(PDF_CHUNK_BYTES * 2 + 5);
+    for (let i = 0; i < bytes.length; i++) bytes[i] = (i * 31) & 0xff;
+    const messages = pdfTransferMessages(bytes, toBase64);
+
+    expect(messages[0]).toBe(`size:${bytes.length}`);
+    expect(messages.at(-1)).toBe("end");
+    const chunks = messages.slice(1, -1);
+    expect(chunks).toHaveLength(3);
+    // The page decodes each chunk on its own: every one must be complete base64.
+    const decoded = Buffer.concat(
+      chunks.map((m) => Buffer.from(m.slice("chunk:".length), "base64")),
+    );
+    expect(decoded.equals(Buffer.from(bytes))).toBe(true);
   });
 
-  it("refuses data that could break out of the page", () => {
-    expect(() => buildPdfJsHtml("abc</script><script>x", "#fff")).toThrow();
+  it("still sends size and end for an empty file", () => {
+    expect(pdfTransferMessages(new Uint8Array(0), toBase64)).toEqual([
+      "size:0",
+      "end",
+    ]);
   });
+});
+
+describe("toScriptLiteral", () => {
+  const hostile =
+    "a = \"</script><!--<script>\" + '\\'' + `\\u0041` \u2028\u2029 é 😀 \ud800 \0 \n";
+
+  it("evaluates back to exactly the input text", () => {
+    expect(evaluate(toScriptLiteral(hostile))).toBe(hostile);
+  });
+
+  it("is pure ASCII with no `<`, so it cannot leave its script element", () => {
+    const literal = toScriptLiteral(hostile);
+    expect(literal).toMatch(/^[\x20-\x7e]*$/);
+    expect(literal).not.toContain("<");
+  });
+});
+
+/** SHA-256 of each vendored file; `npm run pdfjs:vendor` prints them after a version bump. */
+const PDFJS_SHA256: Record<string, string> = {
+  "pdf.min.mjs.txt":
+    "44ec6f011027ee77791386b66c14876a5fc29e20bf0433c07c6726fff7212b72",
+  "pdf.worker.min.mjs.txt":
+    "bd88805178a26c729db8c0107a5b630cb900ec070f4d8c7529a3e45530afd41d",
+  LICENSE: "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+};
+
+describe("vendored pdf.js", () => {
+  const read = (name: string) =>
+    readFileSync(join(__dirname, "../../assets/pdfjs", name));
+
+  it.each(Object.keys(PDFJS_SHA256))("%s is the pinned build", (name) => {
+    expect(createHash("sha256").update(read(name)).digest("hex")).toBe(
+      PDFJS_SHA256[name],
+    );
+  });
+
+  it("is PDFJS_VERSION (run `npm run pdfjs:vendor` after a bump)", () => {
+    expect(read("pdf.min.mjs.txt").toString()).toContain(`"${PDFJS_VERSION}"`);
+  });
+
+  it.each(["pdf.min.mjs.txt", "pdf.worker.min.mjs.txt"])(
+    "%s survives inlining byte for byte",
+    (name) => {
+      const text = read(name).toString("utf8");
+      expect(evaluate(toScriptLiteral(text))).toBe(text);
+    },
+  );
 });
 
 describe("parsePdfViewerMessage", () => {
@@ -74,6 +163,9 @@ describe("parsePdfViewerMessage", () => {
     expect(parsePdfViewerMessage('{"type":"error","message":"bad"}')).toEqual({
       type: "error",
       message: "bad",
+    });
+    expect(parsePdfViewerMessage('{"type":"ready"}')).toEqual({
+      type: "ready",
     });
     expect(parsePdfViewerMessage('{"type":"loaded"}')).toBeNull();
     expect(parsePdfViewerMessage("not json")).toBeNull();

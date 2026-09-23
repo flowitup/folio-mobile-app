@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { File } from "expo-file-system";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Platform, Pressable, View } from "react-native";
 import { WebView } from "react-native-webview";
@@ -10,19 +10,26 @@ import { Icon } from "@/components/ui/icon";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { showToast } from "@/components/ui/toast";
+import { bytesToBase64 } from "@/lib/files/base64";
 import { shareLocalFile } from "@/lib/files/download";
 import { resolveViewerFile } from "@/lib/files/open-file";
-import { buildPdfJsHtml, parsePdfViewerMessage } from "@/lib/files/pdf";
+import {
+  buildPdfJsHtml,
+  parsePdfViewerMessage,
+  pdfTransferMessages,
+} from "@/lib/files/pdf";
+import { loadPdfJsScripts } from "@/lib/files/pdfjs-sources";
 import { useTokens } from "@/theme/tokens";
 
-/** A page that never reports back (hung CDN, dead renderer) turns into the error state. */
+/** A page that never reports back (dead renderer, stuck script) turns into the error state. */
 const RENDER_TIMEOUT_MS = 30_000;
 
 /**
  * Full-screen viewer for a local PDF registered by `openPdfViewer`; the route only carries an
  * opaque token, so a `folio://pdf-viewer` link cannot point it anywhere else. iOS WKWebView
- * renders the file natively; Android's WebView cannot, so there a pdf.js page draws it. The
- * header's Share button still hands the file to other apps.
+ * renders the file natively; Android's WebView cannot, so there a pdf.js page (bundled with
+ * the app, so offline too) draws it once the file is streamed in. The header's Share button
+ * still hands the file to other apps.
  */
 export default function PdfViewerScreen() {
   const { t } = useTranslation();
@@ -36,13 +43,13 @@ export default function PdfViewerScreen() {
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [sharing, setSharing] = useState(false);
+  const webView = useRef<WebView>(null);
 
   const android = Platform.OS === "android";
   const background = tokens.paper2;
   const page = useQuery({
-    queryKey: ["pdf-viewer", uri, background],
-    queryFn: async () =>
-      buildPdfJsHtml(await new File(uri ?? "").base64(), background),
+    queryKey: ["pdf-viewer", background],
+    queryFn: async () => buildPdfJsHtml(background, await loadPdfJsScripts()),
     enabled: android && uri !== null,
     gcTime: 0,
     staleTime: Infinity,
@@ -59,6 +66,18 @@ export default function PdfViewerScreen() {
     const timer = setTimeout(() => setFailed(true), RENDER_TIMEOUT_MS);
     return () => clearTimeout(timer);
   }, [waiting, attempt]);
+
+  /** Streams the document into the pdf.js page once it reports `ready`. */
+  async function sendDocument() {
+    if (!uri) return;
+    try {
+      const bytes = await new File(uri).bytes();
+      for (const message of pdfTransferMessages(bytes, bytesToBase64))
+        webView.current?.postMessage(message);
+    } catch {
+      setFailed(true);
+    }
+  }
 
   async function share() {
     if (!uri || sharing) return;
@@ -115,6 +134,7 @@ export default function PdfViewerScreen() {
             page.data ? (
               <WebView
                 key={attempt}
+                ref={webView}
                 testID="pdf-viewer-webview"
                 originWhitelist={["*"]}
                 source={{
@@ -123,6 +143,7 @@ export default function PdfViewerScreen() {
                 }}
                 onMessage={(event) => {
                   const message = parsePdfViewerMessage(event.nativeEvent.data);
+                  if (message?.type === "ready") void sendDocument();
                   if (message?.type === "loaded") setRendered(true);
                   if (message?.type === "error") setFailed(true);
                 }}

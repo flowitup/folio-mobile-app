@@ -15,19 +15,40 @@ export function isPdfFile(file: {
 }
 
 /**
- * pdf.js build the Android viewer loads. Pinned: a floating tag would change the renderer under
- * shipped apps. The legacy build keeps older Android System WebViews working.
+ * pdf.js build bundled in `assets/pdfjs` for the Android viewer (`npm run pdfjs:vendor` after a
+ * change). The legacy build keeps older Android System WebViews working.
  */
 export const PDFJS_VERSION = "4.10.38";
-const PDFJS_BASE = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/legacy/build`;
+
+/**
+ * The pdf.js library and worker modules as JS string literals ready to inline (see
+ * `toScriptLiteral`). Escaping ~1.8 MB is not free, so it happens once per app run.
+ */
+export type PdfJsScripts = { lib: string; worker: string };
+
+/**
+ * A JS string literal safe inside an inline <script>, evaluating back to exactly `text`: JSON
+ * escaping, then `<` (so the text can never close the script element) and every non-ASCII code
+ * unit (U+2028/2029 break older engines; pure ASCII also keeps the engine's strings 1 byte per
+ * character) as \uXXXX escapes.
+ */
+export function toScriptLiteral(text: string): string {
+  return JSON.stringify(text).replace(
+    /[<\u007f-\uffff]/g,
+    (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`,
+  );
+}
 
 /** What the pdf.js page posts back to React Native. */
 export type PdfViewerMessage =
-  { type: "loaded"; pages: number } | { type: "error"; message: string };
+  | { type: "ready" }
+  | { type: "loaded"; pages: number }
+  | { type: "error"; message: string };
 
 export function parsePdfViewerMessage(raw: string): PdfViewerMessage | null {
   try {
     const message = JSON.parse(raw) as PdfViewerMessage;
+    if (message.type === "ready") return message;
     if (message.type === "loaded" && typeof message.pages === "number")
       return message;
     if (message.type === "error" && typeof message.message === "string")
@@ -38,17 +59,40 @@ export function parsePdfViewerMessage(raw: string): PdfViewerMessage | null {
   return null;
 }
 
+/** Bytes per streamed chunk: a multiple of 3, so every chunk is standalone base64. */
+export const PDF_CHUNK_BYTES = 3 * 256 * 1024;
+
+/**
+ * The messages that stream a PDF into the page, in order: its size, base64 chunks, then the
+ * end marker. Streaming keeps the page itself small: a document embedded in the HTML makes
+ * Android's `loadDataWithBaseURL` crawl (a 14 MB scan timed out) and holds several copies.
+ */
+export function pdfTransferMessages(
+  bytes: Uint8Array,
+  toBase64: (chunk: Uint8Array) => string,
+): string[] {
+  const messages = [`size:${bytes.length}`];
+  for (let at = 0; at < bytes.length; at += PDF_CHUNK_BYTES)
+    messages.push(
+      `chunk:${toBase64(bytes.subarray(at, at + PDF_CHUNK_BYTES))}`,
+    );
+  messages.push("end");
+  return messages;
+}
+
 /**
  * Self-contained page that renders a PDF with pdf.js, for Android, whose WebView cannot show
- * PDFs itself (iOS WKWebView renders the local file natively). The document travels inside the
- * page as base64, so its bytes never leave the device; only the library comes from the CDN.
+ * PDFs itself (iOS WKWebView renders the local file natively). pdf.js is bundled with the app
+ * and inlined (loaded from blob URLs), so nothing touches the network. Once it is up the page
+ * posts `ready`, and React Native streams the document in (`pdfTransferMessages`).
  *
  * Pages are laid out at their real aspect ratio up front and drawn to a canvas only while near
  * the viewport, then cleared again, so a long document does not hold every page in memory.
  */
-export function buildPdfJsHtml(base64: string, background: string): string {
-  // base64 is [A-Za-z0-9+/=] only, so it cannot close the data element early.
-  if (/[^A-Za-z0-9+/=\s]/.test(base64)) throw new Error("Invalid PDF data");
+export function buildPdfJsHtml(
+  background: string,
+  pdfjs: PdfJsScripts,
+): string {
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -63,7 +107,6 @@ export function buildPdfJsHtml(base64: string, background: string): string {
 </head>
 <body>
 <div id="pages"></div>
-<script type="application/octet-stream" id="pdf-data">${base64}</script>
 <script>
   var post = function (message) { window.ReactNativeWebView.postMessage(JSON.stringify(message)); };
   var fail = function (error) { post({ type: "error", message: String((error && error.message) || error) }); };
@@ -71,12 +114,50 @@ export function buildPdfJsHtml(base64: string, background: string): string {
   window.addEventListener("unhandledrejection", function (event) { fail(event.reason); });
   // Largest canvas drawn per page: bigger ones cost tens of MB each and can render blank.
   var MAX_PIXELS = 5000000;
+</script>
+<script>
+  var PDFJS_LIB = ${pdfjs.lib};
+  var PDFJS_WORKER = ${pdfjs.worker};
+</script>
+<script>
+  var moduleUrl = function (source) { return URL.createObjectURL(new Blob([source], { type: "text/javascript" })); };
+  // The blobs hold the code now: drop the 1.8 MB of source strings.
+  var libUrl = moduleUrl(PDFJS_LIB);
+  var workerUrl = moduleUrl(PDFJS_WORKER);
+  PDFJS_LIB = PDFJS_WORKER = null;
+
+  // The document arrives as "size:<n>", "chunk:<base64>"..., "end" (see pdfTransferMessages).
+  var received = null;
+  var filled = 0;
+  var lastEvent = null;
+  var documentReady = new Promise(function (resolve) {
+    var onMessage = function (event) {
+      // React Native may dispatch on document (bubbling to window): take each event once.
+      if (event === lastEvent || typeof event.data !== "string") return;
+      lastEvent = event;
+      var data = event.data;
+      if (data.indexOf("size:") === 0) {
+        received = new Uint8Array(Number(data.slice(5)));
+        filled = 0;
+      } else if (data.indexOf("chunk:") === 0 && received) {
+        var binary = atob(data.slice(6));
+        for (var i = 0; i < binary.length; i++) received[filled++] = binary.charCodeAt(i);
+      } else if (data === "end" && received) {
+        resolve(received);
+        received = null;
+      }
+    };
+    document.addEventListener("message", onMessage);
+    window.addEventListener("message", onMessage);
+  });
+
   (async function () {
-    const pdfjs = await import("${PDFJS_BASE}/pdf.min.mjs");
-    pdfjs.GlobalWorkerOptions.workerSrc = "${PDFJS_BASE}/pdf.worker.min.mjs";
-    const binary = atob(document.getElementById("pdf-data").textContent.replace(/\\s/g, ""));
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const pdfjs = await import(libUrl);
+    URL.revokeObjectURL(libUrl);
+    // Same-origin blob: pdf.js starts a real worker from it (or runs it inline if it cannot).
+    pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+    post({ type: "ready" });
+    const bytes = await documentReady;
     const pdf = await pdfjs.getDocument({ data: bytes, isEvalSupported: false }).promise;
     const container = document.getElementById("pages");
     const ratio = Math.min(window.devicePixelRatio || 1, 3);

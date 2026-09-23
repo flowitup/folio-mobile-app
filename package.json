@@ -1,6 +1,6 @@
 {
   "name": "folio-mobile-app",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -12,7 +12,8 @@
     "lint": "expo lint",
     "type-check": "tsc --noEmit",
     "test": "jest",
-    "api:types": "openapi-typescript ./openapi/folio-openapi.json -o ./src/api/generated/schema.d.ts"
+    "api:types": "openapi-typescript ./openapi/folio-openapi.json -o ./src/api/generated/schema.d.ts",
+    "pdfjs:vendor": "node scripts/vendor-pdfjs.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/fraunces": "^0.4.1",
@@ -78,6 +79,9 @@
     ],
     "setupFiles": [
       "<rootDir>/jest.setup.ts"
-    ]
+    ],
+    "moduleNameMapper": {
+      "\\.txt$": "<rootDir>/src/__tests__/helpers/text-asset-stub.js"
+    }
   }
 }
