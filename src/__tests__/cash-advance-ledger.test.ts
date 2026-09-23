@@ -1,4 +1,5 @@
 import type { Invoice } from "@/features/invoices/invoice-types";
+import { buildDrawSeries } from "@/lib/dashboard/bank-release-metrics";
 import {
   groupInvoicesByMonth,
   ledgerTypeOf,
@@ -34,12 +35,21 @@ describe("cash advances in the ledger", () => {
     const byType = Object.fromEntries(month.categories.map((c) => [c.type, c]));
     expect(byType.released_funds.items.map((i) => i.id)).toEqual(["rel"]);
     expect(byType.others.items.map((i) => i.id).sort()).toEqual(["adv", "oth"]);
-    expect(byType.others.subtotal).toBe(540);
+    // Listed under others, but not counted in its subtotal (it is not spend).
+    expect(byType.others.subtotal).toBe(40);
   });
 
   it("keeps the advance out of the month's spend subtotal and count", () => {
     const [month] = groupInvoicesByMonth([advance, release, other]);
     expect(month.expenseSubtotal).toBe(40);
     expect(month.expenseCount).toBe(1);
+  });
+});
+
+describe("bank draw series", () => {
+  it("counts real releases only, not cash advances", () => {
+    const series = buildDrawSeries([advance, release, other]);
+    expect(series.draws.map((d) => d.id)).toEqual(["rel"]);
+    expect(series.totalDrawn).toBe(10000);
   });
 });
