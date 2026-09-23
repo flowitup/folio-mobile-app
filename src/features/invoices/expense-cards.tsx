@@ -22,13 +22,17 @@ export function PurseCard({
   spent,
   tone,
   testID,
+  cashAdvanced = 0,
 }: {
   label: string;
   released: number;
   spent: number;
   tone: "company" | "personal";
   testID: string;
+  /** Part of `spent` that is cash handed to people (company purse only). */
+  cashAdvanced?: number;
 }) {
+  const { t } = useTranslation();
   const pct =
     released > 0 ? Math.min(100, Math.round((spent / released) * 100)) : 0;
   const left = released - spent;
@@ -61,6 +65,17 @@ export function PurseCard({
           style={{ width: `${pct}%` }}
         />
       </View>
+      {cashAdvanced > 0 ? (
+        <Text
+          testID={`${testID}-cash-advance`}
+          className="mt-1.5 font-sans text-[10.5px] leading-[13px] text-ink-block-muted"
+          numberOfLines={2}
+        >
+          {t("invoices.summary.cashAdvance", {
+            amount: formatMoney(cashAdvanced),
+          })}
+        </Text>
+      ) : null}
     </View>
   );
 }

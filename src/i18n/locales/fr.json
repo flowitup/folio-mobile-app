@@ -306,6 +306,7 @@
     },
     "summary": {
       "totalExpenses": "Total dépenses",
+      "cashAdvance": "dont {{amount}} d'avance en espèces",
       "companyPurse": "Caisse entreprise",
       "personalPurse": "Caisse personnelle",
       "released": "Débloqué",

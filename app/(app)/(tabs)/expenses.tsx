@@ -143,6 +143,10 @@ function ExpensesTabContent() {
   const releasedCompany =
     meta?.funds_released_company_total ??
     (meta?.funds_released_total ?? 0) - releasedPersonal;
+  // Company purse spend = company-paid expenses + cash handed out to people (as on
+  // the web): the handover left the company's hands, even though what it pays for
+  // is booked elsewhere. The month headline and total expenses leave it out.
+  const cashAdvanced = meta?.company_cash_advanced_total ?? 0;
 
   return (
     <View className="flex-1">
@@ -222,7 +226,8 @@ function ExpensesTabContent() {
                         meta.company_name ?? t("invoices.summary.companyPurse")
                       }
                       released={releasedCompany}
-                      spent={summary.company.spent}
+                      spent={summary.company.spent + cashAdvanced}
+                      cashAdvanced={cashAdvanced}
                       tone="company"
                     />
                     <PurseCard
