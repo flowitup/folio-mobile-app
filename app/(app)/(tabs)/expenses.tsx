@@ -119,12 +119,7 @@ function ExpensesTabContent() {
     // rows out — so the count beside it has to leave them out too, or a month with one
     // disbursement reads "4 items" next to a total that only adds up three of them.
     const countOf = (key: string) =>
-      allMonths
-        .find((m) => m.monthKey === key)
-        ?.categories.reduce(
-          (n, c) => (c.type === "released_funds" ? n : n + c.items.length),
-          0,
-        ) ?? 0;
+      allMonths.find((m) => m.monthKey === key)?.expenseCount ?? 0;
     const totalOf = (key: string) =>
       allMonths.find((m) => m.monthKey === key)?.expenseSubtotal ?? 0;
     const previous = shiftMonth(month, -1);

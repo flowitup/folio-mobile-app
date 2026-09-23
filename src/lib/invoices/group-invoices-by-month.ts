@@ -62,6 +62,8 @@ export interface InvoiceMonthGroup {
    * disbursement otherwise dwarfs a month's real expenses.
    */
   expenseSubtotal: number;
+  /** Number of rows behind `expenseSubtotal` — same rule, so the two always agree. */
+  expenseCount: number;
   /** Non-empty category groups, in GROUP_ORDER. */
   categories: MonthCategoryGroup[];
 }
@@ -100,6 +102,8 @@ export function groupInvoicesByMonth(invoices: Invoice[]): InvoiceMonthGroup[] {
           countsTowardSpend(inv.type) ? sum + inv.total_amount : sum,
         0,
       ),
+      expenseCount: monthInvoices.filter((inv) => countsTowardSpend(inv.type))
+        .length,
       categories: GROUP_ORDER.map((type) => {
         const items = monthInvoices
           .filter((inv) => ledgerTypeOf(inv) === type)

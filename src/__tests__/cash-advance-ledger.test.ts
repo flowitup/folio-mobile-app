@@ -37,8 +37,9 @@ describe("cash advances in the ledger", () => {
     expect(byType.others.subtotal).toBe(540);
   });
 
-  it("keeps the advance out of the month's spend subtotal", () => {
+  it("keeps the advance out of the month's spend subtotal and count", () => {
     const [month] = groupInvoicesByMonth([advance, release, other]);
     expect(month.expenseSubtotal).toBe(40);
+    expect(month.expenseCount).toBe(1);
   });
 });
