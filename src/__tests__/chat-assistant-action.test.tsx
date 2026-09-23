@@ -1,14 +1,15 @@
 /**
  * `useAssistantAction`: the tap stamps `answered`/`answered_payload` on the cached message at
  * once, a 409 (already answered) keeps that and refetches, any other failure restores the
- * previous page and toasts.
+ * previous page, re-fetches it too and toasts (a 503 with its own retryable message, since the
+ * backend has already reset the choice to unanswered when it could not queue the action).
  */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, waitFor } from "@testing-library/react-native";
 import { Text } from "react-native";
 
 import { chatKeys, useAssistantAction } from "@/features/chat/chat-api";
-import "@/i18n";
+import i18n from "@/i18n";
 import { ApiError } from "@/lib/query/api-error";
 
 const mockPost = jest.fn();
@@ -134,10 +135,35 @@ describe("useAssistantAction", () => {
     expect(mockToast).not.toHaveBeenCalled();
   });
 
-  it("restores the previous page and toasts on any other failure", async () => {
+  it("restores the previous page, re-fetches it and toasts on any other failure", async () => {
     mockPost.mockResolvedValue({
       error: { error: "InternalError", message: "boom" },
       response: { status: 500 },
+    });
+    const { client, result, answered } = await setup();
+    const invalidateSpy = jest.spyOn(client, "invalidateQueries");
+    await act(async () => {
+      result.current.mutate({
+        action: "set_project",
+        payload: { project_id: "a" },
+        reply_to_id: "choice-1",
+      });
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(answered().answered).toBeNull();
+    expect(mockToast).toHaveBeenCalledWith(
+      i18n.t("assistant.actionFailed"),
+      "error",
+    );
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: chatKeys.messages(CHANNEL),
+    });
+  });
+
+  it("rolls back, re-fetches and shows a retryable message on a 503 (backend could not queue it)", async () => {
+    mockPost.mockResolvedValue({
+      error: { error: "ServiceUnavailable", message: "queue full" },
+      response: { status: 503 },
     });
     const { result, answered } = await setup();
     await act(async () => {
@@ -149,6 +175,9 @@ describe("useAssistantAction", () => {
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(answered().answered).toBeNull();
-    expect(mockToast).toHaveBeenCalled();
+    expect(mockToast).toHaveBeenCalledWith(
+      i18n.t("assistant.actionQueueUnavailable"),
+      "error",
+    );
   });
 });

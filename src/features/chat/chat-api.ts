@@ -37,6 +37,14 @@ export function useChatEnabled(): boolean {
   return useFeatures().data?.chat === true;
 }
 
+/** `true` once the backend has confirmed the assistant feature; `false` while unknown or off.
+ * Gates the `@folio` composer suggestion, the "Ask again" reply button and the choice buttons —
+ * with this off (or the flag missing), the backend answers a mention or an action with 404
+ * `FeatureDisabled`, so the UI that would trigger it stays inert instead of dead-ending there. */
+export function useAssistantEnabled(): boolean {
+  return useFeatures().data?.assistant === true;
+}
+
 /** Channels with unread counts; polled while the caller is on screen. */
 export function useChatChannels(enabled: boolean, refetchInterval = 30_000) {
   return useQuery({
@@ -116,6 +124,9 @@ export function useSendChatMessage(channelKey: string) {
  * Optimistically stamps `payload.answered` on the message cache so the buttons go inert the
  * instant the reader taps one; an `AlreadyAnswered` (409) just refetches — the server's
  * answer wins over the optimistic guess rather than being treated as a failure to roll back.
+ * A 503 means the server could not queue the action at all and has already reset the choice
+ * to unanswered on its side, so the rollback below also re-fetches rather than trusting the
+ * stale cached snapshot — the reader's next tap on the same button is the retry.
  */
 export function useAssistantAction(channelKey: string) {
   const queryClient = useQueryClient();
@@ -165,9 +176,16 @@ export function useAssistantAction(channelKey: string) {
       }
       if (context?.previous)
         queryClient.setQueryData(messagesKey, context.previous);
+      // Re-fetch on top of the rollback: a 503 means the server already reset the choice on
+      // its side, so the rolled-back snapshot above should not linger past the next poll.
+      void queryClient.invalidateQueries({ queryKey: messagesKey });
       if (__DEV__ && !(error instanceof ApiError))
         console.error("[useAssistantAction]", error);
-      showToast(t("assistant.actionFailed"), "error");
+      const message =
+        error instanceof ApiError && error.status === 503
+          ? t("assistant.actionQueueUnavailable")
+          : t("assistant.actionFailed");
+      showToast(message, "error");
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: messagesKey });

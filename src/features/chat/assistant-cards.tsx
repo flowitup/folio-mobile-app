@@ -10,6 +10,7 @@ import { Icon } from "@/components/ui/icon";
 import type { IconName } from "@/components/ui/icon";
 import type { ChatMessage } from "@/features/chat/chat-api";
 import { useAssistantAction } from "@/features/chat/chat-api";
+import { useProjects } from "@/features/projects/projects-api";
 import { selectProjectOnNextShell } from "@/features/projects/selected-project";
 import {
   ASSISTANT_BADGE_I18N_KEY,
@@ -39,24 +40,36 @@ const JOB_STATE_ICON: Record<AssistantJobState, IconName> = {
 /**
  * Assistant "card" content: a tappable thumbnail + title/subtitle/badge for an invoice or a
  * material, deep-linking into the existing detail screens. Selects the invoice's project in
- * the shell first (the assistant channel is not scoped to a project like the others).
+ * the shell first (the chat screen is not scoped to a project the way the tabs are).
  */
 export function AssistantCard({ payload }: { payload: AssistantCardPayload }) {
   const { t } = useTranslation();
   const tokens = useTokens();
   const router = useRouter();
+  const projects = useProjects();
 
   // An invoice screen lives under its project: without a project id there is nowhere to
-  // go, so the card stays informational instead of routing to `/projects/null/...`.
-  const canOpen = payload.type === "material" || payload.projectId !== null;
+  // go, so the card stays informational instead of routing to `/projects/null/...`. A
+  // shared-channel invoice can also name a project this reader is not on (they were not
+  // added, or left since) — the invoice screen's 403/404 there is a dead end, so the card
+  // stays informational for that case too. While the project list has not loaded yet
+  // (`projects.data` still undefined), the card stays tappable rather than flashing inert.
+  const projectKnown =
+    projects.data === undefined ||
+    (payload.projectId !== null &&
+      projects.data.projects.some(
+        (project) => project.id === payload.projectId,
+      ));
+  const canOpen =
+    payload.type === "material" || (payload.projectId !== null && projectKnown);
 
   function open() {
     if (payload.type === "invoice") {
       if (!payload.projectId) return;
       selectProjectOnNextShell(payload.projectId);
-      router.push(`/projects/${payload.projectId}/invoices/${payload.id}`);
+      router.navigate(`/projects/${payload.projectId}/invoices/${payload.id}`);
     } else {
-      router.push(`/library/${payload.id}`);
+      router.navigate(`/library/${payload.id}`);
     }
   }
 
@@ -68,6 +81,7 @@ export function AssistantCard({ payload }: { payload: AssistantCardPayload }) {
         payload.type === "invoice"
           ? "assistant.openInvoice"
           : "assistant.openMaterial",
+        { title: payload.title },
       )}
       accessibilityState={{ disabled: !canOpen }}
       disabled={!canOpen}
@@ -115,14 +129,19 @@ export function AssistantCard({ payload }: { payload: AssistantCardPayload }) {
  * tap fires the actions endpoint (optimistic `answered` on the message cache — see
  * `useAssistantAction`); once answered (locally or by the server) every button is inert, the
  * chosen one filled. When the choice is `addressed_to` someone else, every button is inert
- * from the start with a muted hint instead — the server would 403 `NotAddressed` anyway.
+ * from the start with a muted hint instead — the server would 403 `NotAddressed` anyway. Same
+ * when the assistant feature is off: every button is inert with a hint, since the server would
+ * 404 `FeatureDisabled` instead.
  */
 export function AssistantChoice({
   message,
   payload,
+  assistantEnabled = true,
 }: {
   message: ChatMessage;
   payload: AssistantChoicePayload;
+  /** Defaults to `true` so existing callers keep their behavior. */
+  assistantEnabled?: boolean;
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -154,7 +173,10 @@ export function AssistantChoice({
         {payload.options.map((option, index) => {
           const chosen = isChosenOption(option, answered, answeredPayload);
           const disabled =
-            answered !== null || action.isPending || notAddressed;
+            answered !== null ||
+            action.isPending ||
+            notAddressed ||
+            !assistantEnabled;
           return (
             <Pressable
               key={`${option.action}-${index}`}
@@ -193,7 +215,14 @@ export function AssistantChoice({
           );
         })}
       </View>
-      {notAddressed ? (
+      {!assistantEnabled ? (
+        <Text
+          testID="assistant-choice-disabled"
+          className="font-sans text-[11px] text-muted"
+        >
+          {t("assistant.disabled")}
+        </Text>
+      ) : notAddressed ? (
         <Text
           testID="assistant-choice-not-addressed"
           className="font-sans text-[11px] text-muted"

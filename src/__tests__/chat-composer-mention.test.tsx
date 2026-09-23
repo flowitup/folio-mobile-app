@@ -47,11 +47,16 @@ const SAFE_AREA_METRICS: Metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-async function renderComposer() {
+async function renderComposer(assistantEnabled?: boolean) {
   await i18n.changeLanguage("en");
   await render(
     <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
-      <ChatComposer disabled={false} sending={false} onSend={jest.fn()} />
+      <ChatComposer
+        disabled={false}
+        sending={false}
+        onSend={jest.fn()}
+        {...(assistantEnabled === undefined ? {} : { assistantEnabled })}
+      />
     </SafeAreaProvider>,
   );
 }
@@ -90,5 +95,12 @@ describe("ChatComposer @folio mention suggestion", () => {
     expect(screen.getByTestId("chat-input").props.value).toBe(
       "matériaux au 12 @folio ",
     );
+  });
+
+  it("never shows once the assistant feature is off, even mid @-token", async () => {
+    await renderComposer(false);
+
+    await fireEvent.changeText(screen.getByTestId("chat-input"), "hey @fo");
+    expect(screen.queryByTestId("chat-mention-suggestion")).toBeNull();
   });
 });

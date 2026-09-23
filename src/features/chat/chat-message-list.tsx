@@ -84,12 +84,16 @@ function MessageRow({
   showSender,
   seenBy,
   onReplyToAssistant,
+  assistantEnabled,
 }: {
   message: ChatMessage;
   showSender: boolean;
   seenBy: ChatMember[] | undefined;
   /** Wired to the "Hỏi tiếp" button under an assistant message; sets the composer's reply. */
   onReplyToAssistant?: (message: ChatMessage) => void;
+  /** Off (or still unknown): hides the "Ask again" button and disables choice buttons, since
+   * the backend would 404 `FeatureDisabled` on either. */
+  assistantEnabled: boolean;
 }) {
   const { t } = useTranslation();
   const tokens = useTokens();
@@ -171,11 +175,15 @@ function MessageRow({
         ) : null}
         {cardPayload ? <AssistantCard payload={cardPayload} /> : null}
         {choicePayload ? (
-          <AssistantChoice message={message} payload={choicePayload} />
+          <AssistantChoice
+            message={message}
+            payload={choicePayload}
+            assistantEnabled={assistantEnabled}
+          />
         ) : null}
         {jobPayload ? <AssistantJobStatus payload={jobPayload} /> : null}
         {voiceNote ? <ChatVoiceBubble message={message} mine={mine} /> : null}
-        {isAssistantMessage ? (
+        {isAssistantMessage && assistantEnabled ? (
           <Pressable
             testID="chat-reply-assistant"
             accessibilityRole="button"
@@ -228,11 +236,15 @@ export function ChatMessageList({
   messages,
   seen,
   onReplyToAssistant,
+  assistantEnabled = true,
 }: {
   messages: ChatMessage[];
   seen?: Map<string, ChatMember[]>;
   /** Wired to the "Hỏi tiếp" button under each assistant message. */
   onReplyToAssistant?: (message: ChatMessage) => void;
+  /** Off (or still unknown): hides the "Ask again" button and disables choice buttons.
+   * Defaults to `true` so existing callers keep their behavior. */
+  assistantEnabled?: boolean;
 }) {
   const { t } = useTranslation();
   const groups = groupMessagesByDay(messages);
@@ -255,6 +267,7 @@ export function ChatMessageList({
                 showSender={showsSender(group.messages, index)}
                 seenBy={seen?.get(message.id)}
                 onReplyToAssistant={onReplyToAssistant}
+                assistantEnabled={assistantEnabled}
               />
             ))}
           </View>
