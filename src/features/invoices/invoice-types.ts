@@ -133,6 +133,12 @@ export interface Invoice {
    * highlight. Purely visual — the list row / card tints to this color.
    */
   highlight_color?: HighlightColor | null;
+  /**
+   * Company cash advance — released_funds rows only: company money handed to a
+   * person, kept out of the release totals by the backend. The ledger lists it
+   * under "others" (see ledgerTypeOf). Absent on older backends.
+   */
+  is_cash_advance?: boolean;
 }
 
 export interface CreateInvoicePayload {

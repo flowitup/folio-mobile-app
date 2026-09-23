@@ -30,7 +30,10 @@ import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { currentMonth, formatMonth, shiftMonth } from "@/lib/format/date";
 import { buildPursesSummary } from "@/lib/invoices/expense-purses";
-import { groupInvoicesByMonth } from "@/lib/invoices/group-invoices-by-month";
+import {
+  groupInvoicesByMonth,
+  ledgerTypeOf,
+} from "@/lib/invoices/group-invoices-by-month";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { DARK, INK_BLOCK, useTokens } from "@/theme/tokens";
@@ -98,7 +101,9 @@ function ExpensesTabContent() {
   // The list shows the selected month first, then the older months.
   const months = useMemo(() => {
     const filtered =
-      filter === "all" ? rows : rows.filter((inv) => inv.type === filter);
+      filter === "all"
+        ? rows
+        : rows.filter((inv) => ledgerTypeOf(inv) === filter);
     return groupInvoicesByMonth(filtered)
       .filter((group) => group.monthKey <= month)
       .map((group) => ({
@@ -114,12 +119,7 @@ function ExpensesTabContent() {
     // rows out — so the count beside it has to leave them out too, or a month with one
     // disbursement reads "4 items" next to a total that only adds up three of them.
     const countOf = (key: string) =>
-      allMonths
-        .find((m) => m.monthKey === key)
-        ?.categories.reduce(
-          (n, c) => (c.type === "released_funds" ? n : n + c.items.length),
-          0,
-        ) ?? 0;
+      allMonths.find((m) => m.monthKey === key)?.expenseCount ?? 0;
     const totalOf = (key: string) =>
       allMonths.find((m) => m.monthKey === key)?.expenseSubtotal ?? 0;
     const previous = shiftMonth(month, -1);
@@ -143,6 +143,10 @@ function ExpensesTabContent() {
   const releasedCompany =
     meta?.funds_released_company_total ??
     (meta?.funds_released_total ?? 0) - releasedPersonal;
+  // Company purse spend = company-paid expenses + cash handed out to people (as on
+  // the web): the handover left the company's hands, even though what it pays for
+  // is booked elsewhere. The month headline and total expenses leave it out.
+  const cashAdvanced = meta?.company_cash_advanced_total ?? 0;
 
   return (
     <View className="flex-1">
@@ -222,7 +226,8 @@ function ExpensesTabContent() {
                         meta.company_name ?? t("invoices.summary.companyPurse")
                       }
                       released={releasedCompany}
-                      spent={summary.company.spent}
+                      spent={summary.company.spent + cashAdvanced}
+                      cashAdvanced={cashAdvanced}
                       tone="company"
                     />
                     <PurseCard

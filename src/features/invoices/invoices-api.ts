@@ -30,6 +30,12 @@ export type InvoiceListResponse = {
   funds_released_total?: number;
   funds_released_company_total?: number;
   funds_released_personal_total?: number;
+  /**
+   * Company money handed to a person (released_funds rows flagged is_cash_advance).
+   * Kept out of the funds_released_* totals by the backend; the company purse adds
+   * it to its spend, as on the web. Absent on older backends.
+   */
+  company_cash_advanced_total?: number;
 };
 
 export type InvoiceListFilters = {

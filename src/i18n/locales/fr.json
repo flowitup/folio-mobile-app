@@ -214,6 +214,7 @@
     },
     "serviceMonthShort": "pour",
     "auto": "auto",
+    "cashAdvance": "avance espèces",
     "paidWithAvoir": "Payé par avoir",
     "refundOf": "Remboursement de",
     "unassignedWorker": "Non attribué",
@@ -305,6 +306,7 @@
     },
     "summary": {
       "totalExpenses": "Total dépenses",
+      "cashAdvance": "dont {{amount}} d'avance en espèces",
       "companyPurse": "Caisse entreprise",
       "personalPurse": "Caisse personnelle",
       "released": "Débloqué",

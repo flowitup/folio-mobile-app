@@ -214,6 +214,7 @@
     },
     "serviceMonthShort": "for",
     "auto": "auto",
+    "cashAdvance": "cash advance",
     "paidWithAvoir": "Paid with avoir",
     "refundOf": "Refund of",
     "unassignedWorker": "Unassigned",
@@ -305,6 +306,7 @@
     },
     "summary": {
       "totalExpenses": "Total expenses",
+      "cashAdvance": "incl. {{amount}} cash advance",
       "companyPurse": "Company purse",
       "personalPurse": "Personal purse",
       "released": "Released",

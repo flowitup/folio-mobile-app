@@ -23,6 +23,18 @@ export const GROUP_ORDER: InvoiceType[] = [
 ];
 
 /**
+ * The ledger category a row is listed under. A company cash advance is stored
+ * as a `released_funds` row (so the backend keeps it out of the release
+ * totals), but it is not a draw from the bank — the ledger files it under
+ * "others". Display only: money math keeps using the stored `type`.
+ */
+export function ledgerTypeOf(inv: Invoice): InvoiceType {
+  return inv.type === "released_funds" && inv.is_cash_advance
+    ? "others"
+    : inv.type;
+}
+
+/**
  * Whether a row's `total_amount` belongs in a "money spent" figure: the three
  * expense types plus `return` (negative, nets spend back down). Excludes
  * `released_funds` — that is capital coming INTO the project, and counting one
@@ -34,7 +46,10 @@ function countsTowardSpend(type: InvoiceType): boolean {
 
 export interface MonthCategoryGroup {
   type: InvoiceType;
-  /** Net Σ total_amount of this type in the month — negative for return-heavy groups. */
+  /**
+   * Net Σ total_amount of this type in the month — negative for return-heavy groups.
+   * Cash advances are listed in "others" but left out of this sum (they are not spend).
+   */
   subtotal: number;
   /** Invoices of this type in the month, issue_date desc (invoice_number desc tiebreak). */
   items: Invoice[];
@@ -50,6 +65,8 @@ export interface InvoiceMonthGroup {
    * disbursement otherwise dwarfs a month's real expenses.
    */
   expenseSubtotal: number;
+  /** Number of rows behind `expenseSubtotal` — same rule, so the two always agree. */
+  expenseCount: number;
   /** Non-empty category groups, in GROUP_ORDER. */
   categories: MonthCategoryGroup[];
 }
@@ -88,9 +105,11 @@ export function groupInvoicesByMonth(invoices: Invoice[]): InvoiceMonthGroup[] {
           countsTowardSpend(inv.type) ? sum + inv.total_amount : sum,
         0,
       ),
+      expenseCount: monthInvoices.filter((inv) => countsTowardSpend(inv.type))
+        .length,
       categories: GROUP_ORDER.map((type) => {
         const items = monthInvoices
-          .filter((inv) => inv.type === type)
+          .filter((inv) => ledgerTypeOf(inv) === type)
           .sort(
             (a, b) =>
               b.issue_date.localeCompare(a.issue_date) ||
@@ -98,7 +117,12 @@ export function groupInvoicesByMonth(invoices: Invoice[]): InvoiceMonthGroup[] {
           );
         return {
           type,
-          subtotal: items.reduce((sum, inv) => sum + inv.total_amount, 0),
+          // A cash advance is listed under "others" but is not spend, so it stays
+          // out of the subtotal — the month's categories add up to its spend.
+          subtotal: items.reduce(
+            (sum, inv) => (inv.is_cash_advance ? sum : sum + inv.total_amount),
+            0,
+          ),
           items,
         };
       }).filter((c) => c.items.length > 0),
