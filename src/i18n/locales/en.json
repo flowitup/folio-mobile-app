@@ -306,7 +306,7 @@
     },
     "summary": {
       "totalExpenses": "Total expenses",
-      "cashAdvance": "incl. {{amount}} cash advance",
+      "cashAdvance": "incl. {{amount}} cash",
       "companyPurse": "Company purse",
       "personalPurse": "Personal purse",
       "released": "Released",
