@@ -306,7 +306,7 @@
     },
     "summary": {
       "totalExpenses": "Tổng chi phí",
-      "cashAdvance": "gồm {{amount}} tiền mặt tạm ứng",
+      "cashAdvance": "gồm {{amount}} tiền mặt",
       "companyPurse": "Quỹ công ty",
       "personalPurse": "Quỹ cá nhân",
       "released": "Đã giải ngân",
