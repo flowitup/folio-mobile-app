@@ -2254,6 +2254,50 @@
         "title": "PhoneChangeConfirmBody",
         "type": "object"
       },
+      "PhoneChangeConfirmResponse": {
+        "description": "POST /auth/me/phone/confirm \u2014 the updated user plus fresh tokens for this session.\n\nThe change signs the account out of every other device and every token issued before it,\nincluding the ones the caller used: browsers get the new pair as cookies, Bearer clients\nmust store these two in place of their old ones.",
+        "properties": {
+          "access_token": { "title": "Access Token", "type": "string" },
+          "companies": {
+            "default": [],
+            "items": { "$ref": "#/components/schemas/UserCompanySummary" },
+            "title": "Companies",
+            "type": "array"
+          },
+          "display_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "default": null,
+            "title": "Display Name"
+          },
+          "email": { "title": "Email", "type": "string" },
+          "id": { "format": "uuid", "title": "Id", "type": "string" },
+          "is_platform_ops": {
+            "default": false,
+            "title": "Is Platform Ops",
+            "type": "boolean"
+          },
+          "permissions": {
+            "items": { "type": "string" },
+            "title": "Permissions",
+            "type": "array"
+          },
+          "phone": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "default": null,
+            "title": "Phone"
+          },
+          "refresh_token": { "title": "Refresh Token", "type": "string" }
+        },
+        "required": [
+          "id",
+          "email",
+          "permissions",
+          "access_token",
+          "refresh_token"
+        ],
+        "title": "PhoneChangeConfirmResponse",
+        "type": "object"
+      },
       "PhoneChangeRequestBody": {
         "description": "POST /auth/me/phone/request-code \u2014 text a code to the new number the caller wants to use.",
         "properties": {
@@ -4061,7 +4105,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/UserResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneChangeConfirmResponse"
+                }
               }
             },
             "description": "OK"

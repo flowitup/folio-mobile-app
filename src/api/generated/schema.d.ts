@@ -586,7 +586,7 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            "application/json": components["schemas"]["UserResponse"];
+            "application/json": components["schemas"]["PhoneChangeConfirmResponse"];
           };
         };
       };
@@ -9107,6 +9107,49 @@ export interface components {
       code: string;
       /** Phone */
       phone: string;
+    };
+    /**
+     * PhoneChangeConfirmResponse
+     * @description POST /auth/me/phone/confirm — the updated user plus fresh tokens for this session.
+     *
+     *     The change signs the account out of every other device and every token issued before it,
+     *     including the ones the caller used: browsers get the new pair as cookies, Bearer clients
+     *     must store these two in place of their old ones.
+     */
+    PhoneChangeConfirmResponse: {
+      /** Access Token */
+      access_token: string;
+      /**
+       * Companies
+       * @default []
+       */
+      companies: components["schemas"]["UserCompanySummary"][];
+      /**
+       * Display Name
+       * @default null
+       */
+      display_name: string | null;
+      /** Email */
+      email: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Is Platform Ops
+       * @default false
+       */
+      is_platform_ops: boolean;
+      /** Permissions */
+      permissions: string[];
+      /**
+       * Phone
+       * @default null
+       */
+      phone: string | null;
+      /** Refresh Token */
+      refresh_token: string;
     };
     /**
      * PhoneChangeRequestBody
