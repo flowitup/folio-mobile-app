@@ -1,4 +1,8 @@
-import { userDisplayName } from "@/lib/auth/user-display-name";
+import {
+  phoneOfSyntheticEmail,
+  realEmail,
+  userDisplayName,
+} from "@/lib/auth/user-display-name";
 
 describe("userDisplayName", () => {
   it("prefers the name chosen at sign-up", () => {
@@ -26,5 +30,20 @@ describe("userDisplayName", () => {
     expect(userDisplayName(null)).toBe("");
     expect(userDisplayName(undefined)).toBe("");
     expect(userDisplayName({})).toBe("");
+  });
+});
+
+describe("synthetic phone sign-up address", () => {
+  const synthetic = "phone-33600000097@no-email.folio.flowitup.com";
+
+  it("is not a real e-mail", () => {
+    expect(realEmail(synthetic)).toBeNull();
+    expect(realEmail(" jean@example.com ")).toBe("jean@example.com");
+    expect(realEmail(null)).toBeNull();
+  });
+
+  it("gives back the phone number it was built from", () => {
+    expect(phoneOfSyntheticEmail(synthetic)).toBe("+33600000097");
+    expect(phoneOfSyntheticEmail("jean@example.com")).toBeNull();
   });
 });

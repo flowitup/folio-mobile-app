@@ -14,3 +14,20 @@ type UserLike = { display_name?: string | null; email?: string | null };
 export function userDisplayName(user: UserLike | null | undefined): string {
   return user?.display_name?.trim() || user?.email?.trim() || "";
 }
+
+/** The address the backend mints for a phone sign-up: `phone-<digits>@no-email.folio.flowitup.com`. */
+const SYNTHETIC_EMAIL = /^phone-(\d+)@no-email\.folio\.flowitup\.com$/i;
+
+/** The e-mail to show for an account: null when it is missing or the synthetic phone address. */
+export function realEmail(email: string | null | undefined): string | null {
+  const trimmed = email?.trim();
+  return trimmed && !SYNTHETIC_EMAIL.test(trimmed) ? trimmed : null;
+}
+
+/** The phone number a synthetic phone sign-up address was built from (`+<digits>`), else null. */
+export function phoneOfSyntheticEmail(
+  email: string | null | undefined,
+): string | null {
+  const match = email?.trim().match(SYNTHETIC_EMAIL);
+  return match ? `+${match[1]}` : null;
+}
