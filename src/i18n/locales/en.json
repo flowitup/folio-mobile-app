@@ -318,7 +318,10 @@
       "highlight": "Highlight",
       "create": "Create invoice",
       "quantityPositive": "Every line needs a quantity greater than 0.",
-      "settledViaNone": "Not settled yet"
+      "settledViaNone": "Not settled yet",
+      "pricePositive": "Unit prices cannot be negative for this type. Record money coming back as a Return / avoir.",
+      "vatRange": "VAT must be between 0 and 100.",
+      "lineTooLarge": "A line cannot exceed a quantity of {{quantity}} or a unit price of {{price}}."
     },
     "summary": {
       "totalExpenses": "Total expenses",
@@ -406,7 +409,8 @@
       "fromCompany": "Company worker",
       "fromCompanyNew": "Someone new",
       "fromCompanyHint": "from the company directory",
-      "deactivate": "Deactivate"
+      "deactivate": "Deactivate",
+      "rateTooLarge": "The daily rate cannot exceed {{max}}."
     },
     "rates": {
       "link": "Rates",
@@ -439,7 +443,8 @@
       "conflictConfirm": "Log anyway",
       "emptyRowHint": "Pick a shift or add extra hours before saving.",
       "overrideNeedsShiftHint": "An amount override needs a shift.",
-      "overrideInvalidHint": "The amount override must be a positive number."
+      "overrideInvalidHint": "The amount override must be a positive number.",
+      "overrideTooLargeHint": "The amount override cannot exceed {{max}}."
     },
     "activities": {
       "title": "Activities",
@@ -475,7 +480,8 @@
       "assignWorker": "Assign to a worker…",
       "openInvoice": "Open invoice",
       "paidShort": "Paid",
-      "dueShort": "Due"
+      "dueShort": "Due",
+      "amountTooLarge": "The amount cannot exceed {{max}}."
     },
     "export": {
       "title": "Export labor",
@@ -806,7 +812,9 @@
         "itemQuantityPositive": "Quantity must be > 0.",
         "itemUnitPricePositive": "Unit price must be ≥ 0.",
         "itemVatRatePositive": "VAT must be between 0 and 100.",
-        "documentNumberRequired": "Document number is required."
+        "documentNumberRequired": "Document number is required.",
+        "itemQuantityMax": "Quantity cannot exceed {{max}}.",
+        "itemUnitPriceMax": "Unit price cannot exceed {{max}}."
       }
     },
     "actions": {

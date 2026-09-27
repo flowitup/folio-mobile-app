@@ -318,7 +318,10 @@
       "highlight": "Tô màu",
       "create": "Tạo hoá đơn",
       "quantityPositive": "Mỗi dòng phải có số lượng lớn hơn 0.",
-      "settledViaNone": "Chưa thanh toán"
+      "settledViaNone": "Chưa thanh toán",
+      "pricePositive": "Đơn giá không được âm với loại này. Hãy dùng loại Trả hàng / avoir để ghi nhận tiền hoàn lại.",
+      "vatRange": "VAT phải nằm trong khoảng 0 đến 100.",
+      "lineTooLarge": "Mỗi dòng không được vượt quá số lượng {{quantity}} hoặc đơn giá {{price}}."
     },
     "summary": {
       "totalExpenses": "Tổng chi phí",
@@ -406,7 +409,8 @@
       "fromCompany": "Thợ của công ty",
       "fromCompanyNew": "Người mới",
       "fromCompanyHint": "từ danh bạ công ty",
-      "deactivate": "Ngừng hoạt động"
+      "deactivate": "Ngừng hoạt động",
+      "rateTooLarge": "Đơn giá không được vượt quá {{max}}."
     },
     "rates": {
       "link": "Đơn giá",
@@ -439,7 +443,8 @@
       "conflictConfirm": "Vẫn chấm công",
       "emptyRowHint": "Chọn loại công hoặc thêm giờ phụ trước khi lưu.",
       "overrideNeedsShiftHint": "Số tiền ghi đè cần có loại công.",
-      "overrideInvalidHint": "Số tiền ghi đè phải là số dương."
+      "overrideInvalidHint": "Số tiền ghi đè phải là số dương.",
+      "overrideTooLargeHint": "Số tiền ghi đè không được vượt quá {{max}}."
     },
     "activities": {
       "title": "Hoạt động",
@@ -475,7 +480,8 @@
       "assignWorker": "Gán cho nhân công…",
       "openInvoice": "Mở hoá đơn",
       "paidShort": "Đã trả",
-      "dueShort": "Còn"
+      "dueShort": "Còn",
+      "amountTooLarge": "Số tiền không được vượt quá {{max}}."
     },
     "export": {
       "title": "Xuất nhân công",
@@ -806,7 +812,9 @@
         "itemQuantityPositive": "Số lượng phải > 0.",
         "itemUnitPricePositive": "Đơn giá phải ≥ 0.",
         "itemVatRatePositive": "VAT phải từ 0 đến 100.",
-        "documentNumberRequired": "Cần nhập số tài liệu."
+        "documentNumberRequired": "Cần nhập số tài liệu.",
+        "itemQuantityMax": "Số lượng không được vượt quá {{max}}.",
+        "itemUnitPriceMax": "Đơn giá không được vượt quá {{max}}."
       }
     },
     "actions": {

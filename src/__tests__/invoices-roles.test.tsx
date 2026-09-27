@@ -496,6 +496,59 @@ describe("new invoice · quantity", () => {
   });
 });
 
+describe("new invoice · amount limits", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager");
+    mockParams = { id: PROJECT_ID };
+  });
+
+  async function fillLine(quantity: string, price: string) {
+    await fireEvent.changeText(
+      await screen.findByTestId("invoice-recipient"),
+      "Leroy Merlin",
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-description"),
+      "Carrelage",
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-quantity"),
+      quantity,
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-price"),
+      price,
+    );
+  }
+
+  it("refuses an amount past the API caps instead of posting it", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+    await fillLine("1", "1e300");
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+
+    expect(screen.getByTestId("invoice-form-error")).toBeTruthy();
+    expect(mockPost).not.toHaveBeenCalled();
+
+    await fillLine("10000000", "8");
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("refuses a negative unit price on a type that cannot carry one", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+    await fireEvent.press(
+      await screen.findByTestId("invoice-type-option-others"),
+    );
+    await fillLine("1", "-5");
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+
+    expect(screen.getByTestId("invoice-form-error")).toHaveTextContent(
+      containing(i18n.t("invoices.form.pricePositive")),
+    );
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+});
+
 describe("invoice detail · member (deep link)", () => {
   beforeEach(() => {
     mockPersona = persona("member");

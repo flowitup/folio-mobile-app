@@ -24,6 +24,7 @@ import { useMembers } from "@/features/projects/members-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
 import { normalizePhone } from "@/lib/auth/phone-number";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { MAX_DAILY_AMOUNT } from "@/lib/format/numeric-bounds";
 import {
   NEW_PERSON,
   directoryCandidates,
@@ -171,6 +172,12 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
       const dailyRate = parseMoneyInput(rate);
       if (!dailyRate || dailyRate <= 0)
         return setError(t("labor.workers.rateRequired"));
+      if (dailyRate > MAX_DAILY_AMOUNT)
+        return setError(
+          t("labor.workers.rateTooLarge", {
+            max: formatMoney(MAX_DAILY_AMOUNT),
+          }),
+        );
       onSubmit({
         // Sent alone, without name/phone: the server resolves both from the Person,
         // which stays the single source of truth for who this worker is.
@@ -363,6 +370,10 @@ export const RateChangesSheet = forwardRef<
     const dailyRate = parseMoneyInput(rate);
     if (!dailyRate || dailyRate <= 0)
       return setError(t("labor.workers.rateRequired"));
+    if (dailyRate > MAX_DAILY_AMOUNT)
+      return setError(
+        t("labor.workers.rateTooLarge", { max: formatMoney(MAX_DAILY_AMOUNT) }),
+      );
     if (!worker || !date) return;
     setError(null);
     create.mutate(
@@ -735,13 +746,19 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
     // from the backend; catch it here so the row is not saved on a silent failure.
     const isOverrideInvalid =
       override.trim() !== "" && (overrideValue === null || overrideValue <= 0);
+    const isOverrideTooLarge =
+      overrideValue !== null && overrideValue > MAX_DAILY_AMOUNT;
     const blockedReason = isEmptyRow
       ? t("labor.log.emptyRowHint")
       : isOverrideWithoutShift
         ? t("labor.log.overrideNeedsShiftHint")
         : isOverrideInvalid
           ? t("labor.log.overrideInvalidHint")
-          : null;
+          : isOverrideTooLarge
+            ? t("labor.log.overrideTooLargeHint", {
+                max: formatMoney(MAX_DAILY_AMOUNT),
+              })
+            : null;
 
     return (
       <Sheet

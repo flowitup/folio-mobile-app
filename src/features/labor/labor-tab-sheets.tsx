@@ -33,6 +33,7 @@ import type {
 import { currentMonth, formatMonth } from "@/lib/format/date";
 import { MAX_EXPORT_MONTHS, isValidMonthRange } from "@/lib/labor/month-range";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { MAX_LINE_UNIT_PRICE } from "@/lib/format/numeric-bounds";
 import { useTokens } from "@/theme/tokens";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 
@@ -252,6 +253,13 @@ export const PaymentSheet = forwardRef<
     const value = parseMoneyInput(amount);
     if (!row || !value || value <= 0)
       return showToast(t("labor.payments.amountRequired"), "error");
+    if (value > MAX_LINE_UNIT_PRICE)
+      return showToast(
+        t("labor.payments.amountTooLarge", {
+          max: formatMoney(MAX_LINE_UNIT_PRICE),
+        }),
+        "error",
+      );
     createInvoice.mutate(
       {
         type: "labor",

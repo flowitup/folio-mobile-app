@@ -318,7 +318,10 @@
       "highlight": "Surlignage",
       "create": "Créer la facture",
       "quantityPositive": "Chaque ligne doit avoir une quantité supérieure à 0.",
-      "settledViaNone": "Pas encore réglé"
+      "settledViaNone": "Pas encore réglé",
+      "pricePositive": "Les prix unitaires ne peuvent pas être négatifs pour ce type. Enregistrez un remboursement comme Retour / avoir.",
+      "vatRange": "La TVA doit être comprise entre 0 et 100.",
+      "lineTooLarge": "Une ligne ne peut pas dépasser une quantité de {{quantity}} ni un prix unitaire de {{price}}."
     },
     "summary": {
       "totalExpenses": "Total dépenses",
@@ -406,7 +409,8 @@
       "fromCompany": "Ouvrier de l'entreprise",
       "fromCompanyNew": "Nouvelle personne",
       "fromCompanyHint": "annuaire de l'entreprise",
-      "deactivate": "Désactiver"
+      "deactivate": "Désactiver",
+      "rateTooLarge": "Le taux journalier ne peut pas dépasser {{max}}."
     },
     "rates": {
       "link": "Taux",
@@ -439,7 +443,8 @@
       "conflictConfirm": "Saisir quand même",
       "emptyRowHint": "Choisissez un type de journée ou ajoutez des heures avant d'enregistrer.",
       "overrideNeedsShiftHint": "Un montant forcé nécessite un type de journée.",
-      "overrideInvalidHint": "Le montant forcé doit être un nombre positif."
+      "overrideInvalidHint": "Le montant forcé doit être un nombre positif.",
+      "overrideTooLargeHint": "Le montant forcé ne peut pas dépasser {{max}}."
     },
     "activities": {
       "title": "Activités",
@@ -475,7 +480,8 @@
       "assignWorker": "Attribuer à un ouvrier…",
       "openInvoice": "Ouvrir la facture",
       "paidShort": "Payé",
-      "dueShort": "Reste"
+      "dueShort": "Reste",
+      "amountTooLarge": "Le montant ne peut pas dépasser {{max}}."
     },
     "export": {
       "title": "Exporter la main-d'œuvre",
@@ -806,7 +812,9 @@
         "itemQuantityPositive": "La quantité doit être > 0.",
         "itemUnitPricePositive": "Le prix unitaire doit être ≥ 0.",
         "itemVatRatePositive": "La TVA doit être entre 0 et 100.",
-        "documentNumberRequired": "Le numéro du document est obligatoire."
+        "documentNumberRequired": "Le numéro du document est obligatoire.",
+        "itemQuantityMax": "La quantité ne peut pas dépasser {{max}}.",
+        "itemUnitPriceMax": "Le prix unitaire ne peut pas dépasser {{max}}."
       }
     },
     "actions": {

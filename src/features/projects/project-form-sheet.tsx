@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/auth/auth-context";
 import { Sheet } from "@/components/ui/sheet";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { MAX_BUDGET } from "@/lib/format/numeric-bounds";
 
 import { projectCan } from "./projects-api";
 import type { Project, UpdateProjectBody } from "./projects-api";
@@ -39,8 +40,6 @@ export type ProjectFormValues = {
 
 export type ProjectFormSheetHandle = { open: () => void; close: () => void };
 
-/** Largest budget the API stores (its Numeric(14, 2) column). */
-export const MAX_BUDGET = 9_999_999_999.99;
 /** The backend's invoice prefix rule: 1-8 letters or digits, stored upper-cased. */
 const INVOICE_PREFIX = /^[A-Z0-9]{1,8}$/;
 

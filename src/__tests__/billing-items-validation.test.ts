@@ -44,6 +44,23 @@ describe("validateItems", () => {
     });
   });
 
+  it("refuses a quantity or unit price past the API caps", () => {
+    const errors = validateItems(t, [
+      line({ quantity: "10000000", unit_price: "1000000000" }),
+    ]);
+    expect(errors[0]).toEqual({
+      quantity: "billing.form.errors.itemQuantityMax",
+      unit_price: "billing.form.errors.itemUnitPriceMax",
+    });
+    expect(
+      hasItemErrors(
+        validateItems(t, [
+          line({ quantity: "9999999", unit_price: "999999999" }),
+        ]),
+      ),
+    ).toBe(false);
+  });
+
   it("complains about the quantity alone when only the quantity is wrong", () => {
     const errors = validateItems(t, [line({ quantity: "deux" })]);
     expect(errors[0]).toEqual({

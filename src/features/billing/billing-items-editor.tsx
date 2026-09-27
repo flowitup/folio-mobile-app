@@ -9,7 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Badge, Card, EmptyState } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
 import { lineTotalHt } from "@/lib/billing/billing-totals";
+import { localeTag } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import {
+  MAX_LINE_QUANTITY,
+  MAX_LINE_UNIT_PRICE,
+} from "@/lib/format/numeric-bounds";
 
 import { useActivitySuggestions } from "./billing-documents-api";
 import { VAT_PRESETS } from "./billing-types";
@@ -75,7 +80,8 @@ export type ItemErrors = {
 };
 
 /**
- * Same rules as the web editor: description, quantity > 0, unit price ≥ 0, VAT in [0, 100].
+ * Same rules as the web editor: description, quantity > 0, unit price ≥ 0, VAT in [0, 100],
+ * plus the API's caps on quantity and unit price.
  * Every broken field is reported, not just the first: the form marks them all at once rather
  * than making the user submit again to discover the next one.
  */
@@ -93,8 +99,16 @@ export function validateItems(
       line.description = t("billing.form.errors.itemDescriptionRequired");
     if (quantity === null || !(quantity > 0))
       line.quantity = t("billing.form.errors.itemQuantityPositive");
+    else if (quantity > MAX_LINE_QUANTITY)
+      line.quantity = t("billing.form.errors.itemQuantityMax", {
+        max: MAX_LINE_QUANTITY.toLocaleString(localeTag()),
+      });
     if (price === null || !(price >= 0))
       line.unit_price = t("billing.form.errors.itemUnitPricePositive");
+    else if (price > MAX_LINE_UNIT_PRICE)
+      line.unit_price = t("billing.form.errors.itemUnitPriceMax", {
+        max: formatMoney(MAX_LINE_UNIT_PRICE),
+      });
     if (vat === null || !(vat >= 0 && vat <= 100))
       line.vat_rate = t("billing.form.errors.itemVatRatePositive");
     if (Object.keys(line).length > 0) errors[index] = line;
