@@ -8,7 +8,12 @@ import { useAuth } from "@/auth/auth-context";
 import { isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import {
   useCreateCompany,
@@ -56,6 +61,13 @@ export default function MyCompaniesScreen() {
           {t("companies.my.description")}
         </Text>
         {companies.isPending ? <ActivityIndicator className="mt-8" /> : null}
+        {companies.isError && !companies.data ? (
+          <ErrorState
+            message={t("common.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void companies.refetch()}
+          />
+        ) : null}
         {companies.data && companies.data.length === 0 ? (
           <EmptyState message={t("companies.my.empty.cta")} />
         ) : null}

@@ -2,6 +2,7 @@
   "common": {
     "loading": "Loading…",
     "retry": "Retry",
+    "loadError": "Could not load this content.",
     "comingSoon": "Coming soon.",
     "networkError": "Network error",
     "cancel": "Cancel",

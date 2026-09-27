@@ -14,7 +14,7 @@ import { isCompanyAdminOrManager } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { EmptyState, ListRow } from "@/components/ui/primitives";
+import { EmptyState, ErrorState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
 import { useMyCompanies } from "@/features/companies/companies-api";
@@ -89,6 +89,13 @@ export default function LaborRolesScreen() {
       />
       <ScrollView contentContainerClassName="p-4 pb-12">
         {roles.isPending ? <ActivityIndicator className="mt-8" /> : null}
+        {roles.isError && !roles.data ? (
+          <ErrorState
+            message={t("common.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void roles.refetch()}
+          />
+        ) : null}
         {roles.data && roles.data.roles.length === 0 ? (
           <EmptyState message={t("laborRoles.none")} />
         ) : null}

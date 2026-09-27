@@ -14,7 +14,12 @@ import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
@@ -159,6 +164,17 @@ export default function ProjectSalariesSection({
   return (
     <View className="flex-1 bg-paper">
       <ScrollView contentContainerClassName="p-4 pb-12">
+        {(workers.isError && !workers.data) ||
+        (monthly.isError && !monthly.data) ? (
+          <ErrorState
+            message={t("common.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => {
+              if (workers.isError) void workers.refetch();
+              if (monthly.isError) void monthly.refetch();
+            }}
+          />
+        ) : null}
         {workers.data && workers.data.length === 0 ? (
           <EmptyState message={t("salaries.noWorkers")} />
         ) : null}

@@ -2,6 +2,7 @@
   "common": {
     "loading": "Đang tải…",
     "retry": "Thử lại",
+    "loadError": "Không tải được nội dung này.",
     "comingSoon": "Sắp ra mắt.",
     "networkError": "Lỗi mạng",
     "cancel": "Huỷ",

@@ -291,6 +291,28 @@ describe("invoice detail · manager", () => {
     mockParams = { id: PROJECT_ID, invoiceId: INVOICE_MATERIALS.id };
   });
 
+  it("offers back and retry when the invoice cannot be loaded", async () => {
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? {
+            error: { message: "boom" },
+            response: { status: 500, statusText: "Server Error" },
+          }
+        : answer(path, options as never),
+    );
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(await screen.findByTestId("error-state")).toBeTruthy();
+    expect(screen.getByTestId("header-back")).toBeTruthy();
+    const detailCalls = () =>
+      callsTo(mockGet, "/api/v1/projects/{project_id}/invoices/{invoice_id}")
+        .length;
+    const before = detailCalls();
+    await fireEvent.press(screen.getByText(i18n.t("common.retry")));
+    await waitFor(() => expect(detailCalls()).toBeGreaterThan(before));
+  });
+
   it("shows the write actions but not the company refund prompt", async () => {
     await renderWithProviders(<InvoiceDetailScreen />);
 

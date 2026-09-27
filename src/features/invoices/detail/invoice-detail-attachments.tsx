@@ -85,9 +85,24 @@ export function InvoiceAttachmentsCard({
         {t("invoices.attachments.title", { count: list.length })}
       </Eyebrow>
       <Card radius={20} elevated padded={false} className="overflow-hidden">
-        {list.length === 0 ? (
+        {attachments.isError && !attachments.data ? (
+          // A failed load is not an empty list: say so and let the user try again.
+          <Pressable
+            testID="attachments-retry"
+            accessibilityRole="button"
+            onPress={() => void attachments.refetch()}
+            className="flex-row items-center justify-between px-4 py-3.5 active:opacity-70"
+          >
+            <Text className="flex-1 pr-2 font-sans text-[13px] text-negative">
+              {t("common.loadError")}
+            </Text>
+            <Text className="font-sans-medium text-[13px] text-accent-ink">
+              {t("common.retry")}
+            </Text>
+          </Pressable>
+        ) : list.length === 0 ? (
           <Text className="px-4 py-3.5 font-sans text-[13px] text-muted">
-            {upload.isPending
+            {attachments.isPending || upload.isPending
               ? t("common.loading")
               : t("invoices.detail.attachmentsEmpty")}
           </Text>

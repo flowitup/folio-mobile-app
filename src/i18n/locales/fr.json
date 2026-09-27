@@ -2,6 +2,7 @@
   "common": {
     "loading": "Chargement…",
     "retry": "Réessayer",
+    "loadError": "Impossible de charger ce contenu.",
     "comingSoon": "Bientôt disponible.",
     "networkError": "Erreur réseau",
     "cancel": "Annuler",

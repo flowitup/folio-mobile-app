@@ -6,7 +6,7 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EmptyState } from "@/components/ui/primitives";
+import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { Eyebrow } from "@/components/ui/typography";
@@ -70,6 +70,19 @@ export default function CompanyMembersScreen() {
       </View>
     );
 
+  // A failed load is not a refusal: without this the caller read "permission denied".
+  if (companies.isError && !companies.data)
+    return (
+      <View className="flex-1 bg-paper">
+        <ScreenHeader title={t("companies.members.title")} back />
+        <ErrorState
+          message={t("members.loadError")}
+          retryLabel={t("common.retry")}
+          onRetry={() => void companies.refetch()}
+        />
+      </View>
+    );
+
   if (adminCompanies.length === 0)
     return (
       <View className="flex-1 bg-paper">
@@ -121,6 +134,13 @@ export default function CompanyMembersScreen() {
           })}
         </Eyebrow>
         {users.isPending ? <ActivityIndicator className="my-4" /> : null}
+        {users.isError && !users.data ? (
+          <ErrorState
+            message={t("members.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void users.refetch()}
+          />
+        ) : null}
         {users.isFetched && users.data?.length === 0 ? (
           <EmptyState message={t("companies.admin.manage.attached.empty")} />
         ) : null}
@@ -154,6 +174,13 @@ export default function CompanyMembersScreen() {
           })}
         </Eyebrow>
         {persons.isPending ? <ActivityIndicator className="my-4" /> : null}
+        {persons.isError && !persons.data ? (
+          <ErrorState
+            message={t("members.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void persons.refetch()}
+          />
+        ) : null}
         {persons.isFetched && pendingPersons.length === 0 ? (
           <EmptyState message={t("companies.members.pending.empty")} />
         ) : null}

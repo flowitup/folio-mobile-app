@@ -4,7 +4,7 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
 import { isPlatformOps } from "@/auth/permissions";
-import { EmptyState } from "@/components/ui/primitives";
+import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { useMyCompanies } from "@/features/companies/companies-api";
@@ -29,6 +29,13 @@ export default function PaymentMethodsScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {companies.isPending ? <ActivityIndicator className="mt-8" /> : null}
+        {companies.isError && !companies.data ? (
+          <ErrorState
+            message={t("paymentMethods.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void companies.refetch()}
+          />
+        ) : null}
         {companies.data && companies.data.length === 0 ? (
           <EmptyState message={t("paymentMethods.noCompanies")} />
         ) : null}

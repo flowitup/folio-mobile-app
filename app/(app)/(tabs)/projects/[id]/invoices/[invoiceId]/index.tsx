@@ -3,11 +3,13 @@ import * as Print from "expo-print";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
+import { ErrorState } from "@/components/ui/primitives";
+import { ScreenHeader } from "@/components/ui/screen-header";
 import { showToast } from "@/components/ui/toast";
 import {
   InvoiceDetailActions,
@@ -115,7 +117,12 @@ export default function InvoiceDetailScreen() {
   if (!invoice.data)
     return (
       <View className="flex-1 bg-paper">
-        <Text className="p-4 text-danger">{t("home.loadError")}</Text>
+        <ScreenHeader title={t("invoices.print.title")} back onBack={goBack} />
+        <ErrorState
+          message={t("common.loadError")}
+          retryLabel={t("common.retry")}
+          onRetry={() => void invoice.refetch()}
+        />
       </View>
     );
 
