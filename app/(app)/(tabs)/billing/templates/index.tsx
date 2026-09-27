@@ -58,7 +58,7 @@ export default function BillingTemplatesScreen() {
         {templates.isPending ? <ActivityIndicator className="mt-8" /> : null}
         {templates.isError && !templates.data ? (
           <ErrorState
-            message={t("home.loadError")}
+            message={t("common.loadError")}
             retryLabel={t("common.retry")}
             onRetry={() => void templates.refetch()}
           />

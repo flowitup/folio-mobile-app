@@ -332,7 +332,7 @@ export default function ProjectAnalysesSection() {
             </View>
             {content.isPending ? <ActivityIndicator className="mt-8" /> : null}
             {content.isError ? (
-              <Text className="p-4 text-danger">{t("home.loadError")}</Text>
+              <Text className="p-4 text-danger">{t("analyses.loadError")}</Text>
             ) : null}
             {content.data ? (
               <WebView

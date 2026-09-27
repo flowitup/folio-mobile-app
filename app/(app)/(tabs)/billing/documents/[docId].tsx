@@ -69,7 +69,7 @@ export default function BillingDocumentScreen() {
       <View className="flex-1 bg-paper">
         <ScreenHeader title={t("billing.title")} back />
         <ErrorState
-          message={t("home.loadError")}
+          message={t("common.loadError")}
           retryLabel={t("common.retry")}
           onRetry={() => void query.refetch()}
         />

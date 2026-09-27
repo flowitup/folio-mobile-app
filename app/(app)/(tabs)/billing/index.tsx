@@ -153,7 +153,7 @@ export default function BillingHub() {
           ) : null}
           {list.isError ? (
             <ErrorState
-              message={t("home.loadError")}
+              message={t("common.loadError")}
               retryLabel={t("common.retry")}
               onRetry={() => void list.refetch()}
             />

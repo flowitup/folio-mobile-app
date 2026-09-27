@@ -79,7 +79,7 @@ export default function CompanyManageScreen() {
       <View className="flex-1 bg-paper">
         <ScreenHeader title={t("companies.admin.manage.title")} back />
         <ErrorState
-          message={t("home.loadError")}
+          message={t("common.loadError")}
           retryLabel={t("common.retry")}
           onRetry={() => void company.refetch()}
         />

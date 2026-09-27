@@ -218,7 +218,7 @@ export default function RefundableExpensesScreen() {
         {expenses.isPending ? <ActivityIndicator className="mt-8" /> : null}
         {expenses.isError && !expenses.data ? (
           <ErrorState
-            message={t("home.loadError")}
+            message={t("common.loadError")}
             retryLabel={t("common.retry")}
             onRetry={() => void expenses.refetch()}
           />
