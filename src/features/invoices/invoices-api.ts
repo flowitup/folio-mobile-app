@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
+import { activeLocale } from "@/i18n";
 import { openFile } from "@/lib/files/open-file";
 import type { PickedFile } from "@/lib/files/pick";
 import { uploadMultipart } from "@/lib/files/upload";
@@ -304,7 +305,13 @@ export function exportInvoices(
   to: string,
   type?: InvoiceType,
 ) {
-  const query = new URLSearchParams({ from, to, format });
+  // The file's headings, labels and numbers follow the app's language, not the backend default.
+  const query = new URLSearchParams({
+    from,
+    to,
+    format,
+    locale: activeLocale(),
+  });
   if (type) query.set("type", type);
   // A PDF export opens in the in-app viewer (Share is there); xlsx goes to the share sheet.
   return openFile(
