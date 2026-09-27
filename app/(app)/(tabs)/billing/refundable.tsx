@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -33,9 +34,11 @@ import {
 } from "@/features/companies/companies-api";
 import type {
   RefundableExpense,
+  RefundableExpenseAttachment,
   RefundableStatus,
   RefundedBy,
 } from "@/features/invoices/invoice-types";
+import { openAttachment } from "@/features/invoices/invoices-api";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -58,6 +61,11 @@ const STATUS_TONE = {
 /** Company-wide materials & services expenses tracked for reimbursement (web refundable-invoices page). */
 export default function RefundableExpensesScreen() {
   const { t } = useTranslation();
+  /** A PDF opens in the in-app viewer, anything else in the share sheet (web preview dialog). */
+  const openExpenseAttachment = (attachment: RefundableExpenseAttachment) =>
+    openAttachment(attachment).catch((e: Error) =>
+      showToast(e.message, "error"),
+    );
   // The whole screen rides the company-scoped billing API, which only a company admin may
   // call: without the gate a refused caller just watched a spinner turn into a blank page.
   const access = useBillingAccess();
@@ -252,6 +260,23 @@ export default function RefundableExpensesScreen() {
                   })
                 : t("billing.refundable.noAttachments")}
             </Text>
+            {expense.attachments.map((attachment) => (
+              <Pressable
+                key={attachment.id}
+                testID={`refundable-attachment-${attachment.id}`}
+                accessibilityRole="button"
+                onPress={() => void openExpenseAttachment(attachment)}
+                hitSlop={4}
+                className="mt-1 active:opacity-70"
+              >
+                <Text
+                  className="text-xs text-accent-ink underline"
+                  numberOfLines={1}
+                >
+                  {attachment.filename}
+                </Text>
+              </Pressable>
+            ))}
             <View className="mt-2 flex-row items-end gap-3">
               <View className="flex-1">
                 <Select<RefundableStatus>

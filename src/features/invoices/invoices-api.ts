@@ -285,7 +285,9 @@ export function useDeleteAttachment(projectId: string, invoiceId: string) {
 }
 
 /** Opens the attachment: a PDF in the in-app viewer, anything else in the OS share sheet. */
-export function openAttachment(attachment: InvoiceAttachment): Promise<string> {
+export function openAttachment(
+  attachment: Pick<InvoiceAttachment, "id" | "filename" | "mime_type">,
+): Promise<string> {
   return openFile(
     `/api/v1/attachments/${encodeURIComponent(attachment.id)}/download`,
     attachment.filename,
