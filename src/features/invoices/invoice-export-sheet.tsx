@@ -17,6 +17,7 @@ import type {
 import { exportInvoices } from "@/features/invoices/invoices-api";
 import { currentMonth } from "@/lib/format/date";
 import { MAX_EXPORT_MONTHS, monthSpan } from "@/lib/labor/month-range";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 type ExportType = "all" | InvoiceType;
 
@@ -25,7 +26,7 @@ export const InvoiceExportSheet = forwardRef<
   BottomSheetModal,
   { projectId: string }
 >(function InvoiceExportSheet({ projectId }, ref) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [format, setFormat] = useState<InvoiceExportFormat>("xlsx");
   const [from, setFrom] = useState(currentMonth());
   const [to, setTo] = useState(currentMonth());
@@ -51,7 +52,7 @@ export const InvoiceExportSheet = forwardRef<
       );
       (ref as React.RefObject<BottomSheetModal | null>).current?.dismiss();
     } catch (caught) {
-      showToast((caught as Error).message, "error");
+      showToast(apiErrorMessage(caught, t, i18n.language), "error");
     } finally {
       setExporting(false);
     }

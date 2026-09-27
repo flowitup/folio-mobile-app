@@ -42,6 +42,7 @@ import { openAttachment } from "@/features/invoices/invoices-api";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 const STATUSES: RefundableStatus[] = [
   "refundable",
@@ -60,11 +61,11 @@ const STATUS_TONE = {
 
 /** Company-wide materials & services expenses tracked for reimbursement (web refundable-invoices page). */
 export default function RefundableExpensesScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   /** A PDF opens in the in-app viewer, anything else in the share sheet (web preview dialog). */
   const openExpenseAttachment = (attachment: RefundableExpenseAttachment) =>
-    openAttachment(attachment).catch((e: Error) =>
-      showToast(e.message, "error"),
+    openAttachment(attachment).catch((e: unknown) =>
+      showToast(apiErrorMessage(e, t, i18n.language), "error"),
     );
   // The whole screen rides the company-scoped billing API, which only a company admin may
   // call: without the gate a refused caller just watched a spinner turn into a blank page.

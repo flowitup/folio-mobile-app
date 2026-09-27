@@ -34,6 +34,7 @@ import { currentMonth, formatMonth } from "@/lib/format/date";
 import { MAX_EXPORT_MONTHS, isValidMonthRange } from "@/lib/labor/month-range";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import { useTokens } from "@/theme/tokens";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 type ModalRef = RefObject<BottomSheetModal | null>;
 
@@ -348,7 +349,7 @@ export const LaborExportSheet = forwardRef<
     ) => Promise<unknown>;
   }
 >(function LaborExportSheet({ projectId, workers, onExport }, ref) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [format, setFormat] = useState<InvoiceExportFormat>("xlsx");
   const [from, setFrom] = useState(currentMonth());
   const [to, setTo] = useState(currentMonth());
@@ -363,7 +364,7 @@ export const LaborExportSheet = forwardRef<
       await onExport(projectId, format, from, to, workerId);
       (ref as ModalRef).current?.dismiss();
     } catch (caught) {
-      showToast((caught as Error).message, "error");
+      showToast(apiErrorMessage(caught, t, i18n.language), "error");
     } finally {
       setExporting(false);
     }

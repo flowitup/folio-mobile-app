@@ -16,7 +16,18 @@
     "remove": "Gỡ",
     "email": "Email",
     "change": "Đổi",
-    "requestFailed": "Yêu cầu không xử lý được. Vui lòng thử lại."
+    "requestFailed": "Yêu cầu không xử lý được. Vui lòng thử lại.",
+    "errors": {
+      "invalidInput": "Một số giá trị không hợp lệ. Hãy kiểm tra biểu mẫu rồi thử lại.",
+      "unauthorized": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+      "forbidden": "Bạn không có quyền thực hiện thao tác này.",
+      "notFound": "Mục này không còn tồn tại.",
+      "conflict": "Thao tác này xung đột với dữ liệu hiện có. Hãy tải lại rồi thử lại.",
+      "gone": "Liên kết này đã hết hạn hoặc không còn khả dụng.",
+      "tooLarge": "Tệp quá lớn.",
+      "tooManyRequests": "Quá nhiều lần thử. Hãy đợi một lát rồi thử lại.",
+      "keepExtension": "Tên tệp phải giữ phần mở rộng {{ext}}."
+    }
   },
   "login": {
     "title": "Đăng nhập\nFolio",

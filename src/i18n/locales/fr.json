@@ -16,7 +16,18 @@
     "remove": "Retirer",
     "email": "E-mail",
     "change": "Changer",
-    "requestFailed": "La demande n'a pas pu être traitée. Réessayez."
+    "requestFailed": "La demande n'a pas pu être traitée. Réessayez.",
+    "errors": {
+      "invalidInput": "Certaines valeurs ne sont pas valides. Vérifiez le formulaire et réessayez.",
+      "unauthorized": "Votre session a expiré. Veuillez vous reconnecter.",
+      "forbidden": "Vous n'avez pas l'autorisation d'effectuer cette action.",
+      "notFound": "Cet élément n'existe plus.",
+      "conflict": "Cette action entre en conflit avec des données existantes. Actualisez et réessayez.",
+      "gone": "Ce lien a expiré ou n'est plus disponible.",
+      "tooLarge": "Le fichier est trop volumineux.",
+      "tooManyRequests": "Trop de tentatives. Patientez un instant puis réessayez.",
+      "keepExtension": "Le nom du fichier doit conserver l'extension {{ext}}."
+    }
   },
   "login": {
     "title": "Se connecter\nà Folio",

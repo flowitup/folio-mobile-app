@@ -33,6 +33,7 @@ import { captureImage, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 /**
  * Site photos: date-grouped thumbnail grid, camera / library upload, lightbox with caption edit,
@@ -40,7 +41,7 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
  * delete need `project:update`.
  */
 export default function ProjectPhotosSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
   const canWrite = useProjectCan(id, "project:update");
@@ -227,8 +228,8 @@ export default function ProjectPhotosSection() {
                   variant="secondary"
                   size="sm"
                   onPress={() =>
-                    sharePhoto(open).catch((e: Error) =>
-                      showToast(e.message, "error"),
+                    sharePhoto(open).catch((e: unknown) =>
+                      showToast(apiErrorMessage(e, t, i18n.language), "error"),
                     )
                   }
                 />

@@ -24,6 +24,7 @@ import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 /** Short tile label: file extension (`PDF`, `JPG`) or the mime subtype. */
 function tileLabel(attachment: InvoiceAttachment): string {
@@ -53,7 +54,7 @@ export function InvoiceAttachmentsCard({
   addSheet,
   readOnly = false,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const tokens = useTokens();
   const attachments = useInvoiceAttachments(projectId, invoiceId);
   const upload = useUploadAttachment(projectId, invoiceId);
@@ -74,8 +75,8 @@ export function InvoiceAttachmentsCard({
       await upload.mutateAsync({ file }).catch(() => undefined);
   }
   const open = (attachment: InvoiceAttachment) =>
-    openAttachment(attachment).catch((e: Error) =>
-      showToast(e.message, "error"),
+    openAttachment(attachment).catch((e: unknown) =>
+      showToast(apiErrorMessage(e, t, i18n.language), "error"),
     );
   const list = attachments.data ?? [];
 

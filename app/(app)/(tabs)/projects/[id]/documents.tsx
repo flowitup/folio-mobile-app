@@ -43,6 +43,7 @@ import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 const SORTS: DocumentSort[] = ["created_at", "name", "size", "uploader"];
 
@@ -55,7 +56,7 @@ const noRefetch = () => undefined;
  * without it lands on an empty state and no document request is made.
  */
 export default function ProjectDocumentsSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [kinds, setKinds] = useState<ProjectDocumentKind[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -275,8 +276,8 @@ export default function ProjectDocumentsSection() {
             <Pressable
               testID={`document-open-${document.id}`}
               onPress={() =>
-                openDocument(document).catch((e: Error) =>
-                  showToast(e.message, "error"),
+                openDocument(document).catch((e: unknown) =>
+                  showToast(apiErrorMessage(e, t, i18n.language), "error"),
                 )
               }
             >

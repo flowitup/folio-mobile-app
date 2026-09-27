@@ -16,7 +16,18 @@
     "remove": "Remove",
     "email": "Email",
     "change": "Change",
-    "requestFailed": "The request could not be processed. Please try again."
+    "requestFailed": "The request could not be processed. Please try again.",
+    "errors": {
+      "invalidInput": "Some of the values are not valid. Check the form and try again.",
+      "unauthorized": "Your session has expired. Please sign in again.",
+      "forbidden": "You do not have permission to do this.",
+      "notFound": "This item no longer exists.",
+      "conflict": "This conflicts with existing data. Refresh and try again.",
+      "gone": "This link has expired or is no longer available.",
+      "tooLarge": "The file is too large.",
+      "tooManyRequests": "Too many attempts. Wait a moment and try again.",
+      "keepExtension": "The file name must keep its {{ext}} extension."
+    }
   },
   "login": {
     "title": "Sign in to\nFolio",
