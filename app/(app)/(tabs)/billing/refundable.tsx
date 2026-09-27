@@ -6,7 +6,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
@@ -23,6 +22,7 @@ import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
+import { SearchInput } from "@/components/ui/input";
 import {
   useRefundableCandidates,
   useRefundableExpenses,
@@ -352,11 +352,10 @@ export default function RefundableExpensesScreen() {
         snapPoints={["85%"]}
       >
         <View className="p-4">
-          <TextInput
+          <SearchInput
             testID="refundable-search"
-            className="mb-3 rounded-lg border border-border px-4 py-2 text-base text-primary"
+            className="mb-3"
             placeholder={t("billing.refundable.dialog.search")}
-            placeholderTextColor="#a3a3a3"
             value={search}
             onChangeText={setSearch}
           />

@@ -8,14 +8,13 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { WebView } from "react-native-webview";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
+import { Input, SearchInput } from "@/components/ui/input";
 import {
   Badge,
   Card,
@@ -134,11 +133,10 @@ export default function ProjectAnalysesSection() {
     <View className="flex-1 bg-paper">
       <ScrollView contentContainerClassName="p-4 pb-12">
         <View className="mb-2 flex-row items-center gap-2">
-          <TextInput
+          <SearchInput
             testID="analyses-search"
-            className="flex-1 rounded-lg border border-border px-4 py-2 text-base text-primary"
+            className="flex-1"
             placeholder={t("analyses.searchPlaceholder")}
-            placeholderTextColor="#a3a3a3"
             value={search}
             onChangeText={setSearch}
           />

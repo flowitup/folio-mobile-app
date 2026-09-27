@@ -2,10 +2,10 @@ import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, SearchInput } from "@/components/ui/input";
 import { Badge, Card, EmptyState } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
 import { lineTotalHt } from "@/lib/billing/billing-totals";
@@ -271,11 +271,10 @@ export function BillingItemsEditor({
         snapPoints={["70%"]}
       >
         <View className="p-4">
-          <TextInput
+          <SearchInput
             testID="suggestions-search"
-            className="mb-3 rounded-lg border border-border px-4 py-2 text-base text-primary"
+            className="mb-3"
             placeholder={t("billing.form.description")}
-            placeholderTextColor="#a3a3a3"
             value={query}
             onChangeText={setQuery}
           />
