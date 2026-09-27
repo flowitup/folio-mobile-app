@@ -133,6 +133,7 @@ export function useCompany(companyId: string | undefined) {
 
 export function useCreateCompany() {
   const { t } = useTranslation();
+  const { refreshUser } = useAuth();
   return useApiMutation<CreateCompanyPayload, Company>({
     mutationFn: async (body) =>
       unwrapAs<Company>(
@@ -140,6 +141,9 @@ export function useCreateCompany() {
       ),
     invalidates: [companyKeys.all],
     successMessage: t("companies.toast.created"),
+    // The creator becomes the company's admin: the account sheet and the permission
+    // claim read `/auth/me`, which is held in the auth context, not the query cache.
+    onSuccess: () => void refreshUser(),
   });
 }
 
@@ -280,5 +284,8 @@ export function useJoinCompanyByCode() {
       ),
     invalidates: [companyKeys.all],
     successMessage: t("companies.join.successToast"),
+    // The join screen renders a translated inline error for every failure; the default
+    // toast would only add the server's English sentence on top of it.
+    onError: () => true,
   });
 }

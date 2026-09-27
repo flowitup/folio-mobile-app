@@ -27,7 +27,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider, useAuth } from "@/auth/auth-context";
+import { DismissSheetsOnRouteChange } from "@/components/shell/dismiss-sheets-on-route-change";
 import { ToastProvider } from "@/components/ui/toast";
+import { ThemePreferenceProvider } from "@/theme/theme-preference";
 import { useTokens } from "@/theme/tokens";
 
 // NativeWind's JSX transform also rewrites React Native's own LogBox sources, and
@@ -91,21 +93,26 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            {/* ToastProvider wraps the sheet provider: its viewport renders after the children,
+      {/* Outermost so the stored Sáng/Tối/Theo máy choice is applied before the
+          splash paints, rather than flashing the device palette first. */}
+      <ThemePreferenceProvider>
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              {/* ToastProvider wraps the sheet provider: its viewport renders after the children,
                 so toasts raised while a bottom sheet is open draw above the sheet instead of
                 behind its host. Native Modals still mount their own ToastViewport. */}
-            <ToastProvider>
-              <BottomSheetModalProvider>
-                <StatusBar style="auto" />
-                <RootNavigator fontsReady={fontsReady} />
-              </BottomSheetModalProvider>
-            </ToastProvider>
-          </AuthProvider>
-        </QueryClientProvider>
-      </SafeAreaProvider>
+              <ToastProvider>
+                <BottomSheetModalProvider>
+                  <DismissSheetsOnRouteChange />
+                  <StatusBar style="auto" />
+                  <RootNavigator fontsReady={fontsReady} />
+                </BottomSheetModalProvider>
+              </ToastProvider>
+            </AuthProvider>
+          </QueryClientProvider>
+        </SafeAreaProvider>
+      </ThemePreferenceProvider>
     </GestureHandlerRootView>
   );
 }

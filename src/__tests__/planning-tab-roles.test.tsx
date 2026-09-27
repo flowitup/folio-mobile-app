@@ -8,6 +8,7 @@ import { FloatingTabBar } from "@/components/shell/floating-tab-bar";
 import type { Task } from "@/features/tasks/tasks-api";
 import {
   MATRIX,
+  MEMBERS,
   callsTo,
   ok,
   renderWithProviders as renderShared,
@@ -121,11 +122,17 @@ async function renderWithProviders(ui: ReactElement) {
 beforeEach(() => {
   for (const mock of [mockGet, mockPost, mockPut, mockPatch, mockDelete])
     mock.mockReset();
-  mockGet.mockImplementation(async (path: string) =>
-    path === "/api/v1/projects/{project_id}/tasks"
-      ? ok({ tasks: TASKS })
-      : ok({ notifications: [], items: [], total: 0 }),
-  );
+  mockGet.mockImplementation(async (path: string) => {
+    if (path === "/api/v1/projects/{project_id}/tasks")
+      return ok({ tasks: TASKS });
+    // The member of this suite is a worker of the project: the shell only restricts an
+    // account a worker row is linked to (#100).
+    if (path === "/api/v1/projects/{project_id}/workers")
+      return ok({ workers: [{ id: "w1", user_id: "u1" }] });
+    if (path === "/api/v1/projects/{project_id}/members")
+      return ok({ members: MEMBERS });
+    return ok({ notifications: [], items: [], total: 0 });
+  });
   mockPost.mockImplementation(async () =>
     ok(task("t3", "Commander le sable", 3)),
   );
@@ -218,6 +225,8 @@ describe("planning tab · member (worker mode)", () => {
   it("gets Planning as a worker tab next to Attendance / Salary / Profile, still no Menu", async () => {
     await renderWithProviders(<FloatingTabBar {...tabBarProps()} />);
 
+    // The roster has to answer before the Menu is ruled out for good.
+    await waitFor(() => expect(screen.queryByTestId("tab-menu")).toBeNull());
     expect(screen.getByTestId("tab-index")).toBeTruthy();
     expect(screen.getByTestId("tab-expenses")).toBeTruthy();
     expect(screen.getByTestId("tab-labor")).toBeTruthy();
@@ -226,6 +235,77 @@ describe("planning tab · member (worker mode)", () => {
     expect(screen.getByTestId("tab-planning").props.accessibilityLabel).toBe(
       i18n.t("tabs.planning"),
     );
+  });
+});
+
+describe("planning tab · assignee (#101)", () => {
+  beforeEach(() => {
+    mockScopedPermissions = MEMBER_SCOPED;
+    mockPut.mockImplementation(async () =>
+      ok({ ...TASKS[0], assignee_id: "u-member" }),
+    );
+  });
+
+  it("sends the picked project member as the assignee on create", async () => {
+    await renderWithProviders(<PlanningTab />);
+    await screen.findByTestId("task-list");
+
+    await fireEvent.press(screen.getByTestId("task-create"));
+    await fireEvent.changeText(
+      screen.getByTestId("task-title"),
+      "Commander le sable",
+    );
+    await fireEvent.press(await screen.findByTestId("task-assignee"));
+    await fireEvent.press(screen.getByTestId("task-assignee-option-u-member"));
+    await fireEvent.press(screen.getByTestId("task-submit"));
+
+    await waitFor(() =>
+      expect(
+        callsTo(mockPost, "/api/v1/projects/{project_id}/tasks"),
+      ).toHaveLength(1),
+    );
+    expect(
+      (
+        callsTo(mockPost, "/api/v1/projects/{project_id}/tasks")[0][1] as {
+          body: { assignee_id: string | null };
+        }
+      ).body.assignee_id,
+    ).toBe("u-member");
+  });
+
+  it("sends the assignee on edit too, and unassigns through the clear row", async () => {
+    mockGet.mockImplementation(async (path: string) => {
+      if (path === "/api/v1/projects/{project_id}/tasks")
+        return ok({ tasks: [{ ...TASKS[0], assignee_id: "u-member" }] });
+      if (path === "/api/v1/projects/{project_id}/workers")
+        return ok({ workers: [{ id: "w1", user_id: "u1" }] });
+      if (path === "/api/v1/projects/{project_id}/members")
+        return ok({ members: MEMBERS });
+      return ok({ notifications: [], items: [], total: 0 });
+    });
+    await renderWithProviders(<PlanningTab />);
+    await screen.findByTestId("task-list");
+
+    // The card names whoever holds the task, so the board reads without opening the sheet.
+    expect(await screen.findByTestId("task-assignee-t1")).toHaveTextContent(
+      "Minh Worker",
+    );
+
+    await fireEvent.press(screen.getByTestId("task-t1"));
+    await fireEvent.press(await screen.findByTestId("task-assignee"));
+    await fireEvent.press(screen.getByTestId("task-assignee-option-none"));
+    await fireEvent.press(screen.getByTestId("task-submit"));
+
+    await waitFor(() =>
+      expect(callsTo(mockPut, "/api/v1/tasks/{task_id}")).toHaveLength(1),
+    );
+    expect(
+      (
+        callsTo(mockPut, "/api/v1/tasks/{task_id}")[0][1] as {
+          body: { assignee_id: string | null };
+        }
+      ).body.assignee_id,
+    ).toBeNull();
   });
 });
 

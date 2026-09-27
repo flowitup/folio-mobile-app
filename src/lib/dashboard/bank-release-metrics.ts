@@ -41,10 +41,14 @@ export interface DrawSeries {
   last: BankDraw | null;
 }
 
-/** Draws attribute to `issue_date` (the day the bank moved the money), never `service_month`. */
+/**
+ * Draws attribute to `issue_date` (the day the bank moved the money), never `service_month`.
+ * Cash-advance releases are company money handed to a person, not a draw from the bank
+ * credit — the backend keeps them out of funds_released_total, so they are skipped here too.
+ */
 export function buildDrawSeries(invoices: Invoice[]): DrawSeries {
   const draws: BankDraw[] = invoices
-    .filter((inv) => inv.type === "released_funds")
+    .filter((inv) => inv.type === "released_funds" && !inv.is_cash_advance)
     .map((inv) => ({
       id: inv.id,
       number: inv.invoice_number,

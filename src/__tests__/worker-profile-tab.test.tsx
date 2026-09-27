@@ -9,6 +9,7 @@ import {
 
 import LaborTab from "../../app/(app)/(tabs)/labor";
 import { FloatingTabBar } from "@/components/shell/floating-tab-bar";
+import { WorkerProfileTab } from "@/features/labor/worker-profile-tab";
 import type { Worker, WorkerRateChange } from "@/features/labor/labor-types";
 import { formatMoney } from "@/lib/format/money";
 import { toIsoDate } from "@/lib/format/date";
@@ -186,6 +187,34 @@ describe("worker profile tab", () => {
     expect(navigation.navigate).toHaveBeenCalledWith("labor");
   });
 
+  it("gives a member nobody linked to a worker the four project tabs and the Menu (#100)", async () => {
+    mockWorkers = [
+      { ...MINH, id: "w-other", user_id: "u-other", name: "Other Worker" },
+    ];
+    const routes = ["index", "expenses", "labor", "planning"].map((name) => ({
+      key: `${name}-key`,
+      name,
+    }));
+    await renderWithProviders(
+      <FloatingTabBar
+        state={{ index: 0, routes } as never}
+        navigation={
+          {
+            emit: jest.fn(() => ({ defaultPrevented: false })),
+            navigate: jest.fn(),
+          } as never
+        }
+        descriptors={{} as never}
+        insets={SAFE_AREA_METRICS.insets}
+      />,
+    );
+
+    expect(await screen.findByTestId("tab-menu")).toBeTruthy();
+    expect(screen.getByTestId("tab-labor").props.accessibilityLabel).toBe(
+      i18n.t("tabs.labor"),
+    );
+  });
+
   it("shows the member's own identity, today's rate and the rate history with each step", async () => {
     await renderWithProviders(<LaborTab />);
 
@@ -286,12 +315,15 @@ describe("worker profile tab", () => {
     );
   });
 
+  // A member nobody linked to a worker keeps the full project shell (#100), so these three
+  // render the tab directly: what is under test is the tab's own refusal to show someone
+  // else's row, not which screen the Labor slot picks.
   it("never falls back to another worker's row when none is linked to the account", async () => {
     // What a member granted `project:view_pay` (D8) receives: every worker, none of them theirs.
     mockWorkers = [
       { ...MINH, id: "w-other", user_id: "u-other", name: "Other Worker" },
     ];
-    await renderWithProviders(<LaborTab />);
+    await renderWithProviders(<WorkerProfileTab />);
 
     expect(await screen.findByTestId("worker-not-linked")).toBeTruthy();
     expect(screen.queryByTestId("worker-profile-card")).toBeNull();
@@ -300,7 +332,7 @@ describe("worker profile tab", () => {
 
   it("shows a retryable error, not the not-linked card, when the workers request fails", async () => {
     mockWorkersError = new Error("offline");
-    await renderWithProviders(<LaborTab />);
+    await renderWithProviders(<WorkerProfileTab />);
 
     expect(await screen.findByTestId("error-state")).toBeTruthy();
     expect(screen.queryByTestId("worker-not-linked")).toBeNull();
@@ -309,7 +341,7 @@ describe("worker profile tab", () => {
 
   it("shows the not-linked card and never asks for rate changes when no worker is linked", async () => {
     mockWorkers = [];
-    await renderWithProviders(<LaborTab />);
+    await renderWithProviders(<WorkerProfileTab />);
 
     expect(await screen.findByTestId("worker-not-linked")).toBeTruthy();
     expect(screen.queryByTestId("worker-profile-card")).toBeNull();

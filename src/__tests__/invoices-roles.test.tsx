@@ -289,19 +289,70 @@ describe("invoice detail · manager", () => {
   beforeEach(() => {
     mockPersona = persona("manager");
     mockParams = { id: PROJECT_ID, invoiceId: INVOICE_MATERIALS.id };
-    mockPatch.mockImplementation(async () => ({
-      data: { ...INVOICE_MATERIALS, refundable_status: "refundable" },
-      response: { status: 200, statusText: "OK" },
-    }));
   });
 
-  it("shows the write actions and hands a materials expense to the company refund flow", async () => {
+  it("shows the write actions but not the company refund prompt", async () => {
     await renderWithProviders(<InvoiceDetailScreen />);
 
     expect(await screen.findByTestId("invoice-actions")).toBeTruthy();
     expect(screen.getByTestId("invoice-edit")).toBeTruthy();
     expect(screen.getByTestId("invoice-delete")).toBeTruthy();
     expect(screen.getByTestId("attachment-add")).toBeTruthy();
+
+    // The refund workflow writes through the company-scoped billing endpoint, which answers
+    // 403 to anyone who is not a company admin — a manager is not, so the prompt stays away.
+    await waitFor(() =>
+      expect(callsTo(mockGet, "/api/v1/companies").length).toBeGreaterThan(0),
+    );
+    expect(screen.queryByTestId("invoice-transfer-company")).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("invoice-edit"));
+    expect(mockRouter.push).toHaveBeenCalledWith(
+      `/projects/${PROJECT_ID}/invoices/${INVOICE_MATERIALS.id}/edit`,
+    );
+  });
+
+  it("drops edit and delete on an invoice the backend freezes", async () => {
+    // An auto-generated row mirrors its billing document and a refunded one is closed:
+    // the API rejects a write to either, so the buttons that would try are not drawn.
+    const frozen = {
+      ...INVOICE_MATERIALS,
+      is_auto_generated: true,
+      refundable_status: "refunded",
+    };
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? { data: frozen, response: { status: 200, statusText: "OK" } }
+        : answer(path, options as never),
+    );
+
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(await screen.findByTestId("invoice-actions")).toBeTruthy();
+    // Attachments stay: only the invoice body is frozen.
+    expect(screen.getByTestId("attachment-add")).toBeTruthy();
+    expect(screen.queryByTestId("invoice-edit")).toBeNull();
+    expect(screen.queryByTestId("invoice-delete")).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("detail-highlight-green"));
+    expect(mockPut).not.toHaveBeenCalled();
+    expect(mockPatch).not.toHaveBeenCalled();
+  });
+});
+
+describe("invoice detail · company admin", () => {
+  beforeEach(() => {
+    mockPersona = persona("admin");
+    mockParams = { id: PROJECT_ID, invoiceId: INVOICE_MATERIALS.id };
+    mockPatch.mockImplementation(async () => ({
+      data: { ...INVOICE_MATERIALS, refundable_status: "refundable" },
+      response: { status: 200, statusText: "OK" },
+    }));
+  });
+
+  it("hands a materials expense to the company refund flow", async () => {
+    await renderWithProviders(<InvoiceDetailScreen />);
 
     // Company project + materials invoice not yet in the refund workflow → transfer prompt.
     const transfer = await screen.findByTestId("invoice-transfer-company");
@@ -315,11 +366,92 @@ describe("invoice detail · manager", () => {
         }),
       ),
     );
+  });
 
-    await fireEvent.press(screen.getByTestId("invoice-edit"));
-    expect(mockRouter.push).toHaveBeenCalledWith(
-      `/projects/${PROJECT_ID}/invoices/${INVOICE_MATERIALS.id}/edit`,
+  it("keeps the transfer prompt away from an expense already paid by the company", async () => {
+    // The endpoint answers 400 for company money: it is not the user's to be refunded.
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? {
+            data: {
+              ...INVOICE_MATERIALS,
+              paid_by_company: true,
+              paid_by_personal: false,
+            },
+            response: { status: 200, statusText: "OK" },
+          }
+        : answer(path, options as never),
     );
+
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(await screen.findByTestId("invoice-actions")).toBeTruthy();
+    await waitFor(() =>
+      expect(callsTo(mockGet, "/api/v1/companies").length).toBeGreaterThan(0),
+    );
+    expect(screen.queryByTestId("invoice-transfer-company")).toBeNull();
+  });
+});
+
+describe("new invoice · member (deep link)", () => {
+  beforeEach(() => {
+    mockPersona = persona("member");
+    mockParams = { id: PROJECT_ID };
+  });
+
+  it("answers with the reason instead of a form that cannot be saved", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+
+    expect(await screen.findByText(i18n.t("invoices.restricted"))).toBeTruthy();
+    expect(screen.queryByTestId("invoice-submit")).toBeNull();
+  });
+});
+
+describe("new invoice · quantity", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager");
+    mockParams = { id: PROJECT_ID };
+  });
+
+  it("refuses a described line whose quantity is not a positive number", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+
+    await fireEvent.changeText(
+      await screen.findByTestId("invoice-recipient"),
+      "Leroy Merlin",
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-description"),
+      "Carrelage",
+    );
+    await fireEvent.changeText(screen.getByTestId("invoice-item-0-price"), "8");
+    // The backend answers 422 on a quantity of zero or less.
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-quantity"),
+      "0",
+    );
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+
+    expect(screen.getByTestId("invoice-form-error")).toHaveTextContent(
+      containing(i18n.t("invoices.form.quantityPositive")),
+    );
+    expect(mockPost).not.toHaveBeenCalled();
+
+    // A typo reads as no quantity at all, and is refused the same way.
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-quantity"),
+      "deux",
+    );
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+    expect(mockPost).not.toHaveBeenCalled();
+
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-quantity"),
+      "2",
+    );
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+    await waitFor(() => expect(mockPost).toHaveBeenCalled());
   });
 });
 

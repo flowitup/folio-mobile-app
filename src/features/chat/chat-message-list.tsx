@@ -1,9 +1,14 @@
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/avatar";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Icon } from "@/components/ui/icon";
+import {
+  AssistantCard,
+  AssistantChoice,
+  AssistantJobStatus,
+} from "@/features/chat/assistant-cards";
 import type { ChatMember, ChatMessage } from "@/features/chat/chat-api";
 import { ChatVoiceBubble } from "@/features/chat/chat-voice-note";
 import {
@@ -12,14 +17,22 @@ import {
   showsSender,
   timeOf,
 } from "@/lib/chat/group-messages-by-day";
+import {
+  parseCardPayload,
+  parseChoicePayload,
+  parseJobStatusPayload,
+} from "@/lib/chat/assistant";
+import { splitMention } from "@/lib/chat/mention";
 import { isVoiceNote } from "@/lib/chat/voice-note";
 import { useTokens, workerColor } from "@/theme/tokens";
 
-/** Stable avatar color per sender, cycling the design palette. */
+/** Stable avatar color per sender, cycling the design palette; the assistant (no `sender_id`)
+ * always gets the same fixed accent color instead of a hash-derived one. */
 function senderColor(
-  senderId: string,
+  senderId: string | null,
   tokens: ReturnType<typeof useTokens>,
 ): string {
+  if (senderId === null) return tokens.accent;
   let hash = 0;
   for (const char of senderId) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
   return workerColor(tokens, null, hash);
@@ -70,11 +83,19 @@ function MessageRow({
   message,
   showSender,
   seenBy,
+  onReplyToAssistant,
+  assistantEnabled,
 }: {
   message: ChatMessage;
   showSender: boolean;
   seenBy: ChatMember[] | undefined;
+  /** Wired to the "Hỏi tiếp" button under an assistant message; sets the composer's reply. */
+  onReplyToAssistant?: (message: ChatMessage) => void;
+  /** Off (or still unknown): hides the "Ask again" button and disables choice buttons, since
+   * the backend would 404 `FeatureDisabled` on either. */
+  assistantEnabled: boolean;
 }) {
+  const { t } = useTranslation();
   const tokens = useTokens();
   const mine = message.mine;
   // Anything that is not a recording renders as the picture card, as it did before voice notes.
@@ -82,6 +103,25 @@ function MessageRow({
     message.attachment !== null &&
     message.attachment !== undefined &&
     isVoiceNote(message.attachment.content_type);
+  // Rich assistant content replaces the plain text bubble; a malformed payload (should not
+  // happen against the real backend) falls back to the text bubble below instead of nothing.
+  // The assistant now answers inside company/project/admin channels (no dedicated channel of
+  // its own), so this only ever looks at who sent the message.
+  const isAssistantMessage = message.sender_type === "assistant";
+  const cardPayload =
+    isAssistantMessage && message.content_type === "card"
+      ? parseCardPayload(message.payload)
+      : null;
+  const choicePayload =
+    isAssistantMessage && message.content_type === "choice"
+      ? parseChoicePayload(message.payload)
+      : null;
+  const jobPayload =
+    isAssistantMessage && message.content_type === "job_status"
+      ? parseJobStatusPayload(message.payload)
+      : null;
+  const showsBodyBubble =
+    message.body && !cardPayload && !choicePayload && !jobPayload;
   return (
     <View
       className={`flex-row items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
@@ -105,7 +145,7 @@ function MessageRow({
             {message.sender_name}
           </Text>
         ) : null}
-        {message.body ? (
+        {showsBodyBubble ? (
           <View
             className={`px-3 py-[9px] ${mine ? "bg-positive" : "border border-line bg-card"}`}
             style={{
@@ -118,11 +158,44 @@ function MessageRow({
             <Text
               className={`font-sans text-[14px] leading-5 ${mine ? "text-white" : "text-ink"}`}
             >
-              {message.body}
+              {splitMention(message.body ?? "").map((segment, index) =>
+                segment.mention ? (
+                  <Text
+                    key={index}
+                    className={`font-sans-semibold ${mine ? "text-white" : "text-accent"}`}
+                  >
+                    {segment.text}
+                  </Text>
+                ) : (
+                  <Text key={index}>{segment.text}</Text>
+                ),
+              )}
             </Text>
           </View>
         ) : null}
+        {cardPayload ? <AssistantCard payload={cardPayload} /> : null}
+        {choicePayload ? (
+          <AssistantChoice
+            message={message}
+            payload={choicePayload}
+            assistantEnabled={assistantEnabled}
+          />
+        ) : null}
+        {jobPayload ? <AssistantJobStatus payload={jobPayload} /> : null}
         {voiceNote ? <ChatVoiceBubble message={message} mine={mine} /> : null}
+        {isAssistantMessage && assistantEnabled ? (
+          <Pressable
+            testID="chat-reply-assistant"
+            accessibilityRole="button"
+            hitSlop={6}
+            onPress={() => onReplyToAssistant?.(message)}
+            className="mt-0.5 active:opacity-70"
+          >
+            <Text className="font-sans-medium text-[11.5px] text-accent">
+              {t("chat.replyToFolio")}
+            </Text>
+          </Pressable>
+        ) : null}
         {message.attachment && !voiceNote ? (
           <View className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card">
             <View className="h-[120px] items-center justify-center bg-paper-2">
@@ -162,9 +235,16 @@ function MessageRow({
 export function ChatMessageList({
   messages,
   seen,
+  onReplyToAssistant,
+  assistantEnabled = true,
 }: {
   messages: ChatMessage[];
   seen?: Map<string, ChatMember[]>;
+  /** Wired to the "Hỏi tiếp" button under each assistant message. */
+  onReplyToAssistant?: (message: ChatMessage) => void;
+  /** Off (or still unknown): hides the "Ask again" button and disables choice buttons.
+   * Defaults to `true` so existing callers keep their behavior. */
+  assistantEnabled?: boolean;
 }) {
   const { t } = useTranslation();
   const groups = groupMessagesByDay(messages);
@@ -175,9 +255,10 @@ export function ChatMessageList({
         return (
           <View key={group.dayKey} className="gap-2.5">
             <Text className="mb-1 text-center font-sans text-[11px] text-muted">
-              {"token" in label ? t(`chat.${label.token}`) : label.date}
-              {" · "}
-              {`${group.dayKey.slice(8, 10)}/${group.dayKey.slice(5, 7)}`}
+              {/* Today / Yesterday carry the date beside them; an older divider is already the date. */}
+              {"token" in label
+                ? `${t(`chat.${label.token}`)} · ${group.dayKey.slice(8, 10)}/${group.dayKey.slice(5, 7)}`
+                : label.date}
             </Text>
             {group.messages.map((message, index) => (
               <MessageRow
@@ -185,6 +266,8 @@ export function ChatMessageList({
                 message={message}
                 showSender={showsSender(group.messages, index)}
                 seenBy={seen?.get(message.id)}
+                onReplyToAssistant={onReplyToAssistant}
+                assistantEnabled={assistantEnabled}
               />
             ))}
           </View>

@@ -26,6 +26,11 @@ export default function AppLayout() {
       <Stack.Screen name="join-company" options={{ animation: "fade" }} />
       {/* Team chat overlay (feature-flagged): full screen over the shell, slides in from the right. */}
       <Stack.Screen name="chat" options={{ animation: "slide_from_right" }} />
+      {/* In-app PDF viewer (documents, attachments, billing, exports): over the shell. */}
+      <Stack.Screen
+        name="pdf-viewer"
+        options={{ animation: "slide_from_right" }}
+      />
     </Stack>
   );
 }

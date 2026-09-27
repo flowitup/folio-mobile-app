@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/api/client";
 import { authedFetch } from "@/api/authed-fetch";
 import { API_BASE_URL } from "@/config/env";
-import { downloadAndShare } from "@/lib/files/download";
+import { openFile } from "@/lib/files/open-file";
 import type { PickedFile } from "@/lib/files/pick";
 import { uploadMultipart } from "@/lib/files/upload";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
@@ -103,6 +103,20 @@ export function useDocumentTags(projectId: string, enabled = true) {
   });
 }
 
+/** Distinct uploaders of the project's documents — the uploader filter's options. */
+export function useDocumentUploaders(projectId: string, enabled = true) {
+  return useQuery({
+    queryKey: [...documentKeys.all(projectId), "uploaders"],
+    enabled: Boolean(projectId) && enabled,
+    queryFn: async () =>
+      unwrapAs<{ items?: { user_id: string; display_name: string }[] }>(
+        await api.GET("/api/v1/projects/{project_id}/documents/uploaders", {
+          params: { path: { project_id: projectId } },
+        }),
+      ).items ?? [],
+  });
+}
+
 /** Direct multipart upload (`file` part); the presigned flow stays available in `lib/files/upload`. */
 export function useUploadDocument(projectId: string) {
   const { t } = useTranslation();
@@ -182,7 +196,11 @@ export function useDeleteDocument(projectId: string) {
   });
 }
 
-/** Downloads through the API (Bearer) and opens the OS share/preview sheet. */
+/** Downloads through the API (Bearer): a PDF opens in the in-app viewer, the rest in the share sheet. */
 export function openDocument(document: ProjectDocument): Promise<string> {
-  return downloadAndShare(document.download_url, document.filename);
+  return openFile(
+    document.download_url,
+    document.filename,
+    document.content_type,
+  );
 }

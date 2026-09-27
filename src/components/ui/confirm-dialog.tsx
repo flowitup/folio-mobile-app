@@ -11,6 +11,8 @@ type Props = {
   cancelLabel: string;
   destructive?: boolean;
   loading?: boolean;
+  /** Keep the dialog informational: the confirm button is rendered inert. */
+  confirmDisabled?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -24,6 +26,7 @@ export function ConfirmDialog({
   cancelLabel,
   destructive = false,
   loading = false,
+  confirmDisabled = false,
   onConfirm,
   onCancel,
 }: Props) {
@@ -62,6 +65,7 @@ export function ConfirmDialog({
               variant={destructive ? "danger" : "primary"}
               size="sm"
               loading={loading}
+              disabled={confirmDisabled}
               onPress={onConfirm}
               testID="confirm-ok"
             />

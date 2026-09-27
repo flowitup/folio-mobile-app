@@ -12,9 +12,9 @@ import type { Persona } from "./helpers/release-qa-fixtures";
 
 /**
  * Project settings per company role. The card itself is readable by anyone on the project;
- * Edit needs `project:update` and Delete `project:delete` — with the project owner keeping
- * both whatever the matrix says, which is how a manager who created the project can still
- * retire it. A member sees the fields and no button.
+ * Edit needs `project:update` and Delete `project:delete`, from the project's scoped
+ * permissions alone — owning the project is not a permission. A member sees the fields and
+ * no button.
  */
 let mockCurrent: Persona = persona("manager");
 let mockOwnerId = "u-admin";
@@ -82,14 +82,17 @@ describe("Project settings per role", () => {
     expect(screen.queryByTestId("project-delete")).toBeNull();
   });
 
-  it("gives the owning manager Delete back", async () => {
+  it("does not give the owning manager Delete back", async () => {
     mockCurrent = persona("manager");
     mockOwnerId = mockCurrent.user.id;
     await renderWithProviders(<ProjectSettingsSection />);
 
+    // Creating a project grants no standing exception: the owner is an ordinary assignee and
+    // the backend refuses the delete, so the button follows `project:delete` alone.
     await waitFor(() =>
-      expect(screen.getByTestId("project-delete")).toBeTruthy(),
+      expect(screen.getByTestId("project-edit")).toBeTruthy(),
     );
+    expect(screen.queryByTestId("project-delete")).toBeNull();
   });
 
   it("shows a member the fields and no write control", async () => {

@@ -276,4 +276,15 @@ describe("labor tab · member (worker mode)", () => {
     expect(await screen.findByTestId("worker-not-linked")).toBeTruthy();
     expect(screen.queryByTestId("worker-log-card")).toBeNull();
   });
+
+  it("never falls back to a colleague's row when none is linked to the account", async () => {
+    // What a member granted `project:view_pay` receives: every worker, none of them theirs.
+    mockWorkers = [{ ...WORKER_TUAN, user_id: "u-other" }];
+    mockEntries = [];
+    await renderWithProviders(<WorkerAttendanceTab />);
+
+    expect(await screen.findByTestId("worker-not-linked")).toBeTruthy();
+    expect(screen.queryByTestId("worker-log-card")).toBeNull();
+    expect(screen.queryByTestId("worker-log-submit")).toBeNull();
+  });
 });

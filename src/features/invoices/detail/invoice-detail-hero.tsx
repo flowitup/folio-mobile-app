@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { InkFigure } from "@/components/ui/ink-sheet-screen";
 import type { Invoice } from "@/features/invoices/invoice-types";
 import { formatDate } from "@/lib/format/date";
+import { ledgerTypeOf } from "@/lib/invoices/group-invoices-by-month";
 import { INK_BLOCK } from "@/theme/tokens";
 
 /** Fixed ink header: 40px back chevron, mono invoice number, outlined type pill. */
@@ -39,9 +40,19 @@ export function InvoiceDetailHeader({
       >
         {invoice.invoice_number}
       </Text>
+      {invoice.type === "released_funds" && invoice.is_cash_advance ? (
+        <View
+          testID="invoice-detail-cash-advance"
+          className="rounded-full border border-ink-block-line px-2.5 py-[5px]"
+        >
+          <Text className="font-sans-medium text-[11.5px] text-on-ink-block-2">
+            {t("invoices.cashAdvance")}
+          </Text>
+        </View>
+      ) : null}
       <View className="rounded-full border border-ink-block-line px-2.5 py-[5px]">
         <Text className="font-sans-medium text-[11.5px] text-on-ink-block-2">
-          {t(`invoices.types.${invoice.type}`)}
+          {t(`invoices.types.${ledgerTypeOf(invoice)}`)}
         </Text>
       </View>
     </View>

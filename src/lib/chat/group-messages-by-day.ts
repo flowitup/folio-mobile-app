@@ -53,11 +53,11 @@ export function timeOf(iso: string): string {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-/** Whether a message should show the sender header (first of a run from one sender). */
-export function showsSender<T extends { sender_id: string; mine: boolean }>(
-  messages: T[],
-  index: number,
-): boolean {
+/** Whether a message should show the sender header (first of a run from one sender). A
+ * `null` sender (the assistant, which has none) groups with other `null`-sender messages. */
+export function showsSender<
+  T extends { sender_id: string | null; mine: boolean },
+>(messages: T[], index: number): boolean {
   const current = messages[index];
   if (current.mine) return false;
   const previous = messages[index - 1];

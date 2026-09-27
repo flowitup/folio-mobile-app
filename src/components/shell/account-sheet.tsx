@@ -7,6 +7,7 @@ import { useAuth } from "@/auth/auth-context";
 import { userDisplayName } from "@/lib/auth/user-display-name";
 import { useShell } from "@/components/shell/shell-context";
 import { ShellSheet } from "@/components/shell/shell-sheet";
+import { DeleteAccountAction } from "@/components/account/delete-account-action";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import i18n, { SUPPORTED_LOCALES, setLocale } from "@/i18n";
@@ -118,6 +119,11 @@ export function AccountSheet() {
           {t("home.signOut")}
         </Text>
       </Pressable>
+      <DeleteAccountAction
+        className="border-t border-line px-3.5 py-3 active:opacity-70"
+        textClassName="font-sans text-[13px] text-muted"
+        onDeleted={closeSheet}
+      />
     </ShellSheet>
   );
 }

@@ -32,7 +32,7 @@ import {
   computePendingRefunds,
   computeSpentTotal,
 } from "@/lib/dashboard/overview-metrics";
-import { toIsoDate } from "@/lib/format/date";
+import { parseIsoDate, toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { INK_BLOCK } from "@/theme/tokens";
 
@@ -52,11 +52,21 @@ function OverviewTabContent() {
   // released-funds total without `project:view_budget`, so the hero drops the
   // figures measured against them instead of drawing them from zeros.
   const canViewBudget = useProjectCan(projectId, "project:view_budget");
+  // Recording an invoice — an expense or a release of funds — is `project:manage_invoices`
+  // on the backend, so the two quick actions that open the invoice form need it too.
+  const canManageInvoices = useProjectCan(projectId, "project:manage_invoices");
+  // A manager keeps the spend side without the budget; a plain member sees no money at all
+  // (the backend answers zeros, not nulls, so the permission is the only reliable signal).
+  const canSeeSpend = canViewBudget || canManageInvoices;
   useRefetchOnFocus(invoices.refetch);
   useRefetchOnFocus(tasks.refetch);
 
-  const referenceDate = useMemo(() => new Date(), []);
-  const todayIso = useMemo(() => toIsoDate(referenceDate), [referenceDate]);
+  // Keyed on the calendar day so an app left open across midnight moves on with it.
+  const todayIso = toIsoDate(new Date());
+  const referenceDate = useMemo(
+    () => parseIsoDate(todayIso) ?? new Date(),
+    [todayIso],
+  );
   const todayEntries = useLaborEntries(projectId, todayIso, todayIso);
   useRefetchOnFocus(todayEntries.refetch);
   const workersOnSite = useMemo(
@@ -84,10 +94,13 @@ function OverviewTabContent() {
   );
 
   const ready = Boolean(project && invoices.data);
+  // The labor tab applies `segment` from an effect keyed on the params it receives, so a
+  // repeated tap must carry a value that changed — otherwise the second one is a no-op once
+  // the user has moved to another segment themselves.
   const payLabor = () =>
     router.navigate({
       pathname: "/(app)/(tabs)/labor",
-      params: { segment: "payments" },
+      params: { segment: "payments", focus: Date.now().toString() },
     });
 
   return (
@@ -116,6 +129,8 @@ function OverviewTabContent() {
             }
             onPayLabor={payLabor}
             canViewBudget={canViewBudget}
+            canManageInvoices={canManageInvoices}
+            showMoney={canSeeSpend}
           />
         ) : (
           <View className="h-24 items-center justify-center">
@@ -145,24 +160,28 @@ function OverviewTabContent() {
       ) : null}
       {ready && project ? (
         <>
-          <OverviewDueTiles
-            laborUnpaid={project.labor_unpaid ?? 0}
-            pendingRefundCount={metrics.pendingCompany.count}
-            pendingRefundTotal={metrics.pendingCompany.total}
-            onPayLabor={payLabor}
-            onOpenRefunds={() =>
-              billing.allowed
-                ? router.push("/billing/refundable")
-                : router.navigate("/(app)/(tabs)/expenses")
-            }
-          />
-          <MonthSpendCard
-            buckets={metrics.buckets}
-            currentMonthKey={metrics.monthDelta.current.key}
-            totalCurrent={metrics.monthDelta.current.total}
-            totalDeltaPct={metrics.monthDelta.deltaPct}
-            onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
-          />
+          {canSeeSpend ? (
+            <>
+              <OverviewDueTiles
+                laborUnpaid={project.labor_unpaid ?? 0}
+                pendingRefundCount={metrics.pendingCompany.count}
+                pendingRefundTotal={metrics.pendingCompany.total}
+                onPayLabor={payLabor}
+                onOpenRefunds={() =>
+                  billing.allowed
+                    ? router.push("/billing/refundable")
+                    : router.navigate("/(app)/(tabs)/expenses")
+                }
+              />
+              <MonthSpendCard
+                buckets={metrics.buckets}
+                currentMonthKey={metrics.monthDelta.current.key}
+                totalCurrent={metrics.monthDelta.current.total}
+                totalDeltaPct={metrics.monthDelta.deltaPct}
+                onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+              />
+            </>
+          ) : null}
           <AgendaCard
             groups={agenda}
             onOpenPlanning={() => router.navigate("/(app)/(tabs)/planning")}

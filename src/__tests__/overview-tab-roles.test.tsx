@@ -120,11 +120,37 @@ describe("overview tab · manager", () => {
     // Recording a release needs project:view_budget, which a manager lacks.
     expect(screen.queryByTestId("overview-add-release")).toBeNull();
 
+    // The labor tab keys its segment effect on the params it receives, so the call carries a
+    // fresh `focus` nonce: without it a second tap after the user switched segment does nothing.
     await fireEvent.press(screen.getByTestId("overview-pay-labor"));
     expect(mockRouter.navigate).toHaveBeenCalledWith({
       pathname: "/(app)/(tabs)/labor",
-      params: { segment: "payments" },
+      params: { segment: "payments", focus: expect.any(String) },
     });
+    const first = mockRouter.navigate.mock.calls.at(-1)?.[0] as {
+      params: { focus: string };
+    };
+    jest.spyOn(Date, "now").mockReturnValue(Number(first.params.focus) + 1000);
+    await fireEvent.press(screen.getByTestId("overview-pay-labor"));
+    const second = mockRouter.navigate.mock.calls.at(-1)?.[0] as {
+      params: { focus: string };
+    };
+    expect(second.params.focus).not.toBe(first.params.focus);
+    jest.restoreAllMocks();
+  });
+
+  it("drops both invoice actions when the project denies project:manage_invoices", async () => {
+    mockPersona = persona("manager", { deny: ["project:manage_invoices"] });
+    await renderWithProviders(<OverviewTab />);
+    await screen.findByTestId("overview-headline");
+
+    // POST /invoices refuses them, so neither the expense nor the release action is offered.
+    await waitFor(() =>
+      expect(screen.queryByTestId("overview-add-invoice")).toBeNull(),
+    );
+    expect(screen.queryByTestId("overview-add-release")).toBeNull();
+    // Paying labor is a different permission and stays.
+    expect(screen.getByTestId("overview-pay-labor")).toBeTruthy();
   });
 
   it("sends a manager (not a company admin) to the expenses tab for pending refunds", async () => {

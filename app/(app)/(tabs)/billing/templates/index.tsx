@@ -11,7 +11,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EmptyState, ListRow } from "@/components/ui/primitives";
+import { EmptyState, ErrorState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import {
   useBillingTemplates,
@@ -56,6 +56,13 @@ export default function BillingTemplatesScreen() {
       />
       <ScrollView contentContainerClassName="p-4 pb-12">
         {templates.isPending ? <ActivityIndicator className="mt-8" /> : null}
+        {templates.isError && !templates.data ? (
+          <ErrorState
+            message={t("home.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void templates.refetch()}
+          />
+        ) : null}
         {templates.data && templates.data.length === 0 ? (
           <EmptyState message={t("billing.templates.none")} />
         ) : null}

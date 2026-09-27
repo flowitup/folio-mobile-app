@@ -96,6 +96,7 @@ export function useUpdateTask(projectId: string) {
 
 /** Moves a task to a lane; `beforeId` / `afterId` pin the position inside the lane. */
 export function useMoveTask(projectId: string) {
+  const { t } = useTranslation();
   return useApiMutation<
     {
       taskId: string;
@@ -117,6 +118,7 @@ export function useMoveTask(projectId: string) {
         }),
       ),
     invalidates: [taskKeys.list(projectId)],
+    successMessage: t("common.saved"),
   });
 }
 

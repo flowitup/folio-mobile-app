@@ -4,7 +4,6 @@ import { ActivityIndicator, Text, View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import type { IconName } from "@/components/ui/icon";
 import { useSiteWeather } from "@/features/dashboard/weather-api";
-import { cityFromAddress } from "@/lib/dashboard/weather";
 import type { WeatherCondition } from "@/lib/dashboard/weather";
 import { useTokens } from "@/theme/tokens";
 
@@ -40,11 +39,12 @@ export function TodayOnSiteCard({ address, workersOnSite }: Props) {
   const conditionKey = data
     ? `dashboard.today.conditions.${data.condition}`
     : null;
-  // No usable city in the address → ask for one; otherwise any miss is "unavailable".
-  const emptyKey =
-    cityFromAddress(address) === null
-      ? "dashboard.today.noAddress"
-      : "dashboard.today.unavailable";
+  // Only a project with no address at all is asked for one. An address the geocoder cannot
+  // reduce to a city is still an address, and telling its manager to add one contradicts the
+  // address the top bar shows right above; that miss reads as "unavailable" like any other.
+  const emptyKey = address?.trim()
+    ? "dashboard.today.unavailable"
+    : "dashboard.today.noAddress";
   const workers =
     workersOnSite === null
       ? "—"

@@ -1,5 +1,10 @@
 import { act, render, screen, waitFor } from "@testing-library/react-native";
-import { focusManager } from "@tanstack/react-query";
+import {
+  focusManager,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { AppState, Text } from "react-native";
 
 import { AuthProvider, useAuth } from "@/auth/auth-context";
@@ -50,6 +55,16 @@ function meResponse(role: string) {
   };
 }
 
+// `AuthProvider` reads the query client (it clears the cache on sign-out), exactly as the
+// app nests it: QueryClientProvider → AuthProvider.
+function renderAuthed(children: ReactNode) {
+  return render(
+    <QueryClientProvider client={new QueryClient()}>
+      <AuthProvider>{children}</AuthProvider>
+    </QueryClientProvider>,
+  );
+}
+
 function RoleProbe() {
   const { user, status } = useAuth();
   if (status !== "signedIn" || !user) return <Text testID="role">none</Text>;
@@ -66,11 +81,7 @@ describe("auth foreground refresh", () => {
   it("re-fetches /auth/me when the app becomes active, applying a role change without re-login", async () => {
     mockGet.mockResolvedValueOnce(meResponse("member"));
 
-    await render(
-      <AuthProvider>
-        <RoleProbe />
-      </AuthProvider>,
-    );
+    await renderAuthed(<RoleProbe />);
 
     await waitFor(() =>
       expect(screen.getByTestId("role")).toHaveTextContent("member"),
@@ -91,11 +102,7 @@ describe("auth foreground refresh", () => {
   it("mints a fresh access token via /auth/refresh before re-fetching /auth/me", async () => {
     mockGet.mockResolvedValueOnce(meResponse("member"));
 
-    await render(
-      <AuthProvider>
-        <RoleProbe />
-      </AuthProvider>,
-    );
+    await renderAuthed(<RoleProbe />);
 
     await waitFor(() =>
       expect(screen.getByTestId("role")).toHaveTextContent("member"),
@@ -117,11 +124,7 @@ describe("auth foreground refresh", () => {
     const setFocusedSpy = jest.spyOn(focusManager, "setFocused");
     mockGet.mockResolvedValueOnce(meResponse("member"));
 
-    await render(
-      <AuthProvider>
-        <RoleProbe />
-      </AuthProvider>,
-    );
+    await renderAuthed(<RoleProbe />);
     await waitFor(() =>
       expect(screen.getByTestId("role")).toHaveTextContent("member"),
     );

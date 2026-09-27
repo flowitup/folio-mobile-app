@@ -13,7 +13,9 @@
     "edit": "Modifier",
     "back": "Retour",
     "remove": "Retirer",
-    "email": "E-mail"
+    "email": "E-mail",
+    "change": "Changer",
+    "requestFailed": "La demande n'a pas pu être traitée. Réessayez."
   },
   "login": {
     "title": "Se connecter\nà Folio",
@@ -74,7 +76,7 @@
       "planning": "Planning",
       "chiffrage": "Chiffrage",
       "analyses": "Analyses",
-      "members": "Membres",
+      "members": "Membres du chantier",
       "settings": "Réglages",
       "salaries": "Salaires"
     },
@@ -99,9 +101,11 @@
       "editTitle": "Modifier le chantier",
       "create": "Créer",
       "name": "Nom",
-      "nameRequired": "Le nom est obligatoire.",
       "company": "Entreprise",
       "address": "Adresse",
+      "addressRequired": "L'adresse est obligatoire.",
+      "nameOptional": "Nom (facultatif)",
+      "namePlaceholder": "Par défaut, l'adresse",
       "budget": "Budget (€)",
       "budgetSource": "Source du budget",
       "budgetSourceHint": "Texte libre, ex. prêt bancaire, fonds propres",
@@ -126,7 +130,6 @@
     "myCompanies": "Mes sociétés",
     "paymentMethods": "Moyens de paiement",
     "laborRoles": "Rôles main-d'œuvre",
-    "personsMerge": "Fusionner des personnes",
     "adminCompanies": "Toutes les sociétés (admin)",
     "users": {
       "permissionDenied": "Vous n'avez pas l'autorisation de modifier les rôles des utilisateurs."
@@ -156,6 +159,20 @@
         "billing": "Argent",
         "billingDesc": "Remboursements de vos dépenses, changements de statut des devis et factures"
       }
+    },
+    "appearance": {
+      "title": "Apparence",
+      "subtitle": "Choisissez l'apparence de Folio sur cet appareil.",
+      "options": {
+        "system": "Comme l'appareil",
+        "light": "Clair",
+        "dark": "Sombre"
+      },
+      "hints": {
+        "system": "Suit le réglage clair ou sombre de votre téléphone",
+        "light": "Toujours la palette claire",
+        "dark": "Toujours la palette sombre"
+      }
     }
   },
   "members": {
@@ -179,7 +196,9 @@
       "empty": "Tous les membres de l'entreprise sont déjà affectés, ou aucun n'a encore de compte lié.",
       "noCompany": "Ce chantier n'a pas encore d'entreprise.",
       "loadError": "Impossible de charger l'annuaire de l'entreprise."
-    }
+    },
+    "loadError": "Impossible de charger les membres.",
+    "revokeConfirm": "Annuler l'invitation envoyée à {{email}} ?"
   },
   "invoices": {
     "all": "Tout",
@@ -196,6 +215,7 @@
     },
     "serviceMonthShort": "pour",
     "auto": "auto",
+    "cashAdvance": "avance espèces",
     "paidWithAvoir": "Payé par avoir",
     "refundOf": "Remboursement de",
     "unassignedWorker": "Non attribué",
@@ -234,7 +254,9 @@
       "format": "Format",
       "from": "Du mois",
       "to": "Au mois",
-      "run": "Télécharger"
+      "run": "Télécharger",
+      "rangeInvalid": "Le mois de fin ne peut pas précéder le mois de début.",
+      "rangeTooLong": "Exportez au maximum {{max}} mois à la fois."
     },
     "attachments": {
       "title": "Pièces jointes ({{count}})",
@@ -279,10 +301,13 @@
       "addItem": "Ajouter une ligne",
       "notes": "Notes",
       "highlight": "Surlignage",
-      "create": "Créer la facture"
+      "create": "Créer la facture",
+      "quantityPositive": "Chaque ligne doit avoir une quantité supérieure à 0.",
+      "settledViaNone": "Pas encore réglé"
     },
     "summary": {
       "totalExpenses": "Total dépenses",
+      "cashAdvance": "dont {{amount}} en espèces",
       "companyPurse": "Caisse entreprise",
       "personalPurse": "Caisse personnelle",
       "released": "Débloqué",
@@ -320,7 +345,8 @@
       "info": "Détails",
       "noHighlight": "Sans couleur",
       "attachmentsEmpty": "Aucune pièce jointe"
-    }
+    },
+    "restricted": "Les factures sont réservées aux responsables du chantier."
   },
   "labor": {
     "tabs": {
@@ -354,8 +380,8 @@
       "roleNone": "Sans rôle",
       "none": "Aucun ouvrier.",
       "created": "Ouvrier ajouté.",
-      "deleted": "Ouvrier retiré.",
-      "deleteConfirm": "Retirer {{name}} ?",
+      "deleted": "Ouvrier désactivé.",
+      "deleteConfirm": "Désactiver {{name}} ?",
       "deleteHint": "Son historique de présence reste sur le chantier.",
       "inactive": "inactif",
       "day": "jour",
@@ -364,7 +390,8 @@
       "accountNone": "Non relié",
       "fromCompany": "Ouvrier de l'entreprise",
       "fromCompanyNew": "Nouvelle personne",
-      "fromCompanyHint": "annuaire de l'entreprise"
+      "fromCompanyHint": "annuaire de l'entreprise",
+      "deactivate": "Désactiver"
     },
     "rates": {
       "link": "Taux",
@@ -374,14 +401,16 @@
       "add": "Ajouter un changement",
       "impact_zero": "Aucun jour pointé depuis le {{date}}",
       "impact_one": "Recalcule 1 jour déjà pointé depuis le {{date}}",
-      "impact_other": "Recalcule {{count}} jours déjà pointés depuis le {{date}}"
+      "impact_other": "Recalcule {{count}} jours déjà pointés depuis le {{date}}",
+      "deleteConfirm": "Supprimer le changement de tarif du {{date}} ({{rate}}) ?",
+      "deleted": "Changement de tarif supprimé."
     },
     "log": {
       "open": "Saisir la journée",
       "title": "Saisir le {{date}}",
       "sameAsLastDay": "Comme le dernier jour",
       "noWorkers": "Tous les ouvriers actifs sont déjà saisis ce jour.",
-      "supplement": "Supplément",
+      "supplement": "Heures sup. (non payées)",
       "submit": "Saisir {{count}} ouvrier(s)",
       "saved": "Présences enregistrées.",
       "entryDeleted": "Saisie supprimée.",
@@ -392,12 +421,17 @@
       "effectiveCost": "Coût actuel : {{amount}}",
       "conflictTitle": "Déjà saisi ailleurs",
       "conflictGeneric": "Certains ouvriers sont saisis sur un autre chantier le même jour.",
-      "conflictConfirm": "Saisir quand même"
+      "conflictConfirm": "Saisir quand même",
+      "emptyRowHint": "Choisissez un type de journée ou ajoutez des heures avant d'enregistrer.",
+      "overrideNeedsShiftHint": "Un montant forcé nécessite un type de journée.",
+      "overrideInvalidHint": "Le montant forcé doit être un nombre positif."
     },
     "activities": {
       "title": "Activités",
       "placeholder": "Nouvelle activité…",
-      "add": "Ajouter l'activité"
+      "add": "Ajouter l'activité",
+      "deleteConfirm": "Supprimer l'activité « {{title}} » ?",
+      "deleted": "Activité supprimée."
     },
     "description": {
       "title": "Description de la journée"
@@ -431,7 +465,8 @@
     "export": {
       "title": "Exporter la main-d'œuvre",
       "worker": "Ouvrier",
-      "allWorkers": "Tous les ouvriers"
+      "allWorkers": "Tous les ouvriers",
+      "rangeInvalid": "Choisissez un mois de début avant le mois de fin, {{months}} mois maximum."
     },
     "segments": {
       "calendar": "Pointage",
@@ -464,6 +499,9 @@
     "roles": {
       "tho_chinh": "Ouvrier principal",
       "tho_phu": "Ouvrier auxiliaire"
+    },
+    "entry": {
+      "deleteConfirm": "Supprimer ce pointage ?"
     }
   },
   "documents": {
@@ -493,7 +531,8 @@
       "size": "Taille",
       "uploader": "Auteur"
     },
-    "allUploaders": "Tous les auteurs"
+    "allUploaders": "Tous les auteurs",
+    "loadError": "Impossible de charger les documents."
   },
   "photos": {
     "add": "Ajouter des photos",
@@ -504,7 +543,8 @@
     "caption": "Légende",
     "share": "Partager",
     "videoHint": "Vidéo — utilisez Partager pour l'ouvrir.",
-    "loadMore": "Charger plus"
+    "loadMore": "Charger plus",
+    "loadError": "Impossible de charger les photos."
   },
   "notes": {
     "create": "Nouvelle note",
@@ -527,7 +567,8 @@
       "decision": "Décision",
       "call": "Appel",
       "general": "Général"
-    }
+    },
+    "loadError": "Impossible de charger le journal."
   },
   "notifications": {
     "title": "Rappels ({{count}})",
@@ -566,6 +607,8 @@
     "description": "Description",
     "statusLabel": "Colonne",
     "priorityLabel": "Priorité",
+    "assignee": "Responsable",
+    "unassigned": "Non assignée",
     "dueDate": "Échéance",
     "due": "Échéance {{date}}",
     "labels": "Étiquettes",
@@ -581,7 +624,8 @@
       "medium": "Moyenne",
       "high": "Haute",
       "urgent": "Urgente"
-    }
+    },
+    "loadError": "Impossible de charger les tâches."
   },
   "chiffrage": {
     "totalHt": "Total HT",
@@ -635,7 +679,8 @@
     "libraryNone": "Aucun produit trouvé.",
     "imageFromUrl": "Image depuis une URL",
     "imageUrl": "URL de l'image",
-    "takePhoto": "Prendre une photo"
+    "takePhoto": "Prendre une photo",
+    "noneReadOnly": "Aucun poste pour le moment."
   },
   "analyses": {
     "upload": "Ajouter une analyse",
@@ -650,7 +695,8 @@
     "pickFile": "Choisir le rapport HTML",
     "summary": "Résumé",
     "sourceUrl": "URL source",
-    "searchPlaceholder": "Rechercher une analyse"
+    "searchPlaceholder": "Rechercher une analyse",
+    "loadError": "Impossible de charger les analyses."
   },
   "billing": {
     "title": "Facturation",
@@ -690,8 +736,9 @@
       "loadMore": "Charger plus",
       "new": "Nouveau",
       "templates": "Modèles",
-      "refundable": "Dépenses remboursables",
-      "import": "Importer"
+      "refundable": "Remboursables",
+      "import": "Importer",
+      "noResults": "Aucun document ne correspond à cette recherche."
     },
     "form": {
       "modes": {
@@ -795,7 +842,7 @@
     },
     "refundable": {
       "title": "Dépenses remboursables",
-      "add": "Ajouter des dépenses",
+      "add": "Ajouter",
       "none": "Aucune dépense suivie pour remboursement.",
       "allCompanies": "Toutes les sociétés",
       "summary": {
@@ -826,7 +873,9 @@
         "search": "Rechercher chantier, numéro, destinataire",
         "none": "Aucune dépense candidate.",
         "confirm": "Ajouter {{count}}",
-        "partial": "Certaines dépenses n'ont pas pu être ajoutées."
+        "partial": "Certaines dépenses n'ont pas pu être ajoutées.",
+        "added": "{{count}} dépense(s) ajoutée(s).",
+        "addFailed": "Aucune dépense n'a pu être ajoutée."
       }
     }
   },
@@ -944,6 +993,102 @@
       "create": "Ajouter le produit",
       "cancel": "Annuler",
       "delete": "Supprimer"
+    },
+    "loadError": "Impossible de charger la bibliothèque.",
+    "imageUrlBlocked": "Cette adresse d'image n'est pas acceptée. Utilisez un lien d'un site fournisseur pris en charge."
+  },
+  "inventory": {
+    "title": "Inventaire du matériel",
+    "addItem": "Ajouter",
+    "createTitle": "Ajouter du matériel",
+    "editTitle": "Modifier le matériel",
+    "searchPlaceholder": "Chercher un outil, une référence…",
+    "loadError": "Impossible de charger l'inventaire.",
+    "empty": "Aucun matériel pour l'instant. Ajoutez votre premier outil ou machine.",
+    "noResults": "Rien ne correspond à ces filtres.",
+    "unknownLocation": "Emplacement inconnu",
+    "uncategorized": "Sans catégorie",
+    "units_one": "{{count}} unité",
+    "units_other": "{{count}} unités",
+    "deleteConfirm": "Supprimer « {{name}} » ?",
+    "deleteHint": "La ligne disparaît de l'inventaire. Cette action est irréversible.",
+    "summary": {
+      "total": "Total"
+    },
+    "condition": {
+      "working": "En état",
+      "damaged": "Hors service"
+    },
+    "location": {
+      "warehouse": "Dépôt",
+      "site": "Sur chantier"
+    },
+    "filters": {
+      "everywhere": "Partout",
+      "anyCondition": "Tout état"
+    },
+    "categories": {
+      "power_tool": "Outillage électroportatif",
+      "hand_tool": "Outillage à main",
+      "measuring": "Mesure",
+      "access": "Échelles & échafaudages",
+      "safety": "Sécurité / EPI",
+      "machine": "Machines",
+      "other": "Autre"
+    },
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "ex. Perceuse Bosch, visseuse Makita",
+      "category": "Catégorie",
+      "quantity": "Quantité",
+      "condition": "État",
+      "location": "Où se trouve-t-il ?",
+      "warehouse": "Dépôt",
+      "site": "Chantier",
+      "sitePlaceholder": "Choisir un chantier",
+      "reference": "Référence / numéro de série",
+      "referenceHint": "Facultatif — un numéro de série ou votre propre marquage",
+      "description": "Notes"
+    },
+    "validation": {
+      "nameRequired": "Donnez un nom au matériel.",
+      "quantityInvalid": "La quantité doit être un nombre entier, 0 ou plus.",
+      "warehouseRequired": "Choisissez un dépôt.",
+      "siteRequired": "Choisissez un chantier.",
+      "noWarehouseYet": "Aucun dépôt pour l'instant — créez-en un depuis « Dépôts » sur l'écran de l'inventaire, ou laissez le matériel sur un chantier.",
+      "warehouseNameRequired": "Donnez un nom au dépôt.",
+      "noSiteYet": "Aucun chantier pour l'instant — cette société n'a aucun projet où poser le matériel, gardez-le dans un dépôt."
+    },
+    "actions": {
+      "create": "Ajouter à l'inventaire"
+    },
+    "toast": {
+      "created": "Matériel ajouté.",
+      "deleted": "Matériel retiré.",
+      "warehouseCreated": "Dépôt ajouté.",
+      "warehouseDeleted": "Dépôt supprimé."
+    },
+    "warehouses": {
+      "title": "Dépôts",
+      "count_one": "{{count}} dépôt",
+      "count_other": "{{count}} dépôts",
+      "add": "Ajouter un dépôt",
+      "createTitle": "Nouveau dépôt",
+      "editTitle": "Modifier le dépôt",
+      "empty": "Aucun dépôt pour l'instant. Ajoutez l'endroit où la société range ses outils.",
+      "loadError": "Impossible de charger les dépôts.",
+      "noAddress": "Sans adresse",
+      "deleteConfirm": "Supprimer « {{name}} » ?",
+      "deleteBlocked": "Ce dépôt contient encore {{count}} unité(s). Déplacez-les ou retirez-les d'abord ; le serveur refuse de supprimer un dépôt utilisé.",
+      "fields": {
+        "name": "Nom",
+        "namePlaceholder": "ex. Dépôt principal",
+        "address": "Adresse",
+        "addressPlaceholder": "Rue, ville"
+      },
+      "actions": {
+        "create": "Ajouter le dépôt"
+      }
     }
   },
   "companies": {
@@ -985,10 +1130,6 @@
           "users": "Utilisateurs rattachés",
           "delete": "Supprimer",
           "payments": "Moyens de paiement"
-        },
-        "edit": {
-          "save": "Enregistrer les modifications",
-          "savedToast": "Société enregistrée."
         },
         "attached": {
           "nameEmail": "Nom / E-mail",
@@ -1124,7 +1265,11 @@
       "codeLabel": "Code société",
       "hint": "8 caractères, fournis par l'administrateur de la société.",
       "submit": "Rejoindre",
-      "successToast": "Vous avez rejoint la société."
+      "successToast": "Vous avez rejoint la société.",
+      "errors": {
+        "unknownCode": "Ce code est inconnu ou n'est plus valide.",
+        "alreadyMember": "Vous appartenez déjà à cette société."
+      }
     },
     "members": {
       "title": "Membres de l'entreprise",
@@ -1147,7 +1292,9 @@
         "empty": "L'annuaire de cette entreprise est vide.",
         "selectedCount": "{{count}} sélectionné(s)",
         "submit": "Importer la sélection",
-        "successToast": "Membres importés."
+        "successToast": "Membres importés.",
+        "skippedToast_one": "{{imported}} importé(s) · 1 était déjà membre.",
+        "skippedToast_other": "{{imported}} importé(s) · {{count}} étaient déjà membres."
       },
       "grants": {
         "open": "Permissions personnalisées",
@@ -1211,7 +1358,10 @@
     "noCompanies": "Vous n’êtes rattaché à aucune société. Ajoutez-en une depuis « Mes sociétés » pour gérer ses moyens de paiement.",
     "loadError": "Impossible de charger les moyens de paiement. Veuillez réessayer.",
     "noMethodsReadOnly": "Aucun moyen de paiement n’a encore été configuré.",
-    "readOnlyNote": "Comment les factures peuvent être payées pour cette société. Seul un administrateur peut ajouter, renommer ou supprimer un moyen."
+    "readOnlyNote": "Comment les factures peuvent être payées pour cette société. Seul un administrateur peut ajouter, renommer ou supprimer un moyen.",
+    "inactive": "Inactif",
+    "deactivate": "Désactiver",
+    "activate": "Réactiver"
   },
   "admin": {
     "bulkAdd": {
@@ -1413,7 +1563,8 @@
     "payments": "Paiements",
     "paidToast": "Paiement enregistré.",
     "unpaidToast": "Paiements supprimés.",
-    "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement."
+    "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement.",
+    "noMonth": "Sans mois renseigné"
   },
   "shell": {
     "switchProject": "Changer de chantier",
@@ -1431,7 +1582,8 @@
     "billingSub": "Devis · Factures",
     "librarySub": "{{products}} produits · {{suppliers}} fournisseurs",
     "projectSectionsSub": "Documents, photos, notes…",
-    "billingTitle": "Devis & factures"
+    "billingTitle": "Devis & factures",
+    "inventorySub": "{{units}} unités · {{damaged}} hors service"
   },
   "expenses": {
     "add": "Ajouter",
@@ -1489,7 +1641,31 @@
     "discardVoice": "Supprimer l'enregistrement",
     "voiceLoadFailed": "Ce message vocal n'a pas pu être chargé.",
     "recordingFailed": "Le micro n'a pas pu démarrer.",
-    "recordingLost": "L'enregistrement a été perdu."
+    "recordingLost": "L'enregistrement a été perdu.",
+    "kindAdmin": "Administration",
+    "adminSubtitle": "Finances de l'entreprise, paie et activité de Folio",
+    "mentionSuggestion": "Mentionner Folio",
+    "replyToFolio": "Continuer",
+    "replyingTo": "Réponse à {{name}}"
+  },
+  "assistant": {
+    "statusQueued": "En attente",
+    "statusRunning": "En cours…",
+    "statusNotReady": "Pas encore prêt",
+    "statusBlocked": "Bloqué",
+    "statusDone": "Terminé",
+    "statusFailed": "Échec",
+    "statusNotFound": "Introuvable",
+    "badgeConfirmed": "Confirmé",
+    "badgeToConfirm": "À confirmer",
+    "badgeNeedsReview": "À vérifier",
+    "answered": "Répondu",
+    "openInvoice": "Ouvrir la facture — {{title}}",
+    "openMaterial": "Ouvrir le matériau — {{title}}",
+    "actionFailed": "L'action n'a pas pu être envoyée.",
+    "actionQueueUnavailable": "Folio est occupé, réessayez dans un instant.",
+    "notAddressed": "Seul l'auteur de la demande peut choisir",
+    "disabled": "L'assistant Folio n'est pas activé sur ce serveur."
   },
   "signup": {
     "title": "Créez votre profil",
@@ -1512,7 +1688,7 @@
     "logToday": "Pointer aujourd'hui",
     "logDay": "Pointer le {{date}}",
     "submit": "Pointer ce jour",
-    "futureDay": "Vous ne pouvez pointer qu'aujourd'hui ou un jour passé.",
+    "futureDay": "Vous pouvez pointer aujourd'hui ou l'un des {{days}} derniers jours.",
     "logged": "Pointage envoyé — en attente de validation par votre responsable.",
     "notLinked": "Votre compte n'est pas encore relié à un ouvrier sur ce chantier. Demandez à votre responsable.",
     "monthList": "Jours ce mois-ci",
@@ -1532,14 +1708,15 @@
     "editSent": "Demande de modification envoyée — en attente d'un responsable.",
     "editUnchanged": "Aucune modification : ce jour a déjà ces valeurs.",
     "editDuplicate": "Cette demande de modification est déjà en attente d'un responsable.",
-    "supplement": "Heures sup.",
+    "supplement": "Heures sup. (non payées)",
     "note": "Note",
     "changeRequested": "Modification demandée",
     "proposedLine": "Demandé : {{value}}",
     "roster": {
       "title": "Équipe sur place — {{date}}",
       "empty": "Personne n'est prévu aujourd'hui.",
-      "loadError": "Impossible de charger l'effectif du jour."
+      "loadError": "Impossible de charger l'effectif du jour.",
+      "upcoming": "À venir"
     },
     "profileTitle": "Mon profil",
     "profileSub": "Votre rôle sur ce chantier, votre taux journalier et son évolution.",
@@ -1582,10 +1759,30 @@
     "project_manage_invoices": "Gérer les factures",
     "project_log_own_attendance": "Pointer sa propre présence",
     "bibliotheque_manage": "Gérer la bibliothèque produits",
+    "inventory_manage": "Gérer l'inventaire du matériel",
     "project_view_pay": "Voir la paie des autres",
     "project_view_budget": "Voir le budget et les fonds débloqués"
   },
   "help": {
     "open": "Ouvrir le guide des processus"
+  },
+  "account": {
+    "delete": {
+      "title": "Supprimer mon compte",
+      "confirmTitle": "Supprimer votre compte ?",
+      "confirmBody": "Cette action supprime définitivement votre compte et vos données personnelles. Les factures, chantiers et documents de votre entreprise sont conservés. Cette action est irréversible.",
+      "confirm": "Supprimer",
+      "cancel": "Annuler",
+      "deleting": "Suppression…",
+      "failed": "Votre compte n'a pas pu être supprimé. Veuillez réessayer.",
+      "blockedTitle": "Désignez d'abord un autre administrateur",
+      "blockedBody": "Vous êtes le seul administrateur de {{company}}. Nommez un autre administrateur, puis supprimez votre compte.",
+      "ok": "OK"
+    }
+  },
+  "pdfViewer": {
+    "title": "PDF",
+    "share": "Partager",
+    "loadError": "Impossible d'afficher ce PDF."
   }
 }

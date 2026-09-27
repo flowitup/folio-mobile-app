@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import type { PropsWithChildren } from "react";
+import { BackHandler } from "react-native";
 
 /** The shell sheets: one open at a time; scrim tap, tab change or navigation closes it. */
 export type ShellSheet =
@@ -46,6 +47,20 @@ export function ShellProvider({ children }: PropsWithChildren) {
     };
   }, []);
   const [tabBarHeight, setTabBarHeight] = useState(0);
+
+  // The shell sheets are plain views, not native modals, so Android's hardware Back never
+  // reached them: it left the screen underneath instead of closing the open panel.
+  useEffect(() => {
+    if (sheet === null) return;
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        setSheet(null);
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, [sheet]);
 
   const openSheet = useCallback((next: ShellSheet) => setSheet(next), []);
   const closeSheet = useCallback(() => setSheet(null), []);

@@ -58,6 +58,40 @@
         "title": "AcceptedUserResponse",
         "type": "object"
       },
+      "AccountDeletionBlockedResponse": {
+        "description": "409 body for DELETE /auth/me when the caller is a company's last admin.\n\n``reason`` is the discriminator clients branch on. It reuses the value the\ncompany demote/boot/detach endpoints already emit for the same condition, so\na client needs one branch, not two.",
+        "properties": {
+          "company_name": { "title": "Company Name", "type": "string" },
+          "error": {
+            "default": "Conflict",
+            "title": "Error",
+            "type": "string"
+          },
+          "message": { "title": "Message", "type": "string" },
+          "reason": {
+            "const": "last_admin",
+            "default": "last_admin",
+            "title": "Reason",
+            "type": "string"
+          },
+          "status_code": {
+            "default": 409,
+            "title": "Status Code",
+            "type": "integer"
+          }
+        },
+        "required": ["message", "company_name"],
+        "title": "AccountDeletionBlockedResponse",
+        "type": "object"
+      },
+      "ActionAcceptedResponse": {
+        "properties": {
+          "accepted": { "title": "Accepted", "type": "boolean" }
+        },
+        "required": ["accepted"],
+        "title": "ActionAcceptedResponse",
+        "type": "object"
+      },
       "AddMemberByPhoneRequest": {
         "additionalProperties": false,
         "description": "Request body for POST /companies/<id>/members.\n\n``person_id`` lets the caller resend the request after a 409\n(several un-linked candidates matched the phone) to pick one explicitly.",
@@ -210,14 +244,129 @@
         "title": "AssignMemberRequest",
         "type": "object"
       },
-      "AttachedUserRow": {
+      "AssistantAuditListResponse": {
+        "properties": {
+          "items": {
+            "items": { "$ref": "#/components/schemas/AssistantAuditRow" },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "title": "AssistantAuditListResponse",
+        "type": "object"
+      },
+      "AssistantAuditRow": {
+        "description": "One row of GET /assistant/audit \u2014 the web supervision page's list item.",
+        "properties": {
+          "channel_key": { "title": "Channel Key", "type": "string" },
+          "cost_usd": {
+            "anyOf": [
+              { "type": "number" },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "feature": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Feature"
+          },
+          "id": { "format": "uuid", "title": "Id", "type": "string" },
+          "intent": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Intent"
+          },
+          "outcome": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Outcome"
+          },
+          "refused_reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Refused Reason"
+          },
+          "trace_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Trace Id"
+          },
+          "user_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "title": "User Id"
+          },
+          "user_name": { "title": "User Name", "type": "string" }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "channel_key",
+          "user_id",
+          "user_name",
+          "intent",
+          "feature",
+          "outcome",
+          "refused_reason",
+          "cost_usd",
+          "trace_id"
+        ],
+        "title": "AssistantAuditRow",
+        "type": "object"
+      },
+      "AttachUserToCompanyResponse": {
         "additionalProperties": false,
-        "description": "One row of GET /companies/<id>/attached-users.\n\nAccess fields come from the use case; `email` / `display_name` / `phone`\nare joined from `users` so clients can render the member list directly.",
+        "description": "Response of POST /companies/<id>/access/<user_id>.\n\nSame shape whether the call created the row or found the user already\nattached (idempotent) \u2014 the current state of the access row either way.",
         "properties": {
           "attached_at": {
             "format": "date-time",
             "title": "Attached At",
             "type": "string"
+          },
+          "company_id": {
+            "format": "uuid",
+            "title": "Company Id",
+            "type": "string"
+          },
+          "is_primary": { "title": "Is Primary", "type": "boolean" },
+          "role": { "title": "Role", "type": "string" },
+          "user_id": { "format": "uuid", "title": "User Id", "type": "string" }
+        },
+        "required": [
+          "user_id",
+          "company_id",
+          "role",
+          "is_primary",
+          "attached_at"
+        ],
+        "title": "AttachUserToCompanyResponse",
+        "type": "object"
+      },
+      "AttachedUserRow": {
+        "additionalProperties": false,
+        "description": "One row of GET /companies/<id>/attached-users.\n\nAccess fields come from the use case; `email` / `display_name` / `phone`\nare joined from `users` so clients can render the member list directly.\n`companies` (D4) lists the target's OWN attachments intersected with the\ncompanies the CALLER administers \u2014 never a company the caller cannot\nmanage, so this can never leak cross-tenant membership.\n`assigned_project_ids` lists this company's projects the user is\nassigned to: the directory only carries it for people who have a\n`company_persons` profile, so an account attached without one would\notherwise look unassigned.",
+        "properties": {
+          "assigned_project_ids": {
+            "items": { "format": "uuid", "type": "string" },
+            "title": "Assigned Project Ids",
+            "type": "array"
+          },
+          "attached_at": {
+            "format": "date-time",
+            "title": "Attached At",
+            "type": "string"
+          },
+          "companies": {
+            "items": { "$ref": "#/components/schemas/CompanySummary" },
+            "title": "Companies",
+            "type": "array"
           },
           "company_id": {
             "format": "uuid",
@@ -281,10 +430,14 @@
       "AuthConfigResponse": {
         "description": "GET /auth/config \u2014 what this deployment offers, read by the apps before sign-in.",
         "properties": {
+          "self_attendance_max_backdate_days": {
+            "title": "Self Attendance Max Backdate Days",
+            "type": "integer"
+          },
           "session": { "title": "Session", "type": "string" },
           "signup": { "title": "Signup", "type": "boolean" }
         },
-        "required": ["session", "signup"],
+        "required": ["session", "signup", "self_attendance_max_backdate_days"],
         "title": "AuthConfigResponse",
         "type": "object"
       },
@@ -457,6 +610,17 @@
         "title": "CloneRequest",
         "type": "object"
       },
+      "CompanySummary": {
+        "additionalProperties": false,
+        "description": "Minimal company reference nested in other responses (id + display name only).",
+        "properties": {
+          "id": { "format": "uuid", "title": "Id", "type": "string" },
+          "legal_name": { "title": "Legal Name", "type": "string" }
+        },
+        "required": ["id", "legal_name"],
+        "title": "CompanySummary",
+        "type": "object"
+      },
       "ConvertRequest": {
         "additionalProperties": false,
         "description": "Optional body for POST /billing-documents/<id>/convert-to-facture.\n\nBoth fields are optional \u2014 empty body {} is accepted.",
@@ -502,6 +666,21 @@
         },
         "required": ["date", "title"],
         "title": "CreateActivitySchema",
+        "type": "object"
+      },
+      "CreateApiKeyBody": {
+        "additionalProperties": false,
+        "description": "Request body for POST /api/v1/api-keys.",
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "title": "CreateApiKeyBody",
         "type": "object"
       },
       "CreateBillingDocumentRequest": {
@@ -697,6 +876,94 @@
         "title": "CreateCompanyRequest",
         "type": "object"
       },
+      "CreateInventoryItemSchema": {
+        "additionalProperties": false,
+        "description": "Request body for POST /api/v1/inventory/items.",
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "enum": [
+                  "power_tool",
+                  "hand_tool",
+                  "measuring",
+                  "access",
+                  "safety",
+                  "machine",
+                  "other"
+                ],
+                "type": "string"
+              },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Category"
+          },
+          "company_id": {
+            "format": "uuid",
+            "title": "Company Id",
+            "type": "string"
+          },
+          "condition": {
+            "enum": ["working", "damaged"],
+            "title": "Condition",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              { "maxLength": 2000, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "location_type": {
+            "enum": ["warehouse", "site"],
+            "title": "Location Type",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "project_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Project Id"
+          },
+          "quantity": { "minimum": 0, "title": "Quantity", "type": "integer" },
+          "reference": {
+            "anyOf": [
+              { "maxLength": 120, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Reference"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Warehouse Id"
+          }
+        },
+        "required": [
+          "company_id",
+          "name",
+          "quantity",
+          "condition",
+          "location_type"
+        ],
+        "title": "CreateInventoryItemSchema",
+        "type": "object"
+      },
       "CreateInviteRequest": {
         "description": "POST /invitations request body.",
         "properties": {
@@ -886,12 +1153,10 @@
         "description": "Request body for creating a project.",
         "properties": {
           "address": {
-            "anyOf": [
-              { "maxLength": 500, "type": "string" },
-              { "type": "null" }
-            ],
-            "default": null,
-            "title": "Address"
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Address",
+            "type": "string"
           },
           "budget": {
             "anyOf": [
@@ -922,13 +1187,15 @@
             "title": "Company Id"
           },
           "name": {
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name",
-            "type": "string"
+            "anyOf": [
+              { "maxLength": 255, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Name"
           }
         },
-        "required": ["name"],
+        "required": ["address"],
         "title": "CreateProjectRequest",
         "type": "object"
       },
@@ -1035,6 +1302,34 @@
         "title": "CreateTemplateRequest",
         "type": "object"
       },
+      "CreateWarehouseSchema": {
+        "additionalProperties": false,
+        "description": "Request body for POST /api/v1/inventory/warehouses.",
+        "properties": {
+          "address": {
+            "anyOf": [
+              { "maxLength": 500, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Address"
+          },
+          "company_id": {
+            "format": "uuid",
+            "title": "Company Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["company_id", "name"],
+        "title": "CreateWarehouseSchema",
+        "type": "object"
+      },
       "CreateWorkerRequest": {
         "description": "Request body for creating a worker.\n\n``person_id`` (cook 1d-ii-b) lets the caller link this Worker to an\nexisting Person picked via the PersonTypeahead. When omitted, the\nlegacy flow runs: name + phone create a fresh Person via the\nCreateWorkerUseCase before linking. Either path produces a Worker\nwith a non-null person_id once Phase 1c backfill has completed.\n\nPhase 2 onboarding (\"workers from person\"): when ``person_id`` refers\nto a person with a company profile (``company_persons``) on this\nproject's company, ``name``/``daily_rate`` become optional here \u2014 the\nuse case fills them from that profile. The use case still rejects the\nrequest if neither the body nor the profile can supply them.",
         "properties": {
@@ -1090,10 +1385,36 @@
         "title": "CreateWorkerRequest",
         "type": "object"
       },
+      "DocumentUploaderSchema": {
+        "description": "One person who has a document in this project.",
+        "properties": {
+          "display_name": { "title": "Display Name", "type": "string" },
+          "user_id": { "format": "uuid", "title": "User Id", "type": "string" }
+        },
+        "required": ["user_id", "display_name"],
+        "title": "DocumentUploaderSchema",
+        "type": "object"
+      },
+      "DocumentUploadersResponse": {
+        "description": "GET /projects/<id>/documents/uploaders \u2014 the uploader filter's options.",
+        "properties": {
+          "items": {
+            "items": { "$ref": "#/components/schemas/DocumentUploaderSchema" },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "title": "DocumentUploadersResponse",
+        "type": "object"
+      },
       "FeaturesResponse": {
         "description": "Feature flags of this deployment, as seen by the apps.",
-        "properties": { "chat": { "title": "Chat", "type": "boolean" } },
-        "required": ["chat"],
+        "properties": {
+          "assistant": { "title": "Assistant", "type": "boolean" },
+          "chat": { "title": "Chat", "type": "boolean" }
+        },
+        "required": ["chat", "assistant"],
         "title": "FeaturesResponse",
         "type": "object"
       },
@@ -1618,11 +1939,42 @@
             "title": "Body"
           },
           "channel_key": { "title": "Channel Key", "type": "string" },
+          "content_type": {
+            "enum": ["text", "photo", "card", "choice", "job_status"],
+            "title": "Content Type",
+            "type": "string"
+          },
           "created_at": { "title": "Created At", "type": "string" },
           "id": { "title": "Id", "type": "string" },
+          "mentions_assistant": {
+            "default": false,
+            "title": "Mentions Assistant",
+            "type": "boolean"
+          },
           "mine": { "title": "Mine", "type": "boolean" },
-          "sender_id": { "title": "Sender Id", "type": "string" },
-          "sender_name": { "title": "Sender Name", "type": "string" }
+          "payload": {
+            "anyOf": [
+              { "additionalProperties": true, "type": "object" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Payload"
+          },
+          "reply_to_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "default": null,
+            "title": "Reply To Id"
+          },
+          "sender_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Sender Id"
+          },
+          "sender_name": { "title": "Sender Name", "type": "string" },
+          "sender_type": {
+            "enum": ["user", "assistant", "system"],
+            "title": "Sender Type",
+            "type": "string"
+          }
         },
         "required": [
           "id",
@@ -1632,13 +1984,15 @@
           "body",
           "attachment",
           "created_at",
-          "mine"
+          "mine",
+          "sender_type",
+          "content_type"
         ],
         "title": "MessageResponse",
         "type": "object"
       },
       "MoveTaskSchema": {
-        "description": "Atomic drag-drop endpoint payload.",
+        "description": "Atomic drag-drop endpoint payload.\n\nThe neighbours describe the gap the card is dropped into, in the lane named\nby `status` \u2014 the same lane the card already sits in when it is only\nreordered. Sending neither appends the card to the end of that lane.",
         "properties": {
           "after_id": {
             "anyOf": [
@@ -1646,6 +2000,7 @@
               { "type": "null" }
             ],
             "default": null,
+            "description": "Task that ends up directly BELOW the moved one; null when dropped at the end.",
             "title": "After Id"
           },
           "before_id": {
@@ -1654,6 +2009,7 @@
               { "type": "null" }
             ],
             "default": null,
+            "description": "Task that ends up directly ABOVE the moved one; null when dropped at the top.",
             "title": "Before Id"
           },
           "status": {
@@ -1943,6 +2299,11 @@
             "title": "Spent By Credits",
             "type": "number"
           },
+          "spent_invoiced": {
+            "default": 0,
+            "title": "Spent Invoiced",
+            "type": "number"
+          },
           "spent_personal": {
             "default": 0,
             "title": "Spent Personal",
@@ -2192,13 +2553,29 @@
       },
       "SendMessageBody": {
         "additionalProperties": false,
-        "description": "JSON body of POST /chat/channels/<key>/messages (text-only messages).\n\nMessages with an image use multipart/form-data instead: ``body`` text part + ``file``.",
+        "description": "JSON body of POST /chat/channels/<key>/messages (text-only messages).\n\nMessages with an image or a voice note use multipart/form-data instead: ``body`` text\npart + ``file`` (+ optional ``lang``/``reply_to_id`` form fields).",
         "properties": {
           "body": {
             "maxLength": 4000,
             "minLength": 1,
             "title": "Body",
             "type": "string"
+          },
+          "lang": {
+            "anyOf": [
+              { "enum": ["vi", "fr", "en"], "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Lang"
+          },
+          "reply_to_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Reply To Id"
           }
         },
         "required": ["body"],
@@ -2302,6 +2679,31 @@
         },
         "required": ["phone", "code", "display_name"],
         "title": "SignupVerifyBody",
+        "type": "object"
+      },
+      "SubmitActionBody": {
+        "additionalProperties": false,
+        "description": "JSON body of POST /assistant/actions (a tapped choice option).",
+        "properties": {
+          "action": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Action",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "reply_to_id": {
+            "format": "uuid",
+            "title": "Reply To Id",
+            "type": "string"
+          }
+        },
+        "required": ["action", "reply_to_id"],
+        "title": "SubmitActionBody",
         "type": "object"
       },
       "UnregisterPushDeviceRequest": {
@@ -2558,6 +2960,94 @@
           }
         },
         "title": "UpdateCompanyRequest",
+        "type": "object"
+      },
+      "UpdateInventoryItemSchema": {
+        "additionalProperties": false,
+        "description": "Request body for PATCH /api/v1/inventory/items/<id>; absent key = unchanged, null = cleared.",
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "enum": [
+                  "power_tool",
+                  "hand_tool",
+                  "measuring",
+                  "access",
+                  "safety",
+                  "machine",
+                  "other"
+                ],
+                "type": "string"
+              },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Category"
+          },
+          "condition": {
+            "anyOf": [
+              { "enum": ["working", "damaged"], "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Condition"
+          },
+          "description": {
+            "anyOf": [
+              { "maxLength": 2000, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "location_type": {
+            "anyOf": [
+              { "enum": ["warehouse", "site"], "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Location Type"
+          },
+          "name": {
+            "anyOf": [
+              { "maxLength": 200, "minLength": 1, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "project_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Project Id"
+          },
+          "quantity": {
+            "anyOf": [{ "minimum": 0, "type": "integer" }, { "type": "null" }],
+            "default": null,
+            "title": "Quantity"
+          },
+          "reference": {
+            "anyOf": [
+              { "maxLength": 120, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Reference"
+          },
+          "warehouse_id": {
+            "anyOf": [
+              { "format": "uuid", "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Warehouse Id"
+          }
+        },
+        "title": "UpdateInventoryItemSchema",
         "type": "object"
       },
       "UpdateInvoiceSchema": {
@@ -2863,7 +3353,7 @@
           },
           "name": {
             "anyOf": [
-              { "maxLength": 255, "minLength": 1, "type": "string" },
+              { "maxLength": 255, "type": "string" },
               { "type": "null" }
             ],
             "default": null,
@@ -2995,6 +3485,30 @@
           }
         },
         "title": "UpdateTemplateRequest",
+        "type": "object"
+      },
+      "UpdateWarehouseSchema": {
+        "additionalProperties": false,
+        "description": "Request body for PATCH /api/v1/inventory/warehouses/<id>; absent key = unchanged, null = cleared.",
+        "properties": {
+          "address": {
+            "anyOf": [
+              { "maxLength": 500, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Address"
+          },
+          "name": {
+            "anyOf": [
+              { "maxLength": 120, "minLength": 1, "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "title": "Name"
+          }
+        },
+        "title": "UpdateWarehouseSchema",
         "type": "object"
       },
       "UpdateWorkerRequest": {
@@ -3268,6 +3782,90 @@
         "tags": ["admin"]
       }
     },
+    "/api/v1/api-keys": {
+      "get": {
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List the caller's API keys",
+        "tags": ["api-keys"]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateApiKeyBody" }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create a new API key for the caller",
+        "tags": ["api-keys"]
+      }
+    },
+    "/api/v1/api-keys/{key_id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Revoke one of the caller's API keys",
+        "tags": ["api-keys"]
+      }
+    },
+    "/api/v1/assistant/actions": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SubmitActionBody" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionAcceptedResponse"
+                }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Answer an assistant choice message",
+        "tags": ["assistant"]
+      }
+    },
+    "/api/v1/assistant/audit": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantAuditListResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List the assistant's supervision log for a company (admin only)",
+        "tags": ["assistant"]
+      }
+    },
     "/api/v1/attachments/{attachment_id}": {
       "delete": {
         "parameters": [
@@ -3349,6 +3947,32 @@
       }
     },
     "/api/v1/auth/me": {
+      "delete": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LogoutBody" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDeletionBlockedResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Permanently delete the current user's own account",
+        "tags": ["auth"]
+      },
       "get": {
         "responses": {
           "200": {
@@ -4079,7 +4703,7 @@
           }
         },
         "security": [{ "bearerAuth": [] }],
-        "summary": "Send a message (JSON text, or multipart/form-data with an image `file`)",
+        "summary": "Send a message (JSON text, or multipart/form-data with an image or voice note `file`)",
         "tags": ["chat"]
       }
     },
@@ -4240,6 +4864,37 @@
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
         "summary": "Remove a user from a company (admin only)",
+        "tags": ["companies"]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "in": "path",
+            "name": "target_user_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttachUserToCompanyResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Attach an existing user account to a company as member (admin only)",
         "tags": ["companies"]
       }
     },
@@ -4636,6 +5291,236 @@
         "security": [{ "bearerAuth": [] }],
         "summary": "Feature flags of this deployment",
         "tags": ["features"]
+      }
+    },
+    "/api/v1/inventory/items": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "company_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "format": "uuid", "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Company Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "location_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "enum": ["warehouse", "site"], "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Location Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "warehouse_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "format": "uuid", "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Warehouse Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "format": "uuid", "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Project Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "condition",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "enum": ["working", "damaged"], "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Condition"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "default": null,
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List the company's equipment",
+        "tags": ["inventory"]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInventoryItemSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Add equipment to the inventory",
+        "tags": ["inventory"]
+      }
+    },
+    "/api/v1/inventory/items/{item_id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": { "204": { "description": "No Content" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Remove an inventory row",
+        "tags": ["inventory"]
+      },
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "One inventory row",
+        "tags": ["inventory"]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInventoryItemSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Edit an inventory row",
+        "tags": ["inventory"]
+      }
+    },
+    "/api/v1/inventory/warehouses": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "company_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "format": "uuid", "type": "string" },
+                { "type": "null" }
+              ],
+              "default": null,
+              "title": "Company Id"
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List the company's warehouses",
+        "tags": ["inventory"]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateWarehouseSchema" }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create a warehouse",
+        "tags": ["inventory"]
+      }
+    },
+    "/api/v1/inventory/warehouses/{warehouse_id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "warehouse_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": { "204": { "description": "No Content" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Delete an empty warehouse",
+        "tags": ["inventory"]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "warehouse_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateWarehouseSchema" }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Edit a warehouse",
+        "tags": ["inventory"]
       }
     },
     "/api/v1/invitations": {
@@ -6040,6 +6925,33 @@
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
         "summary": "List all tags used in a project's documents",
+        "tags": ["project_documents"]
+      }
+    },
+    "/api/v1/projects/{project_id}/documents/uploaders": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentUploadersResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List the distinct uploaders of a project's documents",
         "tags": ["project_documents"]
       }
     },

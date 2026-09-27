@@ -13,9 +13,10 @@ import {
   View,
 } from "react-native";
 
+import { useCan } from "@/auth/use-can";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
-import { Badge, EmptyState } from "@/components/ui/primitives";
+import { Badge, EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { showToast, ToastViewport } from "@/components/ui/toast";
@@ -51,6 +52,7 @@ export default function LibraryTab() {
   const companies = useMyCompanies();
   const [companyId, setCompanyId] = useState<string | null>(null);
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
+  const canManage = useCan("bibliotheque:manage");
   const suppliers = useSuppliers(effectiveCompany);
   const categories = useLibraryCategories(effectiveCompany);
   const [supplier, setSupplier] = useState<string | null>(null);
@@ -143,12 +145,14 @@ export default function LibraryTab() {
       <ScreenHeader
         title={t("library.title")}
         right={
-          <Button
-            testID="library-add"
-            label={`＋ ${t("library.addProduct")}`}
-            size="sm"
-            onPress={() => formSheet.current?.present()}
-          />
+          canManage ? (
+            <Button
+              testID="library-add"
+              label={`＋ ${t("library.addProduct")}`}
+              size="sm"
+              onPress={() => formSheet.current?.present()}
+            />
+          ) : undefined
         }
       />
       <View className="px-4 pt-3">
@@ -188,13 +192,22 @@ export default function LibraryTab() {
               if (compareMode) setSelected(new Map());
             }}
           />
-          <Button
-            testID="library-import"
-            label={t("library.import")}
-            size="sm"
-            variant="secondary"
-            onPress={() => router.push("/library/import")}
-          />
+          {canManage ? (
+            <Button
+              testID="library-import"
+              label={t("library.import")}
+              size="sm"
+              variant="secondary"
+              onPress={() =>
+                router.push({
+                  pathname: "/library/import",
+                  params: effectiveCompany
+                    ? { companyId: effectiveCompany }
+                    : {},
+                })
+              }
+            />
+          ) : null}
         </View>
         <View className="flex-row gap-2">
           <View className="flex-1">
@@ -235,6 +248,13 @@ export default function LibraryTab() {
       </View>
       {products.isPending && effectiveCompany ? (
         <ActivityIndicator className="mt-8" />
+      ) : null}
+      {products.isError ? (
+        <ErrorState
+          message={t("library.loadError")}
+          retryLabel={t("common.retry")}
+          onRetry={() => void products.refetch()}
+        />
       ) : null}
       <FlatList
         data={products.data?.items ?? []}

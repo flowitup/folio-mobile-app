@@ -11,6 +11,8 @@ import {
 } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { CHAT_FAB_RESERVE } from "@/components/shell/chat-fab";
+import { useChatEnabled } from "@/features/chat/chat-api";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { Segmented } from "@/components/ui/chip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -72,11 +74,13 @@ import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import {
   currentMonth,
+  formatDate,
   formatMonth,
   localeTag,
   toIsoDate,
 } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
+import { dayInMonth } from "@/lib/labor/attendance-day";
 import { monthRange } from "@/lib/labor/month-range";
 import { ApiError } from "@/lib/query/api-error";
 import { frenchHolidayKeyForIso } from "@/lib/labor/french-holidays";
@@ -88,6 +92,8 @@ const SEGMENTS: Segment[] = ["calendar", "workers", "payments"];
 /** Attendance segment view (web ViewToggle): month grid + day card, or the flat day list. */
 type AttendanceView = "calendar" | "list";
 const ATTENDANCE_VIEWS: AttendanceView[] = ["calendar", "list"];
+/** Breathing room kept above the calendar when a day tap scrolls it to the top. */
+const CALENDAR_SCROLL_MARGIN = 8;
 
 /** Nhân công: month stepper, segmented Chấm công / Nhân công / Thanh toán, calendar + day card, worker and payment cards. */
 function LaborTabContent() {
@@ -95,7 +101,8 @@ function LaborTabContent() {
   const router = useRouter();
   const tokens = useTokens();
   const { user } = useAuth();
-  const params = useLocalSearchParams<{ segment?: string }>();
+  const chatEnabled = useChatEnabled();
+  const params = useLocalSearchParams<{ segment?: string; focus?: string }>();
   const { projectId, project: selected } = useSelectedProject();
   const id = projectId;
   const [segment, setSegment] = useState<Segment>("calendar");
@@ -103,16 +110,33 @@ function LaborTabContent() {
     useState<AttendanceView>("calendar");
   const [month, setMonth] = useState(currentMonth());
   const range = useMemo(() => monthRange(month), [month]);
-  const today = useMemo(() => toIsoDate(new Date()), []);
-  const [selectedDay, setSelectedDay] = useState<string>(today);
+  const today = toIsoDate(new Date());
+  // A day picked in another month must not survive the month stepper, or the day card would
+  // show — and log — a day the calendar no longer displays. Derived, never reset in an effect.
+  const [pickedDay, setPickedDay] = useState<string | null>(null);
+  const selectedDay = dayInMonth(pickedDay, month, today);
   const selectedHoliday = frenchHolidayKeyForIso(selectedDay);
+  const scrollRef = useRef<ScrollView>(null);
+  // Content offset of the calendar block, refreshed by its onLayout.
+  const calendarTop = useRef(0);
 
-  // "Trả ›" on the overview lands on the payments segment.
+  // The day card sits under a six-row grid, below the fold on a phone: picking a day used to
+  // change a card the user could not see. Bring the grid to the top so the card follows it.
+  const selectDay = (iso: string) => {
+    setPickedDay(iso);
+    scrollRef.current?.scrollTo({
+      y: Math.max(0, calendarTop.current - CALENDAR_SCROLL_MARGIN),
+      animated: true,
+    });
+  };
+
+  // "Trả ›" on the overview lands on the payments segment. It carries a changing `focus` nonce
+  // so tapping it again re-applies the segment after the user moved away from it.
   useEffect(() => {
     if (params.segment && (SEGMENTS as string[]).includes(params.segment))
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSegment(params.segment as Segment);
-  }, [params.segment]);
+  }, [params.segment, params.focus]);
 
   const project = useProject(id);
   const workers = useWorkers(id);
@@ -139,6 +163,7 @@ function LaborTabContent() {
   const [rateWorker, setRateWorker] = useState<Worker | null>(null);
   const [deletingWorker, setDeletingWorker] = useState<Worker | null>(null);
   const [editingEntry, setEditingEntry] = useState<LaborEntry | null>(null);
+  const [deletingEntry, setDeletingEntry] = useState<LaborEntry | null>(null);
   const [conflicts, setConflicts] = useState<ConflictGroup[] | null>(null);
   const [pendingBulk, setPendingBulk] = useState<BulkLogEntry[] | null>(null);
   const [paymentRow, setPaymentRow] = useState<PaymentRow | null>(null);
@@ -233,6 +258,17 @@ function LaborTabContent() {
     "project:manage_invoices",
     user?.permissions,
   );
+  // An unlinked member reaches this tab in the normal shell; every write here needs manage_labor.
+  const canManageLabor = projectCan(
+    project.data,
+    "project:manage_labor",
+    user?.permissions,
+  );
+  const canViewPay = projectCan(
+    project.data,
+    "project:view_pay",
+    user?.permissions,
+  );
 
   async function submitBulk(bulkEntries: BulkLogEntry[], acknowledge = false) {
     if (!acknowledge) {
@@ -285,9 +321,16 @@ function LaborTabContent() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        ref={scrollRef}
+        testID="labor-scroll"
         className="flex-1"
-        contentContainerClassName="px-4 pb-6 pt-3.5"
-        contentContainerStyle={{ gap: 16 }}
+        contentContainerClassName="px-4 pt-3.5"
+        // The chat button floats over this tab, and the last row — the export button —
+        // is tall enough to reach under it, where it cannot be tapped.
+        contentContainerStyle={{
+          gap: 16,
+          paddingBottom: chatEnabled ? CHAT_FAB_RESERVE : 24,
+        }}
       >
         <View className="flex-row items-end justify-between">
           <View>
@@ -322,6 +365,7 @@ function LaborTabContent() {
               days={summary.data?.total_days ?? 0}
               cost={summary.data?.total_cost ?? 0}
               unpaid={unpaid}
+              showPay={canViewPay}
             />
             <Segmented<AttendanceView>
               testID="attendance-view"
@@ -346,15 +390,23 @@ function LaborTabContent() {
                 }}
               />
             ) : (
-              <AttendanceCalendar
-                month={month}
-                entries={entries.data ?? []}
-                colorOf={colorOf}
-                selected={selectedDay}
-                onSelectDay={setSelectedDay}
-              />
+              <View
+                testID="attendance-calendar-block"
+                onLayout={(event) => {
+                  calendarTop.current = event.nativeEvent.layout.y;
+                }}
+              >
+                <AttendanceCalendar
+                  month={month}
+                  entries={entries.data ?? []}
+                  colorOf={colorOf}
+                  selected={selectedDay}
+                  onSelectDay={selectDay}
+                />
+              </View>
             )}
             <LaborDayCard
+              canManage={canManageLabor}
               title={dayCardTitle(selectedDay, localeTag())}
               subtitle={
                 selectedHoliday
@@ -387,6 +439,7 @@ function LaborTabContent() {
 
         {segment === "workers" ? (
           <WorkersPanel
+            canManage={canManageLabor}
             workers={coloredWorkers}
             daysOf={(workerId) => daysByWorker.get(workerId) ?? 0}
             onWorker={(worker) => {
@@ -478,13 +531,7 @@ function LaborTabContent() {
             { onSuccess: () => entrySheet.current?.close() },
           )
         }
-        onDelete={() =>
-          editingEntry &&
-          deleteEntry.mutate(
-            { entryId: editingEntry.id },
-            { onSuccess: () => entrySheet.current?.close() },
-          )
-        }
+        onDelete={() => editingEntry && setDeletingEntry(editingEntry)}
       />
       <DayDetailsSheet
         ref={detailsSheet}
@@ -549,12 +596,36 @@ function LaborTabContent() {
       />
 
       <ConfirmDialog
+        visible={deletingEntry !== null}
+        title={t("labor.entry.deleteConfirm")}
+        message={
+          deletingEntry
+            ? `${deletingEntry.worker_name} · ${formatDate(deletingEntry.date)}`
+            : undefined
+        }
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+        destructive
+        loading={deleteEntry.isPending}
+        onCancel={() => setDeletingEntry(null)}
+        onConfirm={() =>
+          deletingEntry &&
+          deleteEntry.mutate(
+            { entryId: deletingEntry.id },
+            {
+              onSuccess: () => entrySheet.current?.close(),
+              onSettled: () => setDeletingEntry(null),
+            },
+          )
+        }
+      />
+      <ConfirmDialog
         visible={deletingWorker !== null}
         title={t("labor.workers.deleteConfirm", {
           name: deletingWorker?.name ?? "",
         })}
         message={t("labor.workers.deleteHint")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("labor.workers.deactivate")}
         cancelLabel={t("common.cancel")}
         destructive
         loading={deleteWorker.isPending}

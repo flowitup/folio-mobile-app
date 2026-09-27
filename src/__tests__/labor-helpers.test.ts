@@ -1,5 +1,6 @@
 import { buildMonthCells } from "../features/labor/calendar-month-grid";
 import { buildBulkEntries } from "../features/labor/labor-sheets";
+import { isValidMonthRange, monthSpan } from "@/lib/labor/month-range";
 
 describe("buildMonthCells", () => {
   it("starts on Monday, pads to full weeks and lists every day of the month", () => {
@@ -23,5 +24,20 @@ describe("buildBulkEntries", () => {
       { worker_id: "a", shift_type: "full", supplement_hours: 2 },
       { worker_id: "c", shift_type: "overtime" },
     ]);
+  });
+});
+
+describe("month range", () => {
+  it("counts the span inclusively, across years", () => {
+    expect(monthSpan("2026-09", "2026-09")).toBe(1);
+    expect(monthSpan("2025-12", "2026-01")).toBe(2);
+    expect(monthSpan("2026-09", "2026-08")).toBe(0);
+  });
+
+  it("accepts an ordered range of at most 24 months", () => {
+    expect(isValidMonthRange("2026-09", "2026-09")).toBe(true);
+    expect(isValidMonthRange("2025-01", "2026-12")).toBe(true);
+    expect(isValidMonthRange("2024-12", "2026-12")).toBe(false);
+    expect(isValidMonthRange("2026-09", "2026-08")).toBe(false);
   });
 });

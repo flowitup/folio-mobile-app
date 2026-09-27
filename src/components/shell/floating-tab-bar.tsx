@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useShell } from "@/components/shell/shell-context";
+import { sectionTabOf } from "@/components/shell/tabs-config";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { Icon } from "@/components/ui/icon";
 import type { IconName } from "@/components/ui/icon";
@@ -62,9 +63,21 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
   const { sheet, toggleSheet, closeSheet, setTabBarHeight } = useShell();
   const { workerMode } = useWorkerMode();
 
-  const currentName = state.routes[state.index]?.name ?? "index";
+  const currentRoute = state.routes[state.index];
+  const currentName = currentRoute?.name ?? "index";
   const tabs: readonly ProjectTab[] = workerMode ? WORKER_TABS : PROJECT_TABS;
-  const onProjectTab = (tabs as readonly string[]).includes(currentName);
+  // A project section keeps its tab lit: read the section from the nested stack state.
+  const nested = currentRoute?.state;
+  const sectionTab =
+    currentName === "projects/[id]"
+      ? sectionTabOf(
+          nested?.routes[nested.index ?? nested.routes.length - 1]?.name,
+        )
+      : null;
+  const litTab = (tabs as readonly string[]).includes(currentName)
+    ? currentName
+    : sectionTab;
+  const onProjectTab = litTab !== null;
   const menuActive = sheet === "menu" || !onProjectTab;
   const iconOf = (key: ProjectTab | "menu"): IconName =>
     workerMode && key in WORKER_TAB_ICONS
@@ -82,7 +95,7 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
   }[] = [
     ...tabs.map((name) => ({
       key: name,
-      active: onProjectTab && currentName === name && sheet !== "menu",
+      active: litTab === name && sheet !== "menu",
       onPress: () => {
         closeSheet();
         const route = state.routes.find((r) => r.name === name);

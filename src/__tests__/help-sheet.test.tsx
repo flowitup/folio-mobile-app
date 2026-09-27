@@ -21,6 +21,8 @@ import i18n from "@/i18n";
 // The sheet narrows the catalogue to what this reader's navigation shows; these mocks decide who
 // is reading. Default is the widest reader, and one test switches to the worker shell.
 let mockWorkerMode = false;
+// Whether this backend has the chat feature at all (GET /features).
+let mockChatEnabled = true;
 
 jest.mock("@/auth/auth-context", () => ({
   useAuth: () => ({
@@ -39,6 +41,9 @@ jest.mock("@/features/projects/use-project-can", () => ({
 }));
 jest.mock("@/features/companies/companies-api", () => ({
   useBillingAccess: () => ({ allowed: true }),
+}));
+jest.mock("@/features/chat/chat-api", () => ({
+  useChatEnabled: () => mockChatEnabled,
 }));
 jest.mock("@/features/labor/use-worker-mode", () => ({
   useWorkerMode: () => ({ workerMode: mockWorkerMode }),
@@ -75,6 +80,7 @@ const [firstTopic] = helpCatalogueEn;
 describe("HelpSheet", () => {
   beforeEach(() => {
     mockWorkerMode = false;
+    mockChatEnabled = true;
   });
 
   it("stays closed until the shell asks for it", async () => {
@@ -123,6 +129,17 @@ describe("HelpSheet", () => {
     expect(screen.queryByTestId("help-topic-billing")).toBeNull();
     expect(screen.queryByTestId("help-topic-library")).toBeNull();
     expect(screen.queryByTestId("help-topic-documents")).toBeNull();
+  });
+
+  it("drops the chat workflow on a backend without chat", async () => {
+    mockChatEnabled = false;
+    await renderHelp();
+
+    await fireEvent.press(screen.getByTestId("open-help"));
+
+    expect(screen.queryByTestId("help-topic-chat")).toBeNull();
+    // Everything else the reader can reach is still listed.
+    expect(screen.getByTestId("help-topic-notifications")).toBeTruthy();
   });
 
   it("reads the guide in another language without touching the app's", async () => {

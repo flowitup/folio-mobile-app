@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/api/client";
 import { invoiceKeys } from "@/features/invoices/invoices-api";
 import { rosterKeys } from "@/features/labor/roster-api";
-import { downloadAndShare } from "@/lib/files/download";
+import { openFile } from "@/lib/files/open-file";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
@@ -85,10 +85,11 @@ function ownAttendanceInvalidations(projectId: string) {
 
 // ---- workers ----------------------------------------------------------------
 
-export function useWorkers(projectId: string) {
+/** `enabled` lets a caller that only sometimes needs the roster skip the request. */
+export function useWorkers(projectId: string, enabled = true) {
   return useQuery({
     queryKey: laborKeys.workers(projectId),
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId) && enabled,
     queryFn: async () =>
       unwrapAs<{ workers?: Worker[] }>(
         await api.GET("/api/v1/projects/{project_id}/workers", {
@@ -203,6 +204,7 @@ export function useCreateRateChange(projectId: string) {
 }
 
 export function useDeleteRateChange(projectId: string) {
+  const { t } = useTranslation();
   return useApiMutation<{ workerId: string; rateChangeId: string }>({
     mutationFn: async ({ workerId, rateChangeId }) =>
       unwrapVoid(
@@ -223,6 +225,7 @@ export function useDeleteRateChange(projectId: string) {
       laborKeys.workers(projectId),
       ...laborInvalidations(projectId),
     ],
+    successMessage: t("labor.rates.deleted"),
   });
 }
 
@@ -464,6 +467,7 @@ export function useUpdateActivity(projectId: string) {
 }
 
 export function useDeleteActivity(projectId: string) {
+  const { t } = useTranslation();
   return useApiMutation<{ activityId: string }>({
     mutationFn: async ({ activityId }) =>
       unwrapVoid(
@@ -477,6 +481,7 @@ export function useDeleteActivity(projectId: string) {
         ),
       ),
     invalidates: [laborKeys.activities(projectId)],
+    successMessage: t("labor.activities.deleted"),
   });
 }
 
@@ -549,7 +554,7 @@ export function exportLabor(
   const path = workerId
     ? `/api/v1/projects/${encodeURIComponent(projectId)}/workers/${encodeURIComponent(workerId)}/labor-export?${query}`
     : `/api/v1/projects/${encodeURIComponent(projectId)}/labor-export?${query}`;
-  return downloadAndShare(path, `labor-${from}-${to}.${format}`);
+  return openFile(path, `labor-${from}-${to}.${format}`);
 }
 
 // ---- labor roles management (settings) --------------------------------------------------------

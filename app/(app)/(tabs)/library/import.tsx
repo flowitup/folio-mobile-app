@@ -1,11 +1,13 @@
 import { File } from "expo-file-system";
+import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 
+import { useCan } from "@/auth/use-can";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/primitives";
+import { Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { showToast } from "@/components/ui/toast";
@@ -19,8 +21,13 @@ import { pickDocuments } from "@/lib/files/pick";
 export default function LibraryImportScreen() {
   const { t } = useTranslation();
   const companies = useMyCompanies();
-  const [companyId, setCompanyId] = useState<string | null>(null);
+  // The library screen hands over the company it was showing; without it the first one wins.
+  const params = useLocalSearchParams<{ companyId?: string }>();
+  const [companyId, setCompanyId] = useState<string | null>(
+    params.companyId ?? null,
+  );
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
+  const canManage = useCan("bibliotheque:manage");
   const [text, setText] = useState("");
   const [result, setResult] = useState<ImportResult | null>(null);
   const importLibrary = useImportLibrary();
@@ -45,6 +52,14 @@ export default function LibraryImportScreen() {
     if (!payload) return showToast(t("library.importInvalid"), "error");
     importLibrary.mutate(payload, { onSuccess: setResult });
   }
+
+  if (!canManage)
+    return (
+      <View className="flex-1 bg-paper">
+        <ScreenHeader title={t("library.import")} back />
+        <EmptyState message={t("library.toast.forbidden")} />
+      </View>
+    );
 
   return (
     <View className="flex-1 bg-paper">

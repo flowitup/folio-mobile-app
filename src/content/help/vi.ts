@@ -33,9 +33,9 @@ export const helpCatalogueVi: HelpCatalogue = [
       "Mỗi lúc chỉ chọn một công trình, và cả app đều nói về công trình đó. Thanh tab giữ bốn màn hình của công trình; mọi thứ còn lại nằm trong Menu.",
     steps: [
       "Bấm tên công trình ở trên cùng, rồi chọn một công trình trong danh sách — mỗi dòng cho biết ngân sách còn lại.",
-      "Cũng trong bảng đó, “+ Công trình mới” tạo một công trình: tên, địa chỉ, ngân sách và nguồn ngân sách.",
+      "Cũng trong bảng đó, “+ Công trình mới” tạo một công trình: địa chỉ, tên (tùy chọn), ngân sách và nguồn ngân sách.",
       "Nếu bạn là quản lý, bốn tab là Tổng quan, Chi phí, Nhân công và Kế hoạch. Nếu bạn là thợ, đó là Chấm công, Lương, Hồ sơ và Kế hoạch.",
-      "Quản lý có thêm mục “Menu” cho mọi thứ còn lại: báo giá và hóa đơn, thư viện sản phẩm, thành viên công ty, và các mục của công trình — tài liệu, ảnh, ghi chú, lương, chiffrage, phân tích, thành viên và cài đặt. Thợ không có Menu, nên các chủ đề bên dưới bắt đầu từ Menu là để đọc cho biết, không phải để làm theo.",
+      "Quản lý có thêm mục “Menu” cho mọi thứ còn lại: báo giá và hóa đơn, thư viện sản phẩm, thành viên công ty, và các mục của công trình — tài liệu, ảnh, ghi chú, lương, chiffrage, phân tích, thành viên công trình và cài đặt. Thợ không có Menu, nên các chủ đề bên dưới bắt đầu từ Menu là để đọc cho biết, không phải để làm theo.",
       "Bấm chữ viết tắt tên bạn để vào Cài đặt, chọn ngôn ngữ (English, Français, Tiếng Việt) và “Đăng xuất”.",
       "Bấm chuông để xem những việc đang chờ bạn, bấm dấu hỏi để mở hướng dẫn này.",
     ],
@@ -305,6 +305,26 @@ export const helpCatalogueVi: HelpCatalogue = [
       "Ai mở được Menu đều vào được thư viện. Máy chủ quyết định có nhận thay đổi của bạn không và sẽ báo lại nếu không nhận.",
     gotchas: [
       "Số sản phẩm và nhà cung cấp hiện trên dòng Menu lấy từ công ty đầu tiên của bạn, có thể không phải công ty của công trình này.",
+    ],
+  },
+  {
+    id: "inventory",
+    title: "Kho thiết bị",
+    purpose:
+      "Toàn bộ máy móc, dụng cụ của công ty — máy khoan, máy vặn vít, thang — kèm số lượng, tình trạng còn dùng được hay đã hỏng, và đang ở đâu: một kho có địa chỉ, hoặc một công trường.",
+    steps: [
+      "Mở Menu → “Kho thiết bị”. Các ô phía trên đếm tổng số cái, số dùng được, số hỏng, số ở kho và số ở công trường.",
+      "Bấm “Kho hàng” để thêm những nơi công ty cất đồ, mỗi kho có tên và địa chỉ; kho vẫn còn đồ thì không xóa được.",
+      "Bấm “Thêm đồ”: tên — bắt buộc — loại, số lượng, dùng được hay hỏng, rồi vị trí: một kho hoặc một công trường của bạn. Mã / số sê-ri và ghi chú là tùy chọn.",
+      "Danh sách được gom theo vị trí, kho xếp trước. Dùng ô tìm kiếm, nút chọn “Mọi nơi / Ở kho / Ở công trường” và các thẻ tình trạng để lọc.",
+      "Bấm vào một dòng để sửa bất cứ gì — đánh dấu hỏng sau khi đồ bị hư, chuyển từ kho ra công trường, chỉnh lại số lượng.",
+      "Ngay trong biểu mẫu đó, “Xóa” sẽ gỡ dòng sau khi bạn xác nhận.",
+    ],
+    whoCanDoIt:
+      "Ai mở được Menu đều vào được kho thiết bị. Máy chủ quyết định có nhận thay đổi của bạn không và sẽ báo lại nếu không nhận.",
+    gotchas: [
+      "Một dòng là một lô đồ giống nhau, cùng một chỗ và cùng một tình trạng: ba máy khoan dùng được ở kho và một máy khoan hỏng ở công trường là hai dòng.",
+      "Các con số trên dòng Menu lấy từ công ty đầu tiên của bạn, có thể không phải công ty của công trình này.",
     ],
   },
   {

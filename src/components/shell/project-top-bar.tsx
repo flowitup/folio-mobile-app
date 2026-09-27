@@ -11,6 +11,7 @@ import { useNotifications } from "@/features/notes/notes-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { INK_BLOCK, useTokens } from "@/theme/tokens";
+import { useInkStatusBar } from "@/theme/use-ink-status-bar";
 
 type Props = {
   /** `ink`: the 1b variant on the ink block — paper project tile, on-ink text, no bottom line. */
@@ -34,6 +35,7 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
     (notifications.data?.items ?? []).filter((item) => !item.dismissed).length +
     (notifications.data?.attendance_pending.length ?? 0);
   const ink = tone === "ink";
+  useInkStatusBar(ink);
 
   return (
     <View

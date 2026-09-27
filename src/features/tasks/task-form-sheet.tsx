@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import type { SelectOption } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { BOARD_COLUMNS, PRIORITIES } from "@/features/tasks/tasks-api";
 import type {
@@ -22,6 +23,7 @@ export type TaskFormValues = {
   status: TaskStatus;
   due_date: string | null;
   labels: string[];
+  assignee_id: string | null;
 };
 
 export type TaskFormSheetHandle = {
@@ -32,6 +34,8 @@ export type TaskFormSheetHandle = {
 
 type Props = {
   submitting: boolean;
+  /** Project members offered by the assignee picker; empty leaves only "unassigned". */
+  assignees: SelectOption<string>[];
   /** Shows the Delete button while editing; `DELETE /tasks/{id}` needs `project:update`. */
   canDelete: boolean;
   onSubmit: (values: TaskFormValues, editing: Task | null) => void;
@@ -46,6 +50,7 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
   function TaskFormSheet(
     {
       submitting,
+      assignees,
       canDelete,
       onSubmit,
       onMove,
@@ -64,6 +69,7 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
     const [status, setStatus] = useState<TaskStatus>("todo");
     const [dueDate, setDueDate] = useState<string | null>(null);
     const [labels, setLabels] = useState("");
+    const [assigneeId, setAssigneeId] = useState<string | null>(null);
     const [titleError, setTitleError] = useState<string | null>(null);
 
     useImperativeHandle(ref, () => ({
@@ -75,6 +81,7 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
         setStatus(task?.status ?? lane);
         setDueDate(task?.due_date ?? null);
         setLabels((task?.labels ?? []).join(", "));
+        setAssigneeId(task?.assignee_id ?? null);
         setTitleError(null);
         sheet.current?.present();
       },
@@ -95,6 +102,7 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
             .split(",")
             .map((v) => v.trim())
             .filter(Boolean),
+          assignee_id: assigneeId,
         },
         editing,
       );
@@ -119,7 +127,10 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
             testID="task-title"
             label={t("tasks.title")}
             value={title}
-            onChangeText={setTitle}
+            onChangeText={(value) => {
+              setTitle(value);
+              setTitleError(null);
+            }}
             error={titleError}
             autoFocus
           />
@@ -146,6 +157,15 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
               label: t(`tasks.priority.${value}`),
             }))}
             onChange={setPriority}
+          />
+          <Select
+            testID="task-assignee"
+            label={t("tasks.assignee")}
+            placeholder={t("tasks.unassigned")}
+            value={assigneeId}
+            options={assignees}
+            clearable
+            onChange={setAssigneeId}
           />
           <DatePicker
             testID="task-due"

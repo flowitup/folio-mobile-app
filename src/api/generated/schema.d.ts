@@ -116,6 +116,174 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/api-keys": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the caller's API keys */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    /** Create a new API key for the caller */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CreateApiKeyBody"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/api-keys/{key_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revoke one of the caller's API keys */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          key_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/assistant/actions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Answer an assistant choice message */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["SubmitActionBody"];
+        };
+      };
+      responses: {
+        /** @description Response */
+        202: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ActionAcceptedResponse"];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/assistant/audit": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the assistant's supervision log for a company (admin only) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["AssistantAuditListResponse"];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/attachments/{attachment_id}": {
     parameters: {
       query?: never;
@@ -328,7 +496,38 @@ export interface paths {
     };
     put?: never;
     post?: never;
-    delete?: never;
+    /** Permanently delete the current user's own account */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["LogoutBody"];
+        };
+      };
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["AccountDeletionBlockedResponse"];
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     /** Update the current user's display name and/or phone */
@@ -1583,7 +1782,7 @@ export interface paths {
       };
     };
     put?: never;
-    /** Send a message (JSON text, or multipart/form-data with an image `file`) */
+    /** Send a message (JSON text, or multipart/form-data with an image or voice note `file`) */
     post: {
       parameters: {
         query?: never;
@@ -1907,7 +2106,30 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post?: never;
+    /** Attach an existing user account to a company as member (admin only) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          company_id: string;
+          target_user_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["AttachUserToCompanyResponse"];
+          };
+        };
+      };
+    };
     /** Remove a user from a company (admin only) */
     delete: {
       parameters: {
@@ -2472,6 +2694,267 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  "/api/v1/inventory/items": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the company's equipment */
+    get: {
+      parameters: {
+        query?: {
+          company_id?: string | null;
+          location_type?: ("warehouse" | "site") | null;
+          warehouse_id?: string | null;
+          project_id?: string | null;
+          condition?: ("working" | "damaged") | null;
+          q?: string | null;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    /** Add equipment to the inventory */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CreateInventoryItemSchema"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/inventory/items/{item_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** One inventory row */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          item_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    /** Remove an inventory row */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          item_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /** Edit an inventory row */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          item_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateInventoryItemSchema"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    trace?: never;
+  };
+  "/api/v1/inventory/warehouses": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the company's warehouses */
+    get: {
+      parameters: {
+        query?: {
+          company_id?: string | null;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    /** Create a warehouse */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CreateWarehouseSchema"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/inventory/warehouses/{warehouse_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Delete an empty warehouse */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          warehouse_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /** Edit a warehouse */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          warehouse_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["UpdateWarehouseSchema"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
     trace?: never;
   };
   "/api/v1/invitations": {
@@ -4552,6 +5035,44 @@ export interface paths {
             [name: string]: unknown;
           };
           content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{project_id}/documents/uploaders": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the distinct uploaders of a project's documents */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          project_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["DocumentUploadersResponse"];
+          };
         };
       };
     };
@@ -6944,6 +7465,41 @@ export interface components {
       id: string;
     };
     /**
+     * AccountDeletionBlockedResponse
+     * @description 409 body for DELETE /auth/me when the caller is a company's last admin.
+     *
+     *     ``reason`` is the discriminator clients branch on. It reuses the value the
+     *     company demote/boot/detach endpoints already emit for the same condition, so
+     *     a client needs one branch, not two.
+     */
+    AccountDeletionBlockedResponse: {
+      /** Company Name */
+      company_name: string;
+      /**
+       * Error
+       * @default Conflict
+       */
+      error: string;
+      /** Message */
+      message: string;
+      /**
+       * Reason
+       * @default last_admin
+       * @constant
+       */
+      reason: "last_admin";
+      /**
+       * Status Code
+       * @default 409
+       */
+      status_code: number;
+    };
+    /** ActionAcceptedResponse */
+    ActionAcceptedResponse: {
+      /** Accepted */
+      accepted: boolean;
+    };
+    /**
      * AddMemberByPhoneRequest
      * @description Request body for POST /companies/<id>/members.
      *
@@ -7054,19 +7610,97 @@ export interface components {
        */
       role: string;
     };
+    /** AssistantAuditListResponse */
+    AssistantAuditListResponse: {
+      /** Items */
+      items: components["schemas"]["AssistantAuditRow"][];
+    };
+    /**
+     * AssistantAuditRow
+     * @description One row of GET /assistant/audit — the web supervision page's list item.
+     */
+    AssistantAuditRow: {
+      /** Channel Key */
+      channel_key: string;
+      /** Cost Usd */
+      cost_usd: number | string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Feature */
+      feature: string | null;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Intent */
+      intent: string | null;
+      /** Outcome */
+      outcome: string | null;
+      /** Refused Reason */
+      refused_reason: string | null;
+      /** Trace Id */
+      trace_id: string | null;
+      /** User Id */
+      user_id: string | null;
+      /** User Name */
+      user_name: string;
+    };
+    /**
+     * AttachUserToCompanyResponse
+     * @description Response of POST /companies/<id>/access/<user_id>.
+     *
+     *     Same shape whether the call created the row or found the user already
+     *     attached (idempotent) — the current state of the access row either way.
+     */
+    AttachUserToCompanyResponse: {
+      /**
+       * Attached At
+       * Format: date-time
+       */
+      attached_at: string;
+      /**
+       * Company Id
+       * Format: uuid
+       */
+      company_id: string;
+      /** Is Primary */
+      is_primary: boolean;
+      /** Role */
+      role: string;
+      /**
+       * User Id
+       * Format: uuid
+       */
+      user_id: string;
+    };
     /**
      * AttachedUserRow
      * @description One row of GET /companies/<id>/attached-users.
      *
      *     Access fields come from the use case; `email` / `display_name` / `phone`
      *     are joined from `users` so clients can render the member list directly.
+     *     `companies` (D4) lists the target's OWN attachments intersected with the
+     *     companies the CALLER administers — never a company the caller cannot
+     *     manage, so this can never leak cross-tenant membership.
+     *     `assigned_project_ids` lists this company's projects the user is
+     *     assigned to: the directory only carries it for people who have a
+     *     `company_persons` profile, so an account attached without one would
+     *     otherwise look unassigned.
      */
     AttachedUserRow: {
+      /** Assigned Project Ids */
+      assigned_project_ids?: string[];
       /**
        * Attached At
        * Format: date-time
        */
       attached_at: string;
+      /** Companies */
+      companies?: components["schemas"]["CompanySummary"][];
       /**
        * Company Id
        * Format: uuid
@@ -7120,6 +7754,8 @@ export interface components {
      * @description GET /auth/config — what this deployment offers, read by the apps before sign-in.
      */
     AuthConfigResponse: {
+      /** Self Attendance Max Backdate Days */
+      self_attendance_max_backdate_days: number;
       /** Session */
       session: string;
       /** Signup */
@@ -7245,6 +7881,19 @@ export interface components {
       override_kind: ("devis" | "facture") | null;
     };
     /**
+     * CompanySummary
+     * @description Minimal company reference nested in other responses (id + display name only).
+     */
+    CompanySummary: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Legal Name */
+      legal_name: string;
+    };
+    /**
      * ConvertRequest
      * @description Optional body for POST /billing-documents/<id>/convert-to-facture.
      *
@@ -7273,6 +7922,14 @@ export interface components {
       date: string;
       /** Title */
       title: string;
+    };
+    /**
+     * CreateApiKeyBody
+     * @description Request body for POST /api/v1/api-keys.
+     */
+    CreateApiKeyBody: {
+      /** Name */
+      name: string;
     };
     /**
      * CreateBillingDocumentRequest
@@ -7393,6 +8050,66 @@ export interface components {
        * @default null
        */
       tva_number: string | null;
+    };
+    /**
+     * CreateInventoryItemSchema
+     * @description Request body for POST /api/v1/inventory/items.
+     */
+    CreateInventoryItemSchema: {
+      /**
+       * Category
+       * @default null
+       */
+      category:
+        | (
+            | "power_tool"
+            | "hand_tool"
+            | "measuring"
+            | "access"
+            | "safety"
+            | "machine"
+            | "other"
+          )
+        | null;
+      /**
+       * Company Id
+       * Format: uuid
+       */
+      company_id: string;
+      /**
+       * Condition
+       * @enum {string}
+       */
+      condition: "working" | "damaged";
+      /**
+       * Description
+       * @default null
+       */
+      description: string | null;
+      /**
+       * Location Type
+       * @enum {string}
+       */
+      location_type: "warehouse" | "site";
+      /** Name */
+      name: string;
+      /**
+       * Project Id
+       * @default null
+       */
+      project_id: string | null;
+      /** Quantity */
+      quantity: number;
+      /**
+       * Reference
+       * @default null
+       */
+      reference: string | null;
+      /**
+       * Warehouse Id
+       * @default null
+       */
+      warehouse_id: string | null;
     };
     /**
      * CreateInviteRequest
@@ -7549,11 +8266,8 @@ export interface components {
      * @description Request body for creating a project.
      */
     CreateProjectRequest: {
-      /**
-       * Address
-       * @default null
-       */
-      address: string | null;
+      /** Address */
+      address: string;
       /**
        * Budget
        * @default null
@@ -7569,8 +8283,11 @@ export interface components {
        * @default null
        */
       company_id: string | null;
-      /** Name */
-      name: string;
+      /**
+       * Name
+       * @default null
+       */
+      name: string | null;
     };
     /** CreateTaskSchema */
     CreateTaskSchema: {
@@ -7640,6 +8357,24 @@ export interface components {
       terms: string | null;
     };
     /**
+     * CreateWarehouseSchema
+     * @description Request body for POST /api/v1/inventory/warehouses.
+     */
+    CreateWarehouseSchema: {
+      /**
+       * Address
+       * @default null
+       */
+      address: string | null;
+      /**
+       * Company Id
+       * Format: uuid
+       */
+      company_id: string;
+      /** Name */
+      name: string;
+    };
+    /**
      * CreateWorkerRequest
      * @description Request body for creating a worker.
      *
@@ -7688,10 +8423,33 @@ export interface components {
       user_id: string | null;
     };
     /**
+     * DocumentUploaderSchema
+     * @description One person who has a document in this project.
+     */
+    DocumentUploaderSchema: {
+      /** Display Name */
+      display_name: string;
+      /**
+       * User Id
+       * Format: uuid
+       */
+      user_id: string;
+    };
+    /**
+     * DocumentUploadersResponse
+     * @description GET /projects/<id>/documents/uploaders — the uploader filter's options.
+     */
+    DocumentUploadersResponse: {
+      /** Items */
+      items: components["schemas"]["DocumentUploaderSchema"][];
+    };
+    /**
      * FeaturesResponse
      * @description Feature flags of this deployment, as seen by the apps.
      */
     FeaturesResponse: {
+      /** Assistant */
+      assistant: boolean;
       /** Chat */
       chat: boolean;
     };
@@ -8054,29 +8812,62 @@ export interface components {
       body: string | null;
       /** Channel Key */
       channel_key: string;
+      /**
+       * Content Type
+       * @enum {string}
+       */
+      content_type: "text" | "photo" | "card" | "choice" | "job_status";
       /** Created At */
       created_at: string;
       /** Id */
       id: string;
+      /**
+       * Mentions Assistant
+       * @default false
+       */
+      mentions_assistant: boolean;
       /** Mine */
       mine: boolean;
+      /**
+       * Payload
+       * @default null
+       */
+      payload: {
+        [key: string]: unknown;
+      } | null;
+      /**
+       * Reply To Id
+       * @default null
+       */
+      reply_to_id: string | null;
       /** Sender Id */
-      sender_id: string;
+      sender_id: string | null;
       /** Sender Name */
       sender_name: string;
+      /**
+       * Sender Type
+       * @enum {string}
+       */
+      sender_type: "user" | "assistant" | "system";
     };
     /**
      * MoveTaskSchema
      * @description Atomic drag-drop endpoint payload.
+     *
+     *     The neighbours describe the gap the card is dropped into, in the lane named
+     *     by `status` — the same lane the card already sits in when it is only
+     *     reordered. Sending neither appends the card to the end of that lane.
      */
     MoveTaskSchema: {
       /**
        * After Id
+       * @description Task that ends up directly BELOW the moved one; null when dropped at the end.
        * @default null
        */
       after_id: string | null;
       /**
        * Before Id
+       * @description Task that ends up directly ABOVE the moved one; null when dropped at the top.
        * @default null
        */
       before_id: string | null;
@@ -8300,6 +9091,11 @@ export interface components {
        */
       spent_by_credits: number;
       /**
+       * Spent Invoiced
+       * @default 0
+       */
+      spent_invoiced: number;
+      /**
        * Spent Personal
        * @default 0
        */
@@ -8473,11 +9269,22 @@ export interface components {
      * SendMessageBody
      * @description JSON body of POST /chat/channels/<key>/messages (text-only messages).
      *
-     *     Messages with an image use multipart/form-data instead: ``body`` text part + ``file``.
+     *     Messages with an image or a voice note use multipart/form-data instead: ``body`` text
+     *     part + ``file`` (+ optional ``lang``/``reply_to_id`` form fields).
      */
     SendMessageBody: {
       /** Body */
       body: string;
+      /**
+       * Lang
+       * @default null
+       */
+      lang: ("vi" | "fr" | "en") | null;
+      /**
+       * Reply To Id
+       * @default null
+       */
+      reply_to_id: string | null;
     };
     /**
      * SetDayDescriptionSchema
@@ -8540,6 +9347,23 @@ export interface components {
       display_name: string;
       /** Phone */
       phone: string;
+    };
+    /**
+     * SubmitActionBody
+     * @description JSON body of POST /assistant/actions (a tapped choice option).
+     */
+    SubmitActionBody: {
+      /** Action */
+      action: string;
+      /** Payload */
+      payload?: {
+        [key: string]: unknown;
+      };
+      /**
+       * Reply To Id
+       * Format: uuid
+       */
+      reply_to_id: string;
     };
     /** UnregisterPushDeviceRequest */
     UnregisterPushDeviceRequest: {
@@ -8711,6 +9535,67 @@ export interface components {
        * @default null
        */
       tva_number: string | null;
+    };
+    /**
+     * UpdateInventoryItemSchema
+     * @description Request body for PATCH /api/v1/inventory/items/<id>; absent key = unchanged, null = cleared.
+     */
+    UpdateInventoryItemSchema: {
+      /**
+       * Category
+       * @default null
+       */
+      category:
+        | (
+            | "power_tool"
+            | "hand_tool"
+            | "measuring"
+            | "access"
+            | "safety"
+            | "machine"
+            | "other"
+          )
+        | null;
+      /**
+       * Condition
+       * @default null
+       */
+      condition: ("working" | "damaged") | null;
+      /**
+       * Description
+       * @default null
+       */
+      description: string | null;
+      /**
+       * Location Type
+       * @default null
+       */
+      location_type: ("warehouse" | "site") | null;
+      /**
+       * Name
+       * @default null
+       */
+      name: string | null;
+      /**
+       * Project Id
+       * @default null
+       */
+      project_id: string | null;
+      /**
+       * Quantity
+       * @default null
+       */
+      quantity: number | null;
+      /**
+       * Reference
+       * @default null
+       */
+      reference: string | null;
+      /**
+       * Warehouse Id
+       * @default null
+       */
+      warehouse_id: string | null;
     };
     /**
      * UpdateInvoiceSchema
@@ -9045,6 +9930,22 @@ export interface components {
        * @default null
        */
       terms: string | null;
+    };
+    /**
+     * UpdateWarehouseSchema
+     * @description Request body for PATCH /api/v1/inventory/warehouses/<id>; absent key = unchanged, null = cleared.
+     */
+    UpdateWarehouseSchema: {
+      /**
+       * Address
+       * @default null
+       */
+      address: string | null;
+      /**
+       * Name
+       * @default null
+       */
+      name: string | null;
     };
     /**
      * UpdateWorkerRequest

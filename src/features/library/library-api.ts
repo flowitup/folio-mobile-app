@@ -2,9 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
+import { showToast } from "@/components/ui/toast";
 import type { PickedFile } from "@/lib/files/pick";
 import { uploadMultipart } from "@/lib/files/upload";
-import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
+import { ApiError, unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
 import type {
@@ -172,6 +173,15 @@ export function useProductImageFromUrl() {
       ),
     invalidates: [libraryKeys.all],
     successMessage: t("common.saved"),
+    // The backend only fetches images from the supplier hosts it trusts, and its refusal
+    // is an English sentence listing them — unreadable in a Vietnamese app. Say it in the
+    // user's language instead; every other failure keeps the default toast.
+    onError: (error) => {
+      if (error instanceof ApiError && error.code === "SsrfBlocked") {
+        showToast(t("library.imageUrlBlocked"), "error");
+        return true;
+      }
+    },
   });
 }
 

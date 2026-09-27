@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import ProjectMembersSection from "../../app/(app)/(tabs)/projects/[id]/members";
 import {
@@ -11,11 +11,12 @@ import {
 import type { Persona } from "./helpers/release-qa-fixtures";
 
 /**
- * Members per company role. `canManage` is `project:manage_users` OR `project:invite` on the
- * project's scoped permissions — a manager and an admin get the assign button and the per-row
- * remove / revoke controls, a member reads the roster and nothing else. The invitations query
- * is issued only for a caller holding `project:invite`, so a member never asks for a list the
- * backend would refuse.
+ * Members per company role. Assigning and unassigning are `project:manage_users` on the
+ * project's scoped permissions — the endpoints require nothing else, so `project:invite` no
+ * longer widens that gate; it governs the legacy invitation list and its Revoke alone. A
+ * manager and an admin get both, a member reads the roster and nothing else. The invitations
+ * query is issued only for a caller holding `project:invite`, so a member never asks for a
+ * list the backend would refuse.
  */
 let mockCurrent: Persona = persona("manager");
 
@@ -119,6 +120,44 @@ describe("Members per role", () => {
     expect(callsTo(mockGet, PERSONS_PATH)).toHaveLength(0);
     expect(mockPut).not.toHaveBeenCalled();
     expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it("asks before revoking a pending invitation", async () => {
+    mockCurrent = persona("manager");
+    await renderWithProviders(<ProjectMembersSection />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("invitation-revoke-i1")).toBeTruthy(),
+    );
+    await fireEvent.press(screen.getByTestId("invitation-revoke-i1"));
+    // Nothing leaves before the confirmation is accepted.
+    expect(mockPost).not.toHaveBeenCalled();
+    expect(screen.getByTestId("confirm-dialog")).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId("confirm-ok"));
+    await waitFor(() =>
+      expect(mockPost).toHaveBeenCalledWith(
+        "/api/v1/invitations/{invitation_id}/revoke",
+        expect.anything(),
+      ),
+    );
+  });
+
+  it("drops assign and remove without project:manage_users, keeping Revoke", async () => {
+    mockCurrent = persona("manager", { deny: ["project:manage_users"] });
+    await renderWithProviders(<ProjectMembersSection />);
+
+    await waitFor(() => expect(screen.getByText("Minh Worker")).toBeTruthy());
+    // The assignment endpoints require project:manage_users and nothing else.
+    await waitFor(() =>
+      expect(screen.queryByTestId("members-assign")).toBeNull(),
+    );
+    expect(screen.queryByTestId("member-remove-u-member")).toBeNull();
+    expect(callsTo(mockGet, PERSONS_PATH)).toHaveLength(0);
+    // project:invite is untouched, so the invitation list and its Revoke stay.
+    await waitFor(() =>
+      expect(screen.getByTestId("invitation-revoke-i1")).toBeTruthy(),
+    );
   });
 
   it("hides the manage controls when a D8 deny removes them from the project row", async () => {

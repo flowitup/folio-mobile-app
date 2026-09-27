@@ -34,9 +34,9 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Un seul chantier est sélectionné à la fois, et toute l'application parle de ce chantier. La barre d'onglets porte quatre écrans de chantier ; tout le reste vit derrière Menu.",
     steps: [
       "Touchez le nom du chantier en haut, puis choisissez un chantier dans la liste — chaque ligne affiche son budget restant.",
-      "Dans ce même panneau, « + Nouveau chantier » crée un chantier : nom, adresse, budget et source du budget.",
+      "Dans ce même panneau, « + Nouveau chantier » crée un chantier : adresse, nom facultatif, budget et source du budget.",
       "En tant que responsable, les quatre onglets sont Aperçu, Dépenses, Main-d'œuvre et Planning. En tant qu'ouvrier, ce sont Présence, Salaire, Profil et Planning.",
-      "Les responsables disposent d'un « Menu » pour tout le reste : devis et factures, bibliothèque de produits, membres de l'entreprise, et les sections du chantier — documents, photos, notes, salaires, chiffrage, analyses, membres et réglages. Les ouvriers ne l'ont pas : les sujets ci-dessous qui partent du Menu sont à lire, pas à suivre.",
+      "Les responsables disposent d'un « Menu » pour tout le reste : devis et factures, bibliothèque de produits, membres de l'entreprise, et les sections du chantier — documents, photos, notes, salaires, chiffrage, analyses, membres du chantier et réglages. Les ouvriers ne l'ont pas : les sujets ci-dessous qui partent du Menu sont à lire, pas à suivre.",
       "Touchez vos initiales pour les Paramètres, le choix de la langue (English, Français, Tiếng Việt) et « Se déconnecter ».",
       "Touchez la cloche pour ce qui vous attend, et le point d'interrogation pour ce guide.",
     ],
@@ -307,6 +307,26 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Toute personne qui peut ouvrir le Menu atteint la bibliothèque. C'est le serveur qui décide si vos modifications sont acceptées, et il vous prévient quand elles ne le sont pas.",
     gotchas: [
       "Les compteurs de produits et de fournisseurs affichés sur la ligne du Menu viennent de votre première société, qui n'est pas forcément celle du chantier.",
+    ],
+  },
+  {
+    id: "inventory",
+    title: "L'inventaire du matériel",
+    purpose:
+      "Tous les outils et machines de la société — perceuses, visseuses, échelles — avec leur nombre, leur état et leur emplacement : un dépôt avec son adresse, ou un chantier.",
+    steps: [
+      "Ouvrez Menu → « Inventaire du matériel ». Les tuiles en haut comptent les unités au total, en état, hors service, en dépôt et sur chantier.",
+      "Touchez « Dépôts » pour ajouter les endroits où la société range ses outils, chacun avec un nom et une adresse ; un dépôt qui contient encore des unités ne peut pas être supprimé.",
+      "Touchez « Ajouter » : nom — obligatoire — catégorie, quantité, en état ou hors service, puis l'emplacement : un dépôt ou l'un de vos chantiers. Une référence ou un numéro de série et des notes sont facultatifs.",
+      "La liste est groupée par emplacement, dépôts en premier. Utilisez le champ de recherche, le sélecteur « Partout / Dépôt / Sur chantier » et les puces d'état pour la filtrer.",
+      "Touchez une ligne pour la modifier — la passer hors service après une casse, la déplacer du dépôt vers un chantier, corriger la quantité.",
+      "Depuis ce même formulaire, « Supprimer » retire la ligne après confirmation.",
+    ],
+    whoCanDoIt:
+      "Toute personne qui peut ouvrir le Menu atteint l'inventaire. C'est le serveur qui décide si vos modifications sont acceptées, et il vous prévient quand elles ne le sont pas.",
+    gotchas: [
+      "Une ligne est un lot d'objets identiques, au même endroit et dans le même état : trois perceuses en état au dépôt et une perceuse cassée sur un chantier font deux lignes.",
+      "Les compteurs de la ligne du Menu viennent de votre première société, qui n'est pas forcément celle du chantier.",
     ],
   },
   {

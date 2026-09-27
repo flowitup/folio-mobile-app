@@ -20,6 +20,8 @@ const STATUS_TONE: Record<
 };
 
 type Props = {
+  /** The day lies in the future: nobody can be absent from it yet. */
+  upcoming?: boolean;
   rows: RosterRow[] | undefined;
   loading: boolean;
   /** True when the roster query failed (403/404/network) — distinct from a genuinely empty day. */
@@ -43,6 +45,7 @@ export function DayRoster({
   error,
   onRetry,
   payByWorkerId,
+  upcoming = false,
 }: Props) {
   const { t } = useTranslation();
 
@@ -76,10 +79,14 @@ export function DayRoster({
             >
               {row.name}
             </Text>
-            <Badge
-              label={t(`worker.status.${statusKey(row.status)}`)}
-              tone={STATUS_TONE[row.status]}
-            />
+            {upcoming && row.status === "absent" ? (
+              <Badge label={t("worker.roster.upcoming")} tone="neutral" />
+            ) : (
+              <Badge
+                label={t(`worker.status.${statusKey(row.status)}`)}
+                tone={STATUS_TONE[row.status]}
+              />
+            )}
           </View>
           <View className="mt-1 flex-row items-center justify-between">
             <Text className="font-sans text-[12px] text-muted">

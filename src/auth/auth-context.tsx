@@ -1,4 +1,4 @@
-import { focusManager } from "@tanstack/react-query";
+import { focusManager, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useCallback,
@@ -26,7 +26,7 @@ import {
 
 import type { components } from "@/api/generated/schema";
 import i18n from "@/i18n";
-import { authErrorKey } from "@/lib/auth/auth-error-message";
+import { authErrorKey, AuthRequestError } from "@/lib/auth/auth-error-message";
 import type { AuthFlow } from "@/lib/auth/auth-error-message";
 
 // `is_platform_ops` (D5) is not on the generated `UserResponse` yet — the backend ships it in
@@ -58,9 +58,30 @@ type AuthContextValue = {
     displayName: string,
   ) => Promise<void>;
   signOut: () => Promise<void>;
+  /**
+   * Erases the account on the backend, then signs out locally. Irreversible.
+   * Rejects with `AccountDeletionBlockedError` when the user is the last admin
+   * of a company that still has other members.
+   */
+  deleteAccount: () => Promise<void>;
   /** Re-fetches `/auth/me` (role/grant changes apply without re-login); no-op when signed out. */
   refreshUser: () => Promise<void>;
 };
+
+/**
+ * The backend refused the erasure because the account is a company's only
+ * administrator — someone else has to be promoted first, or the remaining
+ * members would be left unable to manage their own company.
+ */
+export class AccountDeletionBlockedError extends Error {
+  readonly companyName: string;
+
+  constructor(companyName: string) {
+    super(`Last administrator of ${companyName}`);
+    this.name = "AccountDeletionBlockedError";
+    this.companyName = companyName;
+  }
+}
 
 type LoginPayload = components["schemas"]["LoginResponse"];
 
@@ -72,32 +93,38 @@ type LoginPayload = components["schemas"]["LoginResponse"];
  */
 export type AdoptableSession = components["schemas"]["AcceptInviteResponse"];
 
-function errorMessage(
+function authError(
   flow: AuthFlow,
   error: unknown,
   response: { status: number } | undefined,
-): string {
+): AuthRequestError {
   // Recognised failures get a translated string; the rest keep the server's own wording,
-  // which is more specific than any catch-all we could write.
+  // which is more specific than any catch-all we could write. The status travels with the
+  // error so a screen can branch on it instead of matching the translated sentence.
   const key = authErrorKey(flow, response?.status);
-  if (key) return i18n.t(key);
-  return (
-    (error as { message?: string } | undefined)?.message ??
-    `HTTP ${response?.status ?? "?"}`
-  );
+  const message = key
+    ? i18n.t(key)
+    : ((error as { message?: string } | undefined)?.message ??
+      `HTTP ${response?.status ?? "?"}`);
+  return new AuthRequestError(message, response?.status);
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [user, setUser] = useState<AuthUser | null>(null);
 
   const signOutLocally = useCallback(async () => {
     await clearStoredTokens();
+    // Every cached query belonged to the account that just left: without this the next
+    // account reads its companies/projects from the cache (30s stale window) and the
+    // onboarding gate decides on someone else's data.
+    queryClient.clear();
     setUser(null);
     setStatus("signedOut");
-  }, []);
+  }, [queryClient]);
 
   // Restore the session on launch: a stored refresh token is enough, the client refreshes on 401.
   useEffect(() => {
@@ -172,7 +199,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       "/api/v1/auth/otp/request",
       { body: { phone } },
     );
-    if (!data) throw new Error(errorMessage("otp", error, response));
+    if (!data) throw authError("otp", error, response);
     return data.expires_in;
   }, []);
 
@@ -182,7 +209,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/otp/verify",
         { body: { phone, code } },
       );
-      if (!data) throw new Error(errorMessage("otp", error, response));
+      if (!data) throw authError("otp", error, response);
       await applyLoginPayload(data);
     },
     [applyLoginPayload],
@@ -203,7 +230,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       "/api/v1/auth/signup/request",
       { body: { phone } },
     );
-    if (!data) throw new Error(errorMessage("signup", error, response));
+    if (!data) throw authError("signup", error, response);
     return data.expires_in;
   }, []);
 
@@ -213,7 +240,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/signup/verify",
         { body: { phone, code, display_name: displayName } },
       );
-      if (!data) throw new Error(errorMessage("signup", error, response));
+      if (!data) throw authError("signup", error, response);
       await applyLoginPayload(data);
     },
     [applyLoginPayload],
@@ -231,6 +258,29 @@ export function AuthProvider({ children }: PropsWithChildren) {
     await signOutLocally();
   }, [signOutLocally]);
 
+  const deleteAccount = useCallback(async () => {
+    // Unregister first, while the token is still valid: this also clears the
+    // push token held in SecureStore, which the backend cannot reach.
+    await unregisterPushDevice();
+    const { refreshToken } = await getStoredTokens();
+    const { error, response } = await api.DELETE("/api/v1/auth/me", {
+      body: { refresh_token: refreshToken },
+    });
+
+    if (response.status === 409) {
+      const blocked = error as
+        components["schemas"]["AccountDeletionBlockedResponse"] | undefined;
+      throw new AccountDeletionBlockedError(blocked?.company_name ?? "");
+    }
+    if (!response.ok) {
+      throw new Error(i18n.t("account.delete.failed"));
+    }
+
+    // The account is gone; drop the local session regardless of what the
+    // logout endpoint would have done — the token no longer authenticates.
+    await signOutLocally();
+  }, [signOutLocally]);
+
   const value = useMemo(
     () => ({
       status,
@@ -241,6 +291,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       requestSignupOtp,
       signUpWithOtp,
       signOut,
+      deleteAccount,
       refreshUser,
     }),
     [
@@ -252,6 +303,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       requestSignupOtp,
       signUpWithOtp,
       signOut,
+      deleteAccount,
       refreshUser,
     ],
   );

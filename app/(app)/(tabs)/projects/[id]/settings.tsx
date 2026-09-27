@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Card } from "@/components/ui/primitives";
 import {
+  customLabel,
   ProjectFormSheet,
   toUpdateBody,
 } from "@/features/projects/project-form-sheet";
@@ -46,12 +47,10 @@ export default function ProjectSettingsSection() {
     return <Text className="p-4 text-danger">{t("home.loadError")}</Text>;
 
   const data = project.data;
-  const canEdit =
-    projectCan(data, "project:update", user?.permissions) ||
-    data.owner_id === user?.id;
-  const canDelete =
-    projectCan(data, "project:delete", user?.permissions) ||
-    data.owner_id === user?.id;
+  // The owner is an ordinary assignee on the backend — creating a project grants no standing
+  // exception — so the scoped permissions are the whole answer here too.
+  const canEdit = projectCan(data, "project:update", user?.permissions);
+  const canDelete = projectCan(data, "project:delete", user?.permissions);
   // Financing side: the backend returns a null budget without
   // `project:view_budget`, so the rows are dropped rather than shown blank.
   const canViewBudget = projectCan(
@@ -63,8 +62,11 @@ export default function ProjectSettingsSection() {
   return (
     <ScrollView className="flex-1 bg-paper" contentContainerClassName="p-4">
       <Card className="mb-4">
-        <Field label={t("project.form.name")} value={data.name} />
         <Field label={t("project.form.address")} value={data.address ?? ""} />
+        <Field
+          label={t("project.form.nameOptional")}
+          value={customLabel(data)}
+        />
         {canViewBudget ? (
           <>
             <Field

@@ -4,6 +4,7 @@ import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/auth/auth-context";
+import { DeleteAccountAction } from "@/components/account/delete-account-action";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/typography";
 
@@ -55,6 +56,12 @@ export default function OnboardingScreen() {
             {t("home.signOut")}
           </Text>
         </Pressable>
+
+        <DeleteAccountAction
+          testID="onboarding-delete-account"
+          className="mt-3 self-start"
+          textClassName="font-sans text-[13px] text-muted"
+        />
       </View>
     </SafeAreaView>
   );

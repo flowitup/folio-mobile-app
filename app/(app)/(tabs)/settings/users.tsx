@@ -17,8 +17,10 @@ import { Input } from "@/components/ui/input";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
+import { showToast } from "@/components/ui/toast";
 import { useAdminUserSearch, useUpdateUser } from "@/features/admin/admin-api";
 import type { UserSearchItem } from "@/features/admin/admin-api";
+import { normalizePhone } from "@/lib/auth/phone-number";
 
 /** Platform ops: search a user by email/name and edit their identity fields. */
 export default function AdminUsersScreen() {
@@ -67,7 +69,12 @@ export default function AdminUsersScreen() {
           placeholder={t("admin.bulkAdd.userSearch.placeholder")}
           placeholderTextColor="#a3a3a3"
           value={search}
-          onChangeText={setSearch}
+          // Typing again means "look for someone else": without dropping the selection the
+          // results stayed hidden behind the selected card and could never be reached again.
+          onChangeText={(text) => {
+            setSearch(text);
+            setSelected(null);
+          }}
           autoCapitalize="none"
           autoCorrect={false}
         />
@@ -107,19 +114,27 @@ export default function AdminUsersScreen() {
                 email: selected.email,
               })}
             </Text>
-            <Button
-              testID="user-edit"
-              label={t("common.edit")}
-              size="sm"
-              variant="secondary"
-              className="mt-2"
-              onPress={() => {
-                setEditEmail(selected.email);
-                setEditName(selected.display_name ?? "");
-                setEditPhone(selected.phone ?? "");
-                editSheet.current?.present();
-              }}
-            />
+            <View className="mt-2 flex-row gap-2">
+              <Button
+                testID="user-edit"
+                label={t("common.edit")}
+                size="sm"
+                variant="secondary"
+                onPress={() => {
+                  setEditEmail(selected.email);
+                  setEditName(selected.display_name ?? "");
+                  setEditPhone(selected.phone ?? "");
+                  editSheet.current?.present();
+                }}
+              />
+              <Button
+                testID="user-change"
+                label={t("common.change")}
+                size="sm"
+                variant="secondary"
+                onPress={() => setSelected(null)}
+              />
+            </View>
           </Card>
         ) : null}
       </ScrollView>
@@ -153,14 +168,22 @@ export default function AdminUsersScreen() {
             testID="user-edit-submit"
             label={t("common.save")}
             loading={updateUser.isPending}
-            onPress={() =>
-              selected &&
+            onPress={() => {
+              if (!selected) return;
+              // Sign-in is French-only, and rejecting the number server-side raises its own
+              // English sentence in a toast over a translated screen.
+              const typed = editPhone.trim();
+              const phone = typed ? normalizePhone(typed) : null;
+              if (typed && !phone) {
+                showToast(t("login.invalidPhone"), "error");
+                return;
+              }
               updateUser.mutate(
                 {
                   userId: selected.id,
                   email: editEmail.trim(),
                   display_name: editName.trim() || null,
-                  phone: editPhone.trim() || null,
+                  phone,
                 },
                 {
                   onSuccess: (updated) => {
@@ -168,8 +191,8 @@ export default function AdminUsersScreen() {
                     editSheet.current?.dismiss();
                   },
                 },
-              )
-            }
+              );
+            }}
           />
         </View>
       </Sheet>

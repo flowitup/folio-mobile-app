@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
-import { downloadAndShare } from "@/lib/files/download";
+import { openFile } from "@/lib/files/open-file";
 import type { PickedFile } from "@/lib/files/pick";
 import { uploadMultipart } from "@/lib/files/upload";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
@@ -30,6 +30,12 @@ export type InvoiceListResponse = {
   funds_released_total?: number;
   funds_released_company_total?: number;
   funds_released_personal_total?: number;
+  /**
+   * Company money handed to a person (released_funds rows flagged is_cash_advance).
+   * Kept out of the funds_released_* totals by the backend; the company purse adds
+   * it to its spend, as on the web. Absent on older backends.
+   */
+  company_cash_advanced_total?: number;
 };
 
 export type InvoiceListFilters = {
@@ -43,6 +49,8 @@ export type PaymentMethod = {
   id: string;
   label: string;
   is_active: boolean;
+  /** Seeded with the company. The API refuses to delete one (409 builtin_protected). */
+  is_builtin?: boolean;
   is_company_payment?: boolean;
   is_personal_payment?: boolean;
 };
@@ -165,7 +173,10 @@ export function useAssignInvoiceWorker(projectId: string) {
   });
 }
 
-export function useDeleteInvoice(projectId: string) {
+export function useDeleteInvoice(
+  projectId: string,
+  { silent = false }: { silent?: boolean } = {},
+) {
   const { t } = useTranslation();
   return useApiMutation<{ invoiceId: string }>({
     mutationFn: async ({ invoiceId }) =>
@@ -178,7 +189,7 @@ export function useDeleteInvoice(projectId: string) {
         ),
       ),
     invalidates: [invoiceKeys.all(projectId), ["projects", projectId]],
-    successMessage: t("invoices.deleted"),
+    successMessage: silent ? undefined : t("invoices.deleted"),
   });
 }
 
@@ -273,11 +284,12 @@ export function useDeleteAttachment(projectId: string, invoiceId: string) {
   });
 }
 
-/** Opens the attachment in the OS share/preview sheet. */
+/** Opens the attachment: a PDF in the in-app viewer, anything else in the OS share sheet. */
 export function openAttachment(attachment: InvoiceAttachment): Promise<string> {
-  return downloadAndShare(
+  return openFile(
     `/api/v1/attachments/${encodeURIComponent(attachment.id)}/download`,
     attachment.filename,
+    attachment.mime_type,
   );
 }
 
@@ -292,7 +304,8 @@ export function exportInvoices(
 ) {
   const query = new URLSearchParams({ from, to, format });
   if (type) query.set("type", type);
-  return downloadAndShare(
+  // A PDF export opens in the in-app viewer (Share is there); xlsx goes to the share sheet.
+  return openFile(
     `/api/v1/projects/${encodeURIComponent(projectId)}/invoices-export?${query.toString()}`,
     `invoices-${from}-${to}.${format}`,
   );
@@ -311,14 +324,29 @@ export function useLaborPaymentsSummary(projectId: string, enabled = true) {
   });
 }
 
-export function usePaymentMethods(companyId: string | null | undefined) {
+/**
+ * Active methods by default (what invoice pickers offer). The settings screen asks for the
+ * deactivated ones too, otherwise a method switched off could never be switched back on.
+ */
+export function usePaymentMethods(
+  companyId: string | null | undefined,
+  { includeInactive = false }: { includeInactive?: boolean } = {},
+) {
   return useQuery({
-    queryKey: invoiceKeys.paymentMethods(companyId ?? ""),
+    queryKey: [
+      ...invoiceKeys.paymentMethods(companyId ?? ""),
+      includeInactive ? "all" : "active",
+    ],
     enabled: Boolean(companyId),
     queryFn: async () => {
       const data = unwrapAs<{ items?: PaymentMethod[] }>(
         await api.GET("/api/v1/companies/{company_id}/payment-methods", {
-          params: { path: { company_id: companyId! } },
+          params: {
+            path: { company_id: companyId! },
+            ...(includeInactive
+              ? { query: { include_inactive: true } as never }
+              : {}),
+          },
         }),
       );
       return data.items ?? [];

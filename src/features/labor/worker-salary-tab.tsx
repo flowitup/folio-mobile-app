@@ -1,9 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
-import { EmptyState } from "@/components/ui/primitives";
+import { Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenTitle } from "@/components/ui/typography";
+import { useWorkers } from "@/features/labor/labor-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 
 import ProjectSalariesSection from "../../../app/(app)/(tabs)/projects/[id]/salaries";
@@ -16,7 +18,15 @@ import ProjectSalariesSection from "../../../app/(app)/(tabs)/projects/[id]/sala
  */
 export function WorkerSalaryTab() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { projectId, project, isPending } = useSelectedProject();
+  const workers = useWorkers(projectId);
+  // Worker mode also covers a company member nobody linked to a worker yet. The list the
+  // backend narrows to that account then comes back empty, and the shared salaries section
+  // reads it as "this site has no workers" — which is about the site, not about them. Say
+  // what the attendance and profile tabs say instead.
+  const notLinked =
+    workers.isSuccess && !workers.data.some((w) => w.user_id === user?.id);
 
   if (!isPending && !project)
     return (
@@ -37,7 +47,15 @@ export function WorkerSalaryTab() {
           {t("worker.salarySub")}
         </Text>
       </View>
-      {projectId ? (
+      {notLinked ? (
+        <View className="px-4 pt-4">
+          <Card radius={14} testID="worker-salary-not-linked">
+            <Text className="font-sans text-[13px] text-muted">
+              {t("worker.notLinked")}
+            </Text>
+          </Card>
+        </View>
+      ) : projectId ? (
         <ProjectSalariesSection key={projectId} projectId={projectId} />
       ) : null}
     </View>

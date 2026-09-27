@@ -77,7 +77,12 @@ async function renderForm(adminCompanies: MyCompany[], project?: Project) {
   return { onSubmit, ref, view };
 }
 
-async function fillNameAndSubmit(name = "Chantier Rivoli") {
+/** Address is the required field; the name is the optional label beside it. */
+async function fillAndSubmit(name = "Chantier Rivoli") {
+  await fireEvent.changeText(
+    screen.getByTestId("project-form-address"),
+    "12 rue de Rivoli, 75001 Paris",
+  );
   await fireEvent.changeText(screen.getByTestId("project-form-name"), name);
   await fireEvent.press(screen.getByTestId("project-form-submit"));
 }
@@ -90,7 +95,7 @@ describe("ProjectFormSheet company picker", () => {
     await fireEvent.press(
       screen.getByTestId(`project-form-company-option-${SECOND.id}`),
     );
-    await fillNameAndSubmit();
+    await fillAndSubmit();
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -103,7 +108,7 @@ describe("ProjectFormSheet company picker", () => {
   it("falls back to the primary company when the picker is left alone", async () => {
     const { onSubmit } = await renderForm([SECOND, PRIMARY]);
 
-    await fillNameAndSubmit();
+    await fillAndSubmit();
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ company_id: PRIMARY.id }),
@@ -137,7 +142,7 @@ describe("ProjectFormSheet company picker", () => {
         />
       </SafeAreaProvider>,
     );
-    await fillNameAndSubmit();
+    await fillAndSubmit();
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ company_id: PRIMARY.id }),
@@ -149,7 +154,7 @@ describe("ProjectFormSheet company picker", () => {
     const { onSubmit } = await renderForm([PRIMARY]);
 
     expect(screen.queryByTestId("project-form-company")).toBeNull();
-    await fillNameAndSubmit();
+    await fillAndSubmit();
 
     expect(onSubmit.mock.calls[0][0]).not.toHaveProperty("company_id");
   });

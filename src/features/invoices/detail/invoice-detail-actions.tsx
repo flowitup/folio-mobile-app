@@ -61,6 +61,7 @@ function RoundAction({
 export function InvoiceDetailActions({
   printing,
   canManage,
+  canEdit,
   onPrint,
   onAttach,
   onEdit,
@@ -69,6 +70,11 @@ export function InvoiceDetailActions({
   printing: boolean;
   /** `project:manage_invoices` — without it only the PDF export stays (the backend refuses writes). */
   canManage: boolean;
+  /**
+   * Whether the invoice body itself may still change: an auto-generated row and a refunded one
+   * are frozen server-side, so offering Sửa / Xoá on them only buys the user a 4xx.
+   */
+  canEdit: boolean;
   onPrint: () => void;
   onAttach: () => void;
   onEdit: () => void;
@@ -86,14 +92,16 @@ export function InvoiceDetailActions({
         onPress={onPrint}
       />
       {canManage ? (
+        <RoundAction
+          testID="attachment-add"
+          icon="paperclip"
+          label={t("invoices.detail.attach")}
+          tone="paper"
+          onPress={onAttach}
+        />
+      ) : null}
+      {canManage && canEdit ? (
         <>
-          <RoundAction
-            testID="attachment-add"
-            icon="paperclip"
-            label={t("invoices.detail.attach")}
-            tone="paper"
-            onPress={onAttach}
-          />
           <RoundAction
             testID="invoice-edit"
             icon="edit-3"

@@ -13,6 +13,7 @@ import {
   useAddMemberByPhone,
 } from "@/features/companies/company-members-api";
 import type { AddMemberRole } from "@/features/companies/company-members-api";
+import { normalizePhone } from "@/lib/auth/phone-number";
 
 type Props = { companyId: string };
 
@@ -43,10 +44,15 @@ export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
 
     function submit(personId?: string) {
       setError(null);
+      // Sign-in is French-only, and the app already refuses a foreign number at sign-up. Doing
+      // the same here keeps the rejection in the user's language: sending the raw text instead
+      // surfaced the backend's own English sentence inside a translated screen.
+      const normalized = normalizePhone(phone);
+      if (!normalized) return setError(t("login.invalidPhone"));
       add.mutate(
         {
           companyId,
-          phone: phone.trim(),
+          phone: normalized,
           name: name.trim() || undefined,
           role,
           person_id: personId,

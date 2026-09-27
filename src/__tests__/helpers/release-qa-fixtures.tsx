@@ -455,6 +455,7 @@ export const BILLING_DEVIS: BillingDocument = {
   issuer_bic: null,
   issuer_logo_url: null,
   source_devis_id: null,
+  converted_to_facture_id: null,
   total_ht: "1000.00",
   total_tva: "200.00",
   total_ttc: "1200.00",
@@ -523,7 +524,12 @@ export function ok(data: unknown) {
  */
 export function answerGet(
   current: () => Persona,
-  overrides: { entries?: LaborEntry[]; workers?: Worker[] } = {},
+  overrides: {
+    entries?: LaborEntry[];
+    workers?: Worker[];
+    /** Servers run chat behind FEATURE_CHAT; off here unless a test needs the chat button. */
+    chat?: boolean;
+  } = {},
 ) {
   return async (path: string, options?: GetOptions) => {
     const query = options?.params?.query ?? {};
@@ -546,7 +552,7 @@ export function answerGet(
           ],
         });
       case "/api/v1/features":
-        return ok({ chat: false });
+        return ok({ chat: overrides.chat ?? false });
       case "/api/v1/notifications":
         return ok({ items: [], attendance_pending: [] });
       case "/api/v1/projects/{project_id}/invoices": {

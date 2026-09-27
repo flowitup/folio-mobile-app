@@ -14,6 +14,21 @@
  */
 export type AuthFlow = "otp" | "signup";
 
+/**
+ * An auth request the backend refused, carrying its HTTP status. Screens branch on the
+ * status: the message is already translated, so matching words in it breaks as soon as the
+ * app is not in English.
+ */
+export class AuthRequestError extends Error {
+  readonly status: number | undefined;
+
+  constructor(message: string, status: number | undefined) {
+    super(message);
+    this.name = "AuthRequestError";
+    this.status = status;
+  }
+}
+
 /** i18n key for a recognised failure, or null to show the server's message unchanged. */
 export function authErrorKey(
   flow: AuthFlow,

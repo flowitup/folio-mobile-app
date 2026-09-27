@@ -15,16 +15,21 @@ import { useAuth } from "@/auth/auth-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
+import type { ChatMessage } from "@/features/chat/chat-api";
 import {
+  useAssistantEnabled,
   useChatChannels,
   useChatEnabled,
+  useFeatures,
   useChatMessages,
   useMarkChatRead,
   useSendChatMessage,
 } from "@/features/chat/chat-api";
 import { ChatComposer } from "@/features/chat/chat-composer";
+import type { ChatComposerHandle } from "@/features/chat/chat-composer";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
 import type { PickedFile } from "@/lib/files/pick";
+import type { SupportedLocale } from "@/i18n";
 import { seenByMessage } from "@/lib/chat/seen-by";
 import { useTokens, workerColor } from "@/theme/tokens";
 
@@ -34,30 +39,49 @@ import { useTokens, workerColor } from "@/theme/tokens";
  * picker / camera / microphone / send. Pushed over the tab shell; the back arrow closes it.
  */
 export default function ChatScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const tokens = useTokens();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ channel?: string }>();
   const enabled = useChatEnabled();
+  // `enabled` is false both while the flag is loading and when chat is off, so the
+  // features query is what says which — see the disabled branch below.
+  const features = useFeatures();
+  // Off (or still unknown): the composer's `@folio` suggestion, the "Ask again" button and
+  // choice buttons all go inert — the backend answers any of those with 404 `FeatureDisabled`.
+  const assistantEnabled = useAssistantEnabled();
   const channels = useChatChannels(enabled, 15_000);
+  const channelList = useMemo(() => channels.data ?? [], [channels.data]);
   const [selected, setSelected] = useState<string | null>(
     params.channel ?? null,
   );
   const channelKey =
-    selected && (channels.data ?? []).some((c) => c.key === selected)
+    selected && channelList.some((c) => c.key === selected)
       ? selected
-      : (channels.data?.[0]?.key ?? null);
+      : (channelList[0]?.key ?? null);
   const messages = useChatMessages(channelKey);
   const markRead = useMarkChatRead();
   const send = useSendChatMessage(channelKey ?? "");
   const scrollRef = useRef<ScrollView>(null);
+  const composerRef = useRef<ChatComposerHandle>(null);
+  // Set by the "Hỏi tiếp" button under an assistant message; cleared on send, on dismissal,
+  // or when the reader switches to a different channel.
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+  // Adjusting state during render (React's documented pattern) rather than in an effect: a
+  // reply left pending on the channel just switched away from must not leak into the next one.
+  const [replyChannelKey, setReplyChannelKey] = useState(channelKey);
+  if (channelKey !== replyChannelKey) {
+    setReplyChannelKey(channelKey);
+    setReplyTo(null);
+  }
 
   const channel = useMemo(
-    () => (channels.data ?? []).find((c) => c.key === channelKey) ?? null,
-    [channels.data, channelKey],
+    () => channelList.find((c) => c.key === channelKey) ?? null,
+    [channelList, channelKey],
   );
+  const isAdminChannel = channel?.kind === "admin";
   const members = messages.data?.members ?? [];
   const items = messages.data?.items ?? [];
   const lastMessageId = items[items.length - 1]?.id;
@@ -88,12 +112,25 @@ export default function ChatScreen() {
   }, [lastMessageId]);
 
   // Sending implies having read the channel; the composer clears itself once this resolves.
+  // `lang` (the reader's UI language) now goes on every send, and `replyToId` — when the
+  // reader tapped "Hỏi tiếp" on an assistant message — addresses the assistant even without
+  // typing `@folio`.
   async function submit(message: {
     body: string;
     file: PickedFile | null;
   }): Promise<void> {
-    await send.mutateAsync(message);
+    await send.mutateAsync({
+      ...message,
+      lang: i18n.language as SupportedLocale,
+      ...(replyTo ? { replyToId: replyTo.id } : {}),
+    });
+    setReplyTo(null);
     if (channelKey) markRead.mutate({ channelKey });
+  }
+
+  function replyToAssistant(message: ChatMessage): void {
+    setReplyTo(message);
+    composerRef.current?.focus();
   }
 
   return (
@@ -121,9 +158,11 @@ export default function ChatScreen() {
             {channel?.name ?? t("chat.title")}
           </Text>
           <Text className="font-sans text-[11.5px] text-muted">
-            {channel
-              ? t("chat.membersCount", { count: channel.member_count })
-              : ""}
+            {isAdminChannel
+              ? t("chat.adminSubtitle")
+              : channel
+                ? t("chat.membersCount", { count: channel.member_count })
+                : ""}
           </Text>
         </View>
         <View className="flex-row">
@@ -150,14 +189,17 @@ export default function ChatScreen() {
         </View>
       </View>
 
+      {/* Hidden when there is nothing to pick: with no channels this still drew its
+          padding and bottom rule, leaving an empty 53px bar under the header. */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="max-h-[53px] border-b border-line"
+        className={`max-h-[53px] border-b border-line ${channelList.length === 0 ? "hidden" : ""}`}
         contentContainerClassName="flex-row items-center gap-1.5 px-4 py-2.5"
       >
-        {(channels.data ?? []).map((item) => {
+        {channelList.map((item) => {
           const active = item.key === channelKey;
+          const isAdmin = item.kind === "admin";
           return (
             <Pressable
               key={item.key}
@@ -167,11 +209,19 @@ export default function ChatScreen() {
               onPress={() => setSelected(item.key)}
               className={`h-8 flex-row items-center gap-1.5 rounded-full border px-3 active:opacity-70 ${active ? "border-ink bg-ink" : "border-line bg-card"}`}
             >
+              {isAdmin ? (
+                <Icon
+                  testID={`chat-channel-${item.key}-lock`}
+                  name="lock"
+                  size={13}
+                  color={active ? tokens.onInk : tokens.ink}
+                />
+              ) : null}
               <Text
                 className={`font-sans-medium text-[12.5px] ${active ? "text-on-ink" : "text-ink"}`}
                 numberOfLines={1}
               >
-                {item.name}
+                {isAdmin ? t("chat.kindAdmin") : item.name}
               </Text>
               {item.unread_count > 0 && !active ? (
                 <View className="h-1.5 w-1.5 rounded-full bg-accent" />
@@ -191,7 +241,14 @@ export default function ChatScreen() {
             scrollRef.current?.scrollToEnd({ animated: false })
           }
         >
-          {!enabled && channels.isFetched ? (
+          {/* Gated on the FEATURES query, not the channels one. `useChatChannels` is
+              passed `enabled`, so when chat is off the channels query never runs and
+              `channels.isFetched` stays false forever — the old condition could never
+              be true, and the screen sat blank instead of saying chat was disabled. */}
+          {features.isPending ? (
+            <ActivityIndicator className="my-6" color={tokens.ink} />
+          ) : null}
+          {!enabled && features.isFetched ? (
             <EmptyState message={t("chat.disabled")} />
           ) : null}
           {messages.isPending && channelKey ? (
@@ -210,14 +267,44 @@ export default function ChatScreen() {
             </Text>
           ) : null}
           {items.length > 0 ? (
-            <ChatMessageList messages={items} seen={seen} />
+            <ChatMessageList
+              messages={items}
+              seen={seen}
+              onReplyToAssistant={replyToAssistant}
+              assistantEnabled={assistantEnabled}
+            />
           ) : null}
         </ScrollView>
 
+        {replyTo ? (
+          <View
+            testID="chat-reply-bar"
+            className="flex-row items-center gap-2 border-t border-line bg-paper-2 px-4 py-2"
+          >
+            <Icon name="corner-up-left" size={14} color={tokens.muted} />
+            <Text
+              className="flex-1 font-sans text-[12px] text-muted"
+              numberOfLines={1}
+            >
+              {t("chat.replyingTo", { name: replyTo.sender_name })}
+            </Text>
+            <Pressable
+              testID="chat-cancel-reply"
+              accessibilityRole="button"
+              onPress={() => setReplyTo(null)}
+              hitSlop={8}
+            >
+              <Icon name="x" size={14} color={tokens.muted} />
+            </Pressable>
+          </View>
+        ) : null}
+
         <ChatComposer
+          ref={composerRef}
           disabled={!channelKey}
           sending={send.isPending}
           onSend={submit}
+          assistantEnabled={assistantEnabled}
         />
       </KeyboardAvoidingView>
     </View>

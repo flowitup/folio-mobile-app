@@ -18,7 +18,7 @@ import {
   draftToUpdatePayload,
 } from "@/features/billing/billing-document-form";
 import {
-  shareBillingFile,
+  openBillingFile,
   useBillingDocument,
   useCloneBillingDocument,
   useConvertDevisToFacture,
@@ -80,7 +80,7 @@ export default function BillingDocumentScreen() {
     if (!doc) return;
     setSharing(format);
     try {
-      await shareBillingFile(doc, format);
+      await openBillingFile(doc, format);
     } catch (error) {
       showToast(
         error instanceof ApiError ? error.message : t("common.networkError"),
@@ -175,7 +175,9 @@ export default function BillingDocumentScreen() {
             variant="secondary"
             onPress={() => cloneSheet.current?.present()}
           />
-          {doc.kind === "devis" && doc.status === "accepted" ? (
+          {doc.kind === "devis" &&
+          doc.status === "accepted" &&
+          !doc.converted_to_facture_id ? (
             <Button
               testID="doc-convert"
               label={t("billing.actions.convert")}

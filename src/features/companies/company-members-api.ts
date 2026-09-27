@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
+import { showToast } from "@/components/ui/toast";
 import { unwrapAs } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
@@ -163,7 +164,13 @@ export interface ImportMembersResult {
   skipped_person_ids: string[];
 }
 
-/** Copy member profiles from another company the caller also admins (no pay data). */
+/**
+ * Copy member profiles from another company the caller also admins (no pay data).
+ *
+ * The backend skips anyone already in the target company, so a plain "Members imported."
+ * would claim more than happened: the toast is raised here, and names the skipped count
+ * when there is one.
+ */
 export function useImportMembers() {
   const { t } = useTranslation();
   return useApiMutation<
@@ -178,6 +185,17 @@ export function useImportMembers() {
         }),
       ),
     invalidates: [companyKeys.all],
-    successMessage: t("companies.members.import.successToast"),
+    onSuccess: (result) => {
+      const skipped = result.skipped_person_ids.length;
+      if (skipped > 0)
+        showToast(
+          t("companies.members.import.skippedToast", {
+            count: skipped,
+            imported: result.items.length,
+          }),
+          "info",
+        );
+      else showToast(t("companies.members.import.successToast"), "success");
+    },
   });
 }

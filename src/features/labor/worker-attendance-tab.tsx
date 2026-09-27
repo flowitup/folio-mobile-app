@@ -1,7 +1,14 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
+import { useAuthConfig } from "@/auth/auth-config";
 import { useAuth } from "@/auth/auth-context";
 import { can } from "@/auth/permissions";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
@@ -9,7 +16,12 @@ import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
 import { Input } from "@/components/ui/input";
 import { MonthPicker } from "@/components/ui/month-picker";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { showToast } from "@/components/ui/toast";
 import { ScreenTitle } from "@/components/ui/typography";
 import { AttendanceCalendar } from "@/features/labor/attendance-calendar";
@@ -31,6 +43,11 @@ import {
   toIsoDate,
 } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
+import {
+  SELF_ATTENDANCE_MAX_BACKDATE_DAYS,
+  canSelfLogDay,
+  dayInMonth,
+} from "@/lib/labor/attendance-day";
 import { monthRange } from "@/lib/labor/month-range";
 import { classifyOwnEdit } from "@/lib/labor/own-attendance-edit";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -55,8 +72,11 @@ export function WorkerAttendanceTab() {
   } = useSelectedProject();
   const [month, setMonth] = useState(currentMonth());
   const range = useMemo(() => monthRange(month), [month]);
-  const today = useMemo(() => toIsoDate(new Date()), []);
-  const [selectedDay, setSelectedDay] = useState(today);
+  const today = toIsoDate(new Date());
+  // Derived, never reset in an effect: a day picked in another month must not survive the
+  // month stepper, or the log card would offer to log a day the calendar no longer shows.
+  const [pickedDay, setPickedDay] = useState<string | null>(null);
+  const selectedDay = dayInMonth(pickedDay, month, today);
   const [shift, setShift] = useState<ShiftType>("full");
 
   const workers = useWorkers(projectId);
@@ -92,9 +112,11 @@ export function WorkerAttendanceTab() {
   useRefetchOnFocus(roster.refetch);
   useRefetchOnFocus(dayPaySummary.refetch);
 
-  const myWorker =
-    (workers.data ?? []).find((w) => w.user_id === user?.id) ??
-    workers.data?.[0];
+  // Only the worker linked to this account — never a first-row fallback, which would show
+  // (and log against) a colleague's row for a member the backend answers with every worker.
+  const myWorker = user?.id
+    ? (workers.data ?? []).find((w) => w.user_id === user.id)
+    : undefined;
   const monthEntries = useMemo(
     () => [...(entries.data ?? [])].sort((a, b) => (a.date < b.date ? 1 : -1)),
     [entries.data],
@@ -103,11 +125,24 @@ export function WorkerAttendanceTab() {
     (e) => e.status === "pending",
   ).length;
   const selectedEntry = monthEntries.find((e) => e.date === selectedDay);
-  const canLogSelected = selectedDay <= today && !selectedEntry;
+  // The backend refuses anything older than today − SELF_ATTENDANCE_MAX_BACKDATE_DAYS.
+  const authConfig = useAuthConfig();
+  // The deployment publishes the window on /auth/config; the constant is the fallback.
+  const backdateDays =
+    authConfig.data?.self_attendance_max_backdate_days ??
+    SELF_ATTENDANCE_MAX_BACKDATE_DAYS;
+  const dayInSelfLogWindow = canSelfLogDay(selectedDay, today, backdateDays);
+  const canLogSelected = dayInSelfLogWindow && !selectedEntry;
   const colorOf = () => tokens.positive;
 
   function selectDay(iso: string) {
-    setSelectedDay(iso);
+    setPickedDay(iso);
+    setEditing(false);
+  }
+
+  /** Stepping the month re-derives the selected day, so an open edit form no longer matches it. */
+  function selectMonth(next: string) {
+    setMonth(next);
     setEditing(false);
   }
 
@@ -179,12 +214,19 @@ export function WorkerAttendanceTab() {
           <MonthPicker
             testID="worker-month"
             value={month}
-            onChange={setMonth}
+            onChange={selectMonth}
             compact
           />
         </View>
 
-        {workers.isFetched && !myWorker ? (
+        {workers.isError ? (
+          <ErrorState
+            message={t("home.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void workers.refetch()}
+          />
+        ) : null}
+        {workers.isSuccess && !myWorker ? (
           <Card radius={14} testID="worker-not-linked">
             <Text className="font-sans text-[13px] text-muted">
               {t("worker.notLinked")}
@@ -319,9 +361,14 @@ export function WorkerAttendanceTab() {
                     }
                   />
                 </View>
-                {selectedDay > today ? (
-                  <Text className="mt-2 font-sans text-[12px] text-muted">
-                    {t("worker.futureDay")}
+                {!dayInSelfLogWindow ? (
+                  <Text
+                    testID="worker-log-window-hint"
+                    className="mt-2 font-sans text-[12px] text-muted"
+                  >
+                    {t("worker.futureDay", {
+                      days: backdateDays,
+                    })}
                   </Text>
                 ) : null}
               </>
@@ -337,6 +384,7 @@ export function WorkerAttendanceTab() {
               returns rate/cost, whatever the caller's permissions); pay is layered in
               separately via `payByWorkerId`, only fetched for a caller with view_pay. */}
           <DayRoster
+            upcoming={selectedDay > today}
             rows={roster.data}
             loading={roster.isPending}
             error={roster.isError}
@@ -384,7 +432,11 @@ export function WorkerAttendanceTab() {
             <EmptyState message={t("worker.empty")} />
           ) : null}
           {monthEntries.map((entry) => (
-            <EntryRow key={entry.id} entry={entry} />
+            <EntryRow
+              key={entry.id}
+              entry={entry}
+              onPress={() => setPickedDay(entry.date)}
+            />
           ))}
         </View>
       </ScrollView>
@@ -428,13 +480,22 @@ function Kpi({
   );
 }
 
-function EntryRow({ entry }: { entry: LaborEntry }) {
+/** A month row selects its day (the day card and roster above follow), like a calendar tap. */
+function EntryRow({
+  entry,
+  onPress,
+}: {
+  entry: LaborEntry;
+  onPress: () => void;
+}) {
   const { t } = useTranslation();
   const pending = entry.status === "pending";
   return (
-    <View
+    <Pressable
       testID={`worker-entry-${entry.id}`}
-      className="flex-row items-center justify-between rounded-[14px] border border-line bg-card px-3.5 py-3"
+      onPress={onPress}
+      accessibilityRole="button"
+      className="flex-row items-center justify-between rounded-[14px] border border-line bg-card px-3.5 py-3 active:opacity-70"
     >
       <View className="min-w-0 flex-1">
         <Text className="font-sans-medium text-[14px] text-ink">
@@ -454,6 +515,6 @@ function EntryRow({ entry }: { entry: LaborEntry }) {
         }
         tone={pending || entry.change_requested_at ? "warning" : "success"}
       />
-    </View>
+    </Pressable>
   );
 }

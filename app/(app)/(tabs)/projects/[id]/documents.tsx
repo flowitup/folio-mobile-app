@@ -1,6 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -13,7 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
@@ -22,6 +27,7 @@ import {
   openDocument,
   useDeleteDocument,
   useDocumentTags,
+  useDocumentUploaders,
   useDocuments,
   useRenameDocument,
   useSetDocumentTags,
@@ -35,7 +41,6 @@ import type {
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
-import { useMembers } from "@/features/projects/members-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
@@ -59,11 +64,23 @@ export default function ProjectDocumentsSection() {
   const [sort, setSort] = useState<DocumentSort>("created_at");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const canAccess = useProjectCan(id, "project:update");
+  const tags = useDocumentTags(id, canAccess);
+  // A tag leaves the project the moment its last document is deleted or retagged, and the
+  // chip row disappears with the last tag. Still filtering on it would empty the list with no
+  // chip left on screen to clear it, so only tags the project still offers narrow the list.
+  const knownTags = tags.data;
+  const activeTags = useMemo(
+    () =>
+      knownTags
+        ? selectedTags.filter((value) => knownTags.includes(value))
+        : selectedTags,
+    [selectedTags, knownTags],
+  );
   const documents = useDocuments(
     id,
     {
       kinds: kinds.length ? kinds : undefined,
-      tags: selectedTags.length ? selectedTags : undefined,
+      tags: activeTags.length ? activeTags : undefined,
       uploaderId: uploader,
       sort,
       order,
@@ -71,7 +88,8 @@ export default function ProjectDocumentsSection() {
     },
     canAccess,
   );
-  const members = useMembers(id, canAccess);
+  // Built from the documents themselves: an unassigned company admin who uploaded is listed too.
+  const uploaders = useDocumentUploaders(id, canAccess);
   const totalPages = Math.max(
     1,
     Math.ceil((documents.data?.total ?? 0) / (documents.data?.per_page ?? 25)),
@@ -82,7 +100,6 @@ export default function ProjectDocumentsSection() {
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
     );
   };
-  const tags = useDocumentTags(id, canAccess);
   const upload = useUploadDocument(id);
   const rename = useRenameDocument(id);
   const setTags = useSetDocumentTags(id);
@@ -112,12 +129,24 @@ export default function ProjectDocumentsSection() {
     editSheet.current?.present();
   }
 
-  const toggleKind = (kind: ProjectDocumentKind) =>
+  // Every filter and every ordering change starts the listing over: page 3 of the previous
+  // narrowing can be past the end of the new one, which reads as an empty section.
+  const toggleKind = (kind: ProjectDocumentKind) => {
+    setPage(1);
     setKinds((current) =>
       current.includes(kind)
         ? current.filter((k) => k !== kind)
         : [...current, kind],
     );
+  };
+  const changeSort = (next: DocumentSort) => {
+    setPage(1);
+    setSort(next);
+  };
+  const toggleOrder = () => {
+    setPage(1);
+    setOrder((current) => (current === "desc" ? "asc" : "desc"));
+  };
   const items = documents.data?.items ?? [];
 
   if (!canAccess)
@@ -190,9 +219,9 @@ export default function ProjectDocumentsSection() {
               value={uploader ?? "__all__"}
               options={[
                 { value: "__all__", label: t("documents.allUploaders") },
-                ...(members.data ?? []).map((member) => ({
-                  value: member.user_id,
-                  label: member.display_name ?? member.email,
+                ...(uploaders.data ?? []).map((who) => ({
+                  value: who.user_id,
+                  label: who.display_name,
                 })),
               ]}
               onChange={(value) => {
@@ -209,7 +238,7 @@ export default function ProjectDocumentsSection() {
                 value,
                 label: t(`documents.sort.${value}`),
               }))}
-              onChange={setSort}
+              onChange={changeSort}
             />
           </View>
           <Button
@@ -218,7 +247,7 @@ export default function ProjectDocumentsSection() {
             variant="secondary"
             size="sm"
             className="mb-4"
-            onPress={() => setOrder((o) => (o === "desc" ? "asc" : "desc"))}
+            onPress={toggleOrder}
           />
           <Button
             testID="documents-add"
@@ -231,7 +260,14 @@ export default function ProjectDocumentsSection() {
         </View>
 
         {documents.isPending ? <ActivityIndicator className="mt-8" /> : null}
-        {!documents.isPending && items.length === 0 ? (
+        {documents.isError ? (
+          <ErrorState
+            message={t("documents.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void documents.refetch()}
+          />
+        ) : null}
+        {!documents.isPending && !documents.isError && items.length === 0 ? (
           <EmptyState message={t("documents.none")} />
         ) : null}
         {items.map((document) => (

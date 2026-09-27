@@ -27,6 +27,10 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
   const { requestOtp, signInWithOtp } = useAuth();
   const [phoneInput, setPhoneInput] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
+  // The number the backend last texted, kept across "Đổi số": the code it sent is still valid
+  // for its whole TTL, so coming back to that number must reopen the code step instead of
+  // asking for another one the backend would refuse for a minute.
+  const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [resendAt, setResendAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -56,6 +60,9 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
   // for the SAME number: edit the number and "Send code" is live immediately.
   const canSend =
     phone !== null && !submitting && (secondsLeft === 0 || phone !== sentTo);
+  // Changing the number back while that code is still in flight: nothing to ask for.
+  const hasCodeInFlight =
+    phone !== null && phone === codeSentTo && secondsLeft > 0;
   const canVerify =
     new RegExp(`^\\d{${CODE_LENGTH}}$`).test(code) &&
     !submitting &&
@@ -63,12 +70,20 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
 
   async function sendCode() {
     if (!phone) return setError(t("login.invalidPhone"));
+    if (hasCodeInFlight) {
+      // Reopen the code step with the code already texted; requesting a second one inside the
+      // backend's per-number cooldown only answers 429 and strands the user for a minute.
+      setError(null);
+      setSentTo(phone);
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
       const expiresIn = await requestOtp(phone);
       setExpiresInMinutes(Math.max(1, Math.round(expiresIn / 60)));
       setSentTo(phone);
+      setCodeSentTo(phone);
       // A new code invalidates whatever is still in the boxes.
       setCode("");
       setLastSubmitted(null);

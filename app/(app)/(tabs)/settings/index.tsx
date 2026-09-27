@@ -1,6 +1,8 @@
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+
+import { useThemePreference } from "@/theme/theme-preference";
 import { ScrollView, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
@@ -23,6 +25,7 @@ export default function SettingsHub() {
   const paymentMethods = usePaymentMethods(primary?.id);
   const roles = useLaborRoles();
   const appVersion = Constants.expoConfig?.version ?? "—";
+  const { preference: themePreference } = useThemePreference();
 
   const rows: { key: string; label: string; value?: string; path: string }[] = [
     {
@@ -51,9 +54,10 @@ export default function SettingsHub() {
       path: "/settings/notifications",
     },
     {
-      key: "persons-merge",
-      label: t("settings.personsMerge"),
-      path: "/settings/persons-merge",
+      key: "appearance",
+      label: t("settings.appearance.title"),
+      value: t(`settings.appearance.options.${themePreference}`),
+      path: "/settings/appearance",
     },
     {
       key: "join-company",

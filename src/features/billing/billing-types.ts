@@ -61,6 +61,8 @@ export interface BillingDocument {
   issuer_bic: string | null;
   issuer_logo_url: string | null;
   source_devis_id: string | null;
+  /** On a devis: the facture it was converted into; null on factures and unconverted devis. */
+  converted_to_facture_id: string | null;
   total_ht: string;
   total_tva: string;
   total_ttc: string;

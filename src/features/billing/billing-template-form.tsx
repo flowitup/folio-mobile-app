@@ -9,11 +9,12 @@ import { Select } from "@/components/ui/select";
 
 import {
   BillingItemsEditor,
+  hasItemErrors,
   itemsFromResponse,
   itemsToPayload,
   validateItems,
 } from "./billing-items-editor";
-import type { ItemDraft } from "./billing-items-editor";
+import type { ItemDraft, ItemErrors } from "./billing-items-editor";
 import { VAT_PRESETS } from "./billing-types";
 import type {
   BillingDocumentKind,
@@ -47,14 +48,21 @@ export function BillingTemplateForm({
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [terms, setTerms] = useState(initial?.terms ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
-  const [itemErrors, setItemErrors] = useState<Record<number, string>>({});
+  const [itemErrors, setItemErrors] = useState<Record<number, ItemErrors>>({});
+  const [itemsError, setItemsError] = useState<string | null>(null);
 
   function submit() {
     const trimmed = name.trim();
     setNameError(trimmed ? null : t("billing.templates.nameRequired"));
     const errors = validateItems(t, items);
     setItemErrors(errors);
-    if (!trimmed || Object.keys(errors).length > 0) return;
+    // validateItems only walks the lines it is given, so an empty template passed it and
+    // saved with nothing to seed a document with — the very thing the empty state asks for.
+    const missingItems = items.length === 0;
+    setItemsError(
+      missingItems ? t("billing.form.errors.atLeastOneItem") : null,
+    );
+    if (!trimmed || missingItems || hasItemErrors(errors)) return;
     onSubmit({
       kind,
       name: trimmed,
@@ -111,6 +119,9 @@ export function BillingTemplateForm({
       <Text className="mb-2 text-base font-semibold text-primary">
         {t("billing.form.items")}
       </Text>
+      {itemsError ? (
+        <Text className="mb-2 text-xs text-danger">{itemsError}</Text>
+      ) : null}
       <BillingItemsEditor
         items={items}
         onChange={setItems}

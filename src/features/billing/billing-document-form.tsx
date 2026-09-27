@@ -17,11 +17,12 @@ import { projectDisplayName } from "@/lib/projects/project-display-name";
 import {
   BillingItemsEditor,
   emptyItem,
+  hasItemErrors,
   itemsFromResponse,
   itemsToPayload,
   validateItems,
 } from "./billing-items-editor";
-import type { ItemDraft } from "./billing-items-editor";
+import type { ItemDraft, ItemErrors } from "./billing-items-editor";
 import { IMPORT_STATUSES } from "./billing-types";
 import type {
   BillingDocument,
@@ -158,7 +159,7 @@ export function validateDraft(
   t: TFunction,
   draft: DocumentDraft,
   mode: FormMode,
-): { errors: Record<string, string>; itemErrors: Record<number, string> } {
+): { errors: Record<string, string>; itemErrors: Record<number, ItemErrors> } {
   const errors: Record<string, string> = {};
   if (mode !== "edit" && !draft.company_id)
     errors.company_id = t("billing.form.errors.companyRequired");
@@ -195,7 +196,7 @@ export function BillingDocumentForm({
   const projects = useProjects();
   const [draft, setDraft] = useState<DocumentDraft>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [itemErrors, setItemErrors] = useState<Record<number, string>>({});
+  const [itemErrors, setItemErrors] = useState<Record<number, ItemErrors>>({});
   const set = <K extends keyof DocumentDraft>(
     key: K,
     value: DocumentDraft[K],
@@ -208,7 +209,7 @@ export function BillingDocumentForm({
     setItemErrors(result.itemErrors);
     if (
       Object.keys(result.errors).length > 0 ||
-      Object.keys(result.itemErrors).length > 0
+      hasItemErrors(result.itemErrors)
     )
       return;
     onSubmit(draft);
