@@ -153,6 +153,19 @@ describe("overview tab · manager", () => {
     expect(screen.getByTestId("overview-pay-labor")).toBeTruthy();
   });
 
+  it("drops the pay-labor action for a caller who can neither manage labor nor view pay", async () => {
+    mockPersona = persona("manager", {
+      deny: ["project:manage_labor", "project:view_pay"],
+    });
+    await renderWithProviders(<OverviewTab />);
+    await screen.findByTestId("overview-headline");
+
+    await waitFor(() =>
+      expect(screen.queryByTestId("overview-pay-labor")).toBeNull(),
+    );
+    expect(screen.getByTestId("overview-add-invoice")).toBeTruthy();
+  });
+
   it("sends a manager (not a company admin) to the expenses tab for pending refunds", async () => {
     const { queryClient } = await renderWithProviders(<OverviewTab />);
     await screen.findByTestId("overview-due-tiles");

@@ -29,6 +29,12 @@ type Props = {
    * refuses them either way.
    */
   canManageInvoices?: boolean;
+  /**
+   * Whether the caller may see or record labor pay (`project:manage_labor` or
+   * `project:view_pay`). False drops the "pay labor" action, whose payments segment would
+   * show nothing to such a caller.
+   */
+  canPayLabor?: boolean;
   /** False for a member who may see neither the ledger nor the budget: figures are omitted. */
   showMoney?: boolean;
   onAddInvoice: () => void;
@@ -52,6 +58,7 @@ export function OverviewHero({
   onPayLabor,
   canViewBudget = true,
   canManageInvoices = true,
+  canPayLabor = true,
   showMoney = true,
 }: Props) {
   const { t } = useTranslation();
@@ -154,16 +161,18 @@ export function OverviewHero({
             </Text>
           </Pressable>
         ) : null}
-        <Pressable
-          testID="overview-pay-labor"
-          accessibilityRole="button"
-          onPress={onPayLabor}
-          className="h-11 flex-1 items-center justify-center rounded-xl border border-ink-block-line active:opacity-70"
-        >
-          <Text className="font-sans-medium text-[13px] text-on-ink-block">
-            {t("dashboard.overview.payLabor")}
-          </Text>
-        </Pressable>
+        {canPayLabor ? (
+          <Pressable
+            testID="overview-pay-labor"
+            accessibilityRole="button"
+            onPress={onPayLabor}
+            className="h-11 flex-1 items-center justify-center rounded-xl border border-ink-block-line active:opacity-70"
+          >
+            <Text className="font-sans-medium text-[13px] text-on-ink-block">
+              {t("dashboard.overview.payLabor")}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
