@@ -119,12 +119,14 @@ export function ProjectSwitcherSheet() {
   // fallback.
   const canCreate = can(user, "project:create") || isCompanyAdminAnywhere(user);
   // The matrix only grants `project:create` to a company admin — a new project is created
-  // inside that company (creator auto-assigned manager, D6). Falls back to the primary
-  // attached company when the admin belongs to several.
+  // inside that company (creator auto-assigned manager, D6). An admin of several companies
+  // picks it in the form, which defaults to the primary one.
+  const adminCompanies = (companies.data ?? []).filter(
+    (c) => c.role === "admin",
+  );
   const ownerCompanyId =
-    (companies.data ?? []).find((c) => c.role === "admin" && c.is_primary)
-      ?.id ??
-    (companies.data ?? []).find((c) => c.role === "admin")?.id ??
+    adminCompanies.find((c) => c.is_primary)?.id ??
+    adminCompanies[0]?.id ??
     null;
 
   return (
@@ -212,6 +214,7 @@ export function ProjectSwitcherSheet() {
       <ProjectFormSheet
         ref={form}
         submitting={createProject.isPending}
+        companies={adminCompanies}
         onSubmit={(values) =>
           createProject.mutate(
             {
@@ -219,7 +222,7 @@ export function ProjectSwitcherSheet() {
               name: values.name || null,
               budget: values.budget ?? null,
               budget_source: values.budget_source ?? null,
-              company_id: ownerCompanyId,
+              company_id: values.company_id ?? ownerCompanyId,
             },
             {
               onSuccess: (created) => {

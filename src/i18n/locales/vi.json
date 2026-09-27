@@ -116,6 +116,8 @@
       "name": "Tên",
       "address": "Địa chỉ",
       "addressRequired": "Cần nhập địa chỉ.",
+      "company": "Công ty",
+      "companyRequired": "Chọn công ty sở hữu công trình này.",
       "nameOptional": "Tên (tùy chọn)",
       "namePlaceholder": "Mặc định là địa chỉ",
       "budget": "Ngân sách (€)",

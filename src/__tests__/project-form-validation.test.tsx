@@ -7,7 +7,10 @@ import {
   isValidInvoicePrefix,
   ProjectFormSheet,
 } from "@/features/projects/project-form-sheet";
-import type { ProjectFormSheetHandle } from "@/features/projects/project-form-sheet";
+import type {
+  ProjectFormCompany,
+  ProjectFormSheetHandle,
+} from "@/features/projects/project-form-sheet";
 import type { Project } from "@/features/projects/projects-api";
 import { renderWithProviders } from "./helpers/release-qa-fixtures";
 
@@ -25,7 +28,7 @@ const PROJECT = {
   my_permissions: ["project:update", "project:view_budget"],
 } as unknown as Project;
 
-async function renderForm(project?: Project) {
+async function renderForm(project?: Project, companies?: ProjectFormCompany[]) {
   const onSubmit = jest.fn();
   const ref = createRef<ProjectFormSheetHandle>();
   await renderWithProviders(
@@ -34,6 +37,7 @@ async function renderForm(project?: Project) {
       project={project}
       submitting={false}
       onSubmit={onSubmit}
+      companies={companies}
     />,
   );
   await act(async () => ref.current?.open());
@@ -121,5 +125,43 @@ describe("ProjectFormSheet", () => {
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ address: "9 rue X", budget: 1500.5 }),
     );
+  });
+});
+
+describe("create project · company", () => {
+  const COMPANIES: ProjectFormCompany[] = [
+    { id: "c-main", legal_name: "Main SARL", is_primary: true },
+    { id: "c-second", legal_name: "Second SAS", is_primary: false },
+  ];
+
+  it("asks an admin of several companies which one the project belongs to", async () => {
+    const onSubmit = await renderForm(undefined, COMPANIES);
+    expect(screen.getByTestId("project-form-company")).toHaveTextContent(
+      /Main SARL/,
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("project-form-address"),
+      "1 rue B",
+    );
+    await fireEvent.press(screen.getByTestId("project-form-company"));
+    await fireEvent.press(
+      screen.getByTestId("project-form-company-option-c-second"),
+    );
+    await fireEvent.press(screen.getByTestId("project-form-submit"));
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ address: "1 rue B", company_id: "c-second" }),
+    );
+  });
+
+  it("does not ask an admin of a single company", async () => {
+    const onSubmit = await renderForm(undefined, [COMPANIES[0]]);
+    expect(screen.queryByTestId("project-form-company")).toBeNull();
+    await fireEvent.changeText(
+      screen.getByTestId("project-form-address"),
+      "1 rue B",
+    );
+    await fireEvent.press(screen.getByTestId("project-form-submit"));
+    expect(onSubmit.mock.calls[0][0]).not.toHaveProperty("company_id");
   });
 });

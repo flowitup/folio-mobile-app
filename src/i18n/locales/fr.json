@@ -116,6 +116,8 @@
       "name": "Nom",
       "address": "Adresse",
       "addressRequired": "L'adresse est obligatoire.",
+      "company": "Entreprise",
+      "companyRequired": "Choisissez l'entreprise à laquelle appartient le chantier.",
       "nameOptional": "Nom (facultatif)",
       "namePlaceholder": "Par défaut, l'adresse",
       "budget": "Budget (€)",

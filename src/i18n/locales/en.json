@@ -116,6 +116,8 @@
       "name": "Name",
       "address": "Address",
       "addressRequired": "Address is required.",
+      "company": "Company",
+      "companyRequired": "Choose the company this project belongs to.",
       "nameOptional": "Name (optional)",
       "namePlaceholder": "Defaults to the address",
       "budget": "Budget (€)",

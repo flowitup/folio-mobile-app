@@ -11,6 +11,7 @@ import { View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/auth/auth-context";
 import { Sheet } from "@/components/ui/sheet";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
@@ -36,6 +37,15 @@ export type ProjectFormValues = {
   budget?: number | null;
   budget_source?: string | null;
   invoice_prefix?: string | null;
+  /** Create only: the company the new project belongs to, when the caller chose one. */
+  company_id?: string;
+};
+
+/** A company the caller administers, in which a project can be created. */
+export type ProjectFormCompany = {
+  id: string;
+  legal_name: string;
+  is_primary?: boolean;
 };
 
 export type ProjectFormSheetHandle = { open: () => void; close: () => void };
@@ -67,7 +77,16 @@ type Props = {
   project?: Project;
   submitting: boolean;
   onSubmit: (values: ProjectFormValues) => void;
+  /**
+   * Create only: the companies the caller administers. With more than one the form asks
+   * which the project belongs to (defaulting to the primary one), as the web dialog does.
+   */
+  companies?: ProjectFormCompany[];
 };
+
+function defaultCompanyId(companies: ProjectFormCompany[]): string | null {
+  return (companies.find((c) => c.is_primary) ?? companies[0])?.id ?? null;
+}
 
 /**
  * The label the user chose, if any. A project labelled by its address (the
@@ -92,7 +111,10 @@ function toDraft(project?: Project) {
 
 /** Create / edit project form in a bottom sheet — same fields as the web dialogs. */
 export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
-  function ProjectFormSheet({ project, submitting, onSubmit }, ref) {
+  function ProjectFormSheet(
+    { project, submitting, onSubmit, companies = [] },
+    ref,
+  ) {
     const { t } = useTranslation();
     const { user } = useAuth();
     // Editing an existing project: the financing fields need
@@ -106,6 +128,11 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
     const [addressError, setAddressError] = useState<string | null>(null);
     const [budgetError, setBudgetError] = useState<string | null>(null);
     const [prefixError, setPrefixError] = useState<string | null>(null);
+    const pickCompany = !project && companies.length > 1;
+    const [companyId, setCompanyId] = useState<string | null>(() =>
+      defaultCompanyId(companies),
+    );
+    const [companyError, setCompanyError] = useState<string | null>(null);
 
     useEffect(() => setDraft(toDraft(project)), [project]);
 
@@ -115,6 +142,8 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
         setAddressError(null);
         setBudgetError(null);
         setPrefixError(null);
+        setCompanyId(defaultCompanyId(companies));
+        setCompanyError(null);
         sheet.current?.present();
       },
       close: () => sheet.current?.dismiss(),
@@ -123,6 +152,8 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
     function submit() {
       const address = draft.address.trim();
       if (!address) return setAddressError(t("project.form.addressRequired"));
+      if (pickCompany && !companyId)
+        return setCompanyError(t("project.form.companyRequired"));
       const budgetText = draft.budget.trim();
       const problem = canViewBudget ? budgetProblem(budgetText) : null;
       if (problem === "invalid")
@@ -144,6 +175,7 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
           : {}),
       };
       if (project) values.invoice_prefix = draft.invoicePrefix.trim() || null;
+      if (pickCompany && companyId) values.company_id = companyId;
       onSubmit(values);
     }
 
@@ -167,6 +199,22 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
             error={addressError}
             autoFocus
           />
+          {pickCompany ? (
+            <Select
+              testID="project-form-company"
+              label={t("project.form.company")}
+              value={companyId}
+              options={companies.map((c) => ({
+                value: c.id,
+                label: c.legal_name,
+              }))}
+              onChange={(value) => {
+                setCompanyError(null);
+                setCompanyId(value);
+              }}
+              error={companyError}
+            />
+          ) : null}
           <Input
             testID="project-form-name"
             label={t("project.form.nameOptional")}
