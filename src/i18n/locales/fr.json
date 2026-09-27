@@ -828,7 +828,8 @@
       "convert": "Convertir en facture",
       "convertTitle": "Convertir en facture",
       "deleteConfirm": "Supprimer {{number}} ?",
-      "invalidTransition": "Ce changement de statut n'est pas autorisé."
+      "invalidTransition": "Ce changement de statut n'est pas autorisé.",
+      "deletePaidWarning": "Cette facture est payée : le déblocage de fonds qu'elle a enregistré dans son chantier est supprimé avec elle."
     },
     "toast": {
       "documentCreated": "Document créé.",

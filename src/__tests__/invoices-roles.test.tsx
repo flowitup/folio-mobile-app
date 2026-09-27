@@ -382,6 +382,54 @@ describe("invoice detail · manager", () => {
   });
 });
 
+describe("invoice detail · orphaned funds release", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager");
+    mockParams = { id: PROJECT_ID, invoiceId: INVOICE_MATERIALS.id };
+  });
+
+  it("offers delete, not edit, on an auto-generated release whose facture is gone", async () => {
+    const orphan = {
+      ...INVOICE_RELEASE,
+      id: INVOICE_MATERIALS.id,
+      is_auto_generated: true,
+      source_billing_document_id: null,
+      refunds_invoice_id: null,
+    };
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? { data: orphan, response: { status: 200, statusText: "OK" } }
+        : answer(path, options as never),
+    );
+
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(await screen.findByTestId("invoice-delete")).toBeTruthy();
+    expect(screen.queryByTestId("invoice-edit")).toBeNull();
+  });
+
+  it("keeps a release still linked to its facture frozen", async () => {
+    const linked = {
+      ...INVOICE_RELEASE,
+      id: INVOICE_MATERIALS.id,
+      is_auto_generated: true,
+      source_billing_document_id: "doc-1",
+    };
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? { data: linked, response: { status: 200, statusText: "OK" } }
+        : answer(path, options as never),
+    );
+
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(await screen.findByTestId("invoice-actions")).toBeTruthy();
+    expect(screen.queryByTestId("invoice-delete")).toBeNull();
+  });
+});
+
 describe("invoice detail · company admin", () => {
   beforeEach(() => {
     mockPersona = persona("admin");

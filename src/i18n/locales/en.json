@@ -828,7 +828,8 @@
       "convert": "Convert to invoice",
       "convertTitle": "Convert to invoice",
       "deleteConfirm": "Delete {{number}}?",
-      "invalidTransition": "This status change is not allowed."
+      "invalidTransition": "This status change is not allowed.",
+      "deletePaidWarning": "This facture is paid: the funds release it recorded in its project is deleted with it."
     },
     "toast": {
       "documentCreated": "Document created.",

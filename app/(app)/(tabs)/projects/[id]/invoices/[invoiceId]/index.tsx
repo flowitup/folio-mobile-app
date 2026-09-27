@@ -133,6 +133,15 @@ export default function InvoiceDetailScreen() {
     canManage &&
     !data.is_auto_generated &&
     data.refundable_status !== "refunded";
+  // An auto-generated release whose facture or refunded expense is gone is never synced
+  // again; the backend lets it be deleted (not edited), so a stale release can be cleared.
+  const orphanedRelease =
+    data.is_auto_generated &&
+    !data.source_billing_document_id &&
+    !data.refunds_invoice_id;
+  const canDelete =
+    canEdit ||
+    (canManage && orphanedRelease && data.refundable_status !== "refunded");
   const canTransferToCompany =
     canManage &&
     billing.allowed &&
@@ -156,6 +165,7 @@ export default function InvoiceDetailScreen() {
           printing={printing}
           canManage={canManage}
           canEdit={canEdit}
+          canDelete={canDelete}
           onPrint={() => void printPdf()}
           onAttach={() => addSheet.current?.present()}
           onEdit={() =>

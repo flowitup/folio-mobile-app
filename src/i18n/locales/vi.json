@@ -828,7 +828,8 @@
       "convert": "Chuyển thành hóa đơn",
       "convertTitle": "Chuyển thành hóa đơn",
       "deleteConfirm": "Xóa {{number}}?",
-      "invalidTransition": "Không được phép đổi trạng thái này."
+      "invalidTransition": "Không được phép đổi trạng thái này.",
+      "deletePaidWarning": "Hóa đơn này đã thanh toán: khoản giải ngân mà nó đã ghi vào công trình cũng sẽ bị xóa theo."
     },
     "toast": {
       "documentCreated": "Đã tạo tài liệu.",

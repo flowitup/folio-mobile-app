@@ -62,6 +62,7 @@ export function InvoiceDetailActions({
   printing,
   canManage,
   canEdit,
+  canDelete,
   onPrint,
   onAttach,
   onEdit,
@@ -75,6 +76,8 @@ export function InvoiceDetailActions({
    * are frozen server-side, so offering Sửa / Xoá on them only buys the user a 4xx.
    */
   canEdit: boolean;
+  /** Delete alone is also open on an auto-generated release whose source is gone. */
+  canDelete: boolean;
   onPrint: () => void;
   onAttach: () => void;
   onEdit: () => void;
@@ -101,22 +104,22 @@ export function InvoiceDetailActions({
         />
       ) : null}
       {canManage && canEdit ? (
-        <>
-          <RoundAction
-            testID="invoice-edit"
-            icon="edit-3"
-            label={t("common.edit")}
-            tone="ink"
-            onPress={onEdit}
-          />
-          <RoundAction
-            testID="invoice-delete"
-            icon="trash-2"
-            label={t("common.delete")}
-            tone="danger"
-            onPress={onDelete}
-          />
-        </>
+        <RoundAction
+          testID="invoice-edit"
+          icon="edit-3"
+          label={t("common.edit")}
+          tone="ink"
+          onPress={onEdit}
+        />
+      ) : null}
+      {canManage && canDelete ? (
+        <RoundAction
+          testID="invoice-delete"
+          icon="trash-2"
+          label={t("common.delete")}
+          tone="danger"
+          onPress={onDelete}
+        />
       ) : null}
     </View>
   );

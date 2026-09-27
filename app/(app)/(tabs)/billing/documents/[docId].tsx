@@ -306,6 +306,12 @@ export default function BillingDocumentScreen() {
         title={t("billing.actions.deleteConfirm", {
           number: doc.document_number,
         })}
+        // A paid facture recorded a funds release in its project; the delete removes it too.
+        message={
+          doc.kind === "facture" && doc.status === "paid"
+            ? t("billing.actions.deletePaidWarning")
+            : undefined
+        }
         confirmLabel={t("common.delete")}
         cancelLabel={t("common.cancel")}
         destructive
