@@ -1,4 +1,9 @@
-/** Live-preview totals for a billing document, same float algorithm as the web totals card. */
+/**
+ * Live-preview totals for a billing document, with the backend's rounding rule: each line's
+ * HT is rounded half-up to the cent, its TVA is rounded half-up from that HT, and the totals
+ * are sums of those cent amounts. The form then shows the figures the saved document, its
+ * PDF and its XLSX carry.
+ */
 
 import { parseMoneyInput } from "@/lib/format/money";
 
@@ -17,7 +22,15 @@ export type BillingTotals = {
   vatLines: VatLine[];
 };
 
-const round2 = (value: number) => Math.round(value * 100) / 100;
+/**
+ * Half-up (away from zero) to the cent, like Python's ROUND_HALF_UP. `value * 100` is first
+ * cut to 15 significant digits, so a float just under a half cent (1.005 * 100 is
+ * 100.49999999999999) still rounds up the way the backend's Decimal does.
+ */
+export function round2(value: number): number {
+  const cents = Number((Math.abs(value) * 100).toPrecision(15));
+  return (Math.sign(value) * Math.round(cents)) / 100;
+}
 // Same parser as the editor's validation, so an amount the form accepts ("1 234,50") is the
 // amount the live totals show rather than a silent zero.
 const num = (value: string) => parseMoneyInput(String(value)) ?? 0;
