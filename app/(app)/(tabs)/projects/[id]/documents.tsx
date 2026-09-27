@@ -412,17 +412,31 @@ export default function ProjectDocumentsSection() {
                 .split(",")
                 .map((v) => v.trim())
                 .filter(Boolean);
-              if (nameDraft.trim() && nameDraft.trim() !== editing.filename)
-                await rename
-                  .mutateAsync({
+              // Each step stops the save on failure and keeps the sheet open with what was
+              // typed: the rename first, so a refused name does not leave the tags half saved.
+              if (nameDraft.trim() && nameDraft.trim() !== editing.filename) {
+                try {
+                  await rename.mutateAsync({
                     documentId: editing.id,
                     filename: nameDraft.trim(),
-                  })
-                  .catch(() => undefined);
-              if (nextTags.join("|") !== editing.tags.join("|"))
-                await setTags
-                  .mutateAsync({ documentId: editing.id, tags: nextTags })
-                  .catch(() => undefined);
+                  });
+                } catch (caught) {
+                  return setNameError(
+                    apiErrorMessage(caught, t, i18n.language),
+                  );
+                }
+              }
+              if (nextTags.join("|") !== editing.tags.join("|")) {
+                try {
+                  await setTags.mutateAsync({
+                    documentId: editing.id,
+                    tags: nextTags,
+                  });
+                } catch {
+                  // The mutation already told the user; keep the sheet open to retry.
+                  return;
+                }
+              }
               editSheet.current?.dismiss();
             }}
           />
