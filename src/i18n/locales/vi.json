@@ -120,7 +120,11 @@
       "budget": "Ngân sách (€)",
       "budgetSource": "Nguồn ngân sách",
       "budgetSourceHint": "Nhập tự do, vd: vay ngân hàng, vốn tự có",
-      "invoicePrefix": "Tiền tố hoá đơn"
+      "invoicePrefix": "Tiền tố hoá đơn",
+      "budgetInvalid": "Nhập ngân sách từ 0 trở lên, ví dụ 150000 hoặc 150 000,50.",
+      "budgetTooLarge": "Ngân sách không được vượt quá {{max}}.",
+      "invoicePrefixHint": "1 đến 8 chữ cái hoặc chữ số, ví dụ TOUR1.",
+      "invoicePrefixInvalid": "Chỉ dùng 1 đến 8 chữ cái hoặc chữ số (không dấu cách, gạch ngang hay dấu)."
     },
     "allProjects": "Tất cả công trình",
     "active": "Đang hoạt động",

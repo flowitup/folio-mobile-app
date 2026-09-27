@@ -120,7 +120,11 @@
       "budget": "Budget (€)",
       "budgetSource": "Source du budget",
       "budgetSourceHint": "Texte libre, ex. prêt bancaire, fonds propres",
-      "invoicePrefix": "Préfixe de facture"
+      "invoicePrefix": "Préfixe de facture",
+      "budgetInvalid": "Saisissez un budget supérieur ou égal à 0, par ex. 150000 ou 150 000,50.",
+      "budgetTooLarge": "Le budget ne peut pas dépasser {{max}}.",
+      "invoicePrefixHint": "1 à 8 lettres ou chiffres, par ex. TOUR1.",
+      "invoicePrefixInvalid": "Utilisez uniquement 1 à 8 lettres ou chiffres (sans espaces, tirets ni accents)."
     },
     "allProjects": "Tous les chantiers",
     "active": "Actifs",

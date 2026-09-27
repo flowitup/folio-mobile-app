@@ -120,7 +120,11 @@
       "budget": "Budget (€)",
       "budgetSource": "Budget source",
       "budgetSourceHint": "Free text, e.g. bank loan, own funds",
-      "invoicePrefix": "Invoice prefix"
+      "invoicePrefix": "Invoice prefix",
+      "budgetInvalid": "Enter a budget of 0 or more, e.g. 150000 or 150 000,50.",
+      "budgetTooLarge": "The budget cannot exceed {{max}}.",
+      "invoicePrefixHint": "1 to 8 letters or digits, e.g. TOUR1.",
+      "invoicePrefixInvalid": "Use 1 to 8 letters or digits only (no spaces, dashes or accents)."
     },
     "allProjects": "All projects",
     "active": "Active",

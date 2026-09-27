@@ -39,6 +39,30 @@ export type ProjectFormValues = {
 
 export type ProjectFormSheetHandle = { open: () => void; close: () => void };
 
+/** Largest budget the API stores (its Numeric(14, 2) column). */
+export const MAX_BUDGET = 9_999_999_999.99;
+/** The backend's invoice prefix rule: 1-8 letters or digits, stored upper-cased. */
+const INVOICE_PREFIX = /^[A-Z0-9]{1,8}$/;
+
+/**
+ * Why a typed budget cannot be saved, or null when it can (blank means "no budget").
+ * Unreadable text must not fall through as null: that would save the project without a
+ * budget, or clear the stored one, with no word to the user.
+ */
+export function budgetProblem(text: string): "invalid" | "tooLarge" | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  const value = parseMoneyInput(trimmed);
+  if (value === null || value < 0) return "invalid";
+  return value > MAX_BUDGET ? "tooLarge" : null;
+}
+
+/** True when a typed invoice prefix (blank clears it) passes the backend's rule. */
+export function isValidInvoicePrefix(text: string): boolean {
+  const cleaned = text.trim().toUpperCase();
+  return cleaned === "" || INVOICE_PREFIX.test(cleaned);
+}
+
 type Props = {
   /** Existing project to edit; omit for create. */
   project?: Project;
@@ -81,6 +105,8 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
     const sheet = useRef<BottomSheetModal>(null);
     const [draft, setDraft] = useState(() => toDraft(project));
     const [addressError, setAddressError] = useState<string | null>(null);
+    const [budgetError, setBudgetError] = useState<string | null>(null);
+    const [prefixError, setPrefixError] = useState<string | null>(null);
 
     useEffect(() => setDraft(toDraft(project)), [project]);
 
@@ -88,6 +114,8 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
       open: () => {
         setDraft(toDraft(project));
         setAddressError(null);
+        setBudgetError(null);
+        setPrefixError(null);
         sheet.current?.present();
       },
       close: () => sheet.current?.dismiss(),
@@ -97,6 +125,15 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
       const address = draft.address.trim();
       if (!address) return setAddressError(t("project.form.addressRequired"));
       const budgetText = draft.budget.trim();
+      const problem = canViewBudget ? budgetProblem(budgetText) : null;
+      if (problem === "invalid")
+        return setBudgetError(t("project.form.budgetInvalid"));
+      if (problem === "tooLarge")
+        return setBudgetError(
+          t("project.form.budgetTooLarge", { max: formatMoney(MAX_BUDGET) }),
+        );
+      if (project && !isValidInvoicePrefix(draft.invoicePrefix))
+        return setPrefixError(t("project.form.invoicePrefixInvalid"));
       const values: ProjectFormValues = {
         address,
         name: draft.name.trim(),
@@ -144,8 +181,12 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
                 testID="project-form-budget"
                 label={t("project.form.budget")}
                 value={draft.budget}
-                onChangeText={(budget) => setDraft({ ...draft, budget })}
+                onChangeText={(budget) => {
+                  setBudgetError(null);
+                  setDraft({ ...draft, budget });
+                }}
                 keyboardType="decimal-pad"
+                error={budgetError}
                 hint={
                   draft.budget
                     ? formatMoney(parseMoneyInput(draft.budget))
@@ -168,9 +209,12 @@ export const ProjectFormSheet = forwardRef<ProjectFormSheetHandle, Props>(
               testID="project-form-invoice-prefix"
               label={t("project.form.invoicePrefix")}
               value={draft.invoicePrefix}
-              onChangeText={(invoicePrefix) =>
-                setDraft({ ...draft, invoicePrefix })
-              }
+              onChangeText={(invoicePrefix) => {
+                setPrefixError(null);
+                setDraft({ ...draft, invoicePrefix });
+              }}
+              error={prefixError}
+              hint={t("project.form.invoicePrefixHint")}
               autoCapitalize="characters"
               maxLength={8}
             />
