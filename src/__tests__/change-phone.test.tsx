@@ -56,6 +56,7 @@ jest.mock("@/components/ui/toast", () => ({
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn() }),
+  usePathname: () => "/",
 }));
 
 const t = (key: string, values?: Record<string, unknown>) =>
