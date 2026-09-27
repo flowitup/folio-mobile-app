@@ -34,6 +34,7 @@ import {
 } from "@/features/analyses/analyses-api";
 import type { Analysis } from "@/features/analyses/analyses-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
+import { formatFileSize } from "@/lib/format/file-size";
 import { pickDocuments } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
@@ -186,7 +187,7 @@ export default function ProjectAnalysesSection() {
               ) : null}
               <Text className="mt-1 text-xs text-muted-foreground">
                 {formatDate(analysis.created_at)} ·{" "}
-                {Math.round(analysis.size_bytes / 1024)} KB
+                {formatFileSize(analysis.size_bytes)}
                 {analysis.source_url ? ` · ${analysis.source_url}` : ""}
               </Text>
             </Pressable>

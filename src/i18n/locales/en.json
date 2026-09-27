@@ -1,5 +1,9 @@
 {
   "common": {
+    "fileSize": {
+      "kb": "{{value}} KB",
+      "mb": "{{value}} MB"
+    },
     "loading": "Loading…",
     "retry": "Retry",
     "loadError": "Could not load this content.",
@@ -498,7 +502,8 @@
       "workers": "Workers",
       "payments": "Payments"
     },
-    "headerSub": "{{count}} workers active · {{month}}",
+    "headerSub_one": "{{count}} worker active · {{month}}",
+    "headerSub_other": "{{count}} workers active · {{month}}",
     "kpi": {
       "cost": "Cost",
       "unpaid": "Unpaid"
@@ -1573,7 +1578,8 @@
     "worker": "Worker",
     "noWorkers": "No worker on this project yet.",
     "noMonths": "No month with work or payment yet.",
-    "days": "{{count}} day(s)",
+    "days_one": "{{value}} day",
+    "days_other": "{{value}} days",
     "earned": "Earned",
     "paid": "Paid",
     "remaining": "Remaining",

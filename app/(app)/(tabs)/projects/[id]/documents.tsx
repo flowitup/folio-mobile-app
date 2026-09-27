@@ -38,6 +38,7 @@ import type {
   ProjectDocument,
   ProjectDocumentKind,
 } from "@/features/documents/documents-api";
+import { formatFileSize } from "@/lib/format/file-size";
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
@@ -294,7 +295,7 @@ export default function ProjectDocumentsSection() {
                 </Text>
               </View>
               <Text className="text-xs text-muted-foreground">
-                {Math.round(document.size_bytes / 1024)} KB ·{" "}
+                {formatFileSize(document.size_bytes)} ·{" "}
                 {formatDate(document.uploaded_at)}
               </Text>
             </Pressable>

@@ -32,7 +32,7 @@ import {
 import { useLaborMonthlySummary, useWorkers } from "@/features/labor/labor-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { formatDate, formatMonth } from "@/lib/format/date";
-import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { formatMoney, formatNumber, parseMoneyInput } from "@/lib/format/money";
 import {
   UNASSIGNED_MONTH,
   buildWorkerSalaryMonths,
@@ -252,8 +252,11 @@ export default function ProjectSalariesSection({
                 />
               </View>
               <Text className="text-xs text-muted-foreground">
-                {t("salaries.days", { count: row.days })} ·{" "}
-                {t("salaries.earned")} {formatMoney(row.earned)} ·{" "}
+                {t("salaries.days", {
+                  count: row.days,
+                  value: formatNumber(row.days, 1),
+                })}{" "}
+                · {t("salaries.earned")} {formatMoney(row.earned)} ·{" "}
                 {t("salaries.paid")} {formatMoney(row.paid)}
                 {row.remaining !== 0
                   ? ` · ${t("salaries.remaining")} ${formatMoney(row.remaining)}`

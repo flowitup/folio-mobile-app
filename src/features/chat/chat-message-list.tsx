@@ -11,6 +11,7 @@ import {
 } from "@/features/chat/assistant-cards";
 import type { ChatMember, ChatMessage } from "@/features/chat/chat-api";
 import { ChatVoiceBubble } from "@/features/chat/chat-voice-note";
+import { formatFileSize } from "@/lib/format/file-size";
 import {
   dayDividerLabel,
   groupMessagesByDay,
@@ -36,11 +37,6 @@ function senderColor(
   let hash = 0;
   for (const char of senderId) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
   return workerColor(tokens, null, hash);
-}
-
-function formatSize(bytes: number): string {
-  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
 /** Tiny overlapping avatars of the members whose read marker stops at this message. */
@@ -213,7 +209,7 @@ function MessageRow({
               numberOfLines={1}
             >
               {message.attachment.filename} ·{" "}
-              {formatSize(message.attachment.size_bytes)}
+              {formatFileSize(message.attachment.size_bytes)}
             </Text>
           </View>
         ) : null}

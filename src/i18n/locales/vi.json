@@ -1,5 +1,9 @@
 {
   "common": {
+    "fileSize": {
+      "kb": "{{value}} KB",
+      "mb": "{{value}} MB"
+    },
     "loading": "Đang tải…",
     "retry": "Thử lại",
     "loadError": "Không tải được nội dung này.",
@@ -498,7 +502,8 @@
       "workers": "Nhân công",
       "payments": "Thanh toán"
     },
-    "headerSub": "{{count}} thợ đang làm · {{month}}",
+    "headerSub_one": "{{count}} thợ đang làm · {{month}}",
+    "headerSub_other": "{{count}} thợ đang làm · {{month}}",
     "kpi": {
       "cost": "Chi phí",
       "unpaid": "Chưa trả"
@@ -1573,7 +1578,8 @@
     "worker": "Nhân công",
     "noWorkers": "Chưa có nhân công trong công trình.",
     "noMonths": "Chưa có tháng nào có công hoặc thanh toán.",
-    "days": "{{count}} ngày",
+    "days_one": "{{value}} ngày",
+    "days_other": "{{value}} ngày",
     "earned": "Đã kiếm",
     "paid": "Đã trả",
     "remaining": "Còn lại",

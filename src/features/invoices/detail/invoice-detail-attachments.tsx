@@ -20,6 +20,7 @@ import {
   useRenameAttachment,
   useUploadAttachment,
 } from "@/features/invoices/invoices-api";
+import { formatFileSize } from "@/lib/format/file-size";
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
@@ -131,7 +132,7 @@ export function InvoiceAttachmentsCard({
                 {attachment.filename}
               </Text>
               <Text className="font-sans text-[11.5px] leading-[14px] text-muted">
-                {Math.round(attachment.size_bytes / 1024)} KB ·{" "}
+                {formatFileSize(attachment.size_bytes)} ·{" "}
                 {formatDate(attachment.uploaded_at)}
               </Text>
             </View>

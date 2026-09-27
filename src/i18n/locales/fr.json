@@ -1,5 +1,9 @@
 {
   "common": {
+    "fileSize": {
+      "kb": "{{value}} Ko",
+      "mb": "{{value}} Mo"
+    },
     "loading": "Chargement…",
     "retry": "Réessayer",
     "loadError": "Impossible de charger ce contenu.",
@@ -498,7 +502,8 @@
       "workers": "Ouvriers",
       "payments": "Paiements"
     },
-    "headerSub": "{{count}} ouvriers actifs · {{month}}",
+    "headerSub_one": "{{count}} ouvrier actif · {{month}}",
+    "headerSub_other": "{{count}} ouvriers actifs · {{month}}",
     "kpi": {
       "cost": "Coût",
       "unpaid": "Impayé"
@@ -1573,7 +1578,8 @@
     "worker": "Ouvrier",
     "noWorkers": "Aucun ouvrier sur ce chantier.",
     "noMonths": "Aucun mois avec du travail ou un paiement.",
-    "days": "{{count}} jour(s)",
+    "days_one": "{{value}} jour",
+    "days_other": "{{value}} jours",
     "earned": "Gagné",
     "paid": "Payé",
     "remaining": "Reste",
