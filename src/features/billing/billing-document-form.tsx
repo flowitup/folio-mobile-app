@@ -165,6 +165,10 @@ export function validateDraft(
     errors.company_id = t("billing.form.errors.companyRequired");
   if (!draft.recipient_name.trim())
     errors.recipient_name = t("billing.form.errors.recipientRequired");
+  // The API validates the address and answers with an English report otherwise.
+  const email = draft.recipient_email.trim();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    errors.recipient_email = t("billing.form.errors.emailInvalid");
   if (draft.items.length === 0)
     errors.items = t("billing.form.errors.atLeastOneItem");
   if (mode === "import" && !draft.document_number.trim())
@@ -290,6 +294,7 @@ export function BillingDocumentForm({
         label={t("billing.form.recipientEmail")}
         value={draft.recipient_email}
         onChangeText={(v) => set("recipient_email", v)}
+        error={errors.recipient_email}
         keyboardType="email-address"
         autoCapitalize="none"
       />

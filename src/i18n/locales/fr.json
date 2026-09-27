@@ -26,7 +26,8 @@
       "gone": "Ce lien a expiré ou n'est plus disponible.",
       "tooLarge": "Le fichier est trop volumineux.",
       "tooManyRequests": "Trop de tentatives. Patientez un instant puis réessayez.",
-      "keepExtension": "Le nom du fichier doit conserver l'extension {{ext}}."
+      "keepExtension": "Le nom du fichier doit conserver l'extension {{ext}}.",
+      "fileNameRequired": "Saisissez un nom de fichier."
     }
   },
   "login": {
@@ -814,7 +815,8 @@
         "itemVatRatePositive": "La TVA doit être entre 0 et 100.",
         "documentNumberRequired": "Le numéro du document est obligatoire.",
         "itemQuantityMax": "La quantité ne peut pas dépasser {{max}}.",
-        "itemUnitPriceMax": "Le prix unitaire ne peut pas dépasser {{max}}."
+        "itemUnitPriceMax": "Le prix unitaire ne peut pas dépasser {{max}}.",
+        "emailInvalid": "Saisissez une adresse e-mail valide, par ex. nom@exemple.fr."
       }
     },
     "actions": {
@@ -1431,7 +1433,8 @@
     "color": "Couleur",
     "none": "Aucun rôle.",
     "deleteConfirm": "Supprimer le rôle {{name}} ?",
-    "nameRequired": "Le nom est obligatoire."
+    "nameRequired": "Le nom est obligatoire.",
+    "colorInvalid": "Saisissez une couleur sous la forme # suivi de 6 chiffres hexadécimaux, par ex. #E11D48."
   },
   "persons": {
     "title": "Fusionner des personnes",

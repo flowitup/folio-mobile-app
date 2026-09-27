@@ -25,6 +25,7 @@ import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
+import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
 
 /** Short tile label: file extension (`PDF`, `JPG`) or the mime subtype. */
 function tileLabel(attachment: InvoiceAttachment): string {
@@ -64,6 +65,7 @@ export function InvoiceAttachmentsCard({
   const renameSheet = useRef<BottomSheetModal>(null);
   const [selected, setSelected] = useState<InvoiceAttachment | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [renameError, setRenameError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<InvoiceAttachment | null>(null);
 
   async function handlePick(result: PickResult) {
@@ -194,6 +196,7 @@ export function InvoiceAttachmentsCard({
             onPress={() => {
               if (!selected) return;
               setRenameValue(selected.filename);
+              setRenameError(null);
               menuSheet.current?.dismiss();
               renameSheet.current?.present();
             }}
@@ -218,20 +221,35 @@ export function InvoiceAttachmentsCard({
           <Input
             testID="attachment-rename-input"
             value={renameValue}
-            onChangeText={setRenameValue}
+            onChangeText={(value) => {
+              setRenameError(null);
+              setRenameValue(value);
+            }}
+            error={renameError}
             autoFocus
           />
           <Button
             testID="attachment-rename-save"
             label={t("common.save")}
             loading={rename.isPending}
-            onPress={() =>
-              selected &&
+            onPress={() => {
+              if (!selected) return;
+              // The backend refuses a blank name or a changed extension; say so here, in the
+              // UI language, rather than after the request.
+              const problem = renameProblem(selected.filename, renameValue);
+              if (problem)
+                return setRenameError(
+                  problem === "empty"
+                    ? t("common.errors.fileNameRequired")
+                    : t("common.errors.keepExtension", {
+                        ext: fileExtension(selected.filename),
+                      }),
+                );
               rename.mutate(
                 { attachmentId: selected.id, filename: renameValue.trim() },
                 { onSuccess: () => renameSheet.current?.dismiss() },
-              )
-            }
+              );
+            }}
           />
         </View>
       </Sheet>

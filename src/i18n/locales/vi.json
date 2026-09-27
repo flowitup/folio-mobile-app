@@ -26,7 +26,8 @@
       "gone": "Liên kết này đã hết hạn hoặc không còn khả dụng.",
       "tooLarge": "Tệp quá lớn.",
       "tooManyRequests": "Quá nhiều lần thử. Hãy đợi một lát rồi thử lại.",
-      "keepExtension": "Tên tệp phải giữ phần mở rộng {{ext}}."
+      "keepExtension": "Tên tệp phải giữ phần mở rộng {{ext}}.",
+      "fileNameRequired": "Hãy nhập tên tệp."
     }
   },
   "login": {
@@ -814,7 +815,8 @@
         "itemVatRatePositive": "VAT phải từ 0 đến 100.",
         "documentNumberRequired": "Cần nhập số tài liệu.",
         "itemQuantityMax": "Số lượng không được vượt quá {{max}}.",
-        "itemUnitPriceMax": "Đơn giá không được vượt quá {{max}}."
+        "itemUnitPriceMax": "Đơn giá không được vượt quá {{max}}.",
+        "emailInvalid": "Hãy nhập địa chỉ email hợp lệ, ví dụ ten@example.com."
       }
     },
     "actions": {
@@ -1431,7 +1433,8 @@
     "color": "Màu",
     "none": "Chưa có vai trò.",
     "deleteConfirm": "Xóa vai trò {{name}}?",
-    "nameRequired": "Cần nhập tên."
+    "nameRequired": "Cần nhập tên.",
+    "colorInvalid": "Nhập màu dạng # theo sau là 6 chữ số thập lục phân, ví dụ #E11D48."
   },
   "persons": {
     "title": "Gộp người",

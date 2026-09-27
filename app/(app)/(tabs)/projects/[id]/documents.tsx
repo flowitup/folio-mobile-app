@@ -40,6 +40,7 @@ import type {
 } from "@/features/documents/documents-api";
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
+import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
 import { formatDate } from "@/lib/format/date";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -111,6 +112,7 @@ export default function ProjectDocumentsSection() {
   const editSheet = useRef<BottomSheetModal>(null);
   const [editing, setEditing] = useState<ProjectDocument | null>(null);
   const [nameDraft, setNameDraft] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
   const [tagsDraft, setTagsDraft] = useState("");
   const [deleting, setDeleting] = useState<ProjectDocument | null>(null);
 
@@ -126,6 +128,7 @@ export default function ProjectDocumentsSection() {
   function openEdit(document: ProjectDocument) {
     setEditing(document);
     setNameDraft(document.filename);
+    setNameError(null);
     setTagsDraft(document.tags.join(", "));
     editSheet.current?.present();
   }
@@ -374,7 +377,11 @@ export default function ProjectDocumentsSection() {
             testID="document-name"
             label={t("documents.filename")}
             value={nameDraft}
-            onChangeText={setNameDraft}
+            onChangeText={(value) => {
+              setNameError(null);
+              setNameDraft(value);
+            }}
+            error={nameError}
           />
           <Input
             testID="document-tags"
@@ -390,6 +397,17 @@ export default function ProjectDocumentsSection() {
             loading={rename.isPending || setTags.isPending}
             onPress={async () => {
               if (!editing) return;
+              // A blank name keeps the current one; a changed extension is refused by the
+              // backend, so it is caught here with a translated message.
+              if (
+                nameDraft.trim() &&
+                renameProblem(editing.filename, nameDraft) === "extension"
+              )
+                return setNameError(
+                  t("common.errors.keepExtension", {
+                    ext: fileExtension(editing.filename),
+                  }),
+                );
               const nextTags = tagsDraft
                 .split(",")
                 .map((v) => v.trim())

@@ -26,7 +26,8 @@
       "gone": "This link has expired or is no longer available.",
       "tooLarge": "The file is too large.",
       "tooManyRequests": "Too many attempts. Wait a moment and try again.",
-      "keepExtension": "The file name must keep its {{ext}} extension."
+      "keepExtension": "The file name must keep its {{ext}} extension.",
+      "fileNameRequired": "Enter a file name."
     }
   },
   "login": {
@@ -814,7 +815,8 @@
         "itemVatRatePositive": "VAT must be between 0 and 100.",
         "documentNumberRequired": "Document number is required.",
         "itemQuantityMax": "Quantity cannot exceed {{max}}.",
-        "itemUnitPriceMax": "Unit price cannot exceed {{max}}."
+        "itemUnitPriceMax": "Unit price cannot exceed {{max}}.",
+        "emailInvalid": "Enter a valid email address, e.g. name@example.com."
       }
     },
     "actions": {
@@ -1431,7 +1433,8 @@
     "color": "Color",
     "none": "No role yet.",
     "deleteConfirm": "Delete role {{name}}?",
-    "nameRequired": "Name is required."
+    "nameRequired": "Name is required.",
+    "colorInvalid": "Enter a colour as # followed by 6 hexadecimal digits, e.g. #E11D48."
   },
   "persons": {
     "title": "Merge persons",
