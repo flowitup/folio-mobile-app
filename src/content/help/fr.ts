@@ -91,7 +91,7 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Choisissez le mois avec le sélecteur en haut de l'onglet Main-d'œuvre, puis le segment « Pointage ».",
       "Basculez entre « Calendrier » et « Liste » ; la ligne au-dessus affiche les jours travaillés, le coût et ce qui reste impayé.",
       "Touchez un jour, puis « Pointer ce jour ».",
-      "Dans le panneau, touchez chaque ouvrier présent, touchez sa pastille pour faire défiler « Journée », « Demi-journée » ou « Heures sup », et utilisez +/− pour le supplément d'heures. Terminez avec le bouton « Saisir … ».",
+      "Dans le panneau, touchez chaque ouvrier présent, touchez sa pastille pour faire défiler « Journée », « Demi-journée » ou « Heures sup. (x1,5) », et utilisez +/− pour le supplément d'heures. Terminez avec le bouton « Saisir … ».",
       "Touchez une saisie existante pour changer son poste, son supplément d'heures, son montant forcé ou sa note — ou pour la supprimer.",
       "Touchez « Activités & notes › » pour consigner ce qui a été fait ce jour-là et une description de la journée.",
       "Utilisez le bouton de téléchargement pour exporter une plage de mois, pour un ouvrier ou pour tous.",
