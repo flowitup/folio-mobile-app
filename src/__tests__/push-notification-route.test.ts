@@ -1,4 +1,7 @@
-import { routeForNotification } from "@/lib/push/notification-route";
+import {
+  routeForNotification,
+  staleKeysForPush,
+} from "@/lib/push/notification-route";
 
 describe("routeForNotification", () => {
   it("opens the bell on the project for a manager push", () => {
@@ -172,5 +175,25 @@ describe("routeForNotification", () => {
         status: "paid",
       }),
     ).toEqual({ projectId: null, sheet: null, path: "/billing/documents/d1" });
+  });
+});
+
+describe("staleKeysForPush", () => {
+  it("refreshes the bell for every push", () => {
+    expect(staleKeysForPush({ kind: "submitted" })).toEqual([
+      ["notifications"],
+    ]);
+    expect(staleKeysForPush(null)).toEqual([["notifications"]]);
+  });
+
+  it("also refreshes the project list when the user joins or leaves a project", () => {
+    expect(staleKeysForPush({ kind: "project_member_added" })).toEqual([
+      ["notifications"],
+      ["projects"],
+    ]);
+    expect(staleKeysForPush({ kind: "project_member_removed" })).toEqual([
+      ["notifications"],
+      ["projects"],
+    ]);
   });
 });

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -102,7 +102,14 @@ export function ProjectSwitcherSheet() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { sheet, closeSheet } = useShell();
-  const { projects, projectId, select } = useSelectedProject();
+  const { projects, projectId, select, refetch } = useSelectedProject();
+  // The list is cached for the whole session: a project the user was assigned to since the
+  // last fetch would stay missing until the app came back to the foreground.
+  const open = sheet === "switcher";
+  useEffect(() => {
+    if (open) refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch is rebuilt every render
+  }, [open]);
   const createProject = useCreateProject();
   const companies = useMyCompanies();
   const form = useRef<ProjectFormSheetHandle>(null);
@@ -122,7 +129,7 @@ export function ProjectSwitcherSheet() {
 
   return (
     <>
-      <ShellSheet open={sheet === "switcher"} testID="switcher-sheet">
+      <ShellSheet open={open} testID="switcher-sheet">
         <Eyebrow className="mb-2">
           {t("shell.projectsCount", { count: projects.length })}
         </Eyebrow>
