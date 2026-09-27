@@ -1827,7 +1827,7 @@
       "codeSentTo": "Saisissez le code à 6 chiffres envoyé au {{phone}}.",
       "confirm": "Confirmer le nouveau numéro",
       "otherNumber": "Utiliser un autre numéro",
-      "changed": "Numéro de téléphone modifié. Connectez-vous désormais avec votre nouveau numéro.",
+      "changed": "Numéro de téléphone modifié. Vos autres appareils ont été déconnectés ; connectez-vous désormais avec votre nouveau numéro.",
       "errors": {
         "sameNumber": "C'est déjà votre numéro de téléphone.",
         "phoneTaken": "Ce numéro est déjà utilisé par un autre compte."

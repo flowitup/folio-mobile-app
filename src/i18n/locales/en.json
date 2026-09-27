@@ -1827,7 +1827,7 @@
       "codeSentTo": "Enter the 6-digit code sent to {{phone}}.",
       "confirm": "Confirm new number",
       "otherNumber": "Use another number",
-      "changed": "Phone number changed. Sign in with your new number from now on.",
+      "changed": "Phone number changed. Your other devices have been signed out; sign in with your new number from now on.",
       "errors": {
         "sameNumber": "This is already your phone number.",
         "phoneTaken": "This number is already used by another account."

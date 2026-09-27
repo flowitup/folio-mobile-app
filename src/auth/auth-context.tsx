@@ -270,8 +270,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
         { body: { phone, code } },
       );
       if (!data) throw authError("phoneChange", error, response);
-      // Same tokens, new number: the answer is the fresh /auth/me representation.
-      setUser(data);
+      // The change signs the account out everywhere else and revokes the tokens this
+      // session used: keep the fresh pair it answers with, then the updated user.
+      const { access_token, refresh_token, ...me } = data;
+      await setStoredTokens(access_token, refresh_token);
+      setUser(me);
     },
     [],
   );

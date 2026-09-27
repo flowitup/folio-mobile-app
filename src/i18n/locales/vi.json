@@ -1827,7 +1827,7 @@
       "codeSentTo": "Nhập mã 6 số đã gửi tới {{phone}}.",
       "confirm": "Xác nhận số mới",
       "otherNumber": "Dùng số khác",
-      "changed": "Đã đổi số điện thoại. Từ nay hãy đăng nhập bằng số mới.",
+      "changed": "Đã đổi số điện thoại. Các thiết bị khác của bạn đã bị đăng xuất; từ nay hãy đăng nhập bằng số mới.",
       "errors": {
         "sameNumber": "Đây đã là số điện thoại của bạn.",
         "phoneTaken": "Số này đã được dùng cho một tài khoản khác."
