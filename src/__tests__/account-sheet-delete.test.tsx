@@ -55,6 +55,7 @@ jest.mock("@/auth/auth-context", () => {
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+  usePathname: () => "/",
 }));
 
 const SAFE_AREA_METRICS: Metrics = {

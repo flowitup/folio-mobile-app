@@ -1,9 +1,11 @@
+import { usePathname } from "expo-router";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { PropsWithChildren } from "react";
@@ -29,7 +31,11 @@ const ShellContext = createContext<ShellValue | null>(null);
 // mount, or applied immediately when one is already mounted.
 let pendingSheet: ShellSheet | null = null;
 let mountedSetter: ((sheet: ShellSheet | null) => void) | null = null;
+// The navigation that follows such a request (the push opens its route next) must not close
+// the sheet it just asked for.
+let keepSheetOnNextRoute = false;
 export function requestShellSheet(sheet: ShellSheet): void {
+  keepSheetOnNextRoute = true;
   if (mountedSetter) mountedSetter(sheet);
   else pendingSheet = sheet;
 }
@@ -48,6 +54,23 @@ export function ShellProvider({ children }: PropsWithChildren) {
   }, []);
   const [tabBarHeight, setTabBarHeight] = useState(0);
 
+  // The sheets are drawn over every tab scene, so a screen opened by a deep link (a tapped
+  // push, a link from a sheet-less screen) would appear under a sheet left open. Close it on
+  // every route change, except the one right after an outside request for a sheet.
+  const pathname = usePathname();
+  const previousPath = useRef(pathname);
+  useEffect(() => {
+    if (previousPath.current === pathname) return;
+    previousPath.current = pathname;
+    if (keepSheetOnNextRoute) {
+      keepSheetOnNextRoute = false;
+      return;
+    }
+    // Mirrors the router's state into the shell's; there is no event to subscribe to instead.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSheet(null);
+  }, [pathname]);
+
   // The shell sheets are plain views, not native modals, so Android's hardware Back never
   // reached them: it left the screen underneath instead of closing the open panel.
   useEffect(() => {
@@ -62,8 +85,14 @@ export function ShellProvider({ children }: PropsWithChildren) {
     return () => subscription.remove();
   }, [sheet]);
 
-  const openSheet = useCallback((next: ShellSheet) => setSheet(next), []);
-  const closeSheet = useCallback(() => setSheet(null), []);
+  const openSheet = useCallback((next: ShellSheet) => {
+    keepSheetOnNextRoute = false;
+    setSheet(next);
+  }, []);
+  const closeSheet = useCallback(() => {
+    keepSheetOnNextRoute = false;
+    setSheet(null);
+  }, []);
   const toggleSheet = useCallback(
     (next: ShellSheet) =>
       setSheet((current) => (current === next ? null : next)),
