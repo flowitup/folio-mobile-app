@@ -1,4 +1,10 @@
-import { Stack, useLocalSearchParams, usePathname } from "expo-router";
+import {
+  Stack,
+  useLocalSearchParams,
+  useNavigation,
+  usePathname,
+} from "expo-router";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ScreenHeader } from "@/components/ui/screen-header";
@@ -9,6 +15,20 @@ import type { ProjectSection } from "@/components/project/project-section-bar";
 export default function ProjectLayout() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
+  // The sections and the invoice screens share this stack, and a tab keeps its screens when
+  // the user leaves it: an invoice opened later from Expenses was pushed over the Members
+  // screen left from the Menu, so Back landed there. Drop the stack while the tab is away, so
+  // the next visit starts from the screen it asks for.
+  const navigation = useNavigation();
+  const [focused, setFocused] = useState(() => navigation.isFocused());
+  useEffect(() => {
+    const offFocus = navigation.addListener("focus", () => setFocused(true));
+    const offBlur = navigation.addListener("blur", () => setFocused(false));
+    return () => {
+      offFocus();
+      offBlur();
+    };
+  }, [navigation]);
   const pathname = usePathname();
   const rest = pathname.slice(`/projects/${id}/`.length).split("/");
   const section = rest[0] as ProjectSection | "";
@@ -26,7 +46,9 @@ export default function ProjectLayout() {
           back
         />
       )}
-      <Stack screenOptions={{ headerShown: false, animation: "none" }} />
+      {focused ? (
+        <Stack screenOptions={{ headerShown: false, animation: "none" }} />
+      ) : null}
     </>
   );
 }
