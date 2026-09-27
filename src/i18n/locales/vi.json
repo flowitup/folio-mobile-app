@@ -871,10 +871,13 @@
       "none": "Chưa theo dõi chi phí hoàn lại nào.",
       "allCompanies": "Mọi công ty",
       "summary": {
-        "refundedTotal": "Đã hoàn",
+        "refundedTotal": "Tổng đã hoàn",
         "refundedByCompany": "Bởi công ty",
         "refundedByBank": "Bởi ngân hàng",
-        "toRefund": "Cần hoàn"
+        "toRefund": "Cần hoàn",
+        "companyShare": "{{percent}}% công ty",
+        "bothShare": "{{percent}}% cả hai",
+        "bankShare": "{{percent}}% ngân hàng"
       },
       "status": {
         "refundable": "Có thể hoàn",

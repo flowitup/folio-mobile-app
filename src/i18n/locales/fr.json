@@ -871,10 +871,13 @@
       "none": "Aucune dépense suivie pour remboursement.",
       "allCompanies": "Toutes les sociétés",
       "summary": {
-        "refundedTotal": "Remboursé",
+        "refundedTotal": "Total remboursé",
         "refundedByCompany": "Par la société",
         "refundedByBank": "Par la banque",
-        "toRefund": "À rembourser"
+        "toRefund": "À rembourser",
+        "companyShare": "{{percent}}% société",
+        "bothShare": "{{percent}}% les deux",
+        "bankShare": "{{percent}}% banque"
       },
       "status": {
         "refundable": "Remboursable",

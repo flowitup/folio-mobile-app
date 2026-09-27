@@ -41,6 +41,7 @@ import type {
 import { openAttachment } from "@/features/invoices/invoices-api";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
+import { refundSplit } from "@/lib/invoices/refund-split";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 
@@ -144,6 +145,7 @@ export default function RefundableExpensesScreen() {
   }
 
   const summary = expenses.data?.summary;
+  const split = summary ? refundSplit(summary) : null;
 
   if (access.loading)
     return (
@@ -192,11 +194,11 @@ export default function RefundableExpensesScreen() {
             onChange={(v) => setCompanyId(v === "__all__" ? null : v)}
           />
         ) : null}
-        {summary ? (
+        {summary && split ? (
           <View className="mb-3 flex-row flex-wrap gap-2">
             {(
               [
-                ["refundedTotal", summary.refunded_total],
+                ["refundedTotal", split.totalFlows],
                 ["refundedByCompany", summary.refunded_by_company],
                 ["refundedByBank", summary.refunded_by_bank],
                 ["toRefund", summary.refundable_amount],
@@ -214,6 +216,47 @@ export default function RefundableExpensesScreen() {
                 </Text>
               </Card>
             ))}
+          </View>
+        ) : null}
+        {summary && split && summary.refunded_total !== 0 ? (
+          // Company only / both / bank only, as shares of the unique refunded total.
+          <View testID="refund-split-bar" className="mb-3">
+            <View className="h-2 flex-row overflow-hidden rounded-full">
+              <View
+                className="bg-positive"
+                style={{ width: `${split.companyPercent}%` }}
+              />
+              <View
+                className="bg-accent"
+                style={{ width: `${split.bothPercent}%` }}
+              />
+              <View
+                className="bg-ink-2"
+                style={{ width: `${split.bankPercent}%` }}
+              />
+            </View>
+            <View className="mt-1 flex-row justify-between gap-2">
+              <Text className="font-sans text-xs text-muted">
+                {t("billing.refundable.summary.companyShare", {
+                  percent: split.companyPercent,
+                })}
+              </Text>
+              {summary.refunded_by_both > 0 ? (
+                <Text
+                  testID="refund-split-both"
+                  className="font-sans text-xs text-muted"
+                >
+                  {t("billing.refundable.summary.bothShare", {
+                    percent: split.bothPercent,
+                  })}
+                </Text>
+              ) : null}
+              <Text className="font-sans text-xs text-muted">
+                {t("billing.refundable.summary.bankShare", {
+                  percent: split.bankPercent,
+                })}
+              </Text>
+            </View>
           </View>
         ) : null}
         {expenses.isPending ? <ActivityIndicator className="mt-8" /> : null}

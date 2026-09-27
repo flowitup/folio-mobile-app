@@ -871,10 +871,13 @@
       "none": "No expense tracked for reimbursement.",
       "allCompanies": "All companies",
       "summary": {
-        "refundedTotal": "Refunded",
+        "refundedTotal": "Total refunded",
         "refundedByCompany": "By company",
         "refundedByBank": "By bank",
-        "toRefund": "To refund"
+        "toRefund": "To refund",
+        "companyShare": "{{percent}}% company",
+        "bothShare": "{{percent}}% both",
+        "bankShare": "{{percent}}% bank"
       },
       "status": {
         "refundable": "Refundable",
