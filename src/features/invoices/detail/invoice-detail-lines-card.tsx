@@ -4,7 +4,7 @@ import { Text, View } from "react-native";
 import { Card } from "@/components/ui/primitives";
 import { Eyebrow } from "@/components/ui/typography";
 import type { Invoice } from "@/features/invoices/invoice-types";
-import { formatMoney } from "@/lib/format/money";
+import { formatMoney, formatNumber } from "@/lib/format/money";
 import { invoiceTotals, lineTotalTtc } from "@/lib/invoices/invoice-totals";
 
 function TotalRow({
@@ -65,8 +65,8 @@ export function InvoiceLinesCard({ items }: { items: Invoice["items"] }) {
               {item.description}
             </Text>
             <Text className="mt-0.5 font-mono-regular text-[11.5px] leading-[14px] text-muted">
-              {item.quantity} × {formatMoney(item.unit_price)} ·{" "}
-              {t("invoices.tvaShort")} {item.vat_rate ?? 0} %
+              {formatNumber(item.quantity)} × {formatMoney(item.unit_price)} ·{" "}
+              {t("invoices.tvaShort")} {formatNumber(item.vat_rate ?? 0)} %
             </Text>
           </View>
           <Text className="font-mono text-[14px] text-ink">

@@ -23,6 +23,22 @@ export function formatMoney(
 }
 
 /**
+ * Plain number (quantity, VAT rate, day count) in the active locale, trailing zeros dropped:
+ * `1,5` (fr, vi), `1.5` (en). Null or unreadable → empty string.
+ */
+export function formatNumber(
+  value: number | string | null | undefined,
+  maximumFractionDigits = 3,
+): string {
+  if (value === null || value === undefined || value === "") return "";
+  const number = typeof value === "string" ? Number(value) : value;
+  if (!Number.isFinite(number)) return "";
+  return new Intl.NumberFormat(LOCALE_TAG[i18n.language] ?? "en-GB", {
+    maximumFractionDigits,
+  }).format(number);
+}
+
+/**
  * Splits a formatted amount for the 1b headline figures: `main` is everything up to the last
  * integer digit (`97.640`, `€97,640`), `rest` the decimals and currency that follow (`,00 €`,
  * `.00`) and are rendered smaller and muted. Implemented by diffing the full format against the
