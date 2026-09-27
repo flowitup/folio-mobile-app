@@ -180,6 +180,57 @@ describe("Members per role", () => {
   });
 });
 
+describe("Members · who a manager may remove", () => {
+  const OTHERS = [
+    {
+      user_id: "u-admin",
+      email: "qa.admin@example.com",
+      display_name: "Admin Persona",
+      role_name: "admin",
+      joined_at: null,
+    },
+    {
+      user_id: "u-manager-2",
+      email: "other.manager@example.com",
+      display_name: "Other Manager",
+      role_name: "manager",
+      joined_at: null,
+    },
+  ];
+
+  function withOthers() {
+    const answer = answerGet(() => mockCurrent);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === MEMBERS_PATH
+        ? {
+            data: { members: [...MEMBERS, ...OTHERS] },
+            response: { status: 200, statusText: "OK" },
+          }
+        : answer(path, options as never),
+    );
+  }
+
+  it("offers a manager Remove on company members only, as the backend allows", async () => {
+    mockCurrent = persona("manager");
+    withOthers();
+    await renderWithProviders(<ProjectMembersSection />);
+
+    expect(await screen.findByTestId("member-remove-u-member")).toBeTruthy();
+    expect(screen.queryByTestId("member-remove-u-admin")).toBeNull();
+    expect(screen.queryByTestId("member-remove-u-manager-2")).toBeNull();
+  });
+
+  it("lets an admin remove managers and admins too", async () => {
+    mockCurrent = persona("admin");
+    withOthers();
+    await renderWithProviders(<ProjectMembersSection />);
+
+    expect(await screen.findByTestId("member-remove-u-manager-2")).toBeTruthy();
+    expect(screen.getByTestId("member-remove-u-member")).toBeTruthy();
+    expect(screen.getByTestId("member-remove-u-manager")).toBeTruthy();
+  });
+});
+
 describe("Members · phone sign-ups", () => {
   it("never shows the synthetic address the backend stores for a phone-only account", async () => {
     mockCurrent = persona("manager");

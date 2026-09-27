@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdmin } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -31,7 +32,8 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 /**
  * Members: manager/member assignments (D1 — no role picker, assigned once from the company
- * directory). Admin is implicit on every company project and never listed here. Someone not yet
+ * directory). A company admin sees every company project and is listed only when assigned
+ * (the project's creator is). Someone not yet
  * a company member is onboarded from the company members screen ("add by phone", D1) first;
  * outstanding legacy email invitations stay visible here to revoke, but the mobile app no longer
  * creates new ones — that flow needs a legacy project role id this redesign is retiring.
@@ -62,6 +64,12 @@ export default function ProjectMembersSection() {
     "project:manage_users",
     user?.permissions,
   );
+  // The backend lets a manager unassign only company "member" users; an admin anyone.
+  const callerIsAdmin = isCompanyAdmin(user, project.data?.company_id);
+  const canRemove = (member: ProjectMember) =>
+    canManage &&
+    member.user_id !== user?.id &&
+    (callerIsAdmin || member.role_name === "member");
   const canInvite = projectCan(
     project.data,
     "project:invite",
@@ -124,7 +132,7 @@ export default function ProjectMembersSection() {
               })}
             />
           </View>
-          {canManage && member.user_id !== user?.id ? (
+          {canRemove(member) ? (
             <Button
               testID={`member-remove-${member.user_id}`}
               label={t("members.remove")}
