@@ -1818,6 +1818,20 @@
       "blockedTitle": "Hãy chọn quản trị viên khác trước",
       "blockedBody": "Bạn là quản trị viên duy nhất của {{company}}. Hãy chỉ định một quản trị viên khác, sau đó xóa tài khoản của bạn.",
       "ok": "OK"
+    },
+    "phone": {
+      "title": "Số điện thoại",
+      "change": "Đổi số điện thoại",
+      "intro": "Bạn đang đăng nhập bằng {{phone}}. Nhập số mới: chúng tôi gửi mã 6 số qua SMS tới số đó, số hiện tại vẫn dùng được cho tới khi bạn xác nhận.",
+      "newNumber": "Số điện thoại mới",
+      "codeSentTo": "Nhập mã 6 số đã gửi tới {{phone}}.",
+      "confirm": "Xác nhận số mới",
+      "otherNumber": "Dùng số khác",
+      "changed": "Đã đổi số điện thoại. Từ nay hãy đăng nhập bằng số mới.",
+      "errors": {
+        "sameNumber": "Đây đã là số điện thoại của bạn.",
+        "phoneTaken": "Số này đã được dùng cho một tài khoản khác."
+      }
     }
   },
   "pdfViewer": {

@@ -557,6 +557,86 @@ export interface paths {
     };
     trace?: never;
   };
+  "/api/v1/auth/me/phone/confirm": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Switch the current user's sign-in phone to the new number once its SMS code checks out */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["PhoneChangeConfirmBody"];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["UserResponse"];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/auth/me/phone/request-code": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Text a code to the new phone number the current user wants to sign in with */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["PhoneChangeRequestBody"];
+        };
+      };
+      responses: {
+        /** @description Response */
+        202: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["OtpRequestResponse"];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/auth/otp/request": {
     parameters: {
       query?: never;
@@ -9019,6 +9099,24 @@ export interface components {
       worker_id: string;
     };
     /**
+     * PhoneChangeConfirmBody
+     * @description POST /auth/me/phone/confirm — the new number and the code texted to it.
+     */
+    PhoneChangeConfirmBody: {
+      /** Code */
+      code: string;
+      /** Phone */
+      phone: string;
+    };
+    /**
+     * PhoneChangeRequestBody
+     * @description POST /auth/me/phone/request-code — text a code to the new number the caller wants to use.
+     */
+    PhoneChangeRequestBody: {
+      /** Phone */
+      phone: string;
+    };
+    /**
      * ProjectResponse
      * @description Single project response.
      */
@@ -9706,8 +9804,10 @@ export interface components {
      * UpdateMeRequest
      * @description PATCH /auth/me — the caller edits their own display name and/or phone.
      *
-     *     The e-mail is deliberately not editable here (platform ops only). ``phone`` is stored in
-     *     E.164 and must stay unique; null/empty clears it. At least one field must be provided.
+     *     The e-mail is deliberately not editable here (platform ops only). ``phone`` is the sign-in
+     *     identity: it may only be sent unchanged (any formatting of the current number); clearing or
+     *     replacing it answers 400 ``PhoneChangeNotAllowed`` — a new number goes through the verified
+     *     ``/auth/me/phone/request-code`` + ``/auth/me/phone/confirm`` flow. At least one field must be provided.
      */
     UpdateMeRequest: {
       /**

@@ -1,11 +1,11 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { FrenchPhoneField } from "@/components/auth/french-phone-field";
 import {
-  FIELD,
   InkPill,
   LoginFrame,
   SignInErrorLine,
@@ -15,14 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Eyebrow } from "@/components/ui/typography";
 import { normalizePhone } from "@/lib/auth/phone-number";
-import { INK_BLOCK, useTokens } from "@/theme/tokens";
+import { INK_BLOCK } from "@/theme/tokens";
 
 const RESEND_SECONDS = 60;
 
 /** Step 1: phone → "Send code"; step 2: the 6-digit code with a 60 s resend timer. */
 export function PhoneSignIn({ signup }: { signup: boolean }) {
   const { t } = useTranslation();
-  const tokens = useTokens();
   const router = useRouter();
   const { requestOtp, signInWithOtp } = useAuth();
   const [phoneInput, setPhoneInput] = useState("");
@@ -144,26 +143,11 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
         sub={t("login.subtitle")}
       >
         <Eyebrow className="mb-2">{t("login.phone")}</Eyebrow>
-        <View className="mb-2 flex-row gap-2">
-          <View className="h-[52px] flex-row items-center gap-1.5 rounded-[10px] border border-line-2 bg-paper-2 px-3">
-            <Text className="font-sans-semibold text-[15px] text-ink">FR</Text>
-            <Text className="font-mono text-[14px] text-muted">+33</Text>
-          </View>
-          <View className={`${FIELD} flex-1`}>
-            <TextInput
-              testID="login-phone"
-              className="flex-1 font-mono text-[18px] text-ink"
-              autoComplete="tel"
-              keyboardType="phone-pad"
-              textContentType="telephoneNumber"
-              placeholder="6 12 34 56 78"
-              placeholderTextColor={tokens.muted2}
-              value={phoneInput}
-              onChangeText={setPhoneInput}
-              onSubmitEditing={() => canSend && void sendCode()}
-            />
-          </View>
-        </View>
+        <FrenchPhoneField
+          value={phoneInput}
+          onChangeText={setPhoneInput}
+          onSubmitEditing={() => canSend && void sendCode()}
+        />
         <Text className="mb-[18px] font-sans text-[12.5px] leading-[18px] text-muted">
           {t("login.phoneHint")}
         </Text>

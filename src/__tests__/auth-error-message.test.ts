@@ -16,6 +16,23 @@ describe("authErrorKey", () => {
     expect(authErrorKey("otp", 409)).toBeNull();
   });
 
+  it("maps the phone-change refusals, which answer 400 rather than 401", () => {
+    expect(authErrorKey("phoneChange", 400, "InvalidCode")).toBe(
+      "login.errors.invalidCode",
+    );
+    expect(authErrorKey("phoneChange", 400, "PhoneUnchanged")).toBe(
+      "account.phone.errors.sameNumber",
+    );
+    expect(authErrorKey("phoneChange", 400, "ValidationError")).toBe(
+      "login.invalidPhone",
+    );
+    expect(authErrorKey("phoneChange", 409)).toBe(
+      "account.phone.errors.phoneTaken",
+    );
+    expect(authErrorKey("phoneChange", 429)).toBe("login.errors.throttled");
+    expect(authErrorKey("phoneChange", 503)).toBe("login.errors.smsFailed");
+  });
+
   it("keeps the server message for unmapped statuses", () => {
     expect(authErrorKey("otp", 400)).toBeNull();
     expect(authErrorKey("otp", 500)).toBeNull();

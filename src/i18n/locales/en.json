@@ -1818,6 +1818,20 @@
       "blockedTitle": "Choose another administrator first",
       "blockedBody": "You are the only administrator of {{company}}. Make someone else an administrator there, then delete your account.",
       "ok": "OK"
+    },
+    "phone": {
+      "title": "Phone number",
+      "change": "Change number",
+      "intro": "You sign in with {{phone}}. Enter the new number: we text a 6-digit code to it, and your current number keeps working until you confirm.",
+      "newNumber": "New phone number",
+      "codeSentTo": "Enter the 6-digit code sent to {{phone}}.",
+      "confirm": "Confirm new number",
+      "otherNumber": "Use another number",
+      "changed": "Phone number changed. Sign in with your new number from now on.",
+      "errors": {
+        "sameNumber": "This is already your phone number.",
+        "phoneTaken": "This number is already used by another account."
+      }
     }
   },
   "pdfViewer": {

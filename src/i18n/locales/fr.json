@@ -1818,6 +1818,20 @@
       "blockedTitle": "Désignez d'abord un autre administrateur",
       "blockedBody": "Vous êtes le seul administrateur de {{company}}. Nommez un autre administrateur, puis supprimez votre compte.",
       "ok": "OK"
+    },
+    "phone": {
+      "title": "Numéro de téléphone",
+      "change": "Changer de numéro",
+      "intro": "Vous vous connectez avec le {{phone}}. Saisissez le nouveau numéro : nous y envoyons un code à 6 chiffres par SMS, et votre numéro actuel reste actif jusqu'à la confirmation.",
+      "newNumber": "Nouveau numéro de téléphone",
+      "codeSentTo": "Saisissez le code à 6 chiffres envoyé au {{phone}}.",
+      "confirm": "Confirmer le nouveau numéro",
+      "otherNumber": "Utiliser un autre numéro",
+      "changed": "Numéro de téléphone modifié. Connectez-vous désormais avec votre nouveau numéro.",
+      "errors": {
+        "sameNumber": "C'est déjà votre numéro de téléphone.",
+        "phoneTaken": "Ce numéro est déjà utilisé par un autre compte."
+      }
     }
   },
   "pdfViewer": {
