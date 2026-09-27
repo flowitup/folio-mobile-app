@@ -332,6 +332,26 @@ describe("invoice detail · manager", () => {
     await waitFor(() => expect(detailCalls()).toBeGreaterThan(before));
   });
 
+  it("says the invoice is unavailable, without a Retry, when the backend answers 404", async () => {
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? {
+            error: { error: "NotFound", message: "Invoice not found" },
+            response: { status: 404, statusText: "Not Found" },
+          }
+        : answer(path, options as never),
+    );
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(
+      await screen.findByText(i18n.t("invoices.unavailable")),
+    ).toBeTruthy();
+    expect(screen.queryByTestId("error-state")).toBeNull();
+    expect(screen.queryByText(i18n.t("common.retry"))).toBeNull();
+    expect(screen.getByTestId("header-back")).toBeTruthy();
+  });
+
   it("shows the write actions but not the company refund prompt", async () => {
     await renderWithProviders(<InvoiceDetailScreen />);
 

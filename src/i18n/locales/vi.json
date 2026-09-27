@@ -365,7 +365,8 @@
       "noHighlight": "Không tô",
       "attachmentsEmpty": "Chưa có tệp đính kèm"
     },
-    "restricted": "Hóa đơn chỉ dành cho người quản lý công trình."
+    "restricted": "Hóa đơn chỉ dành cho người quản lý công trình.",
+    "unavailable": "Hóa đơn này không tồn tại hoặc chỉ dành cho người quản lý công trình."
   },
   "labor": {
     "tabs": {

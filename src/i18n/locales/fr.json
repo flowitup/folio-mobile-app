@@ -365,7 +365,8 @@
       "noHighlight": "Sans couleur",
       "attachmentsEmpty": "Aucune pièce jointe"
     },
-    "restricted": "Les factures sont réservées aux responsables du chantier."
+    "restricted": "Les factures sont réservées aux responsables du chantier.",
+    "unavailable": "Cette facture n'existe pas ou est réservée aux responsables du chantier."
   },
   "labor": {
     "tabs": {

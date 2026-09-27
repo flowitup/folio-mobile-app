@@ -365,7 +365,8 @@
       "noHighlight": "No highlight",
       "attachmentsEmpty": "No attachments yet"
     },
-    "restricted": "Invoices are reserved for the project managers."
+    "restricted": "Invoices are reserved for the project managers.",
+    "unavailable": "This invoice does not exist or is reserved for the project managers."
   },
   "labor": {
     "tabs": {

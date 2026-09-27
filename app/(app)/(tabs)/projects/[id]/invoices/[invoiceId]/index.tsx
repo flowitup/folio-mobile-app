@@ -8,7 +8,7 @@ import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "@/auth/auth-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
-import { ErrorState } from "@/components/ui/primitives";
+import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { showToast } from "@/components/ui/toast";
 import {
@@ -34,6 +34,7 @@ import { projectCan, useProject } from "@/features/projects/projects-api";
 import { openPdfViewer } from "@/lib/files/open-file";
 import { buildInvoicePrintHtml } from "@/lib/invoices/invoice-print-html";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
+import { ApiError } from "@/lib/query/api-error";
 import { INK_BLOCK } from "@/theme/tokens";
 
 /**
@@ -114,15 +115,25 @@ export default function InvoiceDetailScreen() {
       </View>
     );
   // A failed refetch keeps showing the cached invoice; only a miss with nothing cached is an error.
+  // A 4xx is final — the invoice is gone, or the backend hides it from this caller (it
+  // answers 404 to a member who may not see it) — so a Retry could never succeed.
+  const unavailable =
+    invoice.error instanceof ApiError &&
+    invoice.error.status >= 400 &&
+    invoice.error.status < 500;
   if (!invoice.data)
     return (
       <View className="flex-1 bg-paper">
         <ScreenHeader title={t("invoices.print.title")} back onBack={goBack} />
-        <ErrorState
-          message={t("common.loadError")}
-          retryLabel={t("common.retry")}
-          onRetry={() => void invoice.refetch()}
-        />
+        {unavailable ? (
+          <EmptyState message={t("invoices.unavailable")} />
+        ) : (
+          <ErrorState
+            message={t("common.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void invoice.refetch()}
+          />
+        )}
       </View>
     );
 
