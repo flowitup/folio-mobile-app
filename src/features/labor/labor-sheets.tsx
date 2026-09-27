@@ -113,7 +113,9 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     const [roleId, setRoleId] = useState<string | null>(
       worker?.role_id ?? null,
     );
-    const [error, setError] = useState<string | null>(null);
+    // One message per field, so the rate error is shown under the rate and not under the name.
+    const [nameError, setNameError] = useState<string | null>(null);
+    const [rateError, setRateError] = useState<string | null>(null);
 
     const picked =
       personId === NEW_PERSON
@@ -128,7 +130,8 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         setPhone(worker?.phone ?? "");
         setRoleId(worker?.role_id ?? null);
         setUserId(worker?.user_id ?? null);
-        setError(null);
+        setNameError(null);
+        setRateError(null);
         sheet.current?.present();
       },
       close: () => sheet.current?.dismiss(),
@@ -137,7 +140,8 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     /** Company profile supplies identity, rate, role and account — each still editable below. */
     function pickPerson(value: string) {
       setPersonId(value);
-      setError(null);
+      setNameError(null);
+      setRateError(null);
       if (value === NEW_PERSON) {
         setName("");
         setPhone("");
@@ -156,7 +160,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
 
     function submit() {
       if (worker) {
-        if (!name.trim()) return setError(t("labor.workers.nameRequired"));
+        if (!name.trim()) return setNameError(t("labor.workers.nameRequired"));
         return onSubmit({
           name: name.trim(),
           // Always sent, empty included: the backend clears the phone on "" but leaves the
@@ -168,12 +172,12 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
       }
       // Identity comes from the picked Person; only the legacy manual path needs a name.
       if (!picked && !name.trim())
-        return setError(t("labor.workers.nameRequired"));
+        return setNameError(t("labor.workers.nameRequired"));
       const dailyRate = parseMoneyInput(rate);
       if (!dailyRate || dailyRate <= 0)
-        return setError(t("labor.workers.rateRequired"));
+        return setRateError(t("labor.workers.rateRequired"));
       if (dailyRate > MAX_DAILY_AMOUNT)
-        return setError(
+        return setRateError(
           t("labor.workers.rateTooLarge", {
             max: formatMoney(MAX_DAILY_AMOUNT),
           }),
@@ -244,9 +248,9 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               value={name}
               onChangeText={(value) => {
                 setName(value);
-                setError(null);
+                setNameError(null);
               }}
-              error={error}
+              error={nameError}
               autoFocus
             />
           )}
@@ -257,10 +261,10 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               value={rate}
               onChangeText={(value) => {
                 setRate(value);
-                setError(null);
+                setRateError(null);
               }}
               keyboardType="decimal-pad"
-              error={picked ? error : undefined}
+              error={rateError}
             />
           ) : null}
           {!picked ? (
