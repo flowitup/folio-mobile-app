@@ -24,6 +24,15 @@ export function openPdfViewer(uri: string, title: string): void {
   router.push({ pathname: "/pdf-viewer", params: { file: token, title } });
 }
 
+/**
+ * Name the cached copy of a PDF is saved under. iOS WKWebView picks how to show a local file
+ * from its extension, so a PDF whose name lacks `.pdf` (known only by its MIME type) would
+ * load as a blank or text page; the copy gets the extension, the viewer keeps the real name.
+ */
+export function pdfCacheName(filename: string): string {
+  return /\.pdf$/i.test(filename.trim()) ? filename : `${filename}.pdf`;
+}
+
 /** Downloads in flight, by API path: a double tap must not open the file twice. */
 const opening = new Map<string, Promise<string>>();
 
@@ -39,8 +48,12 @@ export function openFile(
   const pending = opening.get(path);
   if (pending) return pending;
   const run = (async () => {
-    const uri = await downloadToCache(path, filename);
-    if (isPdfFile({ filename, mimeType })) openPdfViewer(uri, filename);
+    const pdf = isPdfFile({ filename, mimeType });
+    const uri = await downloadToCache(
+      path,
+      pdf ? pdfCacheName(filename) : filename,
+    );
+    if (pdf) openPdfViewer(uri, filename);
     else await shareLocalFile(uri, mimeType ?? undefined);
     return uri;
   })().finally(() => opening.delete(path));

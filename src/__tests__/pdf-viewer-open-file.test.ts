@@ -190,6 +190,19 @@ describe("openFile", () => {
     expect(mockShareLocalFile).not.toHaveBeenCalled();
   });
 
+  it("saves a PDF known only by its MIME type under a .pdf name", async () => {
+    await openFile("/api/v1/attachments/7/download", "scan", "application/pdf");
+    expect(mockDownloadToCache).toHaveBeenCalledWith(
+      "/api/v1/attachments/7/download",
+      "scan.pdf",
+    );
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: expect.objectContaining({ title: "scan" }),
+      }),
+    );
+  });
+
   it("keeps the share sheet for files the app cannot show", async () => {
     await openFile(
       "/export?format=xlsx",
