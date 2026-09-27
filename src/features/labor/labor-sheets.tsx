@@ -109,7 +109,10 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     );
     const [name, setName] = useState(worker?.name ?? "");
     const [rate, setRate] = useState(worker ? String(worker.daily_rate) : "");
-    const [phone, setPhone] = useState(worker?.phone ?? "");
+    // The phone every screen shows is the shared person's; the worker row only copies it.
+    const [phone, setPhone] = useState(
+      worker?.person_phone ?? worker?.phone ?? "",
+    );
     const [roleId, setRoleId] = useState<string | null>(
       worker?.role_id ?? null,
     );
@@ -127,7 +130,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         setPersonId(NEW_PERSON);
         setName(worker?.name ?? "");
         setRate(worker ? String(worker.daily_rate) : "");
-        setPhone(worker?.phone ?? "");
+        setPhone(worker?.person_phone ?? worker?.phone ?? "");
         setRoleId(worker?.role_id ?? null);
         setUserId(worker?.user_id ?? null);
         setNameError(null);
