@@ -334,12 +334,17 @@ export const PaymentSheet = forwardRef<
   );
 });
 
-/** Labor export: format, month range, worker filter. */
+/**
+ * Labor export: format, month range, worker filter. Without `allowAllWorkers` (a member who
+ * sees only their own worker) the project-wide export, which the backend refuses them, is not
+ * offered: the sheet exports one of the listed workers.
+ */
 export const LaborExportSheet = forwardRef<
   BottomSheetModal,
   {
     projectId: string;
     workers: Worker[];
+    allowAllWorkers?: boolean;
     onExport: (
       projectId: string,
       format: InvoiceExportFormat,
@@ -348,7 +353,10 @@ export const LaborExportSheet = forwardRef<
       workerId: string | null,
     ) => Promise<unknown>;
   }
->(function LaborExportSheet({ projectId, workers, onExport }, ref) {
+>(function LaborExportSheet(
+  { projectId, workers, allowAllWorkers = true, onExport },
+  ref,
+) {
   const { t, i18n } = useTranslation();
   const [format, setFormat] = useState<InvoiceExportFormat>("xlsx");
   const [from, setFrom] = useState(currentMonth());
@@ -357,11 +365,14 @@ export const LaborExportSheet = forwardRef<
   const [exporting, setExporting] = useState(false);
 
   const rangeValid = isValidMonthRange(from, to);
+  const selectedWorkerId = allowAllWorkers
+    ? workerId
+    : (workerId ?? workers[0]?.id ?? null);
 
   async function run() {
     setExporting(true);
     try {
-      await onExport(projectId, format, from, to, workerId);
+      await onExport(projectId, format, from, to, selectedWorkerId);
       (ref as ModalRef).current?.dismiss();
     } catch (caught) {
       showToast(apiErrorMessage(caught, t, i18n.language), "error");
@@ -400,9 +411,11 @@ export const LaborExportSheet = forwardRef<
         <Select
           testID="labor-export-worker"
           label={t("labor.export.worker")}
-          value={workerId ?? "__all__"}
+          value={selectedWorkerId ?? "__all__"}
           options={[
-            { value: "__all__", label: t("labor.export.allWorkers") },
+            ...(allowAllWorkers
+              ? [{ value: "__all__", label: t("labor.export.allWorkers") }]
+              : []),
             ...workers.map((w) => ({ value: w.id, label: w.name })),
           ]}
           onChange={(value) => setWorkerId(value === "__all__" ? null : value)}
@@ -419,7 +432,7 @@ export const LaborExportSheet = forwardRef<
           testID="labor-export-run"
           label={t("invoices.export.run")}
           loading={exporting}
-          disabled={!rangeValid}
+          disabled={!rangeValid || (!allowAllWorkers && !selectedWorkerId)}
           onPress={() => void run()}
         />
       </View>

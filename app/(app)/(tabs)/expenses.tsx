@@ -81,6 +81,11 @@ function ExpensesTabContent() {
   // Writing an invoice needs `project:manage_invoices`; without it the form would only walk
   // the user into a 403 on submit, so the "+" never appears.
   const canManageInvoices = useProjectCan(projectId, "project:manage_invoices");
+  // The backend exports invoices only for a full project view (manage_labor or view_pay, as
+  // its labor scope rule); a restricted member would only get a 403 from the sheet.
+  const canManageLabor = useProjectCan(projectId, "project:manage_labor");
+  const canViewPay = useProjectCan(projectId, "project:view_pay");
+  const canExport = canManageLabor || canViewPay;
   const billing = useBillingAccess();
   const chatEnabled = useChatEnabled();
   // The add button floats over the sheet, so the sheet has to end above it — otherwise the
@@ -299,7 +304,7 @@ function ExpensesTabContent() {
           </View>
         ))}
 
-        {project ? (
+        {project && canExport ? (
           <Pressable
             testID="invoices-export"
             accessibilityRole="button"

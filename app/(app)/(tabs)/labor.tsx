@@ -269,6 +269,10 @@ function LaborTabContent() {
     "project:view_pay",
     user?.permissions,
   );
+  // Same rule as the backend's labor scope: without manage_labor or view_pay a member may
+  // export only the worker linked to their account, never the whole project.
+  const fullLaborView = canManageLabor || canViewPay;
+  const canExport = fullLaborView || (workers.data ?? []).length > 0;
 
   async function submitBulk(bulkEntries: BulkLogEntry[], acknowledge = false) {
     if (!acknowledge) {
@@ -423,17 +427,19 @@ function LaborTabContent() {
               onLog={() => logDaySheet.current?.open()}
               onDetails={() => detailsSheet.current?.present()}
             />
-            <Pressable
-              testID="labor-export"
-              accessibilityRole="button"
-              onPress={() => exportSheet.current?.present()}
-              className="h-11 flex-row items-center justify-center gap-2 rounded-xl border border-line-2 active:opacity-70"
-            >
-              <Icon name="download" size={15} color={tokens.ink} />
-              <Text className="font-sans-medium text-[13px] text-ink">
-                {t("expenses.export")}
-              </Text>
-            </Pressable>
+            {canExport ? (
+              <Pressable
+                testID="labor-export"
+                accessibilityRole="button"
+                onPress={() => exportSheet.current?.present()}
+                className="h-11 flex-row items-center justify-center gap-2 rounded-xl border border-line-2 active:opacity-70"
+              >
+                <Icon name="download" size={15} color={tokens.ink} />
+                <Text className="font-sans-medium text-[13px] text-ink">
+                  {t("expenses.export")}
+                </Text>
+              </Pressable>
+            ) : null}
           </>
         ) : null}
 
@@ -592,6 +598,7 @@ function LaborTabContent() {
         ref={exportSheet}
         projectId={id}
         workers={workers.data ?? []}
+        allowAllWorkers={fullLaborView}
         onExport={exportLabor}
       />
 

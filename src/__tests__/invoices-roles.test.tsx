@@ -142,6 +142,25 @@ describe("expenses tab · admin", () => {
   });
 });
 
+describe("expenses tab · manager without a full project view", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager", {
+      deny: ["project:manage_labor", "project:view_pay"],
+    });
+  });
+
+  it("does not offer the invoice export the backend would refuse", async () => {
+    await renderWithProviders(<ExpensesTab />);
+
+    expect(
+      await screen.findByTestId(`invoice-row-${INVOICE_MATERIALS.id}`),
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.queryByTestId("invoices-export")).toBeNull(),
+    );
+  });
+});
+
 describe("expenses tab · member (worker mode)", () => {
   beforeEach(() => {
     mockPersona = persona("member");
