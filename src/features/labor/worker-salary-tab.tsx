@@ -1,12 +1,17 @@
+import type { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
+import { Icon } from "@/components/ui/icon";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenTitle } from "@/components/ui/typography";
-import { useWorkers } from "@/features/labor/labor-api";
+import { exportLabor, useWorkers } from "@/features/labor/labor-api";
+import { LaborExportSheet } from "@/features/labor/labor-tab-sheets";
 import { useSelectedProject } from "@/features/projects/selected-project";
+import { useTokens } from "@/theme/tokens";
 
 import ProjectSalariesSection from "../../../app/(app)/(tabs)/projects/[id]/salaries";
 
@@ -25,8 +30,10 @@ export function WorkerSalaryTab() {
   // backend narrows to that account then comes back empty, and the shared salaries section
   // reads it as "this site has no workers" — which is about the site, not about them. Say
   // what the attendance and profile tabs say instead.
-  const notLinked =
-    workers.isSuccess && !workers.data.some((w) => w.user_id === user?.id);
+  const ownWorker = workers.data?.find((w) => w.user_id === user?.id);
+  const notLinked = workers.isSuccess && !ownWorker;
+  const tokens = useTokens();
+  const exportSheet = useRef<BottomSheetModal>(null);
 
   if (!isPending && !project)
     return (
@@ -46,6 +53,20 @@ export function WorkerSalaryTab() {
         <Text className="mt-1 font-sans text-[12.5px] text-muted">
           {t("worker.salarySub")}
         </Text>
+        {/* The backend serves a linked worker their own timesheet (never the project's). */}
+        {ownWorker ? (
+          <Pressable
+            testID="worker-salary-export"
+            accessibilityRole="button"
+            onPress={() => exportSheet.current?.present()}
+            className="mt-3 h-11 flex-row items-center justify-center gap-2 rounded-xl border border-line-2 active:opacity-70"
+          >
+            <Icon name="download" size={15} color={tokens.ink} />
+            <Text className="font-sans-medium text-[13px] text-ink">
+              {t("expenses.export")}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
       {notLinked ? (
         <View className="px-4 pt-4">
@@ -57,6 +78,15 @@ export function WorkerSalaryTab() {
         </View>
       ) : projectId ? (
         <ProjectSalariesSection key={projectId} projectId={projectId} />
+      ) : null}
+      {ownWorker ? (
+        <LaborExportSheet
+          ref={exportSheet}
+          projectId={projectId}
+          workers={[ownWorker]}
+          allowAllWorkers={false}
+          onExport={exportLabor}
+        />
       ) : null}
     </View>
   );
