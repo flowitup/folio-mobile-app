@@ -28,7 +28,7 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
   const tokens = useTokens();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { project, isPending } = useSelectedProject();
+  const { project, isPending, isError } = useSelectedProject();
   const { openSheet } = useShell();
   const notifications = useNotifications();
   const pendingCount =
@@ -73,7 +73,9 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
               ? projectDisplayName(project)
               : isPending
                 ? "…"
-                : t("home.noProjects")}
+                : isError
+                  ? t("home.loadError")
+                  : t("home.noProjects")}
           </Text>
           <View className="flex-row items-center gap-1">
             <Text

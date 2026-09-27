@@ -73,6 +73,7 @@ function ExpensesTabContent() {
     projectId,
     project,
     isPending: projectPending,
+    isError: projectError,
   } = useSelectedProject();
   const [filter, setFilter] = useState<Filter>("all");
   const [month, setMonth] = useState(currentMonth());
@@ -178,7 +179,9 @@ function ExpensesTabContent() {
                     ? projectDisplayName(project)
                     : projectPending
                       ? "…"
-                      : t("home.noProjects")}
+                      : projectError
+                        ? t("home.loadError")
+                        : t("home.noProjects")}
                 </Text>
                 <Icon name="chevron-down" size={10} color={INK_BLOCK.muted} />
               </View>

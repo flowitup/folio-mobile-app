@@ -35,16 +35,18 @@ jest.mock("@/auth/auth-context", () => ({
   }),
 }));
 
+const LOADED = {
+  projectId: "p1",
+  project: { id: "p1", name: "Villa Les Oliviers", my_permissions: [] },
+  projects: [],
+  isPending: false,
+  isError: false,
+  refetch: jest.fn(),
+  select: jest.fn(),
+};
+let mockSelected: Record<string, unknown> = LOADED;
 jest.mock("@/features/projects/selected-project", () => ({
-  useSelectedProject: () => ({
-    projectId: "p1",
-    project: { id: "p1", name: "Villa Les Oliviers", my_permissions: [] },
-    projects: [],
-    isPending: false,
-    isError: false,
-    refetch: jest.fn(),
-    select: jest.fn(),
-  }),
+  useSelectedProject: () => mockSelected,
 }));
 
 jest.mock("@/features/notes/notes-api", () => ({
@@ -135,5 +137,24 @@ describe("ProjectTopBar help control", () => {
     expect(
       screen.getByText(i18n.t("shell.switchProject")).props.numberOfLines,
     ).toBe(1);
+  });
+});
+
+describe("ProjectTopBar project name", () => {
+  afterEach(() => {
+    mockSelected = LOADED;
+  });
+
+  it("says the projects could not be loaded rather than that there are none", async () => {
+    mockSelected = {
+      ...LOADED,
+      projectId: "",
+      project: undefined,
+      isError: true,
+    };
+    await renderBar();
+
+    expect(screen.getByText(i18n.t("home.loadError"))).toBeTruthy();
+    expect(screen.queryByText(i18n.t("home.noProjects"))).toBeNull();
   });
 });
