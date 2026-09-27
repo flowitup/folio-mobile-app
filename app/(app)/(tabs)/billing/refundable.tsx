@@ -3,9 +3,9 @@ import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
@@ -22,6 +22,7 @@ import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
+import { SearchInput } from "@/components/ui/input";
 import {
   useRefundableCandidates,
   useRefundableExpenses,
@@ -33,12 +34,16 @@ import {
 } from "@/features/companies/companies-api";
 import type {
   RefundableExpense,
+  RefundableExpenseAttachment,
   RefundableStatus,
   RefundedBy,
 } from "@/features/invoices/invoice-types";
+import { openAttachment } from "@/features/invoices/invoices-api";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
+import { refundSplit } from "@/lib/invoices/refund-split";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 const STATUSES: RefundableStatus[] = [
   "refundable",
@@ -57,7 +62,12 @@ const STATUS_TONE = {
 
 /** Company-wide materials & services expenses tracked for reimbursement (web refundable-invoices page). */
 export default function RefundableExpensesScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  /** A PDF opens in the in-app viewer, anything else in the share sheet (web preview dialog). */
+  const openExpenseAttachment = (attachment: RefundableExpenseAttachment) =>
+    openAttachment(attachment).catch((e: unknown) =>
+      showToast(apiErrorMessage(e, t, i18n.language), "error"),
+    );
   // The whole screen rides the company-scoped billing API, which only a company admin may
   // call: without the gate a refused caller just watched a spinner turn into a blank page.
   const access = useBillingAccess();
@@ -135,6 +145,7 @@ export default function RefundableExpensesScreen() {
   }
 
   const summary = expenses.data?.summary;
+  const split = summary ? refundSplit(summary) : null;
 
   if (access.loading)
     return (
@@ -183,11 +194,11 @@ export default function RefundableExpensesScreen() {
             onChange={(v) => setCompanyId(v === "__all__" ? null : v)}
           />
         ) : null}
-        {summary ? (
+        {summary && split ? (
           <View className="mb-3 flex-row flex-wrap gap-2">
             {(
               [
-                ["refundedTotal", summary.refunded_total],
+                ["refundedTotal", split.totalFlows],
                 ["refundedByCompany", summary.refunded_by_company],
                 ["refundedByBank", summary.refunded_by_bank],
                 ["toRefund", summary.refundable_amount],
@@ -207,10 +218,51 @@ export default function RefundableExpensesScreen() {
             ))}
           </View>
         ) : null}
+        {summary && split && summary.refunded_total !== 0 ? (
+          // Company only / both / bank only, as shares of the unique refunded total.
+          <View testID="refund-split-bar" className="mb-3">
+            <View className="h-2 flex-row overflow-hidden rounded-full">
+              <View
+                className="bg-positive"
+                style={{ width: `${split.companyPercent}%` }}
+              />
+              <View
+                className="bg-accent"
+                style={{ width: `${split.bothPercent}%` }}
+              />
+              <View
+                className="bg-ink-2"
+                style={{ width: `${split.bankPercent}%` }}
+              />
+            </View>
+            <View className="mt-1 flex-row justify-between gap-2">
+              <Text className="font-sans text-xs text-muted">
+                {t("billing.refundable.summary.companyShare", {
+                  percent: split.companyPercent,
+                })}
+              </Text>
+              {summary.refunded_by_both > 0 ? (
+                <Text
+                  testID="refund-split-both"
+                  className="font-sans text-xs text-muted"
+                >
+                  {t("billing.refundable.summary.bothShare", {
+                    percent: split.bothPercent,
+                  })}
+                </Text>
+              ) : null}
+              <Text className="font-sans text-xs text-muted">
+                {t("billing.refundable.summary.bankShare", {
+                  percent: split.bankPercent,
+                })}
+              </Text>
+            </View>
+          </View>
+        ) : null}
         {expenses.isPending ? <ActivityIndicator className="mt-8" /> : null}
         {expenses.isError && !expenses.data ? (
           <ErrorState
-            message={t("home.loadError")}
+            message={t("common.loadError")}
             retryLabel={t("common.retry")}
             onRetry={() => void expenses.refetch()}
           />
@@ -252,6 +304,23 @@ export default function RefundableExpensesScreen() {
                   })
                 : t("billing.refundable.noAttachments")}
             </Text>
+            {expense.attachments.map((attachment) => (
+              <Pressable
+                key={attachment.id}
+                testID={`refundable-attachment-${attachment.id}`}
+                accessibilityRole="button"
+                onPress={() => void openExpenseAttachment(attachment)}
+                hitSlop={4}
+                className="mt-1 active:opacity-70"
+              >
+                <Text
+                  className="text-xs text-accent-ink underline"
+                  numberOfLines={1}
+                >
+                  {attachment.filename}
+                </Text>
+              </Pressable>
+            ))}
             <View className="mt-2 flex-row items-end gap-3">
               <View className="flex-1">
                 <Select<RefundableStatus>
@@ -283,11 +352,10 @@ export default function RefundableExpensesScreen() {
         snapPoints={["85%"]}
       >
         <View className="p-4">
-          <TextInput
+          <SearchInput
             testID="refundable-search"
-            className="mb-3 rounded-lg border border-border px-4 py-2 text-base text-primary"
+            className="mb-3"
             placeholder={t("billing.refundable.dialog.search")}
-            placeholderTextColor="#a3a3a3"
             value={search}
             onChangeText={setSearch}
           />

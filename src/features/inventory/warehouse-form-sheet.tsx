@@ -17,11 +17,16 @@ type Props = {
   initial?: Warehouse;
   submitting: boolean;
   onSubmit: (payload: CreateWarehousePayload | UpdateWarehousePayload) => void;
+  /** Edit only: deleting lives here rather than on the list row, which it squeezed. */
+  onDelete?: () => void;
 };
 
 /** Create / edit a warehouse: a name and the address the crew drives to. Edit sends the diff. */
 export const WarehouseFormSheet = forwardRef<BottomSheetModal, Props>(
-  function WarehouseFormSheet({ initial, submitting, onSubmit }, ref) {
+  function WarehouseFormSheet(
+    { initial, submitting, onSubmit, onDelete },
+    ref,
+  ) {
     const { t } = useTranslation();
     const editing = Boolean(initial);
     const [name, setName] = useState(initial?.name ?? "");
@@ -79,6 +84,15 @@ export const WarehouseFormSheet = forwardRef<BottomSheetModal, Props>(
             loading={submitting}
             onPress={submit}
           />
+          {editing && onDelete ? (
+            <Button
+              testID="warehouse-delete"
+              label={t("common.delete")}
+              variant="danger"
+              className="mt-3"
+              onPress={onDelete}
+            />
+          ) : null}
         </View>
       </Sheet>
     );

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
+import { activeLocale } from "@/i18n";
 import { invoiceKeys } from "@/features/invoices/invoices-api";
 import { rosterKeys } from "@/features/labor/roster-api";
 import { openFile } from "@/lib/files/open-file";
@@ -550,7 +551,13 @@ export function exportLabor(
   to: string,
   workerId?: string | null,
 ) {
-  const query = new URLSearchParams({ from, to, format }).toString();
+  // The file's headings, labels and numbers follow the app's language, not the backend default.
+  const query = new URLSearchParams({
+    from,
+    to,
+    format,
+    locale: activeLocale(),
+  }).toString();
   const path = workerId
     ? `/api/v1/projects/${encodeURIComponent(projectId)}/workers/${encodeURIComponent(workerId)}/labor-export?${query}`
     : `/api/v1/projects/${encodeURIComponent(projectId)}/labor-export?${query}`;

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdmin } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -25,12 +26,14 @@ import type {
   ProjectMember,
 } from "@/features/projects/members-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
+import { phoneOfSyntheticEmail, realEmail } from "@/lib/auth/user-display-name";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 /**
  * Members: manager/member assignments (D1 — no role picker, assigned once from the company
- * directory). Admin is implicit on every company project and never listed here. Someone not yet
+ * directory). A company admin sees every company project and is listed only when assigned
+ * (the project's creator is). Someone not yet
  * a company member is onboarded from the company members screen ("add by phone", D1) first;
  * outstanding legacy email invitations stay visible here to revoke, but the mobile app no longer
  * creates new ones — that flow needs a legacy project role id this redesign is retiring.
@@ -61,6 +64,12 @@ export default function ProjectMembersSection() {
     "project:manage_users",
     user?.permissions,
   );
+  // The backend lets a manager unassign only company "member" users; an admin anyone.
+  const callerIsAdmin = isCompanyAdmin(user, project.data?.company_id);
+  const canRemove = (member: ProjectMember) =>
+    canManage &&
+    member.user_id !== user?.id &&
+    (callerIsAdmin || member.role_name === "member");
   const canInvite = projectCan(
     project.data,
     "project:invite",
@@ -104,11 +113,13 @@ export default function ProjectMembersSection() {
                 className="text-base font-medium text-primary"
                 numberOfLines={1}
               >
-                {member.display_name || member.email}
+                {memberLabel(member)}
               </Text>
-              <Text className="text-xs text-muted-foreground">
-                {member.email}
-              </Text>
+              {memberContact(member) ? (
+                <Text className="text-xs text-muted-foreground">
+                  {memberContact(member)}
+                </Text>
+              ) : null}
               {member.joined_at ? (
                 <Text className="text-xs text-muted-foreground">
                   {t("members.joined", { date: formatDate(member.joined_at) })}
@@ -121,7 +132,7 @@ export default function ProjectMembersSection() {
               })}
             />
           </View>
-          {canManage && member.user_id !== user?.id ? (
+          {canRemove(member) ? (
             <Button
               testID={`member-remove-${member.user_id}`}
               label={t("members.remove")}
@@ -198,7 +209,9 @@ export default function ProjectMembersSection() {
       />
       <ConfirmDialog
         visible={removing !== null}
-        title={t("members.removeConfirm", { email: removing?.email ?? "" })}
+        title={t("members.removeConfirm", {
+          email: removing ? memberLabel(removing) : "",
+        })}
         confirmLabel={t("members.remove")}
         cancelLabel={t("common.cancel")}
         destructive
@@ -214,4 +227,16 @@ export default function ProjectMembersSection() {
       />
     </ScrollView>
   );
+}
+
+/**
+ * A phone sign-up has no real e-mail: the backend stores a synthetic address, which must not
+ * be shown. Name first, then the real e-mail, then the phone the address was built from.
+ */
+function memberContact(member: ProjectMember): string | null {
+  return realEmail(member.email) ?? phoneOfSyntheticEmail(member.email);
+}
+
+function memberLabel(member: ProjectMember): string {
+  return member.display_name?.trim() || memberContact(member) || member.email;
 }

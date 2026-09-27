@@ -68,7 +68,7 @@ export default function LibraryProductScreen() {
       <View className="flex-1 bg-paper">
         <ScreenHeader title={t("library.detailTitle")} back />
         <ErrorState
-          message={t("home.loadError")}
+          message={t("library.loadError")}
           retryLabel={t("common.retry")}
           onRetry={() => void query.refetch()}
         />

@@ -8,8 +8,12 @@ import { Input } from "@/components/ui/input";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Card } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
-import { currentMonth, toIsoDate } from "@/lib/format/date";
+import { currentMonth, localeTag, toIsoDate } from "@/lib/format/date";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import {
+  MAX_LINE_QUANTITY,
+  MAX_LINE_UNIT_PRICE,
+} from "@/lib/format/numeric-bounds";
 import { HIGHLIGHT_COLORS, invoiceTotals } from "@/lib/invoices/invoice-totals";
 
 import type {
@@ -191,6 +195,25 @@ export function InvoiceForm({
     // reads as 0 above, so a described line with a typo in its quantity is caught here too.
     if (items.some((line) => !(line.quantity > 0)))
       return setError(t("invoices.form.quantityPositive"));
+    // Same limits as the backend: a price below zero only on mixed-sign types, and no
+    // amount past the API caps (an oversized one used to overflow the project's totals).
+    if (!allowsNegativePrice && items.some((line) => line.unit_price < 0))
+      return setError(t("invoices.form.pricePositive"));
+    if (items.some((line) => !(line.vat_rate >= 0 && line.vat_rate <= 100)))
+      return setError(t("invoices.form.vatRange"));
+    if (
+      items.some(
+        (line) =>
+          line.quantity > MAX_LINE_QUANTITY ||
+          Math.abs(line.unit_price) > MAX_LINE_UNIT_PRICE,
+      )
+    )
+      return setError(
+        t("invoices.form.lineTooLarge", {
+          quantity: MAX_LINE_QUANTITY.toLocaleString(localeTag()),
+          price: formatMoney(MAX_LINE_UNIT_PRICE),
+        }),
+      );
     setError(null);
 
     const payload: CreateInvoicePayload = {

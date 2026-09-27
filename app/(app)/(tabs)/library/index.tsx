@@ -9,7 +9,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
@@ -20,6 +19,7 @@ import { Badge, EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { showToast, ToastViewport } from "@/components/ui/toast";
+import { SearchInput } from "@/components/ui/input";
 import { useMyCompanies } from "@/features/companies/companies-api";
 import {
   productImagePath,
@@ -172,16 +172,17 @@ export default function LibraryTab() {
             }}
           />
         ) : null}
+        {/* The search gets its own row: beside "Compare" and "Import purchases" (long in
+            French) its placeholder was cut to a couple of words. */}
+        <SearchInput
+          testID="library-search"
+          className="mb-2"
+          placeholder={t("library.searchPlaceholder")}
+          value={search}
+          onChangeText={setSearch}
+          autoCapitalize="none"
+        />
         <View className="mb-2 flex-row items-center gap-2">
-          <TextInput
-            testID="library-search"
-            className="flex-1 rounded-lg border border-border px-4 py-2 text-base text-primary"
-            placeholder={t("library.searchPlaceholder")}
-            placeholderTextColor="#a3a3a3"
-            value={search}
-            onChangeText={setSearch}
-            autoCapitalize="none"
-          />
           <Button
             testID="library-compare-toggle"
             label={t("library.compare")}

@@ -142,6 +142,25 @@ describe("expenses tab · admin", () => {
   });
 });
 
+describe("expenses tab · manager without a full project view", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager", {
+      deny: ["project:manage_labor", "project:view_pay"],
+    });
+  });
+
+  it("does not offer the invoice export the backend would refuse", async () => {
+    await renderWithProviders(<ExpensesTab />);
+
+    expect(
+      await screen.findByTestId(`invoice-row-${INVOICE_MATERIALS.id}`),
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.queryByTestId("invoices-export")).toBeNull(),
+    );
+  });
+});
+
 describe("expenses tab · member (worker mode)", () => {
   beforeEach(() => {
     mockPersona = persona("member");
@@ -291,6 +310,48 @@ describe("invoice detail · manager", () => {
     mockParams = { id: PROJECT_ID, invoiceId: INVOICE_MATERIALS.id };
   });
 
+  it("offers back and retry when the invoice cannot be loaded", async () => {
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? {
+            error: { message: "boom" },
+            response: { status: 500, statusText: "Server Error" },
+          }
+        : answer(path, options as never),
+    );
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(await screen.findByTestId("error-state")).toBeTruthy();
+    expect(screen.getByTestId("header-back")).toBeTruthy();
+    const detailCalls = () =>
+      callsTo(mockGet, "/api/v1/projects/{project_id}/invoices/{invoice_id}")
+        .length;
+    const before = detailCalls();
+    await fireEvent.press(screen.getByText(i18n.t("common.retry")));
+    await waitFor(() => expect(detailCalls()).toBeGreaterThan(before));
+  });
+
+  it("says the invoice is unavailable, without a Retry, when the backend answers 404", async () => {
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? {
+            error: { error: "NotFound", message: "Invoice not found" },
+            response: { status: 404, statusText: "Not Found" },
+          }
+        : answer(path, options as never),
+    );
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(
+      await screen.findByText(i18n.t("invoices.unavailable")),
+    ).toBeTruthy();
+    expect(screen.queryByTestId("error-state")).toBeNull();
+    expect(screen.queryByText(i18n.t("common.retry"))).toBeNull();
+    expect(screen.getByTestId("header-back")).toBeTruthy();
+  });
+
   it("shows the write actions but not the company refund prompt", async () => {
     await renderWithProviders(<InvoiceDetailScreen />);
 
@@ -338,6 +399,54 @@ describe("invoice detail · manager", () => {
     await fireEvent.press(screen.getByTestId("detail-highlight-green"));
     expect(mockPut).not.toHaveBeenCalled();
     expect(mockPatch).not.toHaveBeenCalled();
+  });
+});
+
+describe("invoice detail · orphaned funds release", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager");
+    mockParams = { id: PROJECT_ID, invoiceId: INVOICE_MATERIALS.id };
+  });
+
+  it("offers delete, not edit, on an auto-generated release whose facture is gone", async () => {
+    const orphan = {
+      ...INVOICE_RELEASE,
+      id: INVOICE_MATERIALS.id,
+      is_auto_generated: true,
+      source_billing_document_id: null,
+      refunds_invoice_id: null,
+    };
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? { data: orphan, response: { status: 200, statusText: "OK" } }
+        : answer(path, options as never),
+    );
+
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(await screen.findByTestId("invoice-delete")).toBeTruthy();
+    expect(screen.queryByTestId("invoice-edit")).toBeNull();
+  });
+
+  it("keeps a release still linked to its facture frozen", async () => {
+    const linked = {
+      ...INVOICE_RELEASE,
+      id: INVOICE_MATERIALS.id,
+      is_auto_generated: true,
+      source_billing_document_id: "doc-1",
+    };
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? { data: linked, response: { status: 200, statusText: "OK" } }
+        : answer(path, options as never),
+    );
+
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(await screen.findByTestId("invoice-actions")).toBeTruthy();
+    expect(screen.queryByTestId("invoice-delete")).toBeNull();
   });
 });
 
@@ -452,6 +561,59 @@ describe("new invoice · quantity", () => {
     );
     await fireEvent.press(screen.getByTestId("invoice-submit"));
     await waitFor(() => expect(mockPost).toHaveBeenCalled());
+  });
+});
+
+describe("new invoice · amount limits", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager");
+    mockParams = { id: PROJECT_ID };
+  });
+
+  async function fillLine(quantity: string, price: string) {
+    await fireEvent.changeText(
+      await screen.findByTestId("invoice-recipient"),
+      "Leroy Merlin",
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-description"),
+      "Carrelage",
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-quantity"),
+      quantity,
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-price"),
+      price,
+    );
+  }
+
+  it("refuses an amount past the API caps instead of posting it", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+    await fillLine("1", "1e300");
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+
+    expect(screen.getByTestId("invoice-form-error")).toBeTruthy();
+    expect(mockPost).not.toHaveBeenCalled();
+
+    await fillLine("10000000", "8");
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("refuses a negative unit price on a type that cannot carry one", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+    await fireEvent.press(
+      await screen.findByTestId("invoice-type-option-others"),
+    );
+    await fillLine("1", "-5");
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+
+    expect(screen.getByTestId("invoice-form-error")).toHaveTextContent(
+      containing(i18n.t("invoices.form.pricePositive")),
+    );
+    expect(mockPost).not.toHaveBeenCalled();
   });
 });
 

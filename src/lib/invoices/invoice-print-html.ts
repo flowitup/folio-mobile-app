@@ -1,6 +1,6 @@
 import type { Invoice } from "@/features/invoices/invoice-types";
 import { formatDate } from "@/lib/format/date";
-import { formatMoney } from "@/lib/format/money";
+import { formatMoney, formatNumber } from "@/lib/format/money";
 
 import { invoiceTotals, lineTotalTtc } from "./invoice-totals";
 
@@ -40,9 +40,9 @@ export function buildInvoicePrintHtml(
     .map(
       (item) => `<tr>
         <td>${escapeHtml(item.description)}</td>
-        <td class="num">${item.quantity}</td>
+        <td class="num">${escapeHtml(formatNumber(item.quantity))}</td>
         <td class="num">${escapeHtml(formatMoney(item.unit_price))}</td>
-        <td class="num">${item.vat_rate ?? 0} %</td>
+        <td class="num">${escapeHtml(formatNumber(item.vat_rate ?? 0))} %</td>
         <td class="num">${escapeHtml(formatMoney(lineTotalTtc(item)))}</td>
       </tr>`,
     )

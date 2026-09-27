@@ -8,14 +8,13 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { WebView } from "react-native-webview";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
+import { Input, SearchInput } from "@/components/ui/input";
 import {
   Badge,
   Card,
@@ -35,6 +34,7 @@ import {
 } from "@/features/analyses/analyses-api";
 import type { Analysis } from "@/features/analyses/analyses-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
+import { formatFileSize } from "@/lib/format/file-size";
 import { pickDocuments } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
@@ -134,11 +134,10 @@ export default function ProjectAnalysesSection() {
     <View className="flex-1 bg-paper">
       <ScrollView contentContainerClassName="p-4 pb-12">
         <View className="mb-2 flex-row items-center gap-2">
-          <TextInput
+          <SearchInput
             testID="analyses-search"
-            className="flex-1 rounded-lg border border-border px-4 py-2 text-base text-primary"
+            className="flex-1"
             placeholder={t("analyses.searchPlaceholder")}
-            placeholderTextColor="#a3a3a3"
             value={search}
             onChangeText={setSearch}
           />
@@ -188,7 +187,7 @@ export default function ProjectAnalysesSection() {
               ) : null}
               <Text className="mt-1 text-xs text-muted-foreground">
                 {formatDate(analysis.created_at)} ·{" "}
-                {Math.round(analysis.size_bytes / 1024)} KB
+                {formatFileSize(analysis.size_bytes)}
                 {analysis.source_url ? ` · ${analysis.source_url}` : ""}
               </Text>
             </Pressable>
@@ -332,7 +331,7 @@ export default function ProjectAnalysesSection() {
             </View>
             {content.isPending ? <ActivityIndicator className="mt-8" /> : null}
             {content.isError ? (
-              <Text className="p-4 text-danger">{t("home.loadError")}</Text>
+              <Text className="p-4 text-danger">{t("analyses.loadError")}</Text>
             ) : null}
             {content.data ? (
               <WebView

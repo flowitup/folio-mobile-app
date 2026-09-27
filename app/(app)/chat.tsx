@@ -256,7 +256,7 @@ export default function ChatScreen() {
           ) : null}
           {messages.isError ? (
             <ErrorState
-              message={t("home.loadError")}
+              message={t("common.loadError")}
               retryLabel={t("common.retry")}
               onRetry={() => void messages.refetch()}
             />

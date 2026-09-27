@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import type { Invoice } from "../features/invoices/invoice-types";
 import { buildInvoicePrintHtml } from "../lib/invoices/invoice-print-html";
 import { invoiceTotals, lineTotalTtc } from "../lib/invoices/invoice-totals";
@@ -53,5 +54,48 @@ describe("buildInvoicePrintHtml", () => {
     expect(html).toContain("a &amp; b");
     expect((html.match(/<tr>/g) ?? []).length).toBe(3);
     expect(html).toContain("340");
+  });
+});
+
+describe("buildInvoicePrintHtml · locale", () => {
+  afterEach(async () => {
+    await i18n.changeLanguage("vi");
+  });
+
+  it("prints quantities and VAT rates with a decimal comma in French", async () => {
+    await i18n.changeLanguage("fr");
+    const invoice = {
+      invoice_number: "INV-8",
+      issue_date: "2026-09-03",
+      recipient_name: "Client",
+      recipient_address: null,
+      notes: null,
+      items: [
+        {
+          description: "Enduit",
+          quantity: 1.5,
+          unit_price: 45.5,
+          vat_rate: 5.5,
+          total: 72.0,
+        },
+      ],
+    } as unknown as Invoice;
+    const html = buildInvoicePrintHtml(invoice, "Arcueil", {
+      title: "Facture",
+      issueDate: "Date",
+      recipient: "À",
+      description: "Désignation",
+      quantity: "Qté",
+      unitPrice: "PU",
+      vatRate: "TVA",
+      total: "Total",
+      totalHt: "HT",
+      totalTva: "TVA",
+      totalTtc: "TTC",
+      notes: "Notes",
+    });
+    expect(html).toContain('<td class="num">1,5</td>');
+    expect(html).toContain('<td class="num">5,5 %</td>');
+    expect(html).not.toContain(">1.5<");
   });
 });

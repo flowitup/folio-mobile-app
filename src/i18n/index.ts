@@ -56,4 +56,9 @@ export async function setLocale(locale: SupportedLocale): Promise<void> {
   );
 }
 
+/** The UI language as one of the supported codes (what the export endpoints accept as `locale`). */
+export function activeLocale(): SupportedLocale {
+  return asSupported(i18n.language) ?? DEFAULT_LOCALE;
+}
+
 export default i18n;

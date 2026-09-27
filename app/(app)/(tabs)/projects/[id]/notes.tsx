@@ -7,13 +7,12 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
+import { Input, SearchInput } from "@/components/ui/input";
 import {
   Badge,
   Card,
@@ -139,11 +138,10 @@ export default function ProjectNotesSection() {
       </ScrollView>
       <ScrollView contentContainerClassName="p-4 pb-12">
         <View className="mb-3 flex-row items-center gap-2">
-          <TextInput
+          <SearchInput
             testID="notes-search"
-            className="flex-1 rounded-lg border border-border px-4 py-2 text-base text-primary"
+            className="flex-1"
             placeholder={t("notes.searchPlaceholder")}
-            placeholderTextColor="#a3a3a3"
             value={search}
             onChangeText={setSearch}
           />

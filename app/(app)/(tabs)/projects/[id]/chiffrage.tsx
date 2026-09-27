@@ -224,7 +224,7 @@ export default function ProjectChiffrageSection() {
   if (tree.isPending) return <ActivityIndicator className="mt-8" />;
   const data = tree.data;
   if (!data)
-    return <Text className="p-4 text-danger">{t("home.loadError")}</Text>;
+    return <Text className="p-4 text-danger">{t("common.loadError")}</Text>;
 
   const busy = Object.values(actions).some((m) => m.isPending);
   const storeOptions = data.stores.map((s) => ({ value: s.id, label: s.name }));

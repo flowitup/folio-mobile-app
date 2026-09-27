@@ -6,14 +6,13 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
 import { isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, SearchInput } from "@/components/ui/input";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
@@ -63,11 +62,10 @@ export default function AdminUsersScreen() {
         <Text className="mb-3 text-xs text-muted-foreground">
           {t("admin.bulkAdd.subtitle")}
         </Text>
-        <TextInput
+        <SearchInput
           testID="user-search"
-          className="mb-2 rounded-lg border border-border px-4 py-2 text-base text-primary"
+          className="mb-2"
           placeholder={t("admin.bulkAdd.userSearch.placeholder")}
-          placeholderTextColor="#a3a3a3"
           value={search}
           // Typing again means "look for someone else": without dropping the selection the
           // results stayed hidden behind the selected card and could never be reached again.

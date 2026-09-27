@@ -79,6 +79,19 @@ export default function WarehousesScreen() {
     }));
   const editing = session?.warehouse ?? null;
 
+  // A warehouse that still holds units cannot go. Saying so here beats opening a confirmation
+  // whose destructive button is inert: a disabled button is not visibly different enough.
+  function requestDelete(warehouse: Warehouse) {
+    const held = units.get(warehouse.id) ?? 0;
+    if (held > 0)
+      return showToast(
+        t("inventory.warehouses.deleteBlocked", { count: held }),
+        "error",
+      );
+    formSheet.current?.dismiss();
+    setDeleting(warehouse);
+  }
+
   function submit(payload: CreateWarehousePayload | UpdateWarehousePayload) {
     const done = { onSuccess: () => formSheet.current?.dismiss() };
     if (!editing) return create.mutate(payload as CreateWarehousePayload, done);
@@ -160,38 +173,14 @@ export default function WarehousesScreen() {
                   </View>
                 }
                 right={
-                  <View className="flex-row items-center gap-2">
-                    <Text
-                      testID={`warehouse-${warehouse.id}-units`}
-                      className="font-mono text-[12px] text-muted"
-                    >
-                      {t("inventory.units", {
-                        count: units.get(warehouse.id) ?? 0,
-                      })}
-                    </Text>
-                    {canManage ? (
-                      <Button
-                        testID={`warehouse-delete-${warehouse.id}`}
-                        label={t("common.delete")}
-                        size="sm"
-                        variant="ghost"
-                        // A warehouse that still holds units cannot go. Saying so here
-                        // beats opening a confirmation whose destructive button is inert:
-                        // a disabled button is not visibly different enough to read as one.
-                        onPress={() => {
-                          const held = units.get(warehouse.id) ?? 0;
-                          if (held > 0)
-                            return showToast(
-                              t("inventory.warehouses.deleteBlocked", {
-                                count: held,
-                              }),
-                              "error",
-                            );
-                          setDeleting(warehouse);
-                        }}
-                      />
-                    ) : null}
-                  </View>
+                  <Text
+                    testID={`warehouse-${warehouse.id}-units`}
+                    className="font-mono text-[12px] text-muted"
+                  >
+                    {t("inventory.units", {
+                      count: units.get(warehouse.id) ?? 0,
+                    })}
+                  </Text>
                 }
                 onPress={canManage ? () => openForm(warehouse) : undefined}
                 chevron={canManage}
@@ -207,6 +196,7 @@ export default function WarehousesScreen() {
         initial={editing ?? undefined}
         submitting={create.isPending || update.isPending}
         onSubmit={submit}
+        onDelete={editing ? () => requestDelete(editing) : undefined}
       />
 
       <ConfirmDialog

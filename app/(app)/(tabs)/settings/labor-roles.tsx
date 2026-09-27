@@ -14,7 +14,7 @@ import { isCompanyAdminOrManager } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { EmptyState, ListRow } from "@/components/ui/primitives";
+import { EmptyState, ErrorState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
 import { useMyCompanies } from "@/features/companies/companies-api";
@@ -25,7 +25,7 @@ import {
   useUpdateLaborRole,
 } from "@/features/labor/labor-api";
 import type { LaborRole } from "@/features/labor/labor-api";
-import { laborRoleLabel } from "@/lib/labor/labor-role-label";
+import { isHexColor, laborRoleLabel } from "@/lib/labor/labor-role-label";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 /**
@@ -51,6 +51,7 @@ export default function LaborRolesScreen() {
   const [name, setName] = useState("");
   const [color, setColor] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [colorError, setColorError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<LaborRole | null>(null);
   const palette = roles.data?.palette ?? [];
 
@@ -59,12 +60,14 @@ export default function LaborRolesScreen() {
     setName(role?.name ?? "");
     setColor(role?.color ?? palette[0] ?? "#4B5563");
     setError(null);
+    setColorError(null);
     sheet.current?.present();
   }
 
   function submit() {
     const trimmed = name.trim();
     if (!trimmed) return setError(t("laborRoles.nameRequired"));
+    if (!isHexColor(color)) return setColorError(t("laborRoles.colorInvalid"));
     const done = { onSuccess: () => sheet.current?.dismiss() };
     if (editing)
       update.mutate({ roleId: editing.id, name: trimmed, color }, done);
@@ -89,6 +92,13 @@ export default function LaborRolesScreen() {
       />
       <ScrollView contentContainerClassName="p-4 pb-12">
         {roles.isPending ? <ActivityIndicator className="mt-8" /> : null}
+        {roles.isError && !roles.data ? (
+          <ErrorState
+            message={t("common.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void roles.refetch()}
+          />
+        ) : null}
         {roles.data && roles.data.roles.length === 0 ? (
           <EmptyState message={t("laborRoles.none")} />
         ) : null}
@@ -138,7 +148,10 @@ export default function LaborRolesScreen() {
               <Pressable
                 key={value}
                 testID={`role-color-${value}`}
-                onPress={() => setColor(value)}
+                onPress={() => {
+                  setColorError(null);
+                  setColor(value);
+                }}
                 style={{
                   width: 32,
                   height: 32,
@@ -153,7 +166,11 @@ export default function LaborRolesScreen() {
           <Input
             testID="role-color-input"
             value={color}
-            onChangeText={setColor}
+            onChangeText={(value) => {
+              setColorError(null);
+              setColor(value);
+            }}
+            error={colorError}
             autoCapitalize="none"
             placeholder="#RRGGBB"
           />

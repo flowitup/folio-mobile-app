@@ -154,6 +154,11 @@ export function computeMonthDelta(series: MonthlySpendPoint[]): MonthDelta {
 export interface BudgetMetrics {
   denominator: number;
   usesBudget: boolean;
+  /**
+   * False when there is neither a budget nor any released funds: nothing to measure the
+   * spending against, so "remaining" and the spent share have no meaning.
+   */
+  hasDenominator: boolean;
   left: number;
   pct: number;
   pctClamped: number;
@@ -172,6 +177,7 @@ export function computeBudgetMetrics(
   return {
     denominator,
     usesBudget,
+    hasDenominator: denominator > 0,
     left,
     pct,
     pctClamped: Math.min(Math.max(pct, 0), 100),

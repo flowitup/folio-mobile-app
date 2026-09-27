@@ -29,6 +29,12 @@ type Props = {
    * refuses them either way.
    */
   canManageInvoices?: boolean;
+  /**
+   * Whether the caller may see or record labor pay (`project:manage_labor` or
+   * `project:view_pay`). False drops the "pay labor" action, whose payments segment would
+   * show nothing to such a caller.
+   */
+  canPayLabor?: boolean;
   /** False for a member who may see neither the ledger nor the budget: figures are omitted. */
   showMoney?: boolean;
   onAddInvoice: () => void;
@@ -52,9 +58,13 @@ export function OverviewHero({
   onPayLabor,
   canViewBudget = true,
   canManageInvoices = true,
+  canPayLabor = true,
   showMoney = true,
 }: Props) {
   const { t } = useTranslation();
+  // No budget and nothing released: a "remaining" figure would only be minus the spending,
+  // shown next to a 0 % ring. Say what was spent and that there is nothing to measure it by.
+  const measured = canViewBudget && budget.hasDenominator;
   const share = (value: number) =>
     budget.denominator > 0
       ? Math.min(100, Math.max(0, (value / budget.denominator) * 100))
@@ -65,18 +75,26 @@ export function OverviewHero({
         <View className="flex-row items-center gap-[18px] px-5 pb-[30px] pt-[26px]">
           <View className="min-w-0 flex-1">
             <Text className="font-sans text-[11px] uppercase tracking-[1.1px] text-ink-block-muted">
-              {canViewBudget
+              {measured
                 ? t("dashboard.remainingToSpend")
                 : t("invoices.summary.spent")}
             </Text>
             <View className="mt-1.5">
               <InkFigure
-                amount={canViewBudget ? budget.left : spentTotal}
-                negative={canViewBudget && budget.left < 0}
+                amount={measured ? budget.left : spentTotal}
+                negative={measured && budget.left < 0}
                 testID="overview-remaining"
               />
             </View>
-            {canViewBudget ? (
+            {canViewBudget && !measured ? (
+              <Text
+                className="mt-1.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted"
+                testID="overview-no-budget"
+              >
+                {t("dashboard.overview.noBudgetNoFunds")}
+              </Text>
+            ) : null}
+            {measured ? (
               <Text className="mt-1.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted">
                 {t(
                   budget.usesBudget
@@ -114,7 +132,7 @@ export function OverviewHero({
                 className="font-mono text-[22px] leading-[26px] text-on-ink-block"
                 testID="overview-ring-pct"
               >
-                {budget.pct}%
+                {measured ? `${budget.pct}%` : "—"}
               </Text>
               <Text className="font-sans text-[10px] uppercase tracking-[0.8px] text-ink-block-muted">
                 {t("project.spent")}
@@ -154,16 +172,18 @@ export function OverviewHero({
             </Text>
           </Pressable>
         ) : null}
-        <Pressable
-          testID="overview-pay-labor"
-          accessibilityRole="button"
-          onPress={onPayLabor}
-          className="h-11 flex-1 items-center justify-center rounded-xl border border-ink-block-line active:opacity-70"
-        >
-          <Text className="font-sans-medium text-[13px] text-on-ink-block">
-            {t("dashboard.overview.payLabor")}
-          </Text>
-        </Pressable>
+        {canPayLabor ? (
+          <Pressable
+            testID="overview-pay-labor"
+            accessibilityRole="button"
+            onPress={onPayLabor}
+            className="h-11 flex-1 items-center justify-center rounded-xl border border-ink-block-line active:opacity-70"
+          >
+            <Text className="font-sans-medium text-[13px] text-on-ink-block">
+              {t("dashboard.overview.payLabor")}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );

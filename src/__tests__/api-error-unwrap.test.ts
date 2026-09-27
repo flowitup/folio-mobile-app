@@ -1,4 +1,9 @@
-import { ApiError, unwrap, unwrapVoid } from "../lib/query/api-error";
+import {
+  ApiError,
+  shouldRetryQuery,
+  unwrap,
+  unwrapVoid,
+} from "../lib/query/api-error";
 
 const okResponse = { status: 200, statusText: "OK" };
 
@@ -46,5 +51,27 @@ describe("unwrap", () => {
         response: { status: 403, statusText: "" },
       }),
     ).toThrow(ApiError);
+  });
+});
+
+describe("shouldRetryQuery", () => {
+  it("does not retry a client error the backend would repeat", () => {
+    expect(shouldRetryQuery(0, new ApiError(404, "NotFound", "gone"))).toBe(
+      false,
+    );
+    expect(shouldRetryQuery(0, new ApiError(403, "Forbidden", "no"))).toBe(
+      false,
+    );
+  });
+
+  it("retries once a server, network or transient client error", () => {
+    expect(shouldRetryQuery(0, new ApiError(500, "Error", "boom"))).toBe(true);
+    expect(shouldRetryQuery(0, new ApiError(429, "TooMany", "later"))).toBe(
+      true,
+    );
+    expect(shouldRetryQuery(0, new TypeError("Network request failed"))).toBe(
+      true,
+    );
+    expect(shouldRetryQuery(1, new ApiError(500, "Error", "boom"))).toBe(false);
   });
 });

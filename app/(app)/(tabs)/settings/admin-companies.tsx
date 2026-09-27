@@ -7,7 +7,7 @@ import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useAuth } from "@/auth/auth-context";
 import { isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
-import { EmptyState, ListRow } from "@/components/ui/primitives";
+import { EmptyState, ErrorState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import {
   useAllCompanies,
@@ -54,6 +54,13 @@ export default function AdminCompaniesScreen() {
         </Text>
         {companies.isPending && superadmin ? (
           <ActivityIndicator className="mt-8" />
+        ) : null}
+        {companies.isError && !companies.data && superadmin ? (
+          <ErrorState
+            message={t("common.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void companies.refetch()}
+          />
         ) : null}
         {companies.data && companies.data.length === 0 ? (
           <EmptyState message={t("companies.admin.empty.title")} />

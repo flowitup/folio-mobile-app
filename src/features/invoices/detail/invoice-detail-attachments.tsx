@@ -20,10 +20,13 @@ import {
   useRenameAttachment,
   useUploadAttachment,
 } from "@/features/invoices/invoices-api";
+import { formatFileSize } from "@/lib/format/file-size";
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
+import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
 
 /** Short tile label: file extension (`PDF`, `JPG`) or the mime subtype. */
 function tileLabel(attachment: InvoiceAttachment): string {
@@ -53,7 +56,7 @@ export function InvoiceAttachmentsCard({
   addSheet,
   readOnly = false,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const tokens = useTokens();
   const attachments = useInvoiceAttachments(projectId, invoiceId);
   const upload = useUploadAttachment(projectId, invoiceId);
@@ -63,6 +66,7 @@ export function InvoiceAttachmentsCard({
   const renameSheet = useRef<BottomSheetModal>(null);
   const [selected, setSelected] = useState<InvoiceAttachment | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [renameError, setRenameError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<InvoiceAttachment | null>(null);
 
   async function handlePick(result: PickResult) {
@@ -74,8 +78,8 @@ export function InvoiceAttachmentsCard({
       await upload.mutateAsync({ file }).catch(() => undefined);
   }
   const open = (attachment: InvoiceAttachment) =>
-    openAttachment(attachment).catch((e: Error) =>
-      showToast(e.message, "error"),
+    openAttachment(attachment).catch((e: unknown) =>
+      showToast(apiErrorMessage(e, t, i18n.language), "error"),
     );
   const list = attachments.data ?? [];
 
@@ -85,9 +89,24 @@ export function InvoiceAttachmentsCard({
         {t("invoices.attachments.title", { count: list.length })}
       </Eyebrow>
       <Card radius={20} elevated padded={false} className="overflow-hidden">
-        {list.length === 0 ? (
+        {attachments.isError && !attachments.data ? (
+          // A failed load is not an empty list: say so and let the user try again.
+          <Pressable
+            testID="attachments-retry"
+            accessibilityRole="button"
+            onPress={() => void attachments.refetch()}
+            className="flex-row items-center justify-between px-4 py-3.5 active:opacity-70"
+          >
+            <Text className="flex-1 pr-2 font-sans text-[13px] text-negative">
+              {t("common.loadError")}
+            </Text>
+            <Text className="font-sans-medium text-[13px] text-accent-ink">
+              {t("common.retry")}
+            </Text>
+          </Pressable>
+        ) : list.length === 0 ? (
           <Text className="px-4 py-3.5 font-sans text-[13px] text-muted">
-            {upload.isPending
+            {attachments.isPending || upload.isPending
               ? t("common.loading")
               : t("invoices.detail.attachmentsEmpty")}
           </Text>
@@ -113,7 +132,7 @@ export function InvoiceAttachmentsCard({
                 {attachment.filename}
               </Text>
               <Text className="font-sans text-[11.5px] leading-[14px] text-muted">
-                {Math.round(attachment.size_bytes / 1024)} KB ·{" "}
+                {formatFileSize(attachment.size_bytes)} ·{" "}
                 {formatDate(attachment.uploaded_at)}
               </Text>
             </View>
@@ -178,6 +197,7 @@ export function InvoiceAttachmentsCard({
             onPress={() => {
               if (!selected) return;
               setRenameValue(selected.filename);
+              setRenameError(null);
               menuSheet.current?.dismiss();
               renameSheet.current?.present();
             }}
@@ -202,20 +222,35 @@ export function InvoiceAttachmentsCard({
           <Input
             testID="attachment-rename-input"
             value={renameValue}
-            onChangeText={setRenameValue}
+            onChangeText={(value) => {
+              setRenameError(null);
+              setRenameValue(value);
+            }}
+            error={renameError}
             autoFocus
           />
           <Button
             testID="attachment-rename-save"
             label={t("common.save")}
             loading={rename.isPending}
-            onPress={() =>
-              selected &&
+            onPress={() => {
+              if (!selected) return;
+              // The backend refuses a blank name or a changed extension; say so here, in the
+              // UI language, rather than after the request.
+              const problem = renameProblem(selected.filename, renameValue);
+              if (problem)
+                return setRenameError(
+                  problem === "empty"
+                    ? t("common.errors.fileNameRequired")
+                    : t("common.errors.keepExtension", {
+                        ext: fileExtension(selected.filename),
+                      }),
+                );
               rename.mutate(
                 { attachmentId: selected.id, filename: renameValue.trim() },
                 { onSuccess: () => renameSheet.current?.dismiss() },
-              )
-            }
+              );
+            }}
           />
         </View>
       </Sheet>

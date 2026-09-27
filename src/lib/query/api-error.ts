@@ -50,3 +50,23 @@ export function unwrapVoid(result: FetchResult<unknown>): void {
 export function unwrapAs<T>(result: FetchResult<unknown>): T {
   return unwrap(result) as unknown as T;
 }
+
+/** Client errors a second identical request can still get past (session refresh, timeout, rate limit). */
+const TRANSIENT_CLIENT_STATUSES = new Set([401, 408, 429]);
+
+/**
+ * Default query retry: one more try, except for a client error the backend will answer the
+ * same way again — a 404 for a record that is gone or hidden from the caller, a 403, a 400.
+ */
+export function shouldRetryQuery(
+  failureCount: number,
+  error: unknown,
+): boolean {
+  if (failureCount >= 1) return false;
+  return !(
+    error instanceof ApiError &&
+    error.status >= 400 &&
+    error.status < 500 &&
+    !TRANSIENT_CLIENT_STATUSES.has(error.status)
+  );
+}

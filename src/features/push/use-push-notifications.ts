@@ -6,10 +6,11 @@ import { useEffect } from "react";
 import { requestShellSheet } from "@/components/shell/shell-context";
 import { registerPushDevice } from "@/features/push/push-device-registration";
 import { selectProjectOnNextShell } from "@/features/projects/selected-project";
-import { routeForNotification } from "@/lib/push/notification-route";
+import {
+  routeForNotification,
+  staleKeysForPush,
+} from "@/lib/push/notification-route";
 import type { PushData } from "@/lib/push/notification-route";
-
-const NOTIFICATIONS_KEY = ["notifications"] as const;
 
 // Show pushes even while the app is in the foreground (banner + sound, no badge count).
 Notifications.setNotificationHandler({
@@ -33,17 +34,23 @@ export function usePushNotifications(): void {
   useEffect(() => {
     void registerPushDevice();
 
+    const invalidate = (data: PushData | null | undefined) => {
+      for (const queryKey of staleKeysForPush(data))
+        void queryClient.invalidateQueries({ queryKey });
+    };
+
     const open = (data: PushData | null | undefined) => {
       const route = routeForNotification(data);
       if (route.projectId) selectProjectOnNextShell(route.projectId);
       if (route.sheet) requestShellSheet(route.sheet);
-      void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
+      invalidate(data);
       router.navigate(route.path ?? "/(app)/(tabs)");
     };
 
-    const received = Notifications.addNotificationReceivedListener(() => {
-      void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
-    });
+    const received = Notifications.addNotificationReceivedListener(
+      (notification) =>
+        invalidate(notification.request.content.data as PushData),
+    );
     const responded = Notifications.addNotificationResponseReceivedListener(
       (response) =>
         open(response.notification.request.content.data as PushData),

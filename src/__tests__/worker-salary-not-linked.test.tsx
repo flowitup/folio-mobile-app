@@ -122,6 +122,21 @@ describe("worker salary tab without a linked worker", () => {
     expect(
       await screen.findByTestId("worker-salary-not-linked"),
     ).toHaveTextContent(i18n.t("worker.notLinked"));
+    expect(screen.queryByTestId("worker-salary-export")).toBeNull();
+  });
+
+  it("lets a linked worker export their own timesheet, not the whole project", async () => {
+    mockWorkers = [LINKED];
+
+    await renderWithProviders(<WorkerSalaryTab />);
+
+    expect(await screen.findByTestId("worker-salary-export")).toBeTruthy();
+    expect(
+      screen.getByTestId(`labor-export-worker-option-${LINKED.id}`),
+    ).toBeTruthy();
+    expect(
+      screen.queryByTestId("labor-export-worker-option-__all__"),
+    ).toBeNull();
   });
 
   it("keeps the salaries section for a worker the account is linked to", async () => {

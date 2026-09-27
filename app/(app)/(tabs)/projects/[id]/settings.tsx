@@ -44,7 +44,7 @@ export default function ProjectSettingsSection() {
 
   if (project.isPending) return <ActivityIndicator className="mt-8" />;
   if (project.isError || !project.data)
-    return <Text className="p-4 text-danger">{t("home.loadError")}</Text>;
+    return <Text className="p-4 text-danger">{t("common.loadError")}</Text>;
 
   const data = project.data;
   // The owner is an ordinary assignee on the backend — creating a project grants no standing

@@ -1,7 +1,12 @@
 {
   "common": {
+    "fileSize": {
+      "kb": "{{value}} KB",
+      "mb": "{{value}} MB"
+    },
     "loading": "Đang tải…",
     "retry": "Thử lại",
+    "loadError": "Không tải được nội dung này.",
     "comingSoon": "Sắp ra mắt.",
     "networkError": "Lỗi mạng",
     "cancel": "Huỷ",
@@ -15,7 +20,19 @@
     "remove": "Gỡ",
     "email": "Email",
     "change": "Đổi",
-    "requestFailed": "Yêu cầu không xử lý được. Vui lòng thử lại."
+    "requestFailed": "Yêu cầu không xử lý được. Vui lòng thử lại.",
+    "errors": {
+      "invalidInput": "Một số giá trị không hợp lệ. Hãy kiểm tra biểu mẫu rồi thử lại.",
+      "unauthorized": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+      "forbidden": "Bạn không có quyền thực hiện thao tác này.",
+      "notFound": "Mục này không còn tồn tại.",
+      "conflict": "Thao tác này xung đột với dữ liệu hiện có. Hãy tải lại rồi thử lại.",
+      "gone": "Liên kết này đã hết hạn hoặc không còn khả dụng.",
+      "tooLarge": "Tệp quá lớn.",
+      "tooManyRequests": "Quá nhiều lần thử. Hãy đợi một lát rồi thử lại.",
+      "keepExtension": "Tên tệp phải giữ phần mở rộng {{ext}}.",
+      "fileNameRequired": "Hãy nhập tên tệp."
+    }
   },
   "login": {
     "title": "Đăng nhập\nFolio",
@@ -74,7 +91,7 @@
       "photos": "Ảnh",
       "notes": "Ghi chú",
       "planning": "Kế hoạch",
-      "chiffrage": "Chiffrage",
+      "chiffrage": "Hoạch toán",
       "analyses": "Phân tích",
       "members": "Thành viên công trình",
       "settings": "Cài đặt",
@@ -103,12 +120,18 @@
       "name": "Tên",
       "address": "Địa chỉ",
       "addressRequired": "Cần nhập địa chỉ.",
+      "company": "Công ty",
+      "companyRequired": "Chọn công ty sở hữu công trình này.",
       "nameOptional": "Tên (tùy chọn)",
       "namePlaceholder": "Mặc định là địa chỉ",
       "budget": "Ngân sách (€)",
       "budgetSource": "Nguồn ngân sách",
       "budgetSourceHint": "Nhập tự do, vd: vay ngân hàng, vốn tự có",
-      "invoicePrefix": "Tiền tố hoá đơn"
+      "invoicePrefix": "Tiền tố hoá đơn",
+      "budgetInvalid": "Nhập ngân sách từ 0 trở lên, ví dụ 150000 hoặc 150 000,50.",
+      "budgetTooLarge": "Ngân sách không được vượt quá {{max}}.",
+      "invoicePrefixHint": "1 đến 8 chữ cái hoặc chữ số, ví dụ TOUR1.",
+      "invoicePrefixInvalid": "Chỉ dùng 1 đến 8 chữ cái hoặc chữ số (không dấu cách, gạch ngang hay dấu)."
     },
     "allProjects": "Tất cả công trình",
     "active": "Đang hoạt động",
@@ -302,7 +325,10 @@
       "highlight": "Tô màu",
       "create": "Tạo hoá đơn",
       "quantityPositive": "Mỗi dòng phải có số lượng lớn hơn 0.",
-      "settledViaNone": "Chưa thanh toán"
+      "settledViaNone": "Chưa thanh toán",
+      "pricePositive": "Đơn giá không được âm với loại này. Hãy dùng loại Trả hàng / avoir để ghi nhận tiền hoàn lại.",
+      "vatRange": "VAT phải nằm trong khoảng 0 đến 100.",
+      "lineTooLarge": "Mỗi dòng không được vượt quá số lượng {{quantity}} hoặc đơn giá {{price}}."
     },
     "summary": {
       "totalExpenses": "Tổng chi phí",
@@ -345,7 +371,8 @@
       "noHighlight": "Không tô",
       "attachmentsEmpty": "Chưa có tệp đính kèm"
     },
-    "restricted": "Hóa đơn chỉ dành cho người quản lý công trình."
+    "restricted": "Hóa đơn chỉ dành cho người quản lý công trình.",
+    "unavailable": "Hóa đơn này không tồn tại hoặc chỉ dành cho người quản lý công trình."
   },
   "labor": {
     "tabs": {
@@ -390,7 +417,8 @@
       "fromCompany": "Thợ của công ty",
       "fromCompanyNew": "Người mới",
       "fromCompanyHint": "từ danh bạ công ty",
-      "deactivate": "Ngừng hoạt động"
+      "deactivate": "Ngừng hoạt động",
+      "rateTooLarge": "Đơn giá không được vượt quá {{max}}."
     },
     "rates": {
       "link": "Đơn giá",
@@ -423,7 +451,8 @@
       "conflictConfirm": "Vẫn chấm công",
       "emptyRowHint": "Chọn loại công hoặc thêm giờ phụ trước khi lưu.",
       "overrideNeedsShiftHint": "Số tiền ghi đè cần có loại công.",
-      "overrideInvalidHint": "Số tiền ghi đè phải là số dương."
+      "overrideInvalidHint": "Số tiền ghi đè phải là số dương.",
+      "overrideTooLargeHint": "Số tiền ghi đè không được vượt quá {{max}}."
     },
     "activities": {
       "title": "Hoạt động",
@@ -459,7 +488,8 @@
       "assignWorker": "Gán cho nhân công…",
       "openInvoice": "Mở hoá đơn",
       "paidShort": "Đã trả",
-      "dueShort": "Còn"
+      "dueShort": "Còn",
+      "amountTooLarge": "Số tiền không được vượt quá {{max}}."
     },
     "export": {
       "title": "Xuất nhân công",
@@ -472,7 +502,8 @@
       "workers": "Nhân công",
       "payments": "Thanh toán"
     },
-    "headerSub": "{{count}} thợ đang làm · {{month}}",
+    "headerSub_one": "{{count}} thợ đang làm · {{month}}",
+    "headerSub_other": "{{count}} thợ đang làm · {{month}}",
     "kpi": {
       "cost": "Chi phí",
       "unpaid": "Chưa trả"
@@ -790,7 +821,10 @@
         "itemQuantityPositive": "Số lượng phải > 0.",
         "itemUnitPricePositive": "Đơn giá phải ≥ 0.",
         "itemVatRatePositive": "VAT phải từ 0 đến 100.",
-        "documentNumberRequired": "Cần nhập số tài liệu."
+        "documentNumberRequired": "Cần nhập số tài liệu.",
+        "itemQuantityMax": "Số lượng không được vượt quá {{max}}.",
+        "itemUnitPriceMax": "Đơn giá không được vượt quá {{max}}.",
+        "emailInvalid": "Hãy nhập địa chỉ email hợp lệ, ví dụ ten@example.com."
       }
     },
     "actions": {
@@ -802,7 +836,8 @@
       "convert": "Chuyển thành hóa đơn",
       "convertTitle": "Chuyển thành hóa đơn",
       "deleteConfirm": "Xóa {{number}}?",
-      "invalidTransition": "Không được phép đổi trạng thái này."
+      "invalidTransition": "Không được phép đổi trạng thái này.",
+      "deletePaidWarning": "Hóa đơn này đã thanh toán: khoản giải ngân mà nó đã ghi vào công trình cũng sẽ bị xóa theo."
     },
     "toast": {
       "documentCreated": "Đã tạo tài liệu.",
@@ -845,10 +880,13 @@
       "none": "Chưa theo dõi chi phí hoàn lại nào.",
       "allCompanies": "Mọi công ty",
       "summary": {
-        "refundedTotal": "Đã hoàn",
+        "refundedTotal": "Tổng đã hoàn",
         "refundedByCompany": "Bởi công ty",
         "refundedByBank": "Bởi ngân hàng",
-        "toRefund": "Cần hoàn"
+        "toRefund": "Cần hoàn",
+        "companyShare": "{{percent}}% công ty",
+        "bothShare": "{{percent}}% cả hai",
+        "bankShare": "{{percent}}% ngân hàng"
       },
       "status": {
         "refundable": "Có thể hoàn",
@@ -1407,7 +1445,8 @@
     "color": "Màu",
     "none": "Chưa có vai trò.",
     "deleteConfirm": "Xóa vai trò {{name}}?",
-    "nameRequired": "Cần nhập tên."
+    "nameRequired": "Cần nhập tên.",
+    "colorInvalid": "Nhập màu dạng # theo sau là 6 chữ số thập lục phân, ví dụ #E11D48."
   },
   "persons": {
     "title": "Gộp người",
@@ -1501,6 +1540,7 @@
       "pendingCompany": "Chờ công ty hoàn ({{count}})",
       "spentOfCredit": "Đã chi {{spent}} trên {{total}} tín dụng",
       "spentOfReleased": "Đã chi {{spent}} trên {{total}} đã giải ngân",
+      "noBudgetNoFunds": "Chưa có ngân sách và chưa giải ngân",
       "addInvoice": "Hoá đơn",
       "addRelease": "Giải ngân",
       "payLabor": "Trả lương",
@@ -1538,7 +1578,8 @@
     "worker": "Nhân công",
     "noWorkers": "Chưa có nhân công trong công trình.",
     "noMonths": "Chưa có tháng nào có công hoặc thanh toán.",
-    "days": "{{count}} ngày",
+    "days_one": "{{value}} ngày",
+    "days_other": "{{value}} ngày",
     "earned": "Đã kiếm",
     "paid": "Đã trả",
     "remaining": "Còn lại",
@@ -1777,6 +1818,20 @@
       "blockedTitle": "Hãy chọn quản trị viên khác trước",
       "blockedBody": "Bạn là quản trị viên duy nhất của {{company}}. Hãy chỉ định một quản trị viên khác, sau đó xóa tài khoản của bạn.",
       "ok": "OK"
+    },
+    "phone": {
+      "title": "Số điện thoại",
+      "change": "Đổi số điện thoại",
+      "intro": "Bạn đang đăng nhập bằng {{phone}}. Nhập số mới: chúng tôi gửi mã 6 số qua SMS tới số đó, số hiện tại vẫn dùng được cho tới khi bạn xác nhận.",
+      "newNumber": "Số điện thoại mới",
+      "codeSentTo": "Nhập mã 6 số đã gửi tới {{phone}}.",
+      "confirm": "Xác nhận số mới",
+      "otherNumber": "Dùng số khác",
+      "changed": "Đã đổi số điện thoại. Các thiết bị khác của bạn đã bị đăng xuất; từ nay hãy đăng nhập bằng số mới.",
+      "errors": {
+        "sameNumber": "Đây đã là số điện thoại của bạn.",
+        "phoneTaken": "Số này đã được dùng cho một tài khoản khác."
+      }
     }
   },
   "pdfViewer": {

@@ -42,3 +42,22 @@ export function Input({
 export function Textarea(props: Props & { className?: string }) {
   return <Input multiline numberOfLines={4} {...props} />;
 }
+
+/**
+ * Search / filter field laid out in a row or above a list: the same look as `Input` (app font,
+ * theme placeholder colour, line-2 border, card background, 48px) without the label and the
+ * bottom margin, so the caller places it with `className` (`flex-1`, `mb-3`…).
+ */
+export function SearchInput({
+  className,
+  ...rest
+}: TextInputProps & { className?: string }) {
+  const tokens = useTokens();
+  return (
+    <TextInput
+      placeholderTextColor={tokens.muted2}
+      className={`h-12 rounded-[10px] border border-line-2 bg-card px-3.5 font-sans text-base text-ink ${className ?? ""}`}
+      {...rest}
+    />
+  );
+}

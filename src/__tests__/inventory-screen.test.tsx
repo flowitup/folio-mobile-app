@@ -371,13 +371,17 @@ describe("warehouses screen", () => {
     expect(screen.getByTestId("warehouse-w1-units")).toHaveTextContent(
       i18n.t("inventory.units", { count: 3 }),
     );
+    // No inline delete button squeezing the name.
+    expect(row).not.toHaveTextContent(containing(i18n.t("common.delete")));
   });
 
   it("says how many units a warehouse still holds instead of opening the delete dialog", async () => {
     await renderWithProviders(<WarehousesScreen />);
     await screen.findByTestId("warehouse-w1");
 
-    await fireEvent.press(screen.getByTestId("warehouse-delete-w1"));
+    // Delete sits in the edit sheet, leaving the row's width to the name.
+    await fireEvent.press(screen.getByTestId("warehouse-w1"));
+    await fireEvent.press(screen.getByTestId("warehouse-delete"));
     // The server refuses a warehouse that still holds rows, so the crew is told straight
     // away rather than being handed a confirmation whose destructive button does nothing.
     expect(showToast).toHaveBeenCalledWith(
@@ -434,7 +438,8 @@ describe("without inventory:manage", () => {
 
     expect(await screen.findByTestId("warehouse-w1")).toBeTruthy();
     expect(screen.queryByTestId("warehouse-add")).toBeNull();
-    expect(screen.queryByTestId("warehouse-delete-w1")).toBeNull();
+    await fireEvent.press(screen.getByTestId("warehouse-w1"));
+    expect(screen.queryByTestId("warehouse-delete")).toBeNull();
   });
 });
 

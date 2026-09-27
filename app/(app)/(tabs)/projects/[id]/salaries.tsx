@@ -14,7 +14,12 @@ import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
+} from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
@@ -27,7 +32,7 @@ import {
 import { useLaborMonthlySummary, useWorkers } from "@/features/labor/labor-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { formatDate, formatMonth } from "@/lib/format/date";
-import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { formatMoney, formatNumber, parseMoneyInput } from "@/lib/format/money";
 import {
   UNASSIGNED_MONTH,
   buildWorkerSalaryMonths,
@@ -159,6 +164,17 @@ export default function ProjectSalariesSection({
   return (
     <View className="flex-1 bg-paper">
       <ScrollView contentContainerClassName="p-4 pb-12">
+        {(workers.isError && !workers.data) ||
+        (monthly.isError && !monthly.data) ? (
+          <ErrorState
+            message={t("common.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => {
+              if (workers.isError) void workers.refetch();
+              if (monthly.isError) void monthly.refetch();
+            }}
+          />
+        ) : null}
         {workers.data && workers.data.length === 0 ? (
           <EmptyState message={t("salaries.noWorkers")} />
         ) : null}
@@ -236,8 +252,11 @@ export default function ProjectSalariesSection({
                 />
               </View>
               <Text className="text-xs text-muted-foreground">
-                {t("salaries.days", { count: row.days })} ·{" "}
-                {t("salaries.earned")} {formatMoney(row.earned)} ·{" "}
+                {t("salaries.days", {
+                  count: row.days,
+                  value: formatNumber(row.days, 1),
+                })}{" "}
+                · {t("salaries.earned")} {formatMoney(row.earned)} ·{" "}
                 {t("salaries.paid")} {formatMoney(row.paid)}
                 {row.remaining !== 0
                   ? ` · ${t("salaries.remaining")} ${formatMoney(row.remaining)}`

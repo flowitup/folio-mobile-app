@@ -18,3 +18,8 @@ export function laborRoleLabel(
   if (role.slug && isSeedSlug(role.slug)) return t(`labor.roles.${role.slug}`);
   return role.name;
 }
+
+/** The backend's rule for a role colour: `#` and six hexadecimal digits. */
+export function isHexColor(value: string): boolean {
+  return /^#[0-9A-Fa-f]{6}$/.test(value);
+}

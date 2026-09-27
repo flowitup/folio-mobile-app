@@ -221,7 +221,7 @@ export function WorkerAttendanceTab() {
 
         {workers.isError ? (
           <ErrorState
-            message={t("home.loadError")}
+            message={t("common.loadError")}
             retryLabel={t("common.retry")}
             onRetry={() => void workers.refetch()}
           />

@@ -11,6 +11,7 @@ import {
   useDismissNotification,
   useNotifications,
 } from "@/features/notes/notes-api";
+import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatDate } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
 
@@ -23,6 +24,7 @@ export function NotificationsSheet() {
   const tokens = useTokens();
   const router = useRouter();
   const { sheet, closeSheet } = useShell();
+  const { select } = useSelectedProject();
   const notifications = useNotifications();
   const dismiss = useDismissNotification();
   const pending = (notifications.data?.items ?? []).filter(
@@ -98,6 +100,9 @@ export function NotificationsSheet() {
                 accessibilityRole="button"
                 onPress={() => {
                   closeSheet();
+                  // A reminder can belong to another project: switch the shell to it first, as
+                  // a tapped push does, so the tabs and the notes show the same project.
+                  select(note.project_id);
                   router.push(`/projects/${note.project_id}/notes`);
                 }}
                 className="min-w-0 flex-1 active:opacity-70"

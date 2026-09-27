@@ -38,11 +38,14 @@ import type {
   ProjectDocument,
   ProjectDocumentKind,
 } from "@/features/documents/documents-api";
+import { formatFileSize } from "@/lib/format/file-size";
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
+import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
 import { formatDate } from "@/lib/format/date";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 const SORTS: DocumentSort[] = ["created_at", "name", "size", "uploader"];
 
@@ -55,7 +58,7 @@ const noRefetch = () => undefined;
  * without it lands on an empty state and no document request is made.
  */
 export default function ProjectDocumentsSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [kinds, setKinds] = useState<ProjectDocumentKind[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -110,6 +113,7 @@ export default function ProjectDocumentsSection() {
   const editSheet = useRef<BottomSheetModal>(null);
   const [editing, setEditing] = useState<ProjectDocument | null>(null);
   const [nameDraft, setNameDraft] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
   const [tagsDraft, setTagsDraft] = useState("");
   const [deleting, setDeleting] = useState<ProjectDocument | null>(null);
 
@@ -125,6 +129,7 @@ export default function ProjectDocumentsSection() {
   function openEdit(document: ProjectDocument) {
     setEditing(document);
     setNameDraft(document.filename);
+    setNameError(null);
     setTagsDraft(document.tags.join(", "));
     editSheet.current?.present();
   }
@@ -275,8 +280,8 @@ export default function ProjectDocumentsSection() {
             <Pressable
               testID={`document-open-${document.id}`}
               onPress={() =>
-                openDocument(document).catch((e: Error) =>
-                  showToast(e.message, "error"),
+                openDocument(document).catch((e: unknown) =>
+                  showToast(apiErrorMessage(e, t, i18n.language), "error"),
                 )
               }
             >
@@ -290,7 +295,7 @@ export default function ProjectDocumentsSection() {
                 </Text>
               </View>
               <Text className="text-xs text-muted-foreground">
-                {Math.round(document.size_bytes / 1024)} KB ·{" "}
+                {formatFileSize(document.size_bytes)} ·{" "}
                 {formatDate(document.uploaded_at)}
               </Text>
             </Pressable>
@@ -373,7 +378,11 @@ export default function ProjectDocumentsSection() {
             testID="document-name"
             label={t("documents.filename")}
             value={nameDraft}
-            onChangeText={setNameDraft}
+            onChangeText={(value) => {
+              setNameError(null);
+              setNameDraft(value);
+            }}
+            error={nameError}
           />
           <Input
             testID="document-tags"
@@ -389,21 +398,46 @@ export default function ProjectDocumentsSection() {
             loading={rename.isPending || setTags.isPending}
             onPress={async () => {
               if (!editing) return;
+              // A blank name keeps the current one; a changed extension is refused by the
+              // backend, so it is caught here with a translated message.
+              if (
+                nameDraft.trim() &&
+                renameProblem(editing.filename, nameDraft) === "extension"
+              )
+                return setNameError(
+                  t("common.errors.keepExtension", {
+                    ext: fileExtension(editing.filename),
+                  }),
+                );
               const nextTags = tagsDraft
                 .split(",")
                 .map((v) => v.trim())
                 .filter(Boolean);
-              if (nameDraft.trim() && nameDraft.trim() !== editing.filename)
-                await rename
-                  .mutateAsync({
+              // Each step stops the save on failure and keeps the sheet open with what was
+              // typed: the rename first, so a refused name does not leave the tags half saved.
+              if (nameDraft.trim() && nameDraft.trim() !== editing.filename) {
+                try {
+                  await rename.mutateAsync({
                     documentId: editing.id,
                     filename: nameDraft.trim(),
-                  })
-                  .catch(() => undefined);
-              if (nextTags.join("|") !== editing.tags.join("|"))
-                await setTags
-                  .mutateAsync({ documentId: editing.id, tags: nextTags })
-                  .catch(() => undefined);
+                  });
+                } catch (caught) {
+                  return setNameError(
+                    apiErrorMessage(caught, t, i18n.language),
+                  );
+                }
+              }
+              if (nextTags.join("|") !== editing.tags.join("|")) {
+                try {
+                  await setTags.mutateAsync({
+                    documentId: editing.id,
+                    tags: nextTags,
+                  });
+                } catch {
+                  // The mutation already told the user; keep the sheet open to retry.
+                  return;
+                }
+              }
               editSheet.current?.dismiss();
             }}
           />

@@ -58,6 +58,10 @@ function OverviewTabContent() {
   // A manager keeps the spend side without the budget; a plain member sees no money at all
   // (the backend answers zeros, not nulls, so the permission is the only reliable signal).
   const canSeeSpend = canViewBudget || canManageInvoices;
+  // The labor payments segment is empty for a caller who can neither record nor see pay.
+  const canManageLabor = useProjectCan(projectId, "project:manage_labor");
+  const canViewPay = useProjectCan(projectId, "project:view_pay");
+  const canPayLabor = canManageLabor || canViewPay;
   useRefetchOnFocus(invoices.refetch);
   useRefetchOnFocus(tasks.refetch);
 
@@ -130,6 +134,7 @@ function OverviewTabContent() {
             onPayLabor={payLabor}
             canViewBudget={canViewBudget}
             canManageInvoices={canManageInvoices}
+            canPayLabor={canPayLabor}
             showMoney={canSeeSpend}
           />
         ) : (

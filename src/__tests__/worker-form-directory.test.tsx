@@ -165,6 +165,26 @@ describe("WorkerFormSheet — company directory", () => {
     });
   });
 
+  it("shows a missing rate under the rate field, not under the name", async () => {
+    await renderSheet();
+    await waitFor(() =>
+      expect(screen.getByTestId("worker-person")).toBeTruthy(),
+    );
+
+    await fireEvent.changeText(screen.getByTestId("worker-name"), "Bob Neuf");
+    await fireEvent.press(screen.getByTestId("worker-submit"));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByText(t("labor.workers.rateRequired"))).toBeTruthy();
+    // The rate field is the one outlined in red; the filled-in name is not.
+    expect(String(screen.getByTestId("worker-rate").props.className)).toMatch(
+      /border-negative/,
+    );
+    expect(
+      String(screen.getByTestId("worker-name").props.className),
+    ).not.toMatch(/border-negative/);
+  });
+
   it("does not offer someone who already works on this project", async () => {
     mockGet.mockImplementation((path: string) => {
       if (path === PERSONS_PATH)

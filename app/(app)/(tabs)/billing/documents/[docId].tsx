@@ -36,10 +36,11 @@ import { formatMoney } from "@/lib/format/money";
 import { ApiError } from "@/lib/query/api-error";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { toIsoDate } from "@/lib/format/date";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 /** Document detail: status transitions, PDF / XLSX share, duplicate, convert, delete, and the edit form. */
 export default function BillingDocumentScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { docId } = useLocalSearchParams<{ docId: string }>();
   const query = useBillingDocument(docId);
@@ -69,7 +70,7 @@ export default function BillingDocumentScreen() {
       <View className="flex-1 bg-paper">
         <ScreenHeader title={t("billing.title")} back />
         <ErrorState
-          message={t("home.loadError")}
+          message={t("common.loadError")}
           retryLabel={t("common.retry")}
           onRetry={() => void query.refetch()}
         />
@@ -82,10 +83,7 @@ export default function BillingDocumentScreen() {
     try {
       await openBillingFile(doc, format);
     } catch (error) {
-      showToast(
-        error instanceof ApiError ? error.message : t("common.networkError"),
-        "error",
-      );
+      showToast(apiErrorMessage(error, t, i18n.language), "error");
     } finally {
       setSharing(null);
     }
@@ -308,6 +306,12 @@ export default function BillingDocumentScreen() {
         title={t("billing.actions.deleteConfirm", {
           number: doc.document_number,
         })}
+        // A paid facture recorded a funds release in its project; the delete removes it too.
+        message={
+          doc.kind === "facture" && doc.status === "paid"
+            ? t("billing.actions.deletePaidWarning")
+            : undefined
+        }
         confirmLabel={t("common.delete")}
         cancelLabel={t("common.cancel")}
         destructive

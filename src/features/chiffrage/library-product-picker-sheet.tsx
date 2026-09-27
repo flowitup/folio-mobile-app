@@ -1,17 +1,12 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { forwardRef, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import { EmptyState } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
+import { SearchInput } from "@/components/ui/input";
 import { useProducts, useSuppliers } from "@/features/library/library-api";
 import type { LibraryProduct } from "@/features/library/library-types";
 import { formatMoney } from "@/lib/format/money";
@@ -90,11 +85,10 @@ export const LibraryProductPickerSheet = forwardRef<BottomSheetModal, Props>(
             ]}
             onChange={(v) => setSupplier(v === "__all__" ? null : v)}
           />
-          <TextInput
+          <SearchInput
             testID="library-pick-search"
-            className="mb-3 rounded-lg border border-border px-4 py-2 text-base text-primary"
+            className="mb-3"
             placeholder={t("chiffrage.librarySearch")}
-            placeholderTextColor="#a3a3a3"
             value={search}
             onChangeText={setSearch}
             autoCapitalize="none"

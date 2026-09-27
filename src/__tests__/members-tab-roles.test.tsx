@@ -179,3 +179,84 @@ describe("Members per role", () => {
     expect(callsTo(mockGet, PERSONS_PATH)).toHaveLength(0);
   });
 });
+
+describe("Members · who a manager may remove", () => {
+  const OTHERS = [
+    {
+      user_id: "u-admin",
+      email: "qa.admin@example.com",
+      display_name: "Admin Persona",
+      role_name: "admin",
+      joined_at: null,
+    },
+    {
+      user_id: "u-manager-2",
+      email: "other.manager@example.com",
+      display_name: "Other Manager",
+      role_name: "manager",
+      joined_at: null,
+    },
+  ];
+
+  function withOthers() {
+    const answer = answerGet(() => mockCurrent);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === MEMBERS_PATH
+        ? {
+            data: { members: [...MEMBERS, ...OTHERS] },
+            response: { status: 200, statusText: "OK" },
+          }
+        : answer(path, options as never),
+    );
+  }
+
+  it("offers a manager Remove on company members only, as the backend allows", async () => {
+    mockCurrent = persona("manager");
+    withOthers();
+    await renderWithProviders(<ProjectMembersSection />);
+
+    expect(await screen.findByTestId("member-remove-u-member")).toBeTruthy();
+    expect(screen.queryByTestId("member-remove-u-admin")).toBeNull();
+    expect(screen.queryByTestId("member-remove-u-manager-2")).toBeNull();
+  });
+
+  it("lets an admin remove managers and admins too", async () => {
+    mockCurrent = persona("admin");
+    withOthers();
+    await renderWithProviders(<ProjectMembersSection />);
+
+    expect(await screen.findByTestId("member-remove-u-manager-2")).toBeTruthy();
+    expect(screen.getByTestId("member-remove-u-member")).toBeTruthy();
+    expect(screen.getByTestId("member-remove-u-manager")).toBeTruthy();
+  });
+});
+
+describe("Members · phone sign-ups", () => {
+  it("never shows the synthetic address the backend stores for a phone-only account", async () => {
+    mockCurrent = persona("manager");
+    const answer = answerGet(() => mockCurrent);
+    const phoneOnly = {
+      user_id: "u-phone",
+      email: "phone-33600000097@no-email.folio.flowitup.com",
+      display_name: "QA Waiting C",
+      role_name: "member",
+      joined_at: null,
+    };
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === MEMBERS_PATH
+        ? {
+            data: { members: [...MEMBERS, phoneOnly] },
+            response: { status: 200, statusText: "OK" },
+          }
+        : answer(path, options as never),
+    );
+    await renderWithProviders(<ProjectMembersSection />);
+
+    expect(await screen.findByText("QA Waiting C")).toBeTruthy();
+    expect(screen.getByText("+33600000097")).toBeTruthy();
+    expect(screen.queryByText(/no-email\.folio/)).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("member-remove-u-phone"));
+    expect(screen.queryByText(/no-email\.folio/)).toBeNull();
+  });
+});

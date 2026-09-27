@@ -160,7 +160,8 @@ export function Checkbox({ label, value, onChange, testID }: CheckboxProps) {
       >
         {value ? <Icon name="check" size={12} color={tokens.onInk} /> : null}
       </View>
-      <Text className="font-sans text-base text-ink">{label}</Text>
+      {/* flex-1 lets a long label wrap within the row instead of running past its edge. */}
+      <Text className="flex-1 font-sans text-base text-ink">{label}</Text>
     </Pressable>
   );
 }

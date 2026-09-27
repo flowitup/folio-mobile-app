@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -102,7 +102,14 @@ export function ProjectSwitcherSheet() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { sheet, closeSheet } = useShell();
-  const { projects, projectId, select } = useSelectedProject();
+  const { projects, projectId, select, refetch } = useSelectedProject();
+  // The list is cached for the whole session: a project the user was assigned to since the
+  // last fetch would stay missing until the app came back to the foreground.
+  const open = sheet === "switcher";
+  useEffect(() => {
+    if (open) refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch is rebuilt every render
+  }, [open]);
   const createProject = useCreateProject();
   const companies = useMyCompanies();
   const form = useRef<ProjectFormSheetHandle>(null);
@@ -112,17 +119,19 @@ export function ProjectSwitcherSheet() {
   // fallback.
   const canCreate = can(user, "project:create") || isCompanyAdminAnywhere(user);
   // The matrix only grants `project:create` to a company admin — a new project is created
-  // inside that company (creator auto-assigned manager, D6). Falls back to the primary
-  // attached company when the admin belongs to several.
+  // inside that company (creator auto-assigned manager, D6). An admin of several companies
+  // picks it in the form, which defaults to the primary one.
+  const adminCompanies = (companies.data ?? []).filter(
+    (c) => c.role === "admin",
+  );
   const ownerCompanyId =
-    (companies.data ?? []).find((c) => c.role === "admin" && c.is_primary)
-      ?.id ??
-    (companies.data ?? []).find((c) => c.role === "admin")?.id ??
+    adminCompanies.find((c) => c.is_primary)?.id ??
+    adminCompanies[0]?.id ??
     null;
 
   return (
     <>
-      <ShellSheet open={sheet === "switcher"} testID="switcher-sheet">
+      <ShellSheet open={open} testID="switcher-sheet">
         <Eyebrow className="mb-2">
           {t("shell.projectsCount", { count: projects.length })}
         </Eyebrow>
@@ -205,6 +214,7 @@ export function ProjectSwitcherSheet() {
       <ProjectFormSheet
         ref={form}
         submitting={createProject.isPending}
+        companies={adminCompanies}
         onSubmit={(values) =>
           createProject.mutate(
             {
@@ -212,7 +222,7 @@ export function ProjectSwitcherSheet() {
               name: values.name || null,
               budget: values.budget ?? null,
               budget_source: values.budget_source ?? null,
-              company_id: ownerCompanyId,
+              company_id: values.company_id ?? ownerCompanyId,
             },
             {
               onSuccess: (created) => {

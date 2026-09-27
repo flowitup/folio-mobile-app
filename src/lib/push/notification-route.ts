@@ -1,4 +1,5 @@
 import type { ShellSheet } from "@/components/shell/shell-context";
+import { projectKeys } from "@/features/projects/projects-api";
 
 /** `data` payload the backend attaches to pushes: a flat string map, `kind` drives routing
  * (see `app/application/push/*_notifier.py`). */
@@ -132,4 +133,21 @@ export function routeForNotification(
         ? `/projects/${projectId}/${section}`
         : null;
   return { projectId, sheet, path };
+}
+
+const NOTIFICATIONS_KEY = ["notifications"] as const;
+
+/** Pushes that change which projects the user is on: the switcher list must be refetched. */
+const MEMBERSHIP_KINDS = new Set([
+  "project_member_added",
+  "project_member_removed",
+]);
+
+/** Query keys a push makes stale: always the bell, plus the project list on a membership change. */
+export function staleKeysForPush(
+  data: PushData | null | undefined,
+): (readonly string[])[] {
+  const keys: (readonly string[])[] = [NOTIFICATIONS_KEY];
+  if (data?.kind && MEMBERSHIP_KINDS.has(data.kind)) keys.push(projectKeys.all);
+  return keys;
 }

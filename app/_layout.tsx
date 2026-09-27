@@ -29,6 +29,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/auth/auth-context";
 import { DismissSheetsOnRouteChange } from "@/components/shell/dismiss-sheets-on-route-change";
 import { ToastProvider } from "@/components/ui/toast";
+import { shouldRetryQuery } from "@/lib/query/api-error";
 import { ThemePreferenceProvider } from "@/theme/theme-preference";
 import { useTokens } from "@/theme/tokens";
 
@@ -40,7 +41,7 @@ import { useTokens } from "@/theme/tokens";
 if (__DEV__) LogBox.ignoreAllLogs();
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+  defaultOptions: { queries: { retry: shouldRetryQuery, staleTime: 30_000 } },
 });
 
 // The three design families, one file per weight (see tailwind.config.js fontFamily).

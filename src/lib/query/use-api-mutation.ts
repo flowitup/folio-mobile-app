@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { showToast } from "@/components/ui/toast";
 import { ApiError } from "@/lib/query/api-error";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 type Options<TVariables, TData> = {
   mutationFn: (variables: TVariables) => Promise<TData>;
@@ -16,28 +17,15 @@ type Options<TVariables, TData> = {
   onError?: (error: unknown, variables: TVariables) => boolean | void;
 };
 
-/** A framework dump (5xx, or a Pydantic "N validation errors for …" report) is not user copy. */
-function isUnreadable(error: ApiError): boolean {
-  return (
-    error.status >= 500 ||
-    /validation errors? for |pydantic\.dev/i.test(error.message)
-  );
-}
-
-function toastMessageFor(error: unknown, t: (key: string) => string): string {
-  if (!(error instanceof ApiError)) return t("common.networkError");
-  return isUnreadable(error) ? t("common.requestFailed") : error.message;
-}
-
 /**
  * Mutation wrapper enforcing the app-wide conventions: invalidate the listed queries,
- * toast on success when asked, toast the API error message on failure.
+ * toast on success when asked, toast a message for the error, in the UI language, on failure.
  */
 export function useApiMutation<TVariables = void, TData = unknown>(
   options: Options<TVariables, TData>,
 ) {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return useMutation({
     mutationFn: options.mutationFn,
@@ -54,7 +42,7 @@ export function useApiMutation<TVariables = void, TData = unknown>(
       if (__DEV__ && !(error instanceof ApiError))
         console.error("[useApiMutation]", error);
       if (options.onError?.(error, variables) === true) return;
-      showToast(toastMessageFor(error, t), "error");
+      showToast(apiErrorMessage(error, t, i18n.language), "error");
     },
   });
 }

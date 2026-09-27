@@ -24,6 +24,7 @@ import { useMembers } from "@/features/projects/members-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
 import { normalizePhone } from "@/lib/auth/phone-number";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { MAX_DAILY_AMOUNT } from "@/lib/format/numeric-bounds";
 import {
   NEW_PERSON,
   directoryCandidates,
@@ -108,11 +109,16 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     );
     const [name, setName] = useState(worker?.name ?? "");
     const [rate, setRate] = useState(worker ? String(worker.daily_rate) : "");
-    const [phone, setPhone] = useState(worker?.phone ?? "");
+    // The phone every screen shows is the shared person's; the worker row only copies it.
+    const [phone, setPhone] = useState(
+      worker?.person_phone ?? worker?.phone ?? "",
+    );
     const [roleId, setRoleId] = useState<string | null>(
       worker?.role_id ?? null,
     );
-    const [error, setError] = useState<string | null>(null);
+    // One message per field, so the rate error is shown under the rate and not under the name.
+    const [nameError, setNameError] = useState<string | null>(null);
+    const [rateError, setRateError] = useState<string | null>(null);
 
     const picked =
       personId === NEW_PERSON
@@ -124,10 +130,11 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         setPersonId(NEW_PERSON);
         setName(worker?.name ?? "");
         setRate(worker ? String(worker.daily_rate) : "");
-        setPhone(worker?.phone ?? "");
+        setPhone(worker?.person_phone ?? worker?.phone ?? "");
         setRoleId(worker?.role_id ?? null);
         setUserId(worker?.user_id ?? null);
-        setError(null);
+        setNameError(null);
+        setRateError(null);
         sheet.current?.present();
       },
       close: () => sheet.current?.dismiss(),
@@ -136,7 +143,8 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     /** Company profile supplies identity, rate, role and account — each still editable below. */
     function pickPerson(value: string) {
       setPersonId(value);
-      setError(null);
+      setNameError(null);
+      setRateError(null);
       if (value === NEW_PERSON) {
         setName("");
         setPhone("");
@@ -155,7 +163,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
 
     function submit() {
       if (worker) {
-        if (!name.trim()) return setError(t("labor.workers.nameRequired"));
+        if (!name.trim()) return setNameError(t("labor.workers.nameRequired"));
         return onSubmit({
           name: name.trim(),
           // Always sent, empty included: the backend clears the phone on "" but leaves the
@@ -167,10 +175,16 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
       }
       // Identity comes from the picked Person; only the legacy manual path needs a name.
       if (!picked && !name.trim())
-        return setError(t("labor.workers.nameRequired"));
+        return setNameError(t("labor.workers.nameRequired"));
       const dailyRate = parseMoneyInput(rate);
       if (!dailyRate || dailyRate <= 0)
-        return setError(t("labor.workers.rateRequired"));
+        return setRateError(t("labor.workers.rateRequired"));
+      if (dailyRate > MAX_DAILY_AMOUNT)
+        return setRateError(
+          t("labor.workers.rateTooLarge", {
+            max: formatMoney(MAX_DAILY_AMOUNT),
+          }),
+        );
       onSubmit({
         // Sent alone, without name/phone: the server resolves both from the Person,
         // which stays the single source of truth for who this worker is.
@@ -237,9 +251,9 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               value={name}
               onChangeText={(value) => {
                 setName(value);
-                setError(null);
+                setNameError(null);
               }}
-              error={error}
+              error={nameError}
               autoFocus
             />
           )}
@@ -250,10 +264,10 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               value={rate}
               onChangeText={(value) => {
                 setRate(value);
-                setError(null);
+                setRateError(null);
               }}
               keyboardType="decimal-pad"
-              error={picked ? error : undefined}
+              error={rateError}
             />
           ) : null}
           {!picked ? (
@@ -363,6 +377,10 @@ export const RateChangesSheet = forwardRef<
     const dailyRate = parseMoneyInput(rate);
     if (!dailyRate || dailyRate <= 0)
       return setError(t("labor.workers.rateRequired"));
+    if (dailyRate > MAX_DAILY_AMOUNT)
+      return setError(
+        t("labor.workers.rateTooLarge", { max: formatMoney(MAX_DAILY_AMOUNT) }),
+      );
     if (!worker || !date) return;
     setError(null);
     create.mutate(
@@ -735,13 +753,19 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
     // from the backend; catch it here so the row is not saved on a silent failure.
     const isOverrideInvalid =
       override.trim() !== "" && (overrideValue === null || overrideValue <= 0);
+    const isOverrideTooLarge =
+      overrideValue !== null && overrideValue > MAX_DAILY_AMOUNT;
     const blockedReason = isEmptyRow
       ? t("labor.log.emptyRowHint")
       : isOverrideWithoutShift
         ? t("labor.log.overrideNeedsShiftHint")
         : isOverrideInvalid
           ? t("labor.log.overrideInvalidHint")
-          : null;
+          : isOverrideTooLarge
+            ? t("labor.log.overrideTooLargeHint", {
+                max: formatMoney(MAX_DAILY_AMOUNT),
+              })
+            : null;
 
     return (
       <Sheet

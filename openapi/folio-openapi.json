@@ -2235,6 +2235,83 @@
         "title": "OwnAttendanceEntryResponse",
         "type": "object"
       },
+      "PhoneChangeConfirmBody": {
+        "description": "POST /auth/me/phone/confirm \u2014 the new number and the code texted to it.",
+        "properties": {
+          "code": {
+            "pattern": "^\\s*\\d{6}\\s*$",
+            "title": "Code",
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 32,
+            "minLength": 6,
+            "title": "Phone",
+            "type": "string"
+          }
+        },
+        "required": ["phone", "code"],
+        "title": "PhoneChangeConfirmBody",
+        "type": "object"
+      },
+      "PhoneChangeConfirmResponse": {
+        "description": "POST /auth/me/phone/confirm \u2014 the updated user plus fresh tokens for this session.\n\nThe change signs the account out of every other device and every token issued before it,\nincluding the ones the caller used: browsers get the new pair as cookies, Bearer clients\nmust store these two in place of their old ones.",
+        "properties": {
+          "access_token": { "title": "Access Token", "type": "string" },
+          "companies": {
+            "default": [],
+            "items": { "$ref": "#/components/schemas/UserCompanySummary" },
+            "title": "Companies",
+            "type": "array"
+          },
+          "display_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "default": null,
+            "title": "Display Name"
+          },
+          "email": { "title": "Email", "type": "string" },
+          "id": { "format": "uuid", "title": "Id", "type": "string" },
+          "is_platform_ops": {
+            "default": false,
+            "title": "Is Platform Ops",
+            "type": "boolean"
+          },
+          "permissions": {
+            "items": { "type": "string" },
+            "title": "Permissions",
+            "type": "array"
+          },
+          "phone": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "default": null,
+            "title": "Phone"
+          },
+          "refresh_token": { "title": "Refresh Token", "type": "string" }
+        },
+        "required": [
+          "id",
+          "email",
+          "permissions",
+          "access_token",
+          "refresh_token"
+        ],
+        "title": "PhoneChangeConfirmResponse",
+        "type": "object"
+      },
+      "PhoneChangeRequestBody": {
+        "description": "POST /auth/me/phone/request-code \u2014 text a code to the new number the caller wants to use.",
+        "properties": {
+          "phone": {
+            "maxLength": 32,
+            "minLength": 6,
+            "title": "Phone",
+            "type": "string"
+          }
+        },
+        "required": ["phone"],
+        "title": "PhoneChangeRequestBody",
+        "type": "object"
+      },
       "ProjectResponse": {
         "description": "Single project response.",
         "properties": {
@@ -3192,7 +3269,7 @@
         "type": "object"
       },
       "UpdateMeRequest": {
-        "description": "PATCH /auth/me \u2014 the caller edits their own display name and/or phone.\n\nThe e-mail is deliberately not editable here (platform ops only). ``phone`` is stored in\nE.164 and must stay unique; null/empty clears it. At least one field must be provided.",
+        "description": "PATCH /auth/me \u2014 the caller edits their own display name and/or phone.\n\nThe e-mail is deliberately not editable here (platform ops only). ``phone`` is the sign-in\nidentity: it may only be sent unchanged (any formatting of the current number); clearing or\nreplacing it answers 400 ``PhoneChangeNotAllowed`` \u2014 a new number goes through the verified\n``/auth/me/phone/request-code`` + ``/auth/me/phone/confirm`` flow. At least one field must be provided.",
         "properties": {
           "display_name": {
             "anyOf": [
@@ -4009,6 +4086,62 @@
         },
         "security": [{ "bearerAuth": [] }],
         "summary": "Update the current user's display name and/or phone",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/me/phone/confirm": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneChangeConfirmBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneChangeConfirmResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Switch the current user's sign-in phone to the new number once its SMS code checks out",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/me/phone/request-code": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneChangeRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OtpRequestResponse" }
+              }
+            },
+            "description": "Response"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Text a code to the new phone number the current user wants to sign in with",
         "tags": ["auth"]
       }
     },

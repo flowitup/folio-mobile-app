@@ -169,6 +169,43 @@ describe("labor tab · manager denied project:manage_invoices (D8)", () => {
   });
 });
 
+describe("labor tab · export without a full project view", () => {
+  // Neither manage_labor nor view_pay: the backend refuses the project-wide export.
+  beforeEach(() => {
+    mockPersona = persona("manager", {
+      deny: ["project:manage_labor", "project:view_pay"],
+    });
+  });
+
+  it("offers only the caller's own worker, never the whole project", async () => {
+    mockWorkers = [WORKER_TUAN];
+    await renderWithProviders(<LaborTab />);
+
+    expect(await screen.findByTestId("labor-export")).toBeTruthy();
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("labor-export-worker-option-__all__"),
+      ).toBeNull(),
+    );
+    expect(
+      screen.getByTestId(`labor-export-worker-option-${WORKER_TUAN.id}`),
+    ).toBeTruthy();
+    expect(screen.getByTestId("labor-export-worker")).toHaveTextContent(
+      containing(WORKER_TUAN.name),
+    );
+  });
+
+  it("hides the export when no worker is linked to the caller", async () => {
+    mockWorkers = [];
+    await renderWithProviders(<LaborTab />);
+
+    expect(await screen.findByTestId("labor-title")).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.queryByTestId("labor-export")).toBeNull(),
+    );
+  });
+});
+
 // A member's own attendance lives on the first worker-mode tab (the Labor slot shows their
 // profile), so the worker view is rendered directly rather than through LaborTab.
 describe("labor tab · member (worker mode)", () => {
