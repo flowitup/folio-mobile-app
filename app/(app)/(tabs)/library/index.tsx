@@ -172,15 +172,17 @@ export default function LibraryTab() {
             }}
           />
         ) : null}
+        {/* The search gets its own row: beside "Compare" and "Import purchases" (long in
+            French) its placeholder was cut to a couple of words. */}
+        <SearchInput
+          testID="library-search"
+          className="mb-2"
+          placeholder={t("library.searchPlaceholder")}
+          value={search}
+          onChangeText={setSearch}
+          autoCapitalize="none"
+        />
         <View className="mb-2 flex-row items-center gap-2">
-          <SearchInput
-            testID="library-search"
-            className="flex-1"
-            placeholder={t("library.searchPlaceholder")}
-            value={search}
-            onChangeText={setSearch}
-            autoCapitalize="none"
-          />
           <Button
             testID="library-compare-toggle"
             label={t("library.compare")}
