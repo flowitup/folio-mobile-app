@@ -66,6 +66,10 @@ type AuthContextValue = {
   deleteAccount: () => Promise<void>;
   /** Re-fetches `/auth/me` (role/grant changes apply without re-login); no-op when signed out. */
   refreshUser: () => Promise<void>;
+  /** Texts a code to the NEW number the user wants to sign in with; resolves with its lifetime in seconds. */
+  requestPhoneChangeCode: (phone: string) => Promise<number>;
+  /** Swaps the sign-in number once the code texted to it checks out. The session stays valid. */
+  confirmPhoneChange: (phone: string, code: string) => Promise<void>;
 };
 
 /**
@@ -101,7 +105,11 @@ function authError(
   // Recognised failures get a translated string; the rest keep the server's own wording,
   // which is more specific than any catch-all we could write. The status travels with the
   // error so a screen can branch on it instead of matching the translated sentence.
-  const key = authErrorKey(flow, response?.status);
+  const key = authErrorKey(
+    flow,
+    response?.status,
+    (error as { error?: string } | undefined)?.error,
+  );
   const message = key
     ? i18n.t(key)
     : ((error as { message?: string } | undefined)?.message ??
@@ -246,6 +254,28 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [applyLoginPayload],
   );
 
+  const requestPhoneChangeCode = useCallback(async (phone: string) => {
+    const { data, error, response } = await api.POST(
+      "/api/v1/auth/me/phone/request-code",
+      { body: { phone } },
+    );
+    if (!data) throw authError("phoneChange", error, response);
+    return data.expires_in;
+  }, []);
+
+  const confirmPhoneChange = useCallback(
+    async (phone: string, code: string) => {
+      const { data, error, response } = await api.POST(
+        "/api/v1/auth/me/phone/confirm",
+        { body: { phone, code } },
+      );
+      if (!data) throw authError("phoneChange", error, response);
+      // Same tokens, new number: the answer is the fresh /auth/me representation.
+      setUser(data);
+    },
+    [],
+  );
+
   const signOut = useCallback(async () => {
     // Best effort server-side revocation (access + refresh); local sign-out must succeed even offline.
     await unregisterPushDevice();
@@ -293,6 +323,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signOut,
       deleteAccount,
       refreshUser,
+      requestPhoneChangeCode,
+      confirmPhoneChange,
     }),
     [
       status,
@@ -305,6 +337,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signOut,
       deleteAccount,
       refreshUser,
+      requestPhoneChangeCode,
+      confirmPhoneChange,
     ],
   );
 

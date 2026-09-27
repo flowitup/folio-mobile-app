@@ -20,7 +20,7 @@ function currentLocale(): SupportedLocale {
     : "en";
 }
 
-/** Avatar sheet: who is signed in, Cài đặt → settings hub, Ngôn ngữ (inline picker), Đăng xuất. */
+/** Avatar sheet: who is signed in, Cài đặt → settings hub, sign-in phone → verified change, Ngôn ngữ (inline picker), Đăng xuất. */
 export function AccountSheet() {
   const { t } = useTranslation();
   const tokens = useTokens();
@@ -68,6 +68,23 @@ export function AccountSheet() {
           </Text>
           <Text className="font-sans text-xs text-muted">
             {t("shell.settingsSub")}
+          </Text>
+        </Pressable>
+        <Pressable
+          testID="account-phone"
+          accessibilityRole="button"
+          accessibilityHint={t("account.phone.change")}
+          onPress={() => {
+            closeSheet();
+            router.push("/settings/phone");
+          }}
+          className="flex-row items-center justify-between border-b border-line px-3.5 py-[13px] active:opacity-70"
+        >
+          <Text className="font-sans text-[14px] text-ink">
+            {t("account.phone.title")}
+          </Text>
+          <Text className="font-mono text-[13px] text-muted">
+            {user?.phone ?? t("account.phone.change")}
           </Text>
         </Pressable>
         <Pressable
