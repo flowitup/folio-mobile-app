@@ -1535,6 +1535,7 @@
       "pendingCompany": "Awaiting company refund ({{count}})",
       "spentOfCredit": "Spent {{spent}} of {{total}} credit",
       "spentOfReleased": "Spent {{spent}} of {{total}} released",
+      "noBudgetNoFunds": "No budget and no funds released yet",
       "addInvoice": "Invoice",
       "addRelease": "Release funds",
       "payLabor": "Pay labor",

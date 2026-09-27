@@ -1535,6 +1535,7 @@
       "pendingCompany": "En attente de remboursement société ({{count}})",
       "spentOfCredit": "Dépensé {{spent}} sur {{total}} de crédit",
       "spentOfReleased": "Dépensé {{spent}} sur {{total}} débloqués",
+      "noBudgetNoFunds": "Ni budget ni fonds débloqués pour l'instant",
       "addInvoice": "Facture",
       "addRelease": "Débloquer",
       "payLabor": "Payer la MO",

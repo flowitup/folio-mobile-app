@@ -1535,6 +1535,7 @@
       "pendingCompany": "Chờ công ty hoàn ({{count}})",
       "spentOfCredit": "Đã chi {{spent}} trên {{total}} tín dụng",
       "spentOfReleased": "Đã chi {{spent}} trên {{total}} đã giải ngân",
+      "noBudgetNoFunds": "Chưa có ngân sách và chưa giải ngân",
       "addInvoice": "Hoá đơn",
       "addRelease": "Giải ngân",
       "payLabor": "Trả lương",
