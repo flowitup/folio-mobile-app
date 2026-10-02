@@ -498,6 +498,7 @@
       "rangeInvalid": "Chọn tháng bắt đầu trước tháng kết thúc, tối đa {{months}} tháng."
     },
     "segments": {
+      "overview": "Tổng hợp",
       "calendar": "Chấm công",
       "workers": "Nhân công",
       "payments": "Thanh toán"
@@ -532,6 +533,38 @@
     },
     "entry": {
       "deleteConfirm": "Xóa bản chấm công này?"
+    },
+    "overview": {
+      "totalCost": "Tổng chi phí nhân công",
+      "workerDays": "Ngày công",
+      "acrossWorkers_one": "trên {{count}} công nhân",
+      "acrossWorkers_other": "trên {{count}} công nhân",
+      "onSiteToday": "Có mặt hôm nay",
+      "workersLogged": "công nhân đã chấm",
+      "bonusCost": "Chi phí thưởng",
+      "bonusDaysSubtitle": "{{days}} ngày đã cộng dồn",
+      "banner": "Đã cộng dồn {{banked}}h → {{bonusDays}} ngày công thưởng ({{bonusCost}})",
+      "allHistory": "Toàn bộ lịch sử",
+      "allYears": "Tất cả",
+      "titleAll": "Tổng kết · Toàn bộ lịch sử",
+      "titleYear": "Tổng kết · {{year}}",
+      "titleMonth": "Tổng kết tháng · {{month}}",
+      "unpaid": "{{amount}} chưa trả",
+      "overpaid": "{{amount}} trả dư",
+      "workers_one": "{{count}} công nhân",
+      "workers_other": "{{count}} công nhân",
+      "perDay": "{{rate}} / ngày",
+      "grandTotal": "Tổng cộng",
+      "paid": "Đã trả",
+      "balance": "Số dư",
+      "bonusDays": "Ngày công thưởng",
+      "companyShare": "Công ty {{amount}}",
+      "personalShare": "Cá nhân {{amount}}",
+      "unassignedHint": "+ {{count}} chưa gán",
+      "empty": "Không có dữ liệu",
+      "toggleWorkers": "Hiện hoặc ẩn công nhân của tháng này",
+      "openMonth": "Mở tháng này",
+      "daysUnit": "ngày"
     }
   },
   "documents": {
