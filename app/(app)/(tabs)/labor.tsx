@@ -69,6 +69,7 @@ import type {
   Worker,
 } from "@/features/labor/labor-types";
 import { projectCan, useProject } from "@/features/projects/projects-api";
+import { LaborOverview } from "@/features/labor/labor-overview";
 import { WorkerProfileTab } from "@/features/labor/worker-profile-tab";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
@@ -87,8 +88,8 @@ import { frenchHolidayKeyForIso } from "@/lib/labor/french-holidays";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
 
-type Segment = "calendar" | "workers" | "payments";
-const SEGMENTS: Segment[] = ["calendar", "workers", "payments"];
+type Segment = "overview" | "calendar" | "workers" | "payments";
+const SEGMENTS: Segment[] = ["overview", "calendar", "workers", "payments"];
 /** Attendance segment view (web ViewToggle): month grid + day card, or the flat day list. */
 type AttendanceView = "calendar" | "list";
 const ATTENDANCE_VIEWS: AttendanceView[] = ["calendar", "list"];
@@ -105,7 +106,8 @@ function LaborTabContent() {
   const params = useLocalSearchParams<{ segment?: string; focus?: string }>();
   const { projectId, project: selected } = useSelectedProject();
   const id = projectId;
-  const [segment, setSegment] = useState<Segment>("calendar");
+  // Null until the user picks one: the default depends on permissions the project row loads.
+  const [pickedSegment, setSegment] = useState<Segment | null>(null);
   const [attendanceView, setAttendanceView] =
     useState<AttendanceView>("calendar");
   const [month, setMonth] = useState(currentMonth());
@@ -272,6 +274,14 @@ function LaborTabContent() {
   // Same rule as the backend's labor scope: without manage_labor or view_pay a member may
   // export only the worker linked to their account, never the whole project.
   const fullLaborView = canManageLabor || canViewPay;
+  // The Summary is the project's labor cost: the web shows it first, to whoever sees pay.
+  const segments = fullLaborView
+    ? SEGMENTS
+    : SEGMENTS.filter((value) => value !== "overview");
+  const segment: Segment =
+    pickedSegment && segments.includes(pickedSegment)
+      ? pickedSegment
+      : segments[0];
   const canExport = fullLaborView || (workers.data ?? []).length > 0;
 
   async function submitBulk(bulkEntries: BulkLogEntry[], acknowledge = false) {
@@ -346,22 +356,50 @@ function LaborTabContent() {
               })}
             </Text>
           </View>
-          <MonthPicker
-            testID="labor-month"
-            value={month}
-            onChange={setMonth}
-            compact
-          />
+          {/* The Summary has its own period (all history, a year, a month). */}
+          {segment !== "overview" ? (
+            <MonthPicker
+              testID="labor-month"
+              value={month}
+              onChange={setMonth}
+              compact
+            />
+          ) : null}
         </View>
         <Segmented<Segment>
           testID="labor-tab"
           value={segment}
           onChange={setSegment}
-          options={SEGMENTS.map((value) => ({
+          options={segments.map((value) => ({
             value,
             label: t(`labor.segments.${value}`),
           }))}
         />
+
+        {segment === "overview" ? (
+          <>
+            <LaborOverview
+              projectId={id}
+              workers={workers.data ?? []}
+              payments={laborPayments.data}
+              colorOf={colorOf}
+              roleOf={roleOf}
+            />
+            {canExport ? (
+              <Pressable
+                testID="labor-overview-export"
+                accessibilityRole="button"
+                onPress={() => exportSheet.current?.present()}
+                className="h-11 flex-row items-center justify-center gap-2 rounded-xl border border-line-2 active:opacity-70"
+              >
+                <Icon name="download" size={15} color={tokens.ink} />
+                <Text className="font-sans-medium text-[13px] text-ink">
+                  {t("expenses.export")}
+                </Text>
+              </Pressable>
+            ) : null}
+          </>
+        ) : null}
 
         {segment === "calendar" ? (
           <>

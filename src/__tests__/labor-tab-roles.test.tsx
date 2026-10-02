@@ -4,7 +4,7 @@ import i18n from "@/i18n";
 import LaborTab from "../../app/(app)/(tabs)/labor";
 import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
 import type { LaborEntry, Worker } from "@/features/labor/labor-types";
-import { formatMoney } from "@/lib/format/money";
+import { formatMoney, formatNumber } from "@/lib/format/money";
 import {
   ENTRIES,
   ENTRY_MINH_PENDING,
@@ -96,10 +96,45 @@ describe("labor tab · manager", () => {
     mockPersona = persona("manager");
   });
 
+  it("opens on the Summary: all-history totals, paid, and a month worker by worker", async () => {
+    await renderWithProviders(<LaborTab />);
+
+    expect(await screen.findByTestId("labor-overview")).toBeTruthy();
+    expect(await screen.findByTestId("labor-overview-total")).toHaveTextContent(
+      containing(formatMoney(330)),
+    );
+    expect(screen.getByTestId("labor-overview-days")).toHaveTextContent(
+      formatNumber(2.5),
+    );
+    // The Summary has its own period; the attendance month stepper is hidden.
+    expect(screen.queryByTestId("labor-month")).toBeNull();
+    // Paid this month = every payment, assigned (100) or not (80).
+    const monthKey = `${TODAY.slice(0, 7)}`;
+    expect(screen.getByTestId(`overview-month-${monthKey}`)).toHaveTextContent(
+      containing(formatMoney(180)),
+    );
+
+    await fireEvent.press(
+      screen.getByTestId(`overview-month-open-${monthKey}`),
+    );
+    // Tuan: 180 owed − 100 paid; Minh: nothing paid yet.
+    expect(
+      await screen.findByTestId(`overview-balance-${WORKER_TUAN.id}`),
+    ).toHaveTextContent(containing(formatMoney(80)));
+    expect(
+      screen.getByTestId(`overview-balance-${WORKER_MINH.id}`),
+    ).toHaveTextContent(containing(formatMoney(150)));
+    // Balance ignores the unassigned payment: 330 − 100.
+    expect(
+      screen.getByTestId("labor-overview-month-balance"),
+    ).toHaveTextContent(containing(formatMoney(230)));
+  });
+
   it("shows the month KPIs, the calendar day card and the log button", async () => {
     await renderWithProviders(<LaborTab />);
 
     expect(await screen.findByTestId("labor-title")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("labor-tab-calendar"));
     expect(await screen.findByTestId("labor-kpi-days")).toHaveTextContent(
       /^2\.5$/,
     );
@@ -180,6 +215,10 @@ describe("labor tab · export without a full project view", () => {
   it("offers only the caller's own worker, never the whole project", async () => {
     mockWorkers = [WORKER_TUAN];
     await renderWithProviders(<LaborTab />);
+
+    // No pay visibility: no Summary segment, the tab opens on attendance.
+    expect(await screen.findByTestId("labor-tab-calendar")).toBeTruthy();
+    expect(screen.queryByTestId("labor-tab-overview")).toBeNull();
 
     expect(await screen.findByTestId("labor-export")).toBeTruthy();
     await waitFor(() =>

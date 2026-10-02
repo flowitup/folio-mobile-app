@@ -498,6 +498,7 @@
       "rangeInvalid": "Pick a start month before the end month, {{months}} months at most."
     },
     "segments": {
+      "overview": "Summary",
       "calendar": "Attendance",
       "workers": "Workers",
       "payments": "Payments"
@@ -532,6 +533,38 @@
     },
     "entry": {
       "deleteConfirm": "Delete this attendance entry?"
+    },
+    "overview": {
+      "totalCost": "Total labor cost",
+      "workerDays": "Worker-days",
+      "acrossWorkers_one": "across {{count}} worker",
+      "acrossWorkers_other": "across {{count}} workers",
+      "onSiteToday": "On site today",
+      "workersLogged": "workers logged",
+      "bonusCost": "Bonus cost",
+      "bonusDaysSubtitle": "{{days}} days banked",
+      "banner": "Banked {{banked}}h → {{bonusDays}} bonus days ({{bonusCost}})",
+      "allHistory": "All history",
+      "allYears": "All",
+      "titleAll": "Summary · All history",
+      "titleYear": "Summary · {{year}}",
+      "titleMonth": "Monthly summary · {{month}}",
+      "unpaid": "{{amount}} unpaid",
+      "overpaid": "{{amount}} overpaid",
+      "workers_one": "{{count}} worker",
+      "workers_other": "{{count}} workers",
+      "perDay": "{{rate}} / day",
+      "grandTotal": "Grand total",
+      "paid": "Paid",
+      "balance": "Balance",
+      "bonusDays": "Bonus days",
+      "companyShare": "Company {{amount}}",
+      "personalShare": "Personal {{amount}}",
+      "unassignedHint": "+ {{count}} unassigned",
+      "empty": "No entries found",
+      "toggleWorkers": "Show or hide the workers of this month",
+      "openMonth": "Open this month",
+      "daysUnit": "days"
     }
   },
   "documents": {

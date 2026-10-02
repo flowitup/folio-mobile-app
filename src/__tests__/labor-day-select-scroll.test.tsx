@@ -69,6 +69,7 @@ describe("labor tab day selection", () => {
   it("scrolls the calendar to the top of the viewport when a day is tapped", async () => {
     const scrollTo = jest.spyOn(ScrollView.prototype, "scrollTo");
     await renderWithProviders(<LaborTab />);
+    fireEvent.press(await screen.findByTestId("labor-tab-calendar"));
 
     const block = await screen.findByTestId("attendance-calendar-block");
     fireEvent(block, "layout", {

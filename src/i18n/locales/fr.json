@@ -498,6 +498,7 @@
       "rangeInvalid": "Choisissez un mois de début avant le mois de fin, {{months}} mois maximum."
     },
     "segments": {
+      "overview": "Résumé",
       "calendar": "Pointage",
       "workers": "Ouvriers",
       "payments": "Paiements"
@@ -532,6 +533,38 @@
     },
     "entry": {
       "deleteConfirm": "Supprimer ce pointage ?"
+    },
+    "overview": {
+      "totalCost": "Coût total main-d'œuvre",
+      "workerDays": "Jours-ouvriers",
+      "acrossWorkers_one": "sur {{count}} ouvrier",
+      "acrossWorkers_other": "sur {{count}} ouvriers",
+      "onSiteToday": "Sur site aujourd'hui",
+      "workersLogged": "ouvriers pointés",
+      "bonusCost": "Coût bonus",
+      "bonusDaysSubtitle": "{{days}} jours cumulés",
+      "banner": "Cumulé {{banked}}h → {{bonusDays}} jours bonus ({{bonusCost}})",
+      "allHistory": "Tout l'historique",
+      "allYears": "Tout",
+      "titleAll": "Résumé · Tout l'historique",
+      "titleYear": "Résumé · {{year}}",
+      "titleMonth": "Résumé mensuel · {{month}}",
+      "unpaid": "{{amount}} impayé",
+      "overpaid": "{{amount}} trop-payé",
+      "workers_one": "{{count}} ouvrier",
+      "workers_other": "{{count}} ouvriers",
+      "perDay": "{{rate}} / jour",
+      "grandTotal": "Total général",
+      "paid": "Payé",
+      "balance": "Solde",
+      "bonusDays": "Jours bonus",
+      "companyShare": "Société {{amount}}",
+      "personalShare": "Personnel {{amount}}",
+      "unassignedHint": "+ {{count}} non attribué(s)",
+      "empty": "Aucune entrée trouvée",
+      "toggleWorkers": "Afficher ou masquer les ouvriers de ce mois",
+      "openMonth": "Ouvrir ce mois",
+      "daysUnit": "jours"
     }
   },
   "documents": {
