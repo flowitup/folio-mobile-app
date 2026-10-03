@@ -47,9 +47,9 @@ describe("buildPursesSummary", () => {
     expect(summary.expenseCount).toBe(3);
   });
 
-  it("keeps bank and company+bank refunded expenses in the personal purse", () => {
-    // Their bank refund is released to the personal purse, so the spend stays
-    // there; only the company-only refund moves to the company purse.
+  it("keeps bank-only refunds personal and moves every company refund to the company purse", () => {
+    // The bank-only refund is released to the personal purse, so its spend stays
+    // there; anything the company reimbursed (with the bank or alone) is company spend.
     const refunded = (id: string, refunded_by: Invoice["refunded_by"], total_amount: number) =>
       inv({
         id,
@@ -64,8 +64,8 @@ describe("buildPursesSummary", () => {
       refunded("both", "both", 300),
       refunded("co", "company", 500),
     ]);
-    expect(summary.personal).toMatchObject({ count: 2, spent: 1000 });
-    expect(summary.company).toMatchObject({ count: 1, spent: 500 });
+    expect(summary.personal).toMatchObject({ count: 1, spent: 700 });
+    expect(summary.company).toMatchObject({ count: 2, spent: 800 });
     // The company still owes the bank-only refund; "both" and "company" are paid.
     expect(summary.refundable).toEqual({ count: 1, total: 700 });
   });

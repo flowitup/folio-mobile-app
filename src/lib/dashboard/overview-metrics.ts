@@ -42,15 +42,14 @@ export function isCompanyRefundOwed(inv: Invoice): boolean {
 }
 
 /**
- * A personally-paid expense the company alone reimbursed (refunded_by "company",
- * or legacy null) counts as company money. "bank" and "both" stay personal: their
- * bank refund is a full-amount release into the personal purse, so the expense
- * stays there to balance it (mirrors the backend rule).
+ * A personally-paid expense the company reimbursed, alone or with the bank
+ * (refunded_by "company", "both", or legacy null), counts as company money.
+ * A bank-only refund stays personal: the bank paid the person directly, so the
+ * expense stays next to its bank refund (mirrors the backend rule).
  */
 export function isPersonalExpense(inv: Invoice): boolean {
   const companyReimbursed =
-    inv.refundable_status === "refunded" &&
-    (inv.refunded_by == null || inv.refunded_by === "company");
+    inv.refundable_status === "refunded" && inv.refunded_by !== "bank";
   return Boolean(inv.paid_by_personal) && !companyReimbursed;
 }
 
