@@ -29,6 +29,19 @@ function isExpenseType(t: InvoiceType | undefined): t is ExpenseType {
 }
 
 /**
+ * The company still owes this expense back: refundable or already requested,
+ * or refunded by the bank alone (refunded_by "bank"), which settles only the
+ * bank channel. "company", "both" and legacy null mean the company paid.
+ */
+export function isCompanyRefundOwed(inv: Invoice): boolean {
+  return (
+    inv.refundable_status === "refundable" ||
+    inv.refundable_status === "refund_pending" ||
+    (inv.refundable_status === "refunded" && inv.refunded_by === "bank")
+  );
+}
+
+/**
  * A personally-paid expense the company alone reimbursed (refunded_by "company",
  * or legacy null) counts as company money. "bank" and "both" stay personal: their
  * bank refund is a full-amount release into the personal purse, so the expense
@@ -208,17 +221,14 @@ export function computeBankOutstanding(invoices: Invoice[]): PendingRefunds {
   return { count, total };
 }
 
-/** Personal expenses still awaiting company reimbursement. */
+/** Personal expenses the company still owes back (see isCompanyRefundOwed). */
 export function computePendingRefunds(invoices: Invoice[]): PendingRefunds {
   let count = 0;
   let total = 0;
   for (const inv of invoices) {
     if (!isSpendInvoice(inv)) continue;
     if (!isPersonalExpense(inv)) continue;
-    if (
-      inv.refundable_status === "refundable" ||
-      inv.refundable_status === "refund_pending"
-    ) {
+    if (isCompanyRefundOwed(inv)) {
       count += 1;
       total += inv.total_amount;
     }

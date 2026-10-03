@@ -66,5 +66,7 @@ describe("buildPursesSummary", () => {
     ]);
     expect(summary.personal).toMatchObject({ count: 2, spent: 1000 });
     expect(summary.company).toMatchObject({ count: 1, spent: 500 });
+    // The company still owes the bank-only refund; "both" and "company" are paid.
+    expect(summary.refundable).toEqual({ count: 1, total: 700 });
   });
 });

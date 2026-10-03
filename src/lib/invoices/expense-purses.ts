@@ -7,6 +7,7 @@
 import type { Invoice } from "@/features/invoices/invoice-types";
 import {
   EXPENSE_TYPES,
+  isCompanyRefundOwed,
   isPersonalExpense,
 } from "@/lib/dashboard/overview-metrics";
 import type { ExpenseType } from "@/lib/dashboard/overview-metrics";
@@ -60,11 +61,7 @@ export function buildPursesSummary(invoices: Invoice[]): PursesSummary {
       purse.spent += inv.total_amount;
       bucket.count += 1;
     }
-    if (
-      purse === personal &&
-      (inv.refundable_status === "refundable" ||
-        inv.refundable_status === "refund_pending")
-    ) {
+    if (purse === personal && isCompanyRefundOwed(inv)) {
       refundable.count += 1;
       refundable.total += inv.total_amount;
     }
