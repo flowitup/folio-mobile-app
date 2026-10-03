@@ -46,4 +46,27 @@ describe("buildPursesSummary", () => {
     expect(summary.outstandingAvoirs).toEqual({ count: 1, total: -20 });
     expect(summary.expenseCount).toBe(3);
   });
+
+  it("keeps bank and company+bank refunded expenses in the personal purse", () => {
+    // Their bank refund is released to the personal purse, so the spend stays
+    // there; only the company-only refund moves to the company purse.
+    const refunded = (id: string, refunded_by: Invoice["refunded_by"], total_amount: number) =>
+      inv({
+        id,
+        type: "materials_services",
+        total_amount,
+        paid_by_personal: true,
+        refundable_status: "refunded",
+        refunded_by,
+      });
+    const summary = buildPursesSummary([
+      refunded("bank", "bank", 700),
+      refunded("both", "both", 300),
+      refunded("co", "company", 500),
+    ]);
+    expect(summary.personal).toMatchObject({ count: 2, spent: 1000 });
+    expect(summary.company).toMatchObject({ count: 1, spent: 500 });
+    // The company still owes the bank-only refund; "both" and "company" are paid.
+    expect(summary.refundable).toEqual({ count: 1, total: 700 });
+  });
 });
