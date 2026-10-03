@@ -28,12 +28,17 @@ function isExpenseType(t: InvoiceType | undefined): t is ExpenseType {
   return t === "labor" || t === "materials_services" || t === "others";
 }
 
-/** A personally-paid expense the company already reimbursed counts as company money. */
+/**
+ * A personally-paid expense the company alone reimbursed (refunded_by "company",
+ * or legacy null) counts as company money. "bank" and "both" stay personal: their
+ * bank refund is a full-amount release into the personal purse, so the expense
+ * stays there to balance it (mirrors the backend rule).
+ */
 export function isPersonalExpense(inv: Invoice): boolean {
-  return (
-    Boolean(inv.paid_by_personal) &&
-    !(inv.refundable_status === "refunded" && inv.refunded_by !== "bank")
-  );
+  const companyReimbursed =
+    inv.refundable_status === "refunded" &&
+    (inv.refunded_by == null || inv.refunded_by === "company");
+  return Boolean(inv.paid_by_personal) && !companyReimbursed;
 }
 
 function monthKeyOf(inv: Invoice): string {
