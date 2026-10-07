@@ -48,9 +48,20 @@ export function isCompanyRefundOwed(inv: Invoice): boolean {
  * expense stays next to its bank refund (mirrors the backend rule).
  */
 export function isPersonalExpense(inv: Invoice): boolean {
-  const companyReimbursed =
-    inv.refundable_status === "refunded" && inv.refunded_by !== "bank";
-  return Boolean(inv.paid_by_personal) && !companyReimbursed;
+  return Boolean(inv.paid_by_personal) && !isCompanyReimbursed(inv);
+}
+
+/** The company paid a personally-funded expense back, alone or with the bank. */
+function isCompanyReimbursed(inv: Invoice): boolean {
+  return inv.refundable_status === "refunded" && inv.refunded_by !== "bank";
+}
+
+/**
+ * Funded with company money: paid with a company-flagged method, or reimbursed
+ * by the company (mirrors the backend `is_company_paid` rule and the web).
+ */
+export function isCompanyPaidExpense(inv: Invoice): boolean {
+  return Boolean(inv.paid_by_company) || isCompanyReimbursed(inv);
 }
 
 function monthKeyOf(inv: Invoice): string {
@@ -94,7 +105,9 @@ export function computeSpentTotal(invoices: Invoice[]): number {
   const spend = invoices
     .filter(isSpendInvoice)
     .reduce((s, i) => s + i.total_amount, 0);
-  return buildReturnCredits(invoices).reduce((s, c) => s + c.amount, spend);
+  return roundCents(
+    buildReturnCredits(invoices).reduce((s, c) => s + c.amount, spend),
+  );
 }
 
 export interface MonthlySpendPoint {

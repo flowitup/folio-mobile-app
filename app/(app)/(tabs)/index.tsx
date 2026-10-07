@@ -115,8 +115,12 @@ function OverviewTabContent() {
           <OverviewHero
             budget={metrics.budget}
             spentTotal={metrics.spentTotal}
-            spentByCredits={project.spent_by_credits ?? 0}
-            spentPersonal={project.spent_personal ?? 0}
+            spentByCredits={
+              invoices.data?.company_spent_total ?? project.spent_by_credits ?? 0
+            }
+            spentPersonal={
+              invoices.data?.personal_spent_total ?? project.spent_personal ?? 0
+            }
             bankRemaining={
               canViewBudget && metrics.bank.hasCredit
                 ? metrics.bank.remaining

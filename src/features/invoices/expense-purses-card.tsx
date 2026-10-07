@@ -110,7 +110,8 @@ export function ExpensePursesCard({
   companyName,
 }: Props) {
   const { t } = useTranslation();
-  const spentTotal = summary.company.spent + summary.personal.spent;
+  const spentTotal =
+    summary.company.spent + summary.personal.spent + summary.unassigned.spent;
   return (
     <Card className="mb-4">
       <Text className="text-xs text-muted-foreground">

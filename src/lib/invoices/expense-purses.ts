@@ -7,6 +7,7 @@
 import type { Invoice } from "@/features/invoices/invoice-types";
 import {
   EXPENSE_TYPES,
+  isCompanyPaidExpense,
   isCompanyRefundOwed,
   isPersonalExpense,
   roundCents,
@@ -24,6 +25,8 @@ export interface PurseBreakdown {
 export interface PursesSummary {
   company: PurseBreakdown;
   personal: PurseBreakdown;
+  /** Paid with no company- or personal-flagged method: in neither purse. */
+  unassigned: PurseBreakdown;
   refundable: { count: number; total: number };
   bankOutstanding: { count: number; total: number };
   outstandingAvoirs: { count: number; total: number };
@@ -48,13 +51,20 @@ export function emptyBreakdown(): PurseBreakdown {
 export function buildPursesSummary(invoices: Invoice[]): PursesSummary {
   const company = emptyBreakdown();
   const personal = emptyBreakdown();
+  const unassigned = emptyBreakdown();
+  const purseOf = (inv: Invoice): PurseBreakdown =>
+    isPersonalExpense(inv)
+      ? personal
+      : isCompanyPaidExpense(inv)
+        ? company
+        : unassigned;
   const refundable = { count: 0, total: 0 };
   const bankOutstanding = { count: 0, total: 0 };
   const outstandingAvoirs = { count: 0, total: 0 };
 
   for (const inv of invoices) {
     if (inv.type === "released_funds" || inv.type === "return") continue;
-    const purse = isPersonalExpense(inv) ? personal : company;
+    const purse = purseOf(inv);
     purse.count += 1;
     const bucket = purse.types[inv.type as ExpenseType];
     if (bucket) {
@@ -80,7 +90,7 @@ export function buildPursesSummary(invoices: Invoice[]): PursesSummary {
   let returnsTotal = 0;
   for (const ref of invoices) {
     if (ref.type !== "return") continue;
-    const purse = isPersonalExpense(ref) ? personal : company;
+    const purse = purseOf(ref);
     const sourceType = ref.refunds_invoice_id
       ? byId.get(ref.refunds_invoice_id)?.type
       : undefined;
@@ -106,10 +116,11 @@ export function buildPursesSummary(invoices: Invoice[]): PursesSummary {
   return {
     company,
     personal,
+    unassigned,
     refundable,
     bankOutstanding,
     outstandingAvoirs,
     returnsTotal,
-    expenseCount: company.count + personal.count,
+    expenseCount: company.count + personal.count + unassigned.count,
   };
 }
