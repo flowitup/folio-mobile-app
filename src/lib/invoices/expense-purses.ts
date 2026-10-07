@@ -9,6 +9,7 @@ import {
   EXPENSE_TYPES,
   isCompanyRefundOwed,
   isPersonalExpense,
+  roundCents,
 } from "@/lib/dashboard/overview-metrics";
 import type { ExpenseType } from "@/lib/dashboard/overview-metrics";
 
@@ -98,6 +99,9 @@ export function buildPursesSummary(invoices: Invoice[]): PursesSummary {
       outstandingAvoirs.total += ref.total_amount;
     }
   }
+
+  refundable.total = roundCents(refundable.total);
+  bankOutstanding.total = roundCents(bankOutstanding.total);
 
   return {
     company,

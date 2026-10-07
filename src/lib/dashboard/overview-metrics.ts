@@ -201,6 +201,12 @@ export function computeBudgetMetrics(
   };
 }
 
+/** Snap a euro sum to whole cents: float sums drift (3368.4999999999995) and the
+ * whole-euro display then rounds the wrong way. */
+export function roundCents(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 export interface PendingRefunds {
   count: number;
   total: number;
@@ -217,7 +223,7 @@ export function computeBankOutstanding(invoices: Invoice[]): PendingRefunds {
     count += 1;
     total += inv.total_amount;
   }
-  return { count, total };
+  return { count, total: roundCents(total) };
 }
 
 /** Personal expenses the company still owes back (see isCompanyRefundOwed). */
@@ -232,7 +238,7 @@ export function computePendingRefunds(invoices: Invoice[]): PendingRefunds {
       total += inv.total_amount;
     }
   }
-  return { count, total };
+  return { count, total: roundCents(total) };
 }
 
 export interface MoneyPurseView {
