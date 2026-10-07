@@ -234,7 +234,7 @@ function ExpensesTabContent() {
                         meta.company_name ?? t("invoices.summary.companyPurse")
                       }
                       released={releasedCompany}
-                      spent={summary.company.spent + cashAdvanced}
+                      spent={(meta.company_spent_total ?? summary.company.spent) + cashAdvanced}
                       cashAdvanced={cashAdvanced}
                       tone="company"
                     />
@@ -242,7 +242,7 @@ function ExpensesTabContent() {
                       testID="expenses-purse-personal"
                       label={t("invoices.summary.personalPurse")}
                       released={releasedPersonal}
-                      spent={summary.personal.spent}
+                      spent={meta.personal_spent_total ?? summary.personal.spent}
                       tone="personal"
                     />
                   </View>

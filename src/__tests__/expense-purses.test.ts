@@ -8,7 +8,12 @@ const inv = (
 describe("buildPursesSummary", () => {
   it("splits purses, nets returns by type and counts pending channels", () => {
     const summary = buildPursesSummary([
-      inv({ id: "a", type: "materials_services", total_amount: 100 }),
+      inv({
+        id: "a",
+        type: "materials_services",
+        total_amount: 100,
+        paid_by_company: true,
+      }),
       inv({
         id: "b",
         type: "labor",
@@ -22,6 +27,7 @@ describe("buildPursesSummary", () => {
         total_amount: -20,
         refunds_invoice_id: "a",
         settled_via: "avoir",
+        paid_by_company: true,
       }),
       inv({ id: "d", type: "released_funds", total_amount: 500 }),
       inv({
@@ -45,6 +51,16 @@ describe("buildPursesSummary", () => {
     expect(summary.bankOutstanding).toEqual({ count: 2, total: 60 });
     expect(summary.outstandingAvoirs).toEqual({ count: 1, total: -20 });
     expect(summary.expenseCount).toBe(3);
+  });
+
+  it("keeps expenses paid with no flagged method out of both purses, as the web does", () => {
+    const summary = buildPursesSummary([
+      inv({ id: "u", type: "others", total_amount: 40 }),
+      inv({ id: "c", type: "others", total_amount: 10, paid_by_company: true }),
+    ]);
+    expect(summary.unassigned).toMatchObject({ count: 1, spent: 40 });
+    expect(summary.company).toMatchObject({ count: 1, spent: 10 });
+    expect(summary.expenseCount).toBe(2);
   });
 
   it("keeps bank-only refunds personal and moves every company refund to the company purse", () => {
