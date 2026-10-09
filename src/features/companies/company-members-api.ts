@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
 import { showToast } from "@/components/ui/toast";
-import { unwrapAs } from "@/lib/query/api-error";
+import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
 import { companyKeys } from "./companies-api";
@@ -78,6 +78,21 @@ export function useCompanyPersons(companyId: string | undefined) {
   });
 }
 
+/** Cancel a pending profile (added by phone, no account yet): signing up with that number no longer joins. */
+export function useCancelPendingMember() {
+  const { t } = useTranslation();
+  return useApiMutation<{ companyId: string; personId: string }>({
+    mutationFn: async ({ companyId, personId }) =>
+      unwrapVoid(
+        await api.DELETE("/api/v1/companies/{company_id}/members/{person_id}", {
+          params: { path: { company_id: companyId, person_id: personId } },
+        }),
+      ),
+    invalidates: [companyKeys.all],
+    successMessage: t("companies.members.pending.cancelled"),
+  });
+}
+
 export type AddMemberRole = "member" | "manager";
 
 export interface AddMemberByPhonePayload {
@@ -146,8 +161,9 @@ export function useAddMemberByPhone() {
       return result.data as AddMemberByPhoneResult;
     },
     invalidates: [companyKeys.all],
-    // The candidate-picker case is rendered inline by the sheet, not toasted.
-    onError: (error) => error instanceof AddMemberConflictError,
+    // The sheet renders every error inline (the candidate picker included), so no toast:
+    // a second, differently worded message would sit next to it.
+    onError: () => true,
     successMessage: t("companies.members.addByPhone.successToast"),
   });
 }

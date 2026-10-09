@@ -1,4 +1,8 @@
-import { parseImportPayload } from "@/features/library/library-helpers";
+import {
+  parseImportPayload,
+  sortPurchasesNewestFirst,
+} from "@/features/library/library-helpers";
+import type { LibraryPurchase } from "@/features/library/library-types";
 
 const record = {
   supplier_reference: "REF1",
@@ -46,5 +50,42 @@ describe("parseImportPayload", () => {
         "c1",
       ),
     ).toBeNull();
+  });
+});
+
+describe("sortPurchasesNewestFirst", () => {
+  const purchase = (purchased_at: string, ref: string): LibraryPurchase => ({
+    product_id: "p1",
+    source_document_ref: ref,
+    source_document_type: "ticket",
+    line_index: 0,
+    purchased_at,
+    quantity: "1",
+    unit_price: "9.5",
+  });
+
+  it("orders the RFC-1123 days by date, not by weekday name", () => {
+    const sorted = sortPurchasesNewestFirst([
+      purchase("Tue, 01 Sep 2026 00:00:00 GMT", "T1"),
+      purchase("Wed, 01 Jan 2025 00:00:00 GMT", "T0"),
+      purchase("Mon, 12 Oct 2026 00:00:00 GMT", "T4"),
+      purchase("Sun, 06 Sep 2026 00:00:00 GMT", "T3"),
+      purchase("Thu, 03 Sep 2026 00:00:00 GMT", "T2"),
+    ]);
+    expect(sorted.map((p) => p.source_document_ref)).toEqual([
+      "T4",
+      "T3",
+      "T2",
+      "T1",
+      "T0",
+    ]);
+  });
+
+  it("keeps the API order for purchases of the same day", () => {
+    const sorted = sortPurchasesNewestFirst([
+      purchase("Thu, 03 Sep 2026 00:00:00 GMT", "A"),
+      purchase("2026-09-03", "B"),
+    ]);
+    expect(sorted.map((p) => p.source_document_ref)).toEqual(["A", "B"]);
   });
 });

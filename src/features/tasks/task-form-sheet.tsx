@@ -15,6 +15,7 @@ import type {
   TaskPriority,
   TaskStatus,
 } from "@/features/tasks/tasks-api";
+import { MAX_TASK_LABELS, TEXT_LIMITS } from "@/lib/format/text-limits";
 
 export type TaskFormValues = {
   title: string;
@@ -71,6 +72,7 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
     const [labels, setLabels] = useState("");
     const [assigneeId, setAssigneeId] = useState<string | null>(null);
     const [titleError, setTitleError] = useState<string | null>(null);
+    const [labelsError, setLabelsError] = useState<string | null>(null);
 
     useImperativeHandle(ref, () => ({
       open: (task, lane) => {
@@ -83,6 +85,7 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
         setLabels((task?.labels ?? []).join(", "));
         setAssigneeId(task?.assignee_id ?? null);
         setTitleError(null);
+        setLabelsError(null);
         sheet.current?.present();
       },
       close: () => sheet.current?.dismiss(),
@@ -91,6 +94,19 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
     function submit() {
       const trimmed = title.trim();
       if (!trimmed) return setTitleError(t("tasks.titleRequired"));
+      const labelList = labels
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+      // The API refuses these with a generic "invalid input"; say which rule was broken.
+      if (labelList.some((label) => label.length > TEXT_LIMITS.task.label))
+        return setLabelsError(
+          t("tasks.labelTooLong", { max: TEXT_LIMITS.task.label }),
+        );
+      if (labelList.length > MAX_TASK_LABELS)
+        return setLabelsError(
+          t("tasks.labelsTooMany", { max: MAX_TASK_LABELS }),
+        );
       onSubmit(
         {
           title: trimmed,
@@ -98,15 +114,24 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
           priority,
           status,
           due_date: dueDate,
-          labels: labels
-            .split(",")
-            .map((v) => v.trim())
-            .filter(Boolean),
+          labels: labelList,
           assignee_id: assigneeId,
         },
         editing,
       );
     }
+
+    // The API also accepts someone who reads the project without being assigned to it (a
+    // company admin): keep that assignee visible instead of showing "Unassigned".
+    const keptAssigneeId = editing?.assignee_id ?? null;
+    const assigneeOptions =
+      keptAssigneeId &&
+      !assignees.some((option) => option.value === keptAssigneeId)
+        ? [
+            ...assignees,
+            { value: keptAssigneeId, label: t("tasks.assigneeOther") },
+          ]
+        : assignees;
 
     const statusOptions = BOARD_COLUMNS.map((value) => ({
       value,
@@ -125,6 +150,7 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
         >
           <Input
             testID="task-title"
+            maxLength={TEXT_LIMITS.task.title}
             label={t("tasks.title")}
             value={title}
             onChangeText={(value) => {
@@ -136,6 +162,7 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
           />
           <Input
             testID="task-description"
+            maxLength={TEXT_LIMITS.task.description}
             label={t("tasks.description")}
             value={description}
             onChangeText={setDescription}
@@ -163,7 +190,7 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
             label={t("tasks.assignee")}
             placeholder={t("tasks.unassigned")}
             value={assigneeId}
-            options={assignees}
+            options={assigneeOptions}
             clearable
             onChange={setAssigneeId}
           />
@@ -179,7 +206,11 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
             testID="task-labels"
             label={t("tasks.labels")}
             value={labels}
-            onChangeText={setLabels}
+            onChangeText={(value) => {
+              setLabels(value);
+              setLabelsError(null);
+            }}
+            error={labelsError}
             hint={t("documents.tagsHint")}
             autoCapitalize="none"
           />

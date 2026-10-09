@@ -25,6 +25,7 @@ import { showToast } from "@/components/ui/toast";
 import {
   DOCUMENT_KINDS,
   openDocument,
+  uploaderLabel,
   useDeleteDocument,
   useDocumentTags,
   useDocumentUploaders,
@@ -42,7 +43,7 @@ import { formatFileSize } from "@/lib/format/file-size";
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
-import { formatDate } from "@/lib/format/date";
+import { formatInstant } from "@/lib/format/date";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
@@ -226,7 +227,7 @@ export default function ProjectDocumentsSection() {
                 { value: "__all__", label: t("documents.allUploaders") },
                 ...(uploaders.data ?? []).map((who) => ({
                   value: who.user_id,
-                  label: who.display_name,
+                  label: uploaderLabel(who) ?? t("documents.formerUploader"),
                 })),
               ]}
               onChange={(value) => {
@@ -296,7 +297,7 @@ export default function ProjectDocumentsSection() {
               </View>
               <Text className="text-xs text-muted-foreground">
                 {formatFileSize(document.size_bytes)} ·{" "}
-                {formatDate(document.uploaded_at)}
+                {formatInstant(document.uploaded_at)}
               </Text>
             </Pressable>
             {document.tags.length > 0 ? (
@@ -415,12 +416,15 @@ export default function ProjectDocumentsSection() {
                 .filter(Boolean);
               // Each step stops the save on failure and keeps the sheet open with what was
               // typed: the rename first, so a refused name does not leave the tags half saved.
+              // Neither step toasts on success; one "Saved." once both are through.
+              let saved = false;
               if (nameDraft.trim() && nameDraft.trim() !== editing.filename) {
                 try {
                   await rename.mutateAsync({
                     documentId: editing.id,
                     filename: nameDraft.trim(),
                   });
+                  saved = true;
                 } catch (caught) {
                   return setNameError(
                     apiErrorMessage(caught, t, i18n.language),
@@ -433,11 +437,13 @@ export default function ProjectDocumentsSection() {
                     documentId: editing.id,
                     tags: nextTags,
                   });
+                  saved = true;
                 } catch {
                   // The mutation already told the user; keep the sheet open to retry.
                   return;
                 }
               }
+              if (saved) showToast(t("common.saved"), "success");
               editSheet.current?.dismiss();
             }}
           />

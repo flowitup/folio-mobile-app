@@ -14,18 +14,38 @@ import type {
 
 export const templateKeys = {
   all: ["billing", "templates"] as const,
-  list: (kind: BillingDocumentKind | null) =>
-    ["billing", "templates", "list", kind ?? "all"] as const,
+  list: (kind: BillingDocumentKind | null, companyId: string | null) =>
+    [
+      "billing",
+      "templates",
+      "list",
+      kind ?? "all",
+      companyId ?? "default",
+    ] as const,
   detail: (id: string) => ["billing", "templates", "detail", id] as const,
 };
 
-export function useBillingTemplates(kind: BillingDocumentKind | null = null) {
+/**
+ * Templates belong to a company. Without `companyId` the API answers for the caller's primary
+ * admin company, so a multi-company admin passes the company being viewed or issued from.
+ */
+export function useBillingTemplates(
+  kind: BillingDocumentKind | null = null,
+  companyId: string | null = null,
+  enabled = true,
+) {
   return useQuery({
-    queryKey: templateKeys.list(kind),
+    queryKey: templateKeys.list(kind, companyId),
+    enabled,
     queryFn: async () =>
       unwrapAs<{ items: BillingDocumentTemplate[] }>(
         await api.GET("/api/v1/billing-document-templates", {
-          params: { query: kind ? { kind } : {} } as never,
+          params: {
+            query: {
+              ...(kind ? { kind } : {}),
+              ...(companyId ? { company_id: companyId } : {}),
+            },
+          } as never,
         }),
       ).items,
   });

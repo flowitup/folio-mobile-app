@@ -12,7 +12,6 @@ import {
   View,
 } from "react-native";
 
-import { useCan } from "@/auth/use-can";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
 import { Badge, EmptyState, ErrorState } from "@/components/ui/primitives";
@@ -20,7 +19,10 @@ import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { showToast, ToastViewport } from "@/components/ui/toast";
 import { SearchInput } from "@/components/ui/input";
-import { useMyCompanies } from "@/features/companies/companies-api";
+import {
+  useCompanyCan,
+  useMyCompanies,
+} from "@/features/companies/companies-api";
 import {
   productImagePath,
   useCreateProduct,
@@ -52,7 +54,7 @@ export default function LibraryTab() {
   const companies = useMyCompanies();
   const [companyId, setCompanyId] = useState<string | null>(null);
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
-  const canManage = useCan("bibliotheque:manage");
+  const canManage = useCompanyCan("bibliotheque:manage", effectiveCompany);
   const suppliers = useSuppliers(effectiveCompany);
   const categories = useLibraryCategories(effectiveCompany);
   const [supplier, setSupplier] = useState<string | null>(null);

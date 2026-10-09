@@ -6,7 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { ChipRow } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { MonthPicker } from "@/components/ui/month-picker";
-import { Badge, Card } from "@/components/ui/primitives";
+import { Badge, Card, ErrorState } from "@/components/ui/primitives";
 import type { LaborPaymentsSummary } from "@/features/invoices/invoices-api";
 import {
   useLaborMonthlySummary,
@@ -15,6 +15,7 @@ import {
 import type { Worker } from "@/features/labor/labor-types";
 import { formatMonth, localeTag, toIsoDate } from "@/lib/format/date";
 import { formatMoney, formatNumber } from "@/lib/format/money";
+import { dayCount } from "@/lib/labor/day-count";
 import {
   CENT,
   availableYears,
@@ -250,6 +251,16 @@ export function LaborOverview({
       />
     );
 
+  // Without the monthly ledger every figure would read as 0 € and "No entries found".
+  if (monthly.isError && !monthly.data)
+    return (
+      <ErrorState
+        message={t("common.loadError")}
+        retryLabel={t("common.retry")}
+        onRetry={() => void monthly.refetch()}
+      />
+    );
+
   return (
     <View className="gap-4" testID="labor-overview">
       {bankedHours > 0 ? (
@@ -259,6 +270,7 @@ export function LaborOverview({
         >
           <Text className="font-sans-medium text-[13px] text-ink">
             {t("labor.overview.banner", {
+              count: dayCount(bonusDays, 1),
               banked: formatNumber(bankedHours, 2),
               bonusDays: formatNumber(bonusDays, 1),
               bonusCost: formatMoney(bonusCost),
@@ -302,6 +314,7 @@ export function LaborOverview({
           label={t("labor.overview.bonusCost")}
           value={formatMoney(bonusCost)}
           caption={t("labor.overview.bonusDaysSubtitle", {
+            count: dayCount(bonusDays, 1),
             days: formatNumber(bonusDays, 1) || "0",
           })}
         />
@@ -365,7 +378,10 @@ export function LaborOverview({
                 </Text>
                 <Text className="mt-0.5 font-sans text-[11.5px] text-muted">
                   {t("labor.overview.workers", { count: rollup.workerCount })} ·{" "}
-                  {days(rollup.days)} {t("labor.overview.daysUnit")}
+                  {days(rollup.days)}{" "}
+                  {t("labor.overview.daysUnit", {
+                    count: dayCount(rollup.days),
+                  })}
                 </Text>
               </View>
               <View className="items-end">
@@ -426,7 +442,10 @@ function MonthCard({
             </Text>
             <Text className="mt-0.5 font-sans text-[11.5px] text-muted">
               {t("labor.overview.workers", { count: row.workers.length })} ·{" "}
-              {days(row.total_days)} {t("labor.overview.daysUnit")}
+              {days(row.total_days)}{" "}
+              {t("labor.overview.daysUnit", {
+                count: dayCount(row.total_days),
+              })}
             </Text>
           </View>
           <View className="items-end">
@@ -536,7 +555,10 @@ function MonthCard({
                       {w.worker_name}
                     </Text>
                     <Text className="font-mono-regular text-[11px] text-muted">
-                      {days(w.days_worked)} {t("labor.overview.daysUnit")}
+                      {days(w.days_worked)}{" "}
+                      {t("labor.overview.daysUnit", {
+                        count: dayCount(w.days_worked),
+                      })}
                       {rate != null && rate > 0
                         ? ` · ${t("labor.overview.perDay", { rate: formatMoney(rate) })}`
                         : ""}
@@ -612,7 +634,8 @@ function MonthDetailList({
                   numberOfLines={1}
                 >
                   {roleOf(line.workerId) ? `${roleOf(line.workerId)} · ` : ""}
-                  {days(line.days)} {t("labor.overview.daysUnit")}
+                  {days(line.days)}{" "}
+                  {t("labor.overview.daysUnit", { count: dayCount(line.days) })}
                 </Text>
               </View>
               <Text className="font-mono text-[14px] text-ink">
@@ -670,7 +693,8 @@ function MonthDetailList({
               {t("labor.overview.grandTotal")}
             </Text>
             <Text className="mt-0.5 font-sans text-[11.5px] text-muted">
-              {days(detail.days)} {t("labor.overview.daysUnit")}
+              {days(detail.days)}{" "}
+              {t("labor.overview.daysUnit", { count: dayCount(detail.days) })}
               {detail.bonusCost > 0
                 ? ` · ${t("labor.overview.bonusCost")} ${formatMoney(detail.bonusCost)}`
                 : ""}

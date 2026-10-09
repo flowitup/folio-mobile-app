@@ -77,6 +77,18 @@ jest.mock("@/features/projects/selected-project", () => ({
   }),
 }));
 
+const mockShowToast = jest.fn();
+jest.mock("@/components/ui/toast", () => {
+  const actual = jest.requireActual("@/components/ui/toast");
+  return {
+    ...actual,
+    showToast: (...args: unknown[]) => {
+      mockShowToast(...args);
+      return actual.showToast(...args);
+    },
+  };
+});
+
 const mockGet = jest.fn();
 const mockPost = jest.fn();
 const mockPut = jest.fn();
@@ -120,7 +132,14 @@ async function renderWithProviders(ui: ReactElement) {
 }
 
 beforeEach(() => {
-  for (const mock of [mockGet, mockPost, mockPut, mockPatch, mockDelete])
+  for (const mock of [
+    mockGet,
+    mockPost,
+    mockPut,
+    mockPatch,
+    mockDelete,
+    mockShowToast,
+  ])
     mock.mockReset();
   mockGet.mockImplementation(async (path: string) => {
     if (path === "/api/v1/projects/{project_id}/tasks")
@@ -306,6 +325,87 @@ describe("planning tab · assignee (#101)", () => {
         }
       ).body.assignee_id,
     ).toBeNull();
+  });
+
+  it("shows an assignee outside the project's members instead of 'Unassigned'", async () => {
+    // A company admin reads every project, so the API accepts them as assignee, but
+    // `/members` lists only the people assigned to the project.
+    mockGet.mockImplementation(async (path: string) => {
+      if (path === "/api/v1/projects/{project_id}/tasks")
+        return ok({ tasks: [{ ...TASKS[0], assignee_id: "u-admin" }] });
+      if (path === "/api/v1/projects/{project_id}/workers")
+        return ok({ workers: [{ id: "w1", user_id: "u1" }] });
+      if (path === "/api/v1/projects/{project_id}/members")
+        return ok({ members: MEMBERS });
+      return ok({ notifications: [], items: [], total: 0 });
+    });
+    await renderWithProviders(<PlanningTab />);
+    await screen.findByTestId("task-list");
+
+    const other = i18n.t("tasks.assigneeOther");
+    expect(await screen.findByTestId("task-assignee-t1")).toHaveTextContent(
+      other,
+    );
+
+    await fireEvent.press(screen.getByTestId("task-t1"));
+    // The Select's chevron icon renders a glyph next to the label.
+    expect(screen.getByTestId("task-assignee")).toHaveTextContent(other, {
+      exact: false,
+    });
+    await fireEvent.press(screen.getByTestId("task-submit"));
+
+    await waitFor(() =>
+      expect(callsTo(mockPut, "/api/v1/tasks/{task_id}")).toHaveLength(1),
+    );
+    expect(
+      (
+        callsTo(mockPut, "/api/v1/tasks/{task_id}")[0][1] as {
+          body: { assignee_id: string | null };
+        }
+      ).body.assignee_id,
+    ).toBe("u-admin");
+  });
+});
+
+describe("planning tab · edit toasts", () => {
+  beforeEach(() => {
+    mockScopedPermissions = MEMBER_SCOPED;
+    mockPut.mockImplementation(async () => ok(TASKS[0]));
+  });
+
+  async function editT1(status?: string) {
+    await renderWithProviders(<PlanningTab />);
+    await screen.findByTestId("task-list");
+    await fireEvent.press(screen.getByTestId("task-t1"));
+    if (status) {
+      await fireEvent.press(screen.getByTestId("task-status"));
+      await fireEvent.press(screen.getByTestId(`task-status-option-${status}`));
+    }
+    await fireEvent.press(screen.getByTestId("task-submit"));
+  }
+
+  it("toasts Saved once when an edit also moves the task to another lane", async () => {
+    await editT1("done");
+
+    await waitFor(() =>
+      expect(callsTo(mockPatch, "/api/v1/tasks/{task_id}/move")).toHaveLength(
+        1,
+      ),
+    );
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+    expect(mockShowToast.mock.calls).toEqual([
+      [i18n.t("common.saved"), "success"],
+    ]);
+  });
+
+  it("toasts Saved once for an edit that keeps the lane", async () => {
+    await editT1();
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+    expect(mockShowToast.mock.calls).toEqual([
+      [i18n.t("common.saved"), "success"],
+    ]);
+    expect(callsTo(mockPatch, "/api/v1/tasks/{task_id}/move")).toHaveLength(0);
   });
 });
 

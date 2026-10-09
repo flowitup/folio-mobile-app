@@ -1,9 +1,11 @@
 import { computeBillingTotals, round2 } from "@/lib/billing/billing-totals";
 import {
   allowedTransitions,
+  statusLabelKey,
   statusTone,
   transitionLabelKey,
 } from "@/lib/billing/billing-status-transitions";
+import fr from "../i18n/locales/fr.json";
 
 describe("computeBillingTotals", () => {
   it("sums lines and breaks VAT down per rate, highest rate first", () => {
@@ -73,5 +75,22 @@ describe("status transitions", () => {
     );
     expect(transitionLabelKey("facture", "sent", "paid")).toBe("markAsPaid");
     expect(statusTone("overdue")).toBe("danger");
+  });
+
+  it("uses the feminine French 'sent' for a facture, the masculine for a devis", () => {
+    expect(transitionLabelKey("facture", "draft", "sent")).toBe(
+      "markAsSentFacture",
+    );
+    expect(transitionLabelKey("devis", "draft", "sent")).toBe("markAsSent");
+    expect(statusLabelKey("facture", "sent")).toBe("sentFacture");
+    expect(statusLabelKey("devis", "sent")).toBe("sent");
+    expect(statusLabelKey("facture", "paid")).toBe("paid");
+    const status = fr.billing.status as Record<string, string>;
+    const transitions = fr.billing.transitions as Record<string, string>;
+    expect(status[statusLabelKey("facture", "sent")]).toBe("Envoyée");
+    expect(status[statusLabelKey("devis", "sent")]).toBe("Envoyé");
+    expect(transitions[transitionLabelKey("facture", "draft", "sent")]).toBe(
+      "Marquer envoyée",
+    );
   });
 });

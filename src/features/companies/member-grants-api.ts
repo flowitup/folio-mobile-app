@@ -25,6 +25,8 @@ export interface MemberGrantsList {
   grants: MemberGrantRow[];
   /** The whitelist this specific target can be customised on (`CUSTOMISABLE_PERMISSIONS`). */
   customisable: string[];
+  /** Subset of `customisable` that only takes a company-wide row (no project scope). */
+  company_wide_only?: string[];
 }
 
 export const memberGrantKeys = {

@@ -113,6 +113,13 @@ describe("expenses tab · manager", () => {
     expect(screen.queryByTestId("expenses-purse-company")).toBeNull();
     expect(screen.queryByTestId("expenses-purse-personal")).toBeNull();
     expect(screen.getByTestId("invoices-export")).toBeTruthy();
+    // Released funds are left out of a file exported without view_budget: not offered.
+    expect(
+      screen.getByTestId("export-type-option-materials_services"),
+    ).toBeTruthy();
+    expect(
+      screen.queryByTestId("export-type-option-released_funds"),
+    ).toBeNull();
     expect(screen.queryByTestId("worker-salary-title")).toBeNull();
 
     await fireEvent.press(screen.getByTestId("invoices-create"));
@@ -139,6 +146,9 @@ describe("expenses tab · admin", () => {
     ).toBeTruthy();
     expect(screen.getByTestId("expenses-purse-company")).toBeTruthy();
     expect(screen.getByTestId("expenses-purse-personal")).toBeTruthy();
+    expect(
+      screen.getByTestId("export-type-option-released_funds"),
+    ).toBeTruthy();
   });
 });
 

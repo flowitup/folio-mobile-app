@@ -8,9 +8,11 @@ import { ApiError } from "@/lib/query/api-error";
 /** Keeps only a safe basename so a server-supplied name cannot escape the cache directory. */
 export function safeFilename(filename: string): string {
   const base = filename.split(/[\\/]/).pop() ?? "";
+  // Only characters that are invalid in a file name are replaced, so Vietnamese letters survive.
   const cleaned = base
+    .normalize("NFC")
     .replace(/^\.+/, "")
-    .replace(/[^\w.\-()À-ɏ ]+/g, "_")
+    .replace(/[\u0000-\u001f\u007f/\\:*?"<>|]+/g, "_")
     .trim();
   return cleaned || "download";
 }

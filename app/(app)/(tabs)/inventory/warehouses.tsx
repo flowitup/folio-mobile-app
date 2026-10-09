@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
-import { useCan } from "@/auth/use-can";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
@@ -17,7 +16,10 @@ import {
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { showToast } from "@/components/ui/toast";
-import { useMyCompanies } from "@/features/companies/companies-api";
+import {
+  useCompanyCan,
+  useMyCompanies,
+} from "@/features/companies/companies-api";
 import {
   useCreateWarehouse,
   useDeleteWarehouse,
@@ -31,7 +33,10 @@ import type {
   Warehouse,
 } from "@/features/inventory/inventory-types";
 import { WarehouseFormSheet } from "@/features/inventory/warehouse-form-sheet";
-import { unitsByWarehouse } from "@/lib/inventory/inventory-helpers";
+import {
+  rowsByWarehouse,
+  unitsByWarehouse,
+} from "@/lib/inventory/inventory-helpers";
 import { useTokens } from "@/theme/tokens";
 
 /** One opening of the form sheet; see the same type on the inventory screen. */
@@ -51,7 +56,7 @@ export default function WarehousesScreen() {
     params.companyId ?? null,
   );
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
-  const canManage = useCan("inventory:manage");
+  const canManage = useCompanyCan("inventory:manage", effectiveCompany);
 
   const warehouses = useWarehouses(effectiveCompany);
   const items = useInventoryItems(effectiveCompany);
@@ -71,6 +76,10 @@ export default function WarehousesScreen() {
     () => unitsByWarehouse(items.data?.items ?? []),
     [items.data],
   );
+  const rows = useMemo(
+    () => rowsByWarehouse(items.data?.items ?? []),
+    [items.data],
+  );
 
   const openForm = (warehouse: Warehouse | null) =>
     setSession((previous) => ({
@@ -88,6 +97,9 @@ export default function WarehousesScreen() {
         t("inventory.warehouses.deleteBlocked", { count: held }),
         "error",
       );
+    // Rows at quantity 0 hold no units but still block the delete on the server.
+    if ((rows.get(warehouse.id) ?? 0) > 0)
+      return showToast(t("inventory.warehouses.deleteBlockedRows"), "error");
     formSheet.current?.dismiss();
     setDeleting(warehouse);
   }

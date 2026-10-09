@@ -22,7 +22,7 @@ export type NotificationRoute = {
   /** Sheet to open once the shell is up (managers land on the bell). */
   sheet: ShellSheet | null;
   /** Screen to land on; `null` keeps the default tab. Project sections need a project;
-   * global screens (chat, company members, billing) stand on their own. */
+   * global screens (chat, my companies, billing) stand on their own. */
   path: string | null;
 };
 
@@ -48,8 +48,10 @@ const PROJECT_TAB_KINDS = new Map<string, string>([
   ["task_moved", "/(app)/(tabs)/planning"],
 ]);
 
-/** Kinds about somebody's company access: the members screen shows the new state. */
-const COMPANY_MEMBERS_KINDS = new Set([
+/** The recipient's own company role or grants changed: My companies shows their role in each
+ * company. Not the members screen, which is admin-only — a member only got "you don't have
+ * authorization" there. */
+const OWN_COMPANY_ACCESS_KINDS = new Set([
   "company_member_role_changed",
   "company_member_grants_changed",
 ]);
@@ -95,8 +97,8 @@ export function routeForNotification(
         : "/chat",
     };
   }
-  if (kind && COMPANY_MEMBERS_KINDS.has(kind)) {
-    return { projectId: null, sheet: null, path: "/company/members" };
+  if (kind && OWN_COMPANY_ACCESS_KINDS.has(kind)) {
+    return { projectId: null, sheet: null, path: "/settings/companies" };
   }
   if (kind === "billing_status") {
     const documentId = asId(data?.document_id);
@@ -143,11 +145,27 @@ const MEMBERSHIP_KINDS = new Set([
   "project_member_removed",
 ]);
 
-/** Query keys a push makes stale: always the bell, plus the project list on a membership change. */
+/** `companyKeys.all`, spelled out: importing companies-api would pull the auth context in here. */
+const COMPANIES_KEY = ["companies"] as const;
+
+/** Whether the push says the recipient's own company access changed (role, grants, removal). */
+export function pushChangesOwnAccess(
+  data: PushData | null | undefined,
+): boolean {
+  const kind = data?.kind;
+  return Boolean(
+    kind &&
+    (OWN_COMPANY_ACCESS_KINDS.has(kind) || kind === "company_member_removed"),
+  );
+}
+
+/** Query keys a push makes stale: always the bell, plus the project list on a membership change
+ * and the company list when the user's own company access changed. */
 export function staleKeysForPush(
   data: PushData | null | undefined,
 ): (readonly string[])[] {
   const keys: (readonly string[])[] = [NOTIFICATIONS_KEY];
   if (data?.kind && MEMBERSHIP_KINDS.has(data.kind)) keys.push(projectKeys.all);
+  if (pushChangesOwnAccess(data)) keys.push(COMPANIES_KEY);
   return keys;
 }

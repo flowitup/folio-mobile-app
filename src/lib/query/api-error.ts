@@ -2,12 +2,15 @@
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
+  /** The envelope's machine-readable `reason` (e.g. "last_admin"), when the backend sends one. */
+  readonly reason?: string;
 
-  constructor(status: number, code: string, message: string) {
+  constructor(status: number, code: string, message: string, reason?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.reason = reason;
   }
 }
 
@@ -17,25 +20,35 @@ type FetchResult<T> = {
   response: { status: number; statusText: string };
 };
 
-// Backend error envelope: { error: "NotFound", message: "...", status_code: 404 }
-function readEnvelope(error: unknown): { code?: string; message?: string } {
+// Backend error envelope: { error: "NotFound", message: "...", status_code: 404, reason?: "..." }
+function readEnvelope(error: unknown): {
+  code?: string;
+  message?: string;
+  reason?: string;
+} {
   if (typeof error !== "object" || error === null) return {};
-  const body = error as { error?: unknown; message?: unknown };
+  const body = error as {
+    error?: unknown;
+    message?: unknown;
+    reason?: unknown;
+  };
   return {
     code: typeof body.error === "string" ? body.error : undefined,
     message: typeof body.message === "string" ? body.message : undefined,
+    reason: typeof body.reason === "string" ? body.reason : undefined,
   };
 }
 
 /** Turns an openapi-fetch result into data, throwing ApiError on failure. */
 export function unwrap<T>(result: FetchResult<T>): T {
   if (result.error !== undefined || result.data === undefined) {
-    const { code, message } = readEnvelope(result.error);
+    const { code, message, reason } = readEnvelope(result.error);
     throw new ApiError(
       result.response.status,
       code ?? "HttpError",
       message ??
         `HTTP ${result.response.status} ${result.response.statusText}`.trim(),
+      reason,
     );
   }
   return result.data;

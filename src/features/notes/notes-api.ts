@@ -165,8 +165,9 @@ export function useNotifications() {
 
 export function useDismissNotification() {
   return useApiMutation<{ noteId: string }>({
+    // The endpoint answers 204 with no body: unwrapAs would treat that as a failure.
     mutationFn: async ({ noteId }) =>
-      unwrapAs<unknown>(
+      unwrapVoid(
         await api.POST("/api/v1/notifications/{note_id}/dismiss", {
           params: { path: { note_id: noteId } },
         }),

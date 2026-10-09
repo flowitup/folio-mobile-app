@@ -102,9 +102,7 @@ describe("Login — ink header + paper sheet (design 2c / 2d)", () => {
     }
     expect(screen.getByText(t("login.resendIn", { seconds: 60 }))).toBeTruthy();
     // 300 s is what the mocked request reports, so the sheet quotes 5 minutes.
-    expect(
-      screen.getByText(t("login.codeExpires", { minutes: 5 })),
-    ).toBeTruthy();
+    expect(screen.getByText(t("login.codeExpires", { count: 5 }))).toBeTruthy();
     // The countdown is running, so asking for another code is refused.
     expect(screen.getByTestId("login-resend")).toBeDisabled();
   });

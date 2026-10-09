@@ -9,6 +9,8 @@ import {
   View,
 } from "react-native";
 
+import { useAuth } from "@/auth/auth-context";
+import { isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -71,7 +73,16 @@ export default function RefundableExpensesScreen() {
   // The whole screen rides the company-scoped billing API, which only a company admin may
   // call: without the gate a refused caller just watched a spinner turn into a blank page.
   const access = useBillingAccess();
+  const { user } = useAuth();
   const companies = useMyCompanies();
+  // The list is scoped to companies the caller administers (platform ops may read any): picking
+  // one where they are only a member answered 403 and left the screen on "Could not load".
+  const platformOps = isPlatformOps(user);
+  const companyOptions = useMemo(
+    () =>
+      (companies.data ?? []).filter((c) => platformOps || c.role === "admin"),
+    [companies.data, platformOps],
+  );
   const [companyId, setCompanyId] = useState<string | null>(null);
   const expenses = useRefundableExpenses(companyId, access.allowed);
   // `refetch()` runs even a disabled query, so the focus hook has to respect the gate too.
@@ -180,13 +191,13 @@ export default function RefundableExpensesScreen() {
         }
       />
       <ScrollView contentContainerClassName="p-4 pb-12">
-        {(companies.data?.length ?? 0) > 1 ? (
+        {companyOptions.length > 1 ? (
           <Select
             testID="refundable-company"
             value={companyId ?? "__all__"}
             options={[
               { value: "__all__", label: t("billing.refundable.allCompanies") },
-              ...(companies.data ?? []).map((c) => ({
+              ...companyOptions.map((c) => ({
                 value: c.id,
                 label: c.legal_name,
               })),

@@ -15,8 +15,15 @@ describe("joinErrorKey", () => {
     ).toBe("companies.join.errors.alreadyMember");
   });
 
-  it("keeps the server's own wording for anything else", () => {
-    // A catch-all string would lose detail the backend bothered to give.
+  it("names the rate limit, whose server text is no sentence in any language", () => {
+    // flask-limiter answers "10 per 1 minute" — even an English UI must not show that.
+    expect(
+      joinErrorKey(new ApiError(429, "TooManyRequests", "10 per 1 minute")),
+    ).toBe("common.errors.tooManyRequests");
+  });
+
+  it("leaves anything else to the generic API error text", () => {
+    // The screen falls back to apiErrorMessage (offline, 5xx, other statuses).
     expect(joinErrorKey(new ApiError(500, "ServerError", "boom"))).toBeNull();
     expect(joinErrorKey(new Error("offline"))).toBeNull();
     expect(joinErrorKey(undefined)).toBeNull();

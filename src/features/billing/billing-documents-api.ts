@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/api/client";
 import { safeFilename } from "@/lib/files/download";
 import { openFile } from "@/lib/files/open-file";
-import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
+import { parseIsoDate } from "@/lib/format/date";
+import { ApiError, unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
 import type {
@@ -67,6 +68,21 @@ export function useBillingDocuments(
   });
 }
 
+/**
+ * Newest issue date first, then newest created. `issue_date` is RFC-1123 text
+ * (`Fri, 09 Oct 2026 00:00:00 GMT`), so compare instants, not strings (those sort by weekday).
+ */
+export function byIssueDateDesc(
+  a: Pick<BillingDocument, "issue_date" | "created_at">,
+  b: Pick<BillingDocument, "issue_date" | "created_at">,
+): number {
+  return (
+    (parseIsoDate(b.issue_date)?.getTime() ?? 0) -
+      (parseIsoDate(a.issue_date)?.getTime() ?? 0) ||
+    (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0)
+  );
+}
+
 /** 25 latest devis + 25 latest factures, merged by issue date (the "from existing" picker). */
 export function useRecentBillingDocuments(enabled: boolean) {
   return useQuery({
@@ -78,7 +94,7 @@ export function useRecentBillingDocuments(enabled: boolean) {
         fetchPage({ kind: "facture", limit: 25 }),
       ]);
       return [...devis.items, ...factures.items]
-        .sort((a, b) => b.issue_date.localeCompare(a.issue_date))
+        .sort(byIssueDateDesc)
         .slice(0, 50);
     },
   });
@@ -227,6 +243,9 @@ export function useSetBillingStatus() {
         }),
       ),
     invalidates: invalidatesAll,
+    // A refused transition (409) is explained by the caller in the UI language; the default
+    // toast would add a second one carrying the API's raw English text.
+    onError: (error) => error instanceof ApiError && error.status === 409,
   });
 }
 

@@ -207,7 +207,14 @@ export function MemberRow({
  * A person added by phone but not yet linked to an account (`pending`, no `linked_user_id`) —
  * the only feedback confirming "add by phone" worked before the person signs up and attaches.
  */
-export function PendingPersonRow({ person }: { person: CompanyPersonEntry }) {
+export function PendingPersonRow({
+  person,
+  onCancel,
+}: {
+  person: CompanyPersonEntry;
+  /** Cancel the invitation (a mistyped number, a change of mind). */
+  onCancel: () => void;
+}) {
   const { t } = useTranslation();
 
   return (
@@ -226,6 +233,15 @@ export function PendingPersonRow({ person }: { person: CompanyPersonEntry }) {
           {person.phone}
         </Text>
       ) : null}
+      <View className="mt-2 flex-row">
+        <Button
+          testID={`pending-person-cancel-${person.person_id}`}
+          label={t("companies.members.pending.cancel")}
+          size="sm"
+          variant="danger"
+          onPress={onCancel}
+        />
+      </View>
     </Card>
   );
 }

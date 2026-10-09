@@ -23,6 +23,23 @@ describe("invoice totals", () => {
     expect(totals.tva).toBeCloseTo(40);
     expect(totals.ttc).toBeCloseTo(340);
   });
+
+  it("rounds each line to the cent and sums the rounded lines, like the API's total", () => {
+    const paint = { description: "Paint", quantity: 2.5, unit_price: 19.99 };
+    expect(lineTotalTtc(paint)).toBe(49.98);
+    expect(invoiceTotals([paint, paint])).toEqual({ ht: 99.96, tva: 0, ttc: 99.96 });
+
+    const nail = { description: "Nail", quantity: 1, unit_price: 0.125 };
+    expect(invoiceTotals([nail, nail])).toEqual({ ht: 0.26, tva: 0, ttc: 0.26 });
+
+    // 1 × 5 × 1.055 is 5.2749999… in floats; the API stores 5.28.
+    const plaster = { description: "Plaster", quantity: 1, unit_price: 5, vat_rate: 5.5 };
+    expect(lineTotalTtc(plaster)).toBe(5.28);
+    expect(invoiceTotals([plaster])).toEqual({ ht: 5, tva: 0.28, ttc: 5.28 });
+
+    const credit = { description: "Credit", quantity: 1, unit_price: -0.125 };
+    expect(invoiceTotals([credit, credit]).ttc).toBe(-0.26);
+  });
 });
 
 describe("buildInvoicePrintHtml", () => {

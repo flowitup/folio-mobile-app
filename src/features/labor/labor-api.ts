@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/api/client";
 import { activeLocale } from "@/i18n";
 import { invoiceKeys } from "@/features/invoices/invoices-api";
+import { projectKeys } from "@/features/projects/projects-api";
 import { rosterKeys } from "@/features/labor/roster-api";
 import { openFile } from "@/lib/files/open-file";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
@@ -60,14 +61,17 @@ export const laborKeys = {
   monthly: (p: string) => ["projects", p, "labor-monthly-summary"] as const,
 };
 
-/** Everything a labor mutation can change: entries, summaries, project totals, labor payments. */
+/**
+ * Everything a labor mutation can change: entries, summaries, project totals, labor payments.
+ * The totals (Home's unpaid-labor tile) live on the projects list, hence `projectKeys.all`.
+ */
 function laborInvalidations(projectId: string) {
   return [
     laborKeys.entriesAll(projectId),
     laborKeys.summaryAll(projectId),
     laborKeys.monthly(projectId),
     invoiceKeys.laborPayments(projectId),
-    ["projects", projectId],
+    projectKeys.all,
   ];
 }
 

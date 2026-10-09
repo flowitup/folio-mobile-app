@@ -31,7 +31,7 @@ import type { ProjectPhoto } from "@/features/photos/photos-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
-import { formatDate } from "@/lib/format/date";
+import { formatDate, parisDayKey } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 
@@ -60,7 +60,8 @@ export default function ProjectPhotosSection() {
     const map = new Map<string, ProjectPhoto[]>();
     for (const photo of photos.data?.pages.flatMap((page) => page.items) ??
       []) {
-      const key = photo.captured_at.slice(0, 10);
+      // The Paris day, as the web gallery groups it (not the UTC day of the timestamp).
+      const key = parisDayKey(photo.captured_at);
       map.set(key, [...(map.get(key) ?? []), photo]);
     }
     return Array.from(map.entries()).sort(([a], [b]) => b.localeCompare(a));
@@ -189,7 +190,7 @@ export default function ProjectPhotosSection() {
             </View>
             <View className="bg-card p-4">
               <Text className="mb-2 text-xs text-muted-foreground">
-                {formatDate(open.captured_at)} · {open.filename}
+                {formatDate(parisDayKey(open.captured_at))} · {open.filename}
               </Text>
               {canWrite ? (
                 <Input
@@ -197,6 +198,8 @@ export default function ProjectPhotosSection() {
                   label={t("photos.caption")}
                   value={captionDraft}
                   onChangeText={setCaptionDraft}
+                  // Same cap as the web caption field and the API
+                  maxLength={500}
                 />
               ) : open.caption ? (
                 <Text className="mb-3 text-base text-primary">

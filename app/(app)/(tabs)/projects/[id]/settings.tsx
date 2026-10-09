@@ -6,7 +6,7 @@ import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Card } from "@/components/ui/primitives";
+import { Card, ErrorState } from "@/components/ui/primitives";
 import {
   customLabel,
   ProjectFormSheet,
@@ -44,7 +44,15 @@ export default function ProjectSettingsSection() {
 
   if (project.isPending) return <ActivityIndicator className="mt-8" />;
   if (project.isError || !project.data)
-    return <Text className="p-4 text-danger">{t("common.loadError")}</Text>;
+    return (
+      <View className="flex-1 bg-paper">
+        <ErrorState
+          message={t("common.loadError")}
+          retryLabel={t("common.retry")}
+          onRetry={() => void project.refetch()}
+        />
+      </View>
+    );
 
   const data = project.data;
   // The owner is an ordinary assignee on the backend — creating a project grants no standing

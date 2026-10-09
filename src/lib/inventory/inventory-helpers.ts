@@ -92,12 +92,17 @@ export function summarizeInventory(
 export type SiteRef = { id: string; name: string; address?: string | null };
 
 export type InventoryLocationGroup = {
-  /** Stable key: `warehouse:<id>`, `site:<id>` or `unknown:<type>` for a dangling reference. */
+  /**
+   * Stable key: `warehouse:<id>`, `site:<id>`, `other:site` for a project the viewer is not
+   * assigned to, or `unknown:<type>` for a dangling reference.
+   */
   key: string;
   kind: InventoryLocationType;
   title: string | null;
   /** The warehouse address or the site address, when known. */
   subtitle: string | null;
+  /** On a project missing from the viewer's list: a real site, just not one of theirs. */
+  otherSite: boolean;
   items: InventoryItem[];
   quantity: number;
 };
@@ -129,7 +134,13 @@ export function groupInventoryByLocation(
       subtitle = warehouse?.address ?? null;
     } else {
       const site = item.project_id ? sites.get(item.project_id) : undefined;
-      key = site ? `site:${site.id}` : "unknown:site";
+      // A project the viewer is not assigned to is not in their project list,
+      // so its name is unknown here — but it is not an unknown place.
+      key = site
+        ? `site:${site.id}`
+        : item.project_id
+          ? "other:site"
+          : "unknown:site";
       title = site?.name ?? null;
       subtitle = site?.address ?? null;
     }
@@ -138,6 +149,7 @@ export function groupInventoryByLocation(
       kind: item.location_type,
       title,
       subtitle,
+      otherSite: key === "other:site",
       items: [],
       quantity: 0,
     };
@@ -170,6 +182,20 @@ export function unitsByWarehouse(
         item.warehouse_id,
         (map.get(item.warehouse_id) ?? 0) + units(item),
       );
+  return map;
+}
+
+/**
+ * Rows per warehouse id, whatever their quantity: the API refuses to delete a warehouse while
+ * any row points at it, even one at quantity 0 that adds nothing to the units above.
+ */
+export function rowsByWarehouse(
+  items: readonly InventoryItem[],
+): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const item of items)
+    if (item.location_type === "warehouse" && item.warehouse_id)
+      map.set(item.warehouse_id, (map.get(item.warehouse_id) ?? 0) + 1);
   return map;
 }
 

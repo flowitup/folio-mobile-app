@@ -21,11 +21,16 @@ type Props = {
 /**
  * Issuing-company field for new documents: 0 companies → callout, 1 → static label,
  * 2+ → picker defaulting to last used → primary → first (same rules as the web picker).
+ * Only companies the caller administers are offered: the API refuses billing in any other
+ * (403), so a company where they are a member would only fail on save.
  */
 export function CompanyPicker({ kind, value, onChange, error }: Props) {
   const { t } = useTranslation();
   const companies = useMyCompanies();
-  const list = useMemo(() => companies.data ?? [], [companies.data]);
+  const list = useMemo(
+    () => (companies.data ?? []).filter((c) => c.role === "admin"),
+    [companies.data],
+  );
   // undefined = not read yet; null = nothing stored.
   const [last, setLast] = useState<string | null | undefined>(undefined);
 
@@ -42,7 +47,8 @@ export function CompanyPicker({ kind, value, onChange, error }: Props) {
   }, [kind]);
 
   useEffect(() => {
-    if (value || list.length === 0 || last === undefined) return;
+    if (list.length === 0 || last === undefined) return;
+    if (value && list.some((c) => c.id === value)) return;
     const pick =
       list.find((c) => c.id === last) ??
       list.find((c) => c.is_primary) ??
@@ -54,7 +60,11 @@ export function CompanyPicker({ kind, value, onChange, error }: Props) {
   if (list.length === 0)
     return (
       <Text testID="company-picker-empty" className="mb-4 text-sm text-warning">
-        {t("billing.form.noCompanies")}
+        {t(
+          companies.data?.length
+            ? "billing.form.noAdminCompanies"
+            : "billing.form.noCompanies",
+        )}
       </Text>
     );
   if (list.length === 1)

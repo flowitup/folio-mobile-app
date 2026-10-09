@@ -6,6 +6,7 @@ import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet } from "@/components/ui/sheet";
+import { TEXT_LIMITS } from "@/lib/format/text-limits";
 
 import type {
   CreateWarehousePayload,
@@ -60,6 +61,7 @@ export const WarehouseFormSheet = forwardRef<BottomSheetModal, Props>(
         <View className="p-4">
           <Input
             testID="warehouse-name"
+            maxLength={TEXT_LIMITS.warehouse.name}
             label={t("inventory.warehouses.fields.name")}
             value={name}
             onChangeText={setName}
@@ -68,6 +70,7 @@ export const WarehouseFormSheet = forwardRef<BottomSheetModal, Props>(
           />
           <Input
             testID="warehouse-address"
+            maxLength={TEXT_LIMITS.warehouse.address}
             label={t("inventory.warehouses.fields.address")}
             value={address}
             onChangeText={setAddress}

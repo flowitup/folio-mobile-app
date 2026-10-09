@@ -74,6 +74,12 @@ export const MemberGrantsSheet = forwardRef<BottomSheetModal, Props>(
 
     const customisable = grants.data?.customisable ?? [];
     const rows = grants.data?.grants ?? [];
+    // Library/inventory permissions are only checked company-wide by the backend, which
+    // refuses a project scope for them: offer the company-wide scope alone.
+    const scopeLocked =
+      permission !== null &&
+      (grants.data?.company_wide_only ?? []).includes(permission);
+    const effectiveScope = scopeLocked ? COMPANY_WIDE : scope;
 
     function submit() {
       if (!userId || !permission) return;
@@ -83,7 +89,7 @@ export const MemberGrantsSheet = forwardRef<BottomSheetModal, Props>(
           userId,
           permission,
           effect,
-          project_id: scope === COMPANY_WIDE ? null : scope,
+          project_id: effectiveScope === COMPANY_WIDE ? null : effectiveScope,
         },
         // The saved grant is now a row above; leaving it in the picker reads as still
         // pending and a second Save would silently re-send it.
@@ -204,13 +210,13 @@ export const MemberGrantsSheet = forwardRef<BottomSheetModal, Props>(
             <Select
               testID="grant-scope"
               label={t("companies.members.grants.scopeLabel")}
-              value={scope}
+              value={effectiveScope}
               options={[
                 {
                   value: COMPANY_WIDE,
                   label: t("companies.members.grants.companyWide"),
                 },
-                ...companyProjects.map((project) => ({
+                ...(scopeLocked ? [] : companyProjects).map((project) => ({
                   value: project.id,
                   label: projectDisplayName(project),
                 })),

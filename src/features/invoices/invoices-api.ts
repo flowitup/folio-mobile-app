@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
+import { projectKeys } from "@/features/projects/projects-api";
 import { activeLocale } from "@/i18n";
 import { openFile } from "@/lib/files/open-file";
 import type { PickedFile } from "@/lib/files/pick";
@@ -120,7 +121,15 @@ export function useInvoice(projectId: string, invoiceId: string | undefined) {
   });
 }
 
-export function useCreateInvoice(projectId: string) {
+// Money writes invalidate `projectKeys.all` (["projects"]), not just ["projects", id]: the
+// project's totals (Home's unpaid-labor tile, the switcher's remaining budget) come from the
+// projects LIST, which the per-project prefix does not reach. It covers the project's own
+// queries too.
+/** `silent`: no "Invoice created." toast, for flows that speak of a payment and toast it themselves. */
+export function useCreateInvoice(
+  projectId: string,
+  { silent = false }: { silent?: boolean } = {},
+) {
   const { t } = useTranslation();
   return useApiMutation<CreateInvoicePayload, Invoice>({
     mutationFn: async (body) =>
@@ -130,8 +139,8 @@ export function useCreateInvoice(projectId: string) {
           body: body as never,
         }),
       ),
-    invalidates: [invoiceKeys.all(projectId), ["projects", projectId]],
-    successMessage: t("invoices.created"),
+    invalidates: [invoiceKeys.all(projectId), projectKeys.all],
+    successMessage: silent ? undefined : t("invoices.created"),
   });
 }
 
@@ -148,7 +157,7 @@ export function useUpdateInvoice(projectId: string, invoiceId: string) {
     invalidates: [
       invoiceKeys.all(projectId),
       invoiceKeys.detail(projectId, invoiceId),
-      ["projects", projectId],
+      projectKeys.all,
     ],
     successMessage: t("common.saved"),
   });
@@ -168,7 +177,7 @@ export function useAssignInvoiceWorker(projectId: string) {
     invalidates: [
       invoiceKeys.all(projectId),
       invoiceKeys.laborPayments(projectId),
-      ["projects", projectId],
+      projectKeys.all,
     ],
     successMessage: t("common.saved"),
   });
@@ -189,7 +198,7 @@ export function useDeleteInvoice(
           },
         ),
       ),
-    invalidates: [invoiceKeys.all(projectId), ["projects", projectId]],
+    invalidates: [invoiceKeys.all(projectId), projectKeys.all],
     successMessage: silent ? undefined : t("invoices.deleted"),
   });
 }
@@ -212,7 +221,7 @@ export function useSetRefundableStatus(projectId: string) {
           } as never,
         }),
       ),
-    invalidates: [invoiceKeys.all(projectId), ["projects", projectId]],
+    invalidates: [invoiceKeys.all(projectId), projectKeys.all],
     successMessage: t("invoices.refundStatusUpdated"),
   });
 }

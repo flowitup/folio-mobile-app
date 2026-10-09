@@ -46,16 +46,46 @@ export async function registerPushDevice(): Promise<string | null> {
   }
 }
 
-/** Sign-out: forget the token server-side (best effort) and locally. */
+/**
+ * Sign-out: forget the token server-side and locally. When the backend cannot be told (offline,
+ * server error), stop OS delivery for this install instead, so the leaving account's pushes do not
+ * keep reaching a signed-out phone; the backend prunes the dead token on Expo's DeviceNotRegistered.
+ */
 export async function unregisterPushDevice(): Promise<void> {
   try {
     const token = await SecureStore.getItemAsync(PUSH_TOKEN_KEY);
     if (!token) return;
-    await api
+    const forgotten = await api
       .DELETE("/api/v1/push/devices", { body: { token } })
-      .catch(() => undefined);
+      .then(({ response }) => response.ok)
+      .catch(() => false);
+    if (!forgotten)
+      await Notifications.unregisterForNotificationsAsync().catch(
+        () => undefined,
+      );
     await SecureStore.deleteItemAsync(PUSH_TOKEN_KEY);
   } catch {
     // Nothing to clean up.
+  }
+}
+
+/**
+ * Account deletion: the erasure already removed every push device of the account server-side,
+ * so only the token this install remembers is left to forget.
+ */
+export async function forgetPushToken(): Promise<void> {
+  await SecureStore.deleteItemAsync(PUSH_TOKEN_KEY).catch(() => undefined);
+}
+
+/**
+ * Forget the push tap the app already acted on. expo-notifications keeps the last response until
+ * told otherwise, and the signed-in area reads it on every mount, so without this a sign-out and
+ * sign-in (same or another account) would open that push's screen again.
+ */
+export function clearHandledPushResponse(): void {
+  try {
+    Notifications.clearLastNotificationResponse();
+  } catch {
+    // No native notifications module (web): nothing is kept, nothing to clear.
   }
 }

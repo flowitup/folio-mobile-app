@@ -22,6 +22,8 @@ const STATUS_TONE: Record<
 type Props = {
   /** The day lies in the future: nobody can be absent from it yet. */
   upcoming?: boolean;
+  /** The shown day, formatted, when it is not today: the empty and error texts name it. */
+  dayLabel?: string;
   rows: RosterRow[] | undefined;
   loading: boolean;
   /** True when the roster query failed (403/404/network) — distinct from a genuinely empty day. */
@@ -46,6 +48,7 @@ export function DayRoster({
   onRetry,
   payByWorkerId,
   upcoming = false,
+  dayLabel,
 }: Props) {
   const { t } = useTranslation();
 
@@ -56,13 +59,25 @@ export function DayRoster({
   if (error)
     return (
       <ErrorState
-        message={t("worker.roster.loadError")}
+        message={
+          dayLabel
+            ? t("worker.roster.loadErrorOn", { date: dayLabel })
+            : t("worker.roster.loadError")
+        }
         retryLabel={t("common.retry")}
         onRetry={() => onRetry?.()}
       />
     );
   if (!rows || rows.length === 0)
-    return <EmptyState message={t("worker.roster.empty")} />;
+    return (
+      <EmptyState
+        message={
+          dayLabel
+            ? t("worker.roster.emptyOn", { date: dayLabel })
+            : t("worker.roster.empty")
+        }
+      />
+    );
 
   return (
     <View className="gap-2" testID="day-roster">

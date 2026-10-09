@@ -85,6 +85,17 @@ describe("validateItems", () => {
     });
   });
 
+  it("sends a blank unit price or VAT as 0, the value the validation accepted", () => {
+    // The validation reads a blank as 0, but the payload carried "" and the API refused it
+    // (422 "Input should be a valid decimal") with no field marked.
+    const blank = line({ unit_price: "", vat_rate: " " });
+    expect(hasItemErrors(validateItems(t, [blank]))).toBe(false);
+    expect(itemsToPayload([blank])[0]).toMatchObject({
+      unit_price: "0",
+      vat_rate: "0",
+    });
+  });
+
   it("keys the errors by line index", () => {
     const errors = validateItems(t, [line(), line({ quantity: "0" })]);
     expect(errors[0]).toBeUndefined();

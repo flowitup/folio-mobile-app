@@ -10,7 +10,7 @@ import { Badge, Card, EmptyState } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
 import { lineTotalHt } from "@/lib/billing/billing-totals";
 import { localeTag } from "@/lib/format/date";
-import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { formatMoney, formatNumber, parseMoneyInput } from "@/lib/format/money";
 import {
   MAX_LINE_QUANTITY,
   MAX_LINE_UNIT_PRICE,
@@ -52,6 +52,9 @@ export function itemsFromResponse(items: BillingDocumentItem[]): ItemDraft[] {
  * backend as the unparsable text the old comma → dot swap left behind.
  */
 const decimal = (value: string) => {
+  // A blank figure is 0, as `validateItems` reads it: an empty unit price is a free line,
+  // which the API refused as "" (422) after the form had accepted it.
+  if (value.trim() === "") return "0";
   const parsed = parseMoneyInput(value);
   return parsed === null ? value.trim() : String(parsed);
 };
@@ -222,7 +225,7 @@ export function BillingItemsEditor({
                 onPress={() => patch(index, { vat_rate: preset })}
               >
                 <Badge
-                  label={`${preset} %`}
+                  label={`${formatNumber(preset, 2)} %`}
                   tone={item.vat_rate === preset ? "success" : "neutral"}
                 />
               </Pressable>
@@ -313,8 +316,11 @@ export function BillingItemsEditor({
               </Text>
               <Text className="text-xs text-muted-foreground">
                 {suggestion.category ? `${suggestion.category} · ` : ""}
-                {formatMoney(suggestion.last_unit_price)} HT ·{" "}
-                {suggestion.last_vat_rate} % · ×{suggestion.frequency}
+                {t("billing.form.amountHt", {
+                  amount: formatMoney(suggestion.last_unit_price),
+                })}{" "}
+                · {formatNumber(suggestion.last_vat_rate, 2)} % · ×
+                {suggestion.frequency}
               </Text>
             </Pressable>
           ))}

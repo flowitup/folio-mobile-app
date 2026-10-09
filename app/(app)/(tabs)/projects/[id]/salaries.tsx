@@ -31,8 +31,13 @@ import {
 } from "@/features/invoices/invoices-api";
 import { useLaborMonthlySummary, useWorkers } from "@/features/labor/labor-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
-import { formatDate, formatMonth } from "@/lib/format/date";
-import { formatMoney, formatNumber, parseMoneyInput } from "@/lib/format/money";
+import { formatDate, formatMonth, toIsoDate } from "@/lib/format/date";
+import {
+  formatAmountInput,
+  formatMoney,
+  formatNumber,
+  parseCentsInput,
+} from "@/lib/format/money";
 import {
   UNASSIGNED_MONTH,
   buildWorkerSalaryMonths,
@@ -76,8 +81,8 @@ export default function ProjectSalariesSection({
     workerId: worker?.id ?? null,
   });
   const paymentMethods = usePaymentMethods(project.data?.company_id);
-  const createInvoice = useCreateInvoice(id);
   // Salaries speak of payments, never of invoices: one toast from this screen, none per row.
+  const createInvoice = useCreateInvoice(id, { silent: true });
   const deleteInvoice = useDeleteInvoice(id, { silent: true });
   useRefetchOnFocus(monthly.refetch);
   useRefetchOnFocus(laborInvoices.refetch);
@@ -109,18 +114,20 @@ export default function ProjectSalariesSection({
 
   function openPay(row: SalaryMonth) {
     setPaying(row);
-    setAmount(String(Math.max(row.remaining, 0) || row.earned));
+    setAmount(formatAmountInput(Math.max(row.remaining, 0) || row.earned));
     paySheet.current?.present();
   }
 
   function markPaid() {
-    const value = parseMoneyInput(amount);
+    // Cents, as the server stores them, like the Labor tab's payment sheet.
+    const value = parseCentsInput(amount);
     if (!paying || !worker || !value || value <= 0)
       return showToast(t("labor.payments.amountRequired"), "error");
     createInvoice.mutate(
       {
         type: "labor",
-        issue_date: new Date().toISOString().slice(0, 10),
+        // Local calendar day: the UTC one is still yesterday after midnight in France or Vietnam.
+        issue_date: toIsoDate(new Date()),
         recipient_name: worker.name,
         items: [
           {

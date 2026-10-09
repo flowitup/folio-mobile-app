@@ -43,14 +43,16 @@ export function AccountSheet() {
           >
             {userDisplayName(user)}
           </Text>
-          <Text className="font-sans text-xs text-muted" numberOfLines={1}>
-            {(user?.companies ?? [])
-              .map(
-                (c) =>
-                  `${c.legal_name} · ${t(`companies.x.${c.role}`, { defaultValue: c.role })}`,
-              )
-              .join("\n")}
-          </Text>
+          {/* One line per company: a single one-line Text would cut every company after the first. */}
+          {(user?.companies ?? []).map((c) => (
+            <Text
+              key={c.id}
+              className="font-sans text-xs text-muted"
+              numberOfLines={1}
+            >
+              {`${c.legal_name} · ${t(`companies.x.${c.role}`, { defaultValue: c.role })}`}
+            </Text>
+          ))}
         </View>
       </View>
       <View className="overflow-hidden rounded-xl border border-line bg-card">

@@ -4,7 +4,9 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Linking,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -33,22 +35,16 @@ import {
   useUploadAnalysis,
 } from "@/features/analyses/analyses-api";
 import type { Analysis } from "@/features/analyses/analyses-api";
+import {
+  prepareReportHtml,
+  reportNavigation,
+} from "@/features/analyses/report-html";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { formatFileSize } from "@/lib/format/file-size";
 import { pickDocuments } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
-import { formatDate } from "@/lib/format/date";
+import { formatInstant } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
-
-/** Stored reports rarely carry a viewport meta; add one so the WebView renders at phone scale. */
-function withMobileViewport(html: string): string {
-  if (/<meta[^>]+name=["']viewport["']/i.test(html)) return html;
-  const meta =
-    '<meta name="viewport" content="width=device-width, initial-scale=1">';
-  return /<head[^>]*>/i.test(html)
-    ? html.replace(/<head[^>]*>/i, (m) => `${m}${meta}`)
-    : `${meta}${html}`;
-}
 
 /**
  * Stored HTML analysis reports: search + tag filter, upload with metadata, inline viewer, edit,
@@ -186,7 +182,7 @@ export default function ProjectAnalysesSection() {
                 </Text>
               ) : null}
               <Text className="mt-1 text-xs text-muted-foreground">
-                {formatDate(analysis.created_at)} ·{" "}
+                {formatInstant(analysis.created_at)} ·{" "}
                 {formatFileSize(analysis.size_bytes)}
                 {analysis.source_url ? ` · ${analysis.source_url}` : ""}
               </Text>
@@ -335,8 +331,17 @@ export default function ProjectAnalysesSection() {
             ) : null}
             {content.data ? (
               <WebView
+                // Every request reaches the guard below, which keeps the report in place.
                 originWhitelist={["*"]}
-                source={{ html: withMobileViewport(content.data) }}
+                source={{ html: prepareReportHtml(content.data) }}
+                onShouldStartLoadWithRequest={(request) => {
+                  const action = reportNavigation(request, Platform.OS);
+                  if (action === "external")
+                    Linking.openURL(request.url).catch(() => undefined);
+                  return action === "allow";
+                }}
+                setSupportMultipleWindows={false}
+                javaScriptCanOpenWindowsAutomatically={false}
                 style={{ flex: 1 }}
               />
             ) : null}

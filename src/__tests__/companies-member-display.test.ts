@@ -66,4 +66,34 @@ describe("member display helpers", () => {
       }),
     ).toBe(shortUserId(userId));
   });
+
+  it("shows a phone sign-up's number, never its synthetic no-email address", () => {
+    // The backend mints `phone-<digits>@no-email.folio.flowitup.com` for a phone sign-up;
+    // the company Members list and the manage Users tab printed it as the member's contact.
+    const userId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+    const synthetic = "phone-33621400002@no-email.folio.flowitup.com";
+    expect(
+      memberSecondaryLabel({
+        display_name: "QA Joiner",
+        email: synthetic,
+        phone: "+33621400002",
+        user_id: userId,
+      }),
+    ).toBe("+33621400002");
+    expect(
+      memberDisplayName({
+        display_name: null,
+        email: synthetic,
+        phone: "+33621400002",
+        user_id: userId,
+      }),
+    ).toBe("+33621400002");
+    // Older payloads without `phone`: the number the address was built from.
+    expect(
+      memberSecondaryLabel({ email: synthetic, phone: null, user_id: userId }),
+    ).toBe("+33621400002");
+    expect(memberDisplayName({ email: synthetic, user_id: userId })).toBe(
+      "+33621400002",
+    );
+  });
 });

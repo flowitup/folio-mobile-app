@@ -119,6 +119,45 @@ describe("accept-invite screen", () => {
     );
   });
 
+  it("asks for the existing account's phone, inline, when the invited address already has an account", async () => {
+    mockRequestInviteCode.mockRejectedValue(
+      new InviteActionError("account_exists"),
+    );
+
+    await renderWithProviders(<AcceptInviteScreen />);
+
+    await screen.findByTestId("invite-name");
+    await fireEvent.changeText(screen.getByTestId("invite-name"), "Someone");
+    await fireEvent.changeText(
+      screen.getByTestId("invite-phone"),
+      "06 12 34 56 78",
+    );
+    await fireEvent.press(screen.getByTestId("invite-send-code"));
+
+    await screen.findByText(i18n.t("acceptInvite.errors.accountExists"));
+    expect(screen.queryByTestId("invite-error")).toBeNull();
+    expect(screen.getByTestId("invite-phone")).toBeTruthy();
+  });
+
+  it("names the wait when the phone hit its hourly code cap", async () => {
+    // Regression: the cap lasts up to an hour but read "Wait a minute and try again".
+    mockRequestInviteCode.mockRejectedValue(
+      new InviteActionError("hourly_limit", undefined, 44),
+    );
+
+    await renderWithProviders(<AcceptInviteScreen />);
+
+    await screen.findByTestId("invite-name");
+    await fireEvent.changeText(screen.getByTestId("invite-name"), "Someone");
+    await fireEvent.changeText(
+      screen.getByTestId("invite-phone"),
+      "06 12 34 56 78",
+    );
+    await fireEvent.press(screen.getByTestId("invite-send-code"));
+
+    await screen.findByText(i18n.t("login.errors.hourlyLimit", { count: 44 }));
+  });
+
   it("shows an inline, translated error and keeps the typed details on a taken phone", async () => {
     mockRequestInviteCode.mockRejectedValue(
       new InviteActionError("phone_registered"),
@@ -172,6 +211,23 @@ describe("accept-invite screen", () => {
     expect(
       screen.getByText(i18n.t("acceptInvite.errors.notFound")),
     ).toBeTruthy();
+    // The header no longer promises "You're invited to join …" above a dead link.
+    expect(screen.getByText(i18n.t("acceptInvite.errors.title"))).toBeTruthy();
+    expect(
+      screen.queryByText(i18n.t("acceptInvite.title", { projectName: "…" })),
+    ).toBeNull();
+  });
+
+  it("keeps the invitation title while the invitation is valid", async () => {
+    await renderWithProviders(<AcceptInviteScreen />);
+
+    await screen.findByTestId("invite-name");
+    expect(
+      screen.getByText(
+        i18n.t("acceptInvite.title", { projectName: INVITE.project_name }),
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(i18n.t("acceptInvite.errors.title"))).toBeNull();
   });
 
   it("blocks acceptance while a different account is already signed in on this device", async () => {

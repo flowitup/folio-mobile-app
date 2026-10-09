@@ -63,6 +63,8 @@ export interface BillingDocument {
   source_devis_id: string | null;
   /** On a devis: the facture it was converted into; null on factures and unconverted devis. */
   converted_to_facture_id: string | null;
+  /** Status of that facture: the devis stays locked until it is "cancelled". */
+  converted_facture_status?: BillingDocumentStatus | null;
   total_ht: string;
   total_tva: string;
   total_ttc: string;
@@ -148,10 +150,12 @@ export interface CreateBillingTemplatePayload {
   notes?: string | null;
   terms?: string | null;
   default_vat_rate?: string | null;
+  /** Company the template lands in (an admin's); the API falls back to the primary admin one. */
+  company_id?: string | null;
 }
 
 export type UpdateBillingTemplatePayload = Partial<
-  Omit<CreateBillingTemplatePayload, "kind">
+  Omit<CreateBillingTemplatePayload, "kind" | "company_id">
 >;
 
 export interface ActivityCategory {

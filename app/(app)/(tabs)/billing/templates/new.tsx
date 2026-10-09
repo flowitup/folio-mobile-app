@@ -9,7 +9,11 @@ import { useCreateBillingTemplate } from "@/features/billing/billing-templates-a
 export default function NewBillingTemplateScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { kind } = useLocalSearchParams<{ kind?: string }>();
+  // `company`: the company the templates list was showing, so the template lands there.
+  const { kind, company } = useLocalSearchParams<{
+    kind?: string;
+    company?: string;
+  }>();
   const create = useCreateBillingTemplate();
   return (
     <View className="flex-1 bg-paper">
@@ -22,7 +26,10 @@ export default function NewBillingTemplateScreen() {
           defaultKind={kind === "facture" ? "facture" : "devis"}
           submitting={create.isPending}
           onSubmit={(payload) =>
-            create.mutate(payload, { onSuccess: () => router.back() })
+            create.mutate(
+              { ...payload, ...(company ? { company_id: company } : {}) },
+              { onSuccess: () => router.back() },
+            )
           }
         />
       </ScrollView>

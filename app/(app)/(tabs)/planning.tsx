@@ -13,6 +13,7 @@ import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
 import { Card, EmptyState, ErrorState } from "@/components/ui/primitives";
+import { showToast } from "@/components/ui/toast";
 import { ScreenTitle } from "@/components/ui/typography";
 import { shortDayMonth } from "@/features/dashboard/overview-cards";
 import { useMembers } from "@/features/projects/members-api";
@@ -56,7 +57,8 @@ export default function PlanningTab() {
   // Assignee options: the people assigned to the project, readable by every role.
   const members = useMembers(projectId);
   const create = useCreateTask(projectId);
-  const update = useUpdateTask(projectId);
+  // Silent: an edit that also changes the lane toasts once, after the move.
+  const update = useUpdateTask(projectId, { silent: true });
   const move = useMoveTask(projectId);
   const remove = useDeleteTask(projectId);
   useRefetchOnFocus(tasks.refetch);
@@ -78,9 +80,13 @@ export default function PlanningTab() {
     value: member.user_id,
     label: userDisplayName(member),
   }));
+  // An assignee missing from the project's members (a company admin reads every project)
+  // still shows, as "someone outside the project team".
   const assigneeLabel = (task: Task) =>
-    assignees.find((option) => option.value === task.assignee_id)?.label ??
-    null;
+    !task.assignee_id
+      ? null
+      : (assignees.find((option) => option.value === task.assignee_id)?.label ??
+        (members.data ? t("tasks.assigneeOther") : null));
   const indexOf = (task: Task) =>
     (byLane.get(task.status) ?? []).findIndex((x) => x.id === task.id);
 
@@ -266,6 +272,7 @@ export default function PlanningTab() {
                 onSuccess: () => {
                   if (values.status !== editing.status)
                     move.mutate({ taskId: editing.id, status: values.status });
+                  else showToast(t("common.saved"), "success");
                   form.current?.close();
                 },
               },

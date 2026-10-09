@@ -1,4 +1,5 @@
 import {
+  accountContact,
   phoneOfSyntheticEmail,
   realEmail,
   userDisplayName,
@@ -45,5 +46,27 @@ describe("synthetic phone sign-up address", () => {
   it("gives back the phone number it was built from", () => {
     expect(phoneOfSyntheticEmail(synthetic)).toBe("+33600000097");
     expect(phoneOfSyntheticEmail("jean@example.com")).toBeNull();
+  });
+});
+
+describe("accountContact", () => {
+  it("shows the current phone, not the number the synthetic address was built from", () => {
+    // After a phone change the address still holds the sign-up number.
+    expect(
+      accountContact("phone-33620150003@no-email.folio.flowitup.com", "+33620150004"),
+    ).toBe("+33620150004");
+  });
+
+  it("prefers a real e-mail", () => {
+    expect(accountContact("jean@example.com", "+33620150004")).toBe("jean@example.com");
+  });
+
+  it("falls back to the synthetic address's phone when the payload has none", () => {
+    expect(accountContact("phone-33620150003@no-email.folio.flowitup.com", null)).toBe(
+      "+33620150003",
+    );
+    expect(accountContact("phone-33620150003@no-email.folio.flowitup.com", "  ")).toBe(
+      "+33620150003",
+    );
   });
 });

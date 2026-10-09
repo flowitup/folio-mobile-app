@@ -30,9 +30,13 @@ import type {
   LaborEntry,
   Worker,
 } from "@/features/labor/labor-types";
-import { currentMonth, formatMonth } from "@/lib/format/date";
+import { currentMonth, formatMonth, toIsoDate } from "@/lib/format/date";
 import { MAX_EXPORT_MONTHS, isValidMonthRange } from "@/lib/labor/month-range";
-import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import {
+  formatAmountInput,
+  formatMoney,
+  parseCentsInput,
+} from "@/lib/format/money";
 import { MAX_LINE_UNIT_PRICE } from "@/lib/format/numeric-bounds";
 import { useTokens } from "@/theme/tokens";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
@@ -117,9 +121,11 @@ export const DayDetailsSheet = forwardRef<
     entries: LaborEntry[];
     activities: LaborActivity[];
     description: string;
+    /** Without project:manage_labor: activities and description shown, not editable. */
+    readOnly?: boolean;
   }
 >(function DayDetailsSheet(
-  { projectId, date, entries, activities, description },
+  { projectId, date, entries, activities, description, readOnly = false },
   ref,
 ) {
   const { t } = useTranslation();
@@ -155,51 +161,72 @@ export const DayDetailsSheet = forwardRef<
               <Text className="flex-1 font-sans text-sm text-ink">
                 {activity.title}
               </Text>
-              <Pressable
-                testID={`activity-delete-${activity.id}`}
-                onPress={() => setRemoving(activity)}
-                hitSlop={8}
-              >
-                <Text className="font-sans text-sm text-negative">
-                  {t("common.delete")}
-                </Text>
-              </Pressable>
+              {readOnly ? null : (
+                <Pressable
+                  testID={`activity-delete-${activity.id}`}
+                  onPress={() => setRemoving(activity)}
+                  hitSlop={8}
+                >
+                  <Text className="font-sans text-sm text-negative">
+                    {t("common.delete")}
+                  </Text>
+                </Pressable>
+              )}
             </Card>
           ))}
-          <Input
-            testID="activity-title"
-            placeholder={t("labor.activities.placeholder")}
-            value={activityTitle}
-            onChangeText={setActivityTitle}
-            onSubmitEditing={addActivity}
-          />
-          <Button
-            testID="activity-add"
-            label={t("labor.activities.add")}
-            variant="secondary"
-            size="sm"
-            className="mb-4"
-            disabled={!activityTitle.trim()}
-            onPress={addActivity}
-          />
-          <Input
-            testID="day-description"
-            label={t("labor.description.title")}
-            value={draft}
-            onChangeText={setDraft}
-            multiline
-          />
-          <Button
-            testID="day-description-save"
-            label={t("common.save")}
-            variant="secondary"
-            size="sm"
-            loading={setDayDescription.isPending}
-            disabled={draft === description}
-            onPress={() =>
-              setDayDescription.mutate({ date, description: draft.trim() })
-            }
-          />
+          {readOnly ? (
+            <>
+              {activities.length === 0 ? (
+                <Text className="mb-4 font-sans text-sm text-muted">—</Text>
+              ) : null}
+              <Eyebrow className="mb-1.5 mt-2">
+                {t("labor.description.title")}
+              </Eyebrow>
+              <Text
+                testID="day-description-text"
+                className={`font-sans text-sm ${description ? "text-ink" : "text-muted"}`}
+              >
+                {description || "—"}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Input
+                testID="activity-title"
+                placeholder={t("labor.activities.placeholder")}
+                value={activityTitle}
+                onChangeText={setActivityTitle}
+                onSubmitEditing={addActivity}
+              />
+              <Button
+                testID="activity-add"
+                label={t("labor.activities.add")}
+                variant="secondary"
+                size="sm"
+                className="mb-4"
+                disabled={!activityTitle.trim()}
+                onPress={addActivity}
+              />
+              <Input
+                testID="day-description"
+                label={t("labor.description.title")}
+                value={draft}
+                onChangeText={setDraft}
+                multiline
+              />
+              <Button
+                testID="day-description-save"
+                label={t("common.save")}
+                variant="secondary"
+                size="sm"
+                loading={setDayDescription.isPending}
+                disabled={draft === description}
+                onPress={() =>
+                  setDayDescription.mutate({ date, description: draft.trim() })
+                }
+              />
+            </>
+          )}
         </View>
       </Sheet>
       <ConfirmDialog
@@ -237,7 +264,8 @@ export const PaymentSheet = forwardRef<
 >(function PaymentSheet({ projectId, companyId, month, rows, initial }, ref) {
   const { t } = useTranslation();
   const paymentMethods = usePaymentMethods(companyId ?? undefined);
-  const createInvoice = useCreateInvoice(projectId);
+  // A payment, not an invoice: one "Payment recorded." toast, as on Salaries.
+  const createInvoice = useCreateInvoice(projectId, { silent: true });
   const [workerId, setWorkerId] = useState<string | null>(
     initial?.worker.id ?? null,
   );
@@ -245,12 +273,17 @@ export const PaymentSheet = forwardRef<
   const [methodId, setMethodId] = useState<string | null>(null);
   useEffect(() => {
     setWorkerId(initial?.worker.id ?? null);
-    setAmount(initial ? String(Math.max(0, initial.owed - initial.paid)) : "");
+    setAmount(
+      initial
+        ? formatAmountInput(Math.max(0, initial.owed - initial.paid))
+        : "",
+    );
   }, [initial]);
   const row = rows.find((r) => r.worker.id === workerId) ?? null;
 
   function record() {
-    const value = parseMoneyInput(amount);
+    // Cents, as the server stores them: no float noise in the saved unit price.
+    const value = parseCentsInput(amount);
     if (!row || !value || value <= 0)
       return showToast(t("labor.payments.amountRequired"), "error");
     if (value > MAX_LINE_UNIT_PRICE)
@@ -263,7 +296,8 @@ export const PaymentSheet = forwardRef<
     createInvoice.mutate(
       {
         type: "labor",
-        issue_date: new Date().toISOString().slice(0, 10),
+        // Local calendar day: the UTC one is still yesterday after midnight in France or Vietnam.
+        issue_date: toIsoDate(new Date()),
         recipient_name: row.worker.name,
         items: [
           {
@@ -283,6 +317,7 @@ export const PaymentSheet = forwardRef<
         onSuccess: () => {
           (ref as ModalRef).current?.dismiss();
           setAmount("");
+          showToast(t("salaries.paidToast"), "success");
         },
       },
     );
@@ -308,7 +343,9 @@ export const PaymentSheet = forwardRef<
             setWorkerId(next);
             const target = rows.find((r) => r.worker.id === next);
             if (target)
-              setAmount(String(Math.max(0, target.owed - target.paid)));
+              setAmount(
+                formatAmountInput(Math.max(0, target.owed - target.paid)),
+              );
           }}
         />
         <Input

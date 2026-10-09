@@ -385,6 +385,18 @@ export function useChiffrageActions(projectId: string) {
         ),
       saved,
     ),
+    /** Stop retaining a quote: its article falls back to the cheapest one. */
+    unselectQuote: useChiffrageMutation<{ quoteId: string }, ChiffrageQuote>(
+      projectId,
+      async ({ quoteId }) =>
+        unwrapAs<ChiffrageQuote>(
+          await api.DELETE(
+            `${base}/quotes/{quote_id}/select`,
+            withId({ quote_id: quoteId }),
+          ),
+        ),
+      saved,
+    ),
   };
 }
 

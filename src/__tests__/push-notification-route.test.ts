@@ -1,4 +1,5 @@
 import {
+  pushChangesOwnAccess,
   routeForNotification,
   staleKeysForPush,
 } from "@/lib/push/notification-route";
@@ -137,7 +138,9 @@ describe("routeForNotification", () => {
     ).toEqual({ projectId: null, sheet: null, path: null });
   });
 
-  it("opens the company members screen for role and permission changes", () => {
+  it("opens My companies for the recipient's own role and permission changes", () => {
+    // Regression: they opened the admin-only members screen, where a member read
+    // "You don't have authorization to change roles of users."
     for (const kind of [
       "company_member_role_changed",
       "company_member_grants_changed",
@@ -145,7 +148,7 @@ describe("routeForNotification", () => {
       expect(routeForNotification({ kind, company_id: "c2" })).toEqual({
         projectId: null,
         sheet: null,
-        path: "/company/members",
+        path: "/settings/companies",
       });
     }
   });
@@ -195,5 +198,22 @@ describe("staleKeysForPush", () => {
       ["notifications"],
       ["projects"],
     ]);
+  });
+
+  it("also refreshes the company list when the user's own company access changes", () => {
+    for (const kind of [
+      "company_member_role_changed",
+      "company_member_grants_changed",
+      "company_member_removed",
+    ]) {
+      expect(staleKeysForPush({ kind })).toEqual([
+        ["notifications"],
+        ["companies"],
+      ]);
+      expect(pushChangesOwnAccess({ kind })).toBe(true);
+    }
+    expect(pushChangesOwnAccess({ kind: "member_joined" })).toBe(false);
+    expect(pushChangesOwnAccess({ kind: "project_member_added" })).toBe(false);
+    expect(pushChangesOwnAccess(null)).toBe(false);
   });
 });

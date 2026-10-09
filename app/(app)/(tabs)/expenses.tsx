@@ -338,7 +338,11 @@ function ExpensesTabContent() {
         </Pressable>
       ) : null}
 
-      <InvoiceExportSheet ref={exportSheet} projectId={projectId} />
+      <InvoiceExportSheet
+        ref={exportSheet}
+        projectId={projectId}
+        canViewBudget={canViewBudget}
+      />
     </View>
   );
 }

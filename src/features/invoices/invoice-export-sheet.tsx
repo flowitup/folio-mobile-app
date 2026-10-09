@@ -21,16 +21,21 @@ import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 type ExportType = "all" | InvoiceType;
 
-/** "Xuất Excel / PDF" sheet of the expenses ledger: format, month range, type filter. */
+/**
+ * "Xuất Excel / PDF" sheet of the expenses ledger: format, month range, type filter. Without
+ * `project:view_budget` the API leaves released funds out of the file, so that type is not offered.
+ */
 export const InvoiceExportSheet = forwardRef<
   BottomSheetModal,
-  { projectId: string }
->(function InvoiceExportSheet({ projectId }, ref) {
+  { projectId: string; canViewBudget: boolean }
+>(function InvoiceExportSheet({ projectId, canViewBudget }, ref) {
   const { t, i18n } = useTranslation();
   const [format, setFormat] = useState<InvoiceExportFormat>("xlsx");
   const [from, setFrom] = useState(currentMonth());
   const [to, setTo] = useState(currentMonth());
   const [type, setType] = useState<ExportType>("all");
+  // A released-funds choice the caller can no longer export falls back to all types.
+  const exportType = !canViewBudget && type === "released_funds" ? "all" : type;
   const [exporting, setExporting] = useState(false);
   const span = useMemo(() => monthSpan(from, to), [from, to]);
   const rangeError =
@@ -48,7 +53,7 @@ export const InvoiceExportSheet = forwardRef<
         format,
         from,
         to,
-        type === "all" ? undefined : type,
+        exportType === "all" ? undefined : exportType,
       );
       (ref as React.RefObject<BottomSheetModal | null>).current?.dismiss();
     } catch (caught) {
@@ -88,10 +93,12 @@ export const InvoiceExportSheet = forwardRef<
         <Select<ExportType>
           testID="export-type"
           label={t("invoices.form.type")}
-          value={type}
+          value={exportType}
           options={[
             { value: "all", label: t("invoices.all") },
-            ...INVOICE_TYPES.map((value) => ({
+            ...INVOICE_TYPES.filter(
+              (value) => canViewBudget || value !== "released_funds",
+            ).map((value) => ({
               value,
               label: t(`invoices.types.${value}`),
             })),

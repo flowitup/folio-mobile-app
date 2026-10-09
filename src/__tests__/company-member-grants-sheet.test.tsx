@@ -204,4 +204,62 @@ describe("MemberGrantsSheet", () => {
       project_id: "p1",
     });
   });
+  it("only offers the company-wide scope for a library permission and submits it unscoped", async () => {
+    mockGet.mockImplementation((path: string) => {
+      if (path.includes("/grants"))
+        return Promise.resolve({
+          data: {
+            grants: [],
+            customisable: ["bibliotheque:manage", "project:view_pay"],
+            company_wide_only: ["bibliotheque:manage", "inventory:manage"],
+          },
+        });
+      return Promise.resolve({
+        data: {
+          projects: [{ id: "p1", name: "Chantier A", company_id: "c1" }],
+          total: 1,
+        },
+      });
+    });
+    mockPut.mockResolvedValue({
+      data: {
+        permission: "bibliotheque:manage",
+        effect: "grant",
+        project_id: null,
+      },
+    });
+
+    await renderSheet();
+
+    // A project permission still offers the company's projects.
+    await waitFor(() =>
+      expect(
+        screen.getByTestId("grant-permission-option-project:view_pay"),
+      ).toBeTruthy(),
+    );
+    await fireEvent.press(screen.getByTestId("grant-permission"));
+    await fireEvent.press(
+      screen.getByTestId("grant-permission-option-project:view_pay"),
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("grant-scope-option-p1")).toBeTruthy(),
+    );
+    await fireEvent.press(screen.getByTestId("grant-scope"));
+    await fireEvent.press(screen.getByTestId("grant-scope-option-p1"));
+
+    // Switching to the library permission drops the project scope.
+    await fireEvent.press(screen.getByTestId("grant-permission"));
+    await fireEvent.press(
+      screen.getByTestId("grant-permission-option-bibliotheque:manage"),
+    );
+    expect(screen.queryByTestId("grant-scope-option-p1")).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("grant-submit"));
+    await waitFor(() => expect(mockPut).toHaveBeenCalledTimes(1));
+    const [, options] = mockPut.mock.calls[0] as [string, { body: unknown }];
+    expect(options.body).toMatchObject({
+      permission: "bibliotheque:manage",
+      project_id: null,
+    });
+  });
 });

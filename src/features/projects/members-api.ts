@@ -12,6 +12,8 @@ export type ProjectMember = {
   user_id: string;
   email: string;
   display_name: string | null;
+  /** Current sign-in number; a phone-only account's e-mail keeps the one it signed up with. */
+  phone?: string | null;
   /** Company role of the member (admin | manager | member) since back-end Phase 4. */
   role_name: string;
   joined_at: string | null;

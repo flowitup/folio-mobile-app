@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -37,18 +38,24 @@ import type { AttachedUser } from "@/features/companies/company-members-api";
 import { CompanyFormSheet } from "@/features/companies/company-form-sheet";
 import { PaymentMethodsSection } from "@/features/companies/payment-methods-section";
 import { formatJoinCode } from "@/lib/companies/join-code";
-import { memberDisplayName } from "@/lib/companies/member-display";
+import {
+  memberDisplayName,
+  memberSecondaryLabel,
+} from "@/lib/companies/member-display";
 import { formatDate } from "@/lib/format/date";
 
 type Tab = "edit" | "code" | "users" | "payments" | "delete";
 const TABS: Tab[] = ["edit", "code", "users", "payments", "delete"];
 const ROLE_OPTIONS: CompanyRole[] = ["admin", "manager", "member"];
 
-/** Company manage page: edit, company code, attached users, payment methods, delete. */
+/** Company manage page: edit, company code, attached users, payment methods, delete (platform ops). */
 export default function CompanyManageScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
+  // `DELETE /companies/<id>` is platform-ops only: a company admin's confirm always ends in a 403.
+  const canDelete = isPlatformOps(user);
+  const tabs = canDelete ? TABS : TABS.filter((value) => value !== "delete");
   const { companyId } = useLocalSearchParams<{ companyId: string }>();
   const company = useCompany(companyId);
   const users = useAttachedUsers(companyId);
@@ -95,7 +102,7 @@ export default function CompanyManageScreen() {
         showsHorizontalScrollIndicator={false}
         className="max-h-11 border-b border-border"
       >
-        {TABS.map((value) => (
+        {tabs.map((value) => (
           <Pressable
             key={value}
             testID={`company-tab-${value}`}
@@ -127,10 +134,13 @@ export default function CompanyManageScreen() {
             </Text>
             <Text className="text-sm text-primary">{data.address}</Text>
             <Text className="mt-1 text-xs text-muted-foreground">
-              SIRET {data.siret ?? "—"} · TVA {data.tva_number ?? "—"}
+              {t("companies.form.fields.siret.label")}: {data.siret ?? "—"} ·{" "}
+              {t("companies.form.fields.tvaNumber.label")}:{" "}
+              {data.tva_number ?? "—"}
             </Text>
             <Text className="text-xs text-muted-foreground">
-              IBAN {data.iban ?? "—"} · BIC {data.bic ?? "—"}
+              {t("companies.form.fields.iban.label")}: {data.iban ?? "—"} ·{" "}
+              {t("companies.form.fields.bic.label")}: {data.bic ?? "—"}
             </Text>
             <Text className="text-xs text-muted-foreground">
               {t("companies.form.fields.prefixOverride.label")}:{" "}
@@ -249,7 +259,7 @@ export default function CompanyManageScreen() {
                   />
                 </View>
                 <Text className="text-xs text-muted-foreground">
-                  {member.email} ·{" "}
+                  {memberSecondaryLabel(member)} ·{" "}
                   {t("companies.admin.manage.attached.attachedAt")}{" "}
                   {formatDate(member.attached_at)}
                   {member.is_primary
@@ -297,7 +307,7 @@ export default function CompanyManageScreen() {
           <PaymentMethodsSection companyId={companyId} />
         ) : null}
 
-        {tab === "delete" ? (
+        {tab === "delete" && canDelete ? (
           <Card>
             <Text className="text-base font-semibold text-danger">
               {t("companies.admin.manage.delete.title")}
@@ -360,7 +370,7 @@ export default function CompanyManageScreen() {
         }
       />
       <ConfirmDialog
-        visible={deleting}
+        visible={deleting && canDelete}
         title={t("companies.x.deleteConfirm", { name: data.legal_name })}
         confirmLabel={t("companies.admin.manage.delete.confirm")}
         cancelLabel={t("common.cancel")}

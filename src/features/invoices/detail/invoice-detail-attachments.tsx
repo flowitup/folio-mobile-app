@@ -23,7 +23,7 @@ import {
 import { formatFileSize } from "@/lib/format/file-size";
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
-import { formatDate } from "@/lib/format/date";
+import { formatInstant } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
@@ -112,34 +112,42 @@ export function InvoiceAttachmentsCard({
           </Text>
         ) : null}
         {list.map((attachment, index) => (
-          <Pressable
+          // Two sibling buttons, not one inside the other: VoiceOver cannot reach a button nested in another.
+          <View
             key={attachment.id}
-            testID={`attachment-open-${attachment.id}`}
-            accessibilityRole="button"
-            onPress={() => void open(attachment)}
-            className={`flex-row items-center gap-3 px-4 py-3.5 active:opacity-70 ${index === 0 ? "" : "border-t border-line"}`}
+            className={`flex-row items-center pr-4 ${index === 0 ? "" : "border-t border-line"}`}
           >
-            <View className="h-12 w-10 items-center justify-center rounded-md bg-paper-2">
-              <Text className="font-sans-bold text-[9px] text-muted">
-                {tileLabel(attachment)}
-              </Text>
-            </View>
-            <View className="min-w-0 flex-1">
-              <Text
-                className="font-sans-medium text-[14px] leading-[18px] text-ink"
-                numberOfLines={1}
-              >
-                {attachment.filename}
-              </Text>
-              <Text className="font-sans text-[11.5px] leading-[14px] text-muted">
-                {formatFileSize(attachment.size_bytes)} ·{" "}
-                {formatDate(attachment.uploaded_at)}
-              </Text>
-            </View>
+            <Pressable
+              testID={`attachment-open-${attachment.id}`}
+              accessibilityRole="button"
+              onPress={() => void open(attachment)}
+              className="min-w-0 flex-1 flex-row items-center gap-3 py-3.5 pl-4 pr-3 active:opacity-70"
+            >
+              <View className="h-12 w-10 items-center justify-center rounded-md bg-paper-2">
+                <Text className="font-sans-bold text-[9px] text-muted">
+                  {tileLabel(attachment)}
+                </Text>
+              </View>
+              <View className="min-w-0 flex-1">
+                <Text
+                  className="font-sans-medium text-[14px] leading-[18px] text-ink"
+                  numberOfLines={1}
+                >
+                  {attachment.filename}
+                </Text>
+                <Text className="font-sans text-[11.5px] leading-[14px] text-muted">
+                  {formatFileSize(attachment.size_bytes)} ·{" "}
+                  {formatInstant(attachment.uploaded_at)}
+                </Text>
+              </View>
+            </Pressable>
             {readOnly ? null : (
               <Pressable
                 testID={`attachment-menu-${attachment.id}`}
                 accessibilityRole="button"
+                accessibilityLabel={t("invoices.attachments.menu", {
+                  name: attachment.filename,
+                })}
                 hitSlop={8}
                 onPress={() => {
                   setSelected(attachment);
@@ -150,7 +158,7 @@ export function InvoiceAttachmentsCard({
                 <Icon name="more-horizontal" size={18} color={tokens.muted2} />
               </Pressable>
             )}
-          </Pressable>
+          </View>
         ))}
       </Card>
 

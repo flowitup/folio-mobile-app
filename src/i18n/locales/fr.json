@@ -23,6 +23,7 @@
     "requestFailed": "La demande n'a pas pu être traitée. Réessayez.",
     "errors": {
       "invalidInput": "Certaines valeurs ne sont pas valides. Vérifiez le formulaire et réessayez.",
+      "invalidPhone": "Saisissez un numéro de téléphone valide, par ex. 06 12 34 56 78 ou +84 912 345 678.",
       "unauthorized": "Votre session a expiré. Veuillez vous reconnecter.",
       "forbidden": "Vous n'avez pas l'autorisation d'effectuer cette action.",
       "notFound": "Cet élément n'existe plus.",
@@ -55,13 +56,21 @@
       "invalidCode": "Ce code est incorrect ou a expiré. Demandez-en un nouveau.",
       "phoneTaken": "Ce numéro a déjà un compte. Connectez-vous.",
       "smsFailed": "Le SMS n’a pas pu être envoyé. Réessayez dans un instant.",
-      "throttled": "Un code vient d’être envoyé. Attendez une minute et réessayez."
+      "throttled": "Un code vient d’être envoyé. Attendez une minute et réessayez.",
+      "hourlyLimit_one": "Trop de codes ont été demandés pour ce numéro. Réessayez dans {{count}} minute.",
+      "hourlyLimit_other": "Trop de codes ont été demandés pour ce numéro. Réessayez dans {{count}} minutes."
     },
     "codeTitle": "Vérifiez vos\nmessages",
     "codeDigit": "Chiffre {{position}} sur {{total}}",
-    "codeExpires": "Expire dans {{minutes}} minutes",
+    "codeExpires_one": "Expire dans {{count}} minute",
+    "codeExpires_other": "Expire dans {{count}} minutes",
+    "codeExpired": "Code expiré — demandez-en un nouveau",
     "autoSubmitHint": "Connexion automatique dès les 6 chiffres",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "unavailable": {
+      "title": "Impossible de joindre Folio",
+      "body": "Vous êtes toujours connecté. Vérifiez votre connexion, puis réessayez."
+    }
   },
   "home": {
     "welcome": "Connecté en tant que {{email}}",
@@ -289,6 +298,7 @@
       "uploaded": "Pièce jointe ajoutée.",
       "deleted": "Pièce jointe supprimée.",
       "rename": "Renommer",
+      "menu": "Options pour {{name}}",
       "deleteConfirm": "Supprimer {{name}} ?",
       "permissionDenied": "Accès caméra/photos refusé. Activez-le dans les Réglages."
     },
@@ -303,6 +313,9 @@
       "workerNone": "Aucun ouvrier lié",
       "serviceMonth": "Mois de prestation",
       "serviceMonthRequired": "Le mois de prestation est obligatoire.",
+      "serviceMonthNone": "Aucun mois défini",
+      "serviceMonthSet": "Choisir le mois",
+      "serviceMonthClear": "Retirer le mois",
       "paymentMethod": "Moyen de paiement",
       "paymentMethodNone": "Aucun",
       "refundHint": "Un retour vient en déduction. Liez la facture matériaux & services remboursée.",
@@ -371,6 +384,14 @@
       "noHighlight": "Sans couleur",
       "attachmentsEmpty": "Aucune pièce jointe"
     },
+    "highlightColors": {
+      "red": "Rouge",
+      "orange": "Orange",
+      "yellow": "Jaune",
+      "green": "Vert",
+      "blue": "Bleu",
+      "purple": "Violet"
+    },
     "restricted": "Les factures sont réservées aux responsables du chantier.",
     "unavailable": "Cette facture n'existe pas ou est réservée aux responsables du chantier."
   },
@@ -411,14 +432,16 @@
       "deleteHint": "Son historique de présence reste sur le chantier.",
       "inactive": "inactif",
       "day": "jour",
-      "perDay": "par jour · {{count}} jours",
+      "perDay_one": "par jour · {{value}} jour",
+      "perDay_other": "par jour · {{value}} jours",
       "account": "Compte appli",
       "accountNone": "Non relié",
       "fromCompany": "Ouvrier de l'entreprise",
       "fromCompanyNew": "Nouvelle personne",
       "fromCompanyHint": "annuaire de l'entreprise",
       "deactivate": "Désactiver",
-      "rateTooLarge": "Le taux journalier ne peut pas dépasser {{max}}."
+      "rateTooLarge": "Le taux journalier ne peut pas dépasser {{max}}.",
+      "alreadyOnProject": "Cette personne est déjà ouvrier sur ce chantier (peut-être désactivé)."
     },
     "rates": {
       "link": "Taux",
@@ -438,7 +461,8 @@
       "sameAsLastDay": "Comme le dernier jour",
       "noWorkers": "Tous les ouvriers actifs sont déjà saisis ce jour.",
       "supplement": "Heures en plus (non payées)",
-      "submit": "Saisir {{count}} ouvrier(s)",
+      "submit_one": "Saisir {{count}} ouvrier",
+      "submit_other": "Saisir {{count}} ouvriers",
       "saved": "Présences enregistrées.",
       "entryDeleted": "Saisie supprimée.",
       "shiftType": "Poste",
@@ -452,7 +476,8 @@
       "emptyRowHint": "Choisissez un type de journée ou ajoutez des heures avant d'enregistrer.",
       "overrideNeedsShiftHint": "Un montant forcé nécessite un type de journée.",
       "overrideInvalidHint": "Le montant forcé doit être un nombre positif.",
-      "overrideTooLargeHint": "Le montant forcé ne peut pas dépasser {{max}}."
+      "overrideTooLargeHint": "Le montant forcé ne peut pas dépasser {{max}}.",
+      "supplementInvalidHint": "Les heures en plus doivent être un nombre entier de 0 à 12."
     },
     "activities": {
       "title": "Activités",
@@ -542,8 +567,10 @@
       "onSiteToday": "Sur site aujourd'hui",
       "workersLogged": "ouvriers pointés",
       "bonusCost": "Coût bonus",
-      "bonusDaysSubtitle": "{{days}} jours cumulés",
-      "banner": "Cumulé {{banked}}h → {{bonusDays}} jours bonus ({{bonusCost}})",
+      "bonusDaysSubtitle_one": "{{days}} jour cumulé",
+      "bonusDaysSubtitle_other": "{{days}} jours cumulés",
+      "banner_one": "Cumulé {{banked}}h → {{bonusDays}} jour bonus ({{bonusCost}})",
+      "banner_other": "Cumulé {{banked}}h → {{bonusDays}} jours bonus ({{bonusCost}})",
       "allHistory": "Tout l'historique",
       "allYears": "Tout",
       "titleAll": "Résumé · Tout l'historique",
@@ -560,11 +587,13 @@
       "bonusDays": "Jours bonus",
       "companyShare": "Société {{amount}}",
       "personalShare": "Personnel {{amount}}",
-      "unassignedHint": "+ {{count}} non attribué(s)",
+      "unassignedHint_one": "+ {{count}} non attribué",
+      "unassignedHint_other": "+ {{count}} non attribués",
       "empty": "Aucune entrée trouvée",
       "toggleWorkers": "Afficher ou masquer les ouvriers de ce mois",
       "openMonth": "Ouvrir ce mois",
-      "daysUnit": "jours"
+      "daysUnit_one": "jour",
+      "daysUnit_other": "jours"
     }
   },
   "documents": {
@@ -595,6 +624,7 @@
       "uploader": "Auteur"
     },
     "allUploaders": "Tous les auteurs",
+    "formerUploader": "Ancien membre",
     "loadError": "Impossible de charger les documents."
   },
   "photos": {
@@ -667,11 +697,14 @@
     "deleteConfirm": "Supprimer « {{title}} » ?",
     "title": "Titre",
     "titleRequired": "Le titre est obligatoire.",
+    "labelTooLong": "Chaque étiquette peut contenir au plus {{max}} caractères.",
+    "labelsTooMany": "Une tâche peut avoir au plus {{max}} étiquettes.",
     "description": "Description",
     "statusLabel": "Colonne",
     "priorityLabel": "Priorité",
     "assignee": "Responsable",
     "unassigned": "Non assignée",
+    "assigneeOther": "Une personne hors de l’équipe du projet",
     "dueDate": "Échéance",
     "due": "Échéance {{date}}",
     "labels": "Étiquettes",
@@ -693,12 +726,17 @@
   "chiffrage": {
     "totalHt": "Total HT",
     "totalTtc": "Total TTC",
-    "unpricedCount": "{{count}} article(s) sans prix",
+    "htShort": "HT",
+    "ttcShort": "TTC",
+    "unpricedCount_one": "{{count}} article sans prix",
+    "unpricedCount_other": "{{count}} articles sans prix",
     "coversAll": "couvre tout",
     "none": "Aucun poste. Ajoutez-en un pour chiffrer les matériaux.",
     "nameRequired": "Le nom est obligatoire.",
     "priceRequired": "Saisissez un prix unitaire.",
     "supplierRequired": "Choisissez un magasin ou saisissez un fournisseur.",
+    "quantityInvalid": "Saisissez une quantité de 0 ou plus.",
+    "tvaInvalid": "La TVA doit être comprise entre 0 et 100.",
     "addPoste": "Ajouter un poste",
     "addStore": "Ajouter un magasin",
     "addRoom": "Ajouter une pièce",
@@ -725,6 +763,8 @@
     "noRoom": "Sans pièce",
     "website": "Site web",
     "deleteQuote": "Supprimer ce prix ?",
+    "retain": "Retenir ce prix",
+    "unretain": "Ne plus retenir ce prix",
     "deleteArticle": "Supprimer l'article {{name}} ?",
     "deletePoste": "Supprimer le poste {{name}} et ses articles ?",
     "deleteStore": "Supprimer le magasin {{name}} ?",
@@ -773,6 +813,7 @@
     "status": {
       "draft": "Brouillon",
       "sent": "Envoyé",
+      "sentFacture": "Envoyée",
       "accepted": "Accepté",
       "rejected": "Refusé",
       "expired": "Expiré",
@@ -782,6 +823,7 @@
     },
     "transitions": {
       "markAsSent": "Marquer envoyé",
+      "markAsSentFacture": "Marquer envoyée",
       "markAsAccepted": "Marquer accepté",
       "markAsRejected": "Marquer refusé",
       "markAsExpired": "Marquer expiré",
@@ -813,6 +855,7 @@
       "issuedFrom": "Émis par {{name}}",
       "primary": "principale",
       "noCompanies": "Rattachez une société dans les Réglages avant de créer un document.",
+      "noAdminCompanies": "Il faut être administrateur d'une société pour émettre ses documents.",
       "project": "Chantier",
       "projectNone": "Aucun chantier",
       "recipient": "Destinataire",
@@ -841,6 +884,9 @@
       "totalHt": "Total HT",
       "tva": "TVA {{rate}} %",
       "totalTtc": "Total TTC",
+      "amountHt": "{{amount}} HT",
+      "amountTva": "{{amount}} TVA",
+      "amountTtc": "{{amount}} TTC",
       "notes": "Notes",
       "terms": "Conditions",
       "signatureBlock": "Bloc signature",
@@ -870,6 +916,8 @@
       "convertTitle": "Convertir en facture",
       "deleteConfirm": "Supprimer {{number}} ?",
       "invalidTransition": "Ce changement de statut n'est pas autorisé.",
+      "convertedLocked": "Ce devis a été converti en facture et est verrouillé. Annulez la facture pour le modifier.",
+      "openFacture": "Ouvrir la facture",
       "deletePaidWarning": "Cette facture est payée : le déblocage de fonds qu'elle a enregistré dans son chantier est supprimé avec elle."
     },
     "toast": {
@@ -891,12 +939,14 @@
     },
     "templates": {
       "title": "Modèles",
+      "company": "Société",
       "new": "Nouveau modèle",
       "edit": "Modifier le modèle",
       "none": "Aucun modèle.",
       "devisGroup": "Modèles de devis",
       "factureGroup": "Modèles de facture",
-      "itemsCount": "{{count}} ligne(s)",
+      "itemsCount_one": "{{count}} ligne",
+      "itemsCount_other": "{{count}} lignes",
       "vatRateNone": "sans TVA par défaut",
       "name": "Nom",
       "kind": "Type",
@@ -936,7 +986,8 @@
       "remove": "Ne plus suivre",
       "removeConfirm": "Ne plus suivre {{number}} ?",
       "fundsRelease": "Déblocage {{number}}",
-      "attachments": "{{count}} fichier(s)",
+      "attachments_one": "{{count}} fichier",
+      "attachments_other": "{{count}} fichiers",
       "noAttachments": "Aucun fichier",
       "dialog": {
         "title": "Ajouter des dépenses",
@@ -944,7 +995,8 @@
         "none": "Aucune dépense candidate.",
         "confirm": "Ajouter {{count}}",
         "partial": "Certaines dépenses n'ont pas pu être ajoutées.",
-        "added": "{{count}} dépense(s) ajoutée(s).",
+        "added_one": "{{count}} dépense ajoutée.",
+        "added_other": "{{count}} dépenses ajoutées.",
         "addFailed": "Aucune dépense n'a pu être ajoutée."
       }
     }
@@ -1049,7 +1101,8 @@
     "takePhoto": "Prendre une photo",
     "noProducts": "Aucun produit.",
     "reference": "Réf.",
-    "total": "{{count}} produit(s)",
+    "total_one": "{{count}} produit",
+    "total_other": "{{count}} produits",
     "pageOf": "Page {{page}} / {{pages}}",
     "compareHint": "Appui long sur un produit pour le comparer (max {{count}}).",
     "purchasedTimes_zero": "Jamais acheté",
@@ -1077,6 +1130,7 @@
     "empty": "Aucun matériel pour l'instant. Ajoutez votre premier outil ou machine.",
     "noResults": "Rien ne correspond à ces filtres.",
     "unknownLocation": "Emplacement inconnu",
+    "otherSite": "Un chantier auquel vous n'êtes pas affecté",
     "uncategorized": "Sans catégorie",
     "units_one": "{{count}} unité",
     "units_other": "{{count}} unités",
@@ -1149,7 +1203,9 @@
       "loadError": "Impossible de charger les dépôts.",
       "noAddress": "Sans adresse",
       "deleteConfirm": "Supprimer « {{name}} » ?",
-      "deleteBlocked": "Ce dépôt contient encore {{count}} unité(s). Déplacez-les ou retirez-les d'abord ; le serveur refuse de supprimer un dépôt utilisé.",
+      "deleteBlocked_one": "Ce dépôt contient encore {{count}} unité. Déplacez-la ou retirez-la d'abord ; le serveur refuse de supprimer un dépôt utilisé.",
+      "deleteBlocked_other": "Ce dépôt contient encore {{count}} unités. Déplacez-les ou retirez-les d'abord ; le serveur refuse de supprimer un dépôt utilisé.",
+      "deleteBlockedRows": "Ce dépôt contient encore des lignes d'inventaire, même si leur quantité est 0. Déplacez-les ou retirez-les d'abord ; le serveur refuse de supprimer un dépôt utilisé.",
       "fields": {
         "name": "Nom",
         "namePlaceholder": "ex. Dépôt principal",
@@ -1304,6 +1360,7 @@
     "errors": {
       "forbiddenAdminRequired": "Accès administrateur requis.",
       "companyAlreadyAttached": "Vous êtes déjà rattaché·e à cette société.",
+      "lastAdmin": "La société doit garder au moins un administrateur. Nommez d'abord un autre membre administrateur.",
       "conflict": "Un conflit est survenu.",
       "validation": "Erreur de validation.",
       "unauthorized": "Session expirée. Veuillez vous reconnecter.",
@@ -1352,7 +1409,8 @@
         "submit": "Ajouter le membre",
         "conflictHint": "Plusieurs personnes correspondent à ce numéro — choisissez la bonne.",
         "conflict": "Plusieurs personnes correspondent à ce numéro.",
-        "successToast": "Membre ajouté."
+        "successToast": "Membre ajouté.",
+        "alreadyMember": "Cette personne est déjà membre de l'entreprise."
       },
       "import": {
         "title": "Importer d'une autre entreprise",
@@ -1360,11 +1418,12 @@
         "sourcePlaceholder": "Choisir une entreprise",
         "noSource": "Vous n'êtes administrateur d'aucune autre entreprise.",
         "empty": "L'annuaire de cette entreprise est vide.",
-        "selectedCount": "{{count}} sélectionné(s)",
+        "selectedCount_one": "{{count}} sélectionné",
+        "selectedCount_other": "{{count}} sélectionnés",
         "submit": "Importer la sélection",
         "successToast": "Membres importés.",
-        "skippedToast_one": "{{imported}} importé(s) · 1 était déjà membre.",
-        "skippedToast_other": "{{imported}} importé(s) · {{count}} étaient déjà membres."
+        "skippedToast_one": "Importés : {{imported}} · 1 était déjà membre.",
+        "skippedToast_other": "Importés : {{imported}} · {{count}} étaient déjà membres."
       },
       "grants": {
         "open": "Permissions personnalisées",
@@ -1387,7 +1446,11 @@
       "pending": {
         "title": "Profils en attente ({{count}})",
         "empty": "Aucun profil en attente — toutes les personnes ajoutées par téléphone se sont connectées.",
-        "badge": "En attente"
+        "badge": "En attente",
+        "cancel": "Annuler l'invitation",
+        "cancelConfirm": "Annuler l'invitation de {{name}} ? S'inscrire avec ce numéro de téléphone ne l'ajoutera plus à l'entreprise.",
+        "keep": "Conserver l'invitation",
+        "cancelled": "Invitation annulée."
       }
     }
   },
@@ -1457,10 +1520,12 @@
     "submitting": "Création du compte...",
     "success": "Compte créé. Bienvenue !",
     "errors": {
+      "title": "Invitation indisponible",
       "expired": "Cette invitation a expiré. Demandez à votre invitant d'en envoyer une nouvelle.",
       "revoked": "Cette invitation a été révoquée. Contactez votre invitant.",
       "accepted": "Cette invitation a déjà été utilisée. Essayez de vous connecter.",
       "notFound": "Ce lien d'invitation est invalide.",
+      "accountExists": "Cette invitation concerne un compte Folio existant. Saisissez le numéro de téléphone de ce compte.",
       "generic": "Une erreur s'est produite. Veuillez réessayer."
     },
     "loggedInOther": {
@@ -1490,7 +1555,8 @@
     "merge": "Fusionner",
     "confirmTitle": "Fusionner {{source}} dans {{target}} ?",
     "confirmBody": "La personne source est supprimée et tous ses ouvriers passent à la cible. Irréversible.",
-    "done": "Fusion effectuée. {{count}} ouvrier(s) réaffecté(s).",
+    "done_one": "Fusion effectuée. {{count}} ouvrier réaffecté.",
+    "done_other": "Fusion effectuée. {{count}} ouvriers réaffectés.",
     "sameError": "Choisissez deux personnes différentes."
   },
   "dashboard": {
@@ -1554,7 +1620,8 @@
     "spentTotal": "Dépensé (net des avoirs)",
     "bank": {
       "segments": "Un segment par déblocage",
-      "draws": "{{count}} déblocage(s)"
+      "draws_one": "{{count}} déblocage",
+      "draws_other": "{{count}} déblocages"
     },
     "overview": {
       "pctSpent": "{{pct}} % dépensés",
@@ -1632,7 +1699,8 @@
     "amount": "Montant",
     "paymentMethod": "Moyen de paiement",
     "noPaymentMethod": "Sans moyen de paiement",
-    "unpaidConfirm": "Supprimer le(s) {{count}} paiement(s) enregistré(s) pour {{month}} ? Le mois repassera en non payé.",
+    "unpaidConfirm_one": "Supprimer le paiement enregistré pour {{month}} ? Le mois repassera en non payé.",
+    "unpaidConfirm_other": "Supprimer les {{count}} paiements enregistrés pour {{month}} ? Le mois repassera en non payé.",
     "payments": "Paiements",
     "paidToast": "Paiement enregistré.",
     "unpaidToast": "Paiements supprimés.",
@@ -1789,6 +1857,8 @@
       "title": "Équipe sur place — {{date}}",
       "empty": "Personne n'est prévu aujourd'hui.",
       "loadError": "Impossible de charger l'effectif du jour.",
+      "emptyOn": "Personne n'est prévu le {{date}}.",
+      "loadErrorOn": "Impossible de charger l'effectif du {{date}}.",
       "upcoming": "À venir"
     },
     "profileTitle": "Mon profil",

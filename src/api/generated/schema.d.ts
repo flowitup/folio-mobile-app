@@ -2460,7 +2460,28 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    delete?: never;
+    /** Cancel a pending member added by phone who has no account yet (admin only) */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          company_id: string;
+          person_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
     options?: never;
     head?: never;
     /** Set a company member's default daily rate and labor role (admin or manager) */
@@ -4619,7 +4640,27 @@ export interface paths {
         };
       };
     };
-    delete?: never;
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          project_id: string;
+          quote_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -8861,6 +8902,8 @@ export interface components {
      * @description Response body for GET /companies/<company_id>/members/<user_id>/grants.
      */
     MemberGrantsListResponse: {
+      /** Company Wide Only */
+      company_wide_only: string[];
       /** Customisable */
       customisable: string[];
       /** Grants */

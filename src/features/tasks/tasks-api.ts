@@ -79,7 +79,11 @@ export function useCreateTask(projectId: string) {
   });
 }
 
-export function useUpdateTask(projectId: string) {
+/** `silent`: no "Saved." toast, for a save chained with a move that toasts once at the end. */
+export function useUpdateTask(
+  projectId: string,
+  { silent = false }: { silent?: boolean } = {},
+) {
   const { t } = useTranslation();
   return useApiMutation<{ taskId: string } & UpdateTaskInput, Task>({
     mutationFn: async ({ taskId, ...body }) =>
@@ -90,7 +94,7 @@ export function useUpdateTask(projectId: string) {
         }),
       ),
     invalidates: [taskKeys.list(projectId)],
-    successMessage: t("common.saved"),
+    successMessage: silent ? undefined : t("common.saved"),
   });
 }
 

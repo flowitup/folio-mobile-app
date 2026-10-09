@@ -26,7 +26,7 @@ import type {
   ProjectMember,
 } from "@/features/projects/members-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
-import { phoneOfSyntheticEmail, realEmail } from "@/lib/auth/user-display-name";
+import { accountContact } from "@/lib/auth/user-display-name";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
@@ -231,10 +231,11 @@ export default function ProjectMembersSection() {
 
 /**
  * A phone sign-up has no real e-mail: the backend stores a synthetic address, which must not
- * be shown. Name first, then the real e-mail, then the phone the address was built from.
+ * be shown. Name first, then the real e-mail, then the current phone (the address keeps the
+ * number the account signed up with).
  */
 function memberContact(member: ProjectMember): string | null {
-  return realEmail(member.email) ?? phoneOfSyntheticEmail(member.email);
+  return accountContact(member.email, member.phone);
 }
 
 function memberLabel(member: ProjectMember): string {

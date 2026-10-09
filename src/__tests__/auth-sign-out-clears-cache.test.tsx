@@ -24,6 +24,7 @@ jest.mock("@/auth/token-storage", () => ({
 
 jest.mock("@/features/push/push-device-registration", () => ({
   unregisterPushDevice: jest.fn(async () => undefined),
+  clearHandledPushResponse: jest.fn(),
 }));
 
 const mockGet = jest.fn(async () => ({

@@ -14,6 +14,8 @@ import {
 } from "@/features/companies/company-members-api";
 import type { AddMemberRole } from "@/features/companies/company-members-api";
 import { normalizePhone } from "@/lib/auth/phone-number";
+import { ApiError } from "@/lib/query/api-error";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 type Props = { companyId: string };
 
@@ -24,7 +26,7 @@ type Props = { companyId: string };
  */
 export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
   function AddMemberByPhoneSheet({ companyId }, ref) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const add = useAddMemberByPhone();
     const [phone, setPhone] = useState("");
     const [name, setName] = useState("");
@@ -69,7 +71,16 @@ export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
               setCandidates(caught.candidates);
               return;
             }
-            setError((caught as Error).message);
+            // Every error is shown here, once and in the UI language (the hook raises no
+            // toast): the server's sentence is English. A 409 other than the concurrent-request
+            // race means this phone is already someone in the company.
+            setError(
+              caught instanceof ApiError &&
+                caught.status === 409 &&
+                caught.reason !== "concurrent_phone_conflict"
+                ? t("companies.members.addByPhone.alreadyMember")
+                : apiErrorMessage(caught, t, i18n.language),
+            );
           },
         },
       );
@@ -143,6 +154,15 @@ export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
                   </Text>
                 </Pressable>
               ))}
+              {/* A resend with the picked person can fail too, and the hook raises no toast. */}
+              {error ? (
+                <Text
+                  testID="add-member-error"
+                  className="mb-3 font-sans text-sm text-negative"
+                >
+                  {error}
+                </Text>
+              ) : null}
               <Button
                 testID="add-member-candidates-cancel"
                 label={t("common.cancel")}

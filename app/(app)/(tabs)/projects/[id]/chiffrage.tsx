@@ -32,14 +32,25 @@ import type {
 } from "@/features/chiffrage/chiffrage-types";
 import { LibraryProductPickerSheet } from "@/features/chiffrage/library-product-picker-sheet";
 import type { PickedProduct } from "@/features/chiffrage/library-product-picker-sheet";
+import { stepMove } from "@/features/chiffrage/reorder";
 import { useProject } from "@/features/projects/projects-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { captureImage, pickImages } from "@/lib/files/pick";
-import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import { formatMoney, formatNumber, parseMoneyInput } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { TEXT_LIMITS } from "@/lib/format/text-limits";
 
 type SheetKind =
   "poste" | "article" | "quote" | "store" | "room" | "unit" | null;
+
+/** Longest name the API accepts for each kind the name field edits. */
+const NAME_LIMIT: Record<Exclude<SheetKind, "quote" | null>, number> = {
+  poste: TEXT_LIMITS.chiffrage.posteName,
+  article: TEXT_LIMITS.chiffrage.articleName,
+  store: TEXT_LIMITS.chiffrage.storeName,
+  room: TEXT_LIMITS.chiffrage.roomName,
+  unit: TEXT_LIMITS.chiffrage.unitSymbol,
+};
 
 /**
  * Material provisioning (chiffrage): postes → articles (by room) → quotes per shop; totals and
@@ -116,9 +127,13 @@ export default function ProjectChiffrageSection() {
             );
       case "article": {
         if (!name) return showToast(t("chiffrage.nameRequired"), "error");
+        // A cleared or garbled field is an error, never a silent 1.
+        const quantity = parseMoneyInput(draft.quantity ?? "1");
+        if (quantity == null || quantity < 0)
+          return showToast(t("chiffrage.quantityInvalid"), "error");
         const payload = {
           name,
-          quantity: parseMoneyInput(draft.quantity ?? "1") ?? 1,
+          quantity,
           unit: draft.unit || null,
           room_id: draft.room_id || null,
           note: draft.note?.trim() || null,
@@ -141,9 +156,13 @@ export default function ProjectChiffrageSection() {
         // The API refuses a quote with no origin (store or supplier name).
         if (!draft.store_id && !draft.supplier_name?.trim())
           return showToast(t("chiffrage.supplierRequired"), "error");
+        // A cleared or garbled field is an error, never a silent 20 %.
+        const tvaRate = parseMoneyInput(draft.tva_rate ?? "20");
+        if (tvaRate == null || tvaRate < 0 || tvaRate > 100)
+          return showToast(t("chiffrage.tvaInvalid"), "error");
         const payload = {
           unit_price_ht: price,
-          tva_rate: parseMoneyInput(draft.tva_rate ?? "20") ?? 20,
+          tva_rate: tvaRate,
           store_id: draft.store_id || null,
           supplier_name: draft.supplier_name?.trim() || null,
           library_product_id: draft.library_product_id || null,
@@ -242,7 +261,18 @@ export default function ProjectChiffrageSection() {
       {canManage ? (
         <Pressable
           testID={`quote-select-${quote.id}`}
-          onPress={() => actions.selectQuote.mutate({ quoteId: quote.id })}
+          // Tapping the retained price again un-retains it, so the article
+          // goes back to the cheapest price on its own.
+          onPress={() =>
+            quote.is_selected
+              ? actions.unselectQuote.mutate({ quoteId: quote.id })
+              : actions.selectQuote.mutate({ quoteId: quote.id })
+          }
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: quote.is_selected }}
+          accessibilityLabel={t(
+            quote.is_selected ? "chiffrage.unretain" : "chiffrage.retain",
+          )}
           className="mr-2"
         >
           <Text className="text-base">{quote.is_selected ? "◉" : "○"}</Text>
@@ -271,8 +301,8 @@ export default function ProjectChiffrageSection() {
           {quote.store_id
             ? storeName.get(quote.store_id)
             : (quote.supplier_name ?? t("chiffrage.noShop"))}{" "}
-          · {formatMoney(quote.unit_price_ht)} HT ·{" "}
-          {formatMoney(quote.unit_price_ttc)} TTC
+          · {formatMoney(quote.unit_price_ht)} {t("chiffrage.htShort")} ·{" "}
+          {formatMoney(quote.unit_price_ttc)} {t("chiffrage.ttcShort")}
         </Text>
         {quote.note ? (
           <Text className="text-xs text-muted-foreground">{quote.note}</Text>
@@ -315,14 +345,14 @@ export default function ProjectChiffrageSection() {
               {article.name}
             </Text>
             <Text className="text-xs text-muted-foreground">
-              {article.quantity} {article.unit ?? ""}
+              {formatNumber(article.quantity)} {article.unit ?? ""}
               {article.room_id
                 ? ` · ${roomName.get(article.room_id) ?? ""}`
                 : ""}{" "}
               ·{" "}
               {article.effective_source === "none"
                 ? t("chiffrage.unpriced")
-                : `${formatMoney(article.total_ttc)} TTC (${t(`chiffrage.source.${article.effective_source}`)})`}
+                : `${formatMoney(article.total_ttc)} ${t("chiffrage.ttcShort")} (${t(`chiffrage.source.${article.effective_source}`)})`}
             </Text>
           </View>
           <Badge label={String(article.quotes.length)} />
@@ -453,7 +483,7 @@ export default function ProjectChiffrageSection() {
               className="mt-1 text-xs text-muted-foreground"
             >
               {storeName.get(basket.store_id) ?? basket.store_id}:{" "}
-              {formatMoney(basket.basket_ttc)} TTC ·{" "}
+              {formatMoney(basket.basket_ttc)} {t("chiffrage.ttcShort")} ·{" "}
               {basket.priced_article_count}/{basket.total_article_count}
               {basket.covers_all ? ` · ${t("chiffrage.coversAll")}` : ""}
             </Text>
@@ -601,12 +631,14 @@ export default function ProjectChiffrageSection() {
                 </Pressable>
                 <Pressable
                   disabled={index === 0}
-                  onPress={() =>
-                    actions.reorderPoste.mutate({
-                      posteId: poste.id,
-                      beforeId: data.postes[index - 1]?.id,
-                    })
-                  }
+                  onPress={() => {
+                    const move = stepMove(data.postes, index, "up");
+                    if (move)
+                      actions.reorderPoste.mutate({
+                        posteId: poste.id,
+                        ...move,
+                      });
+                  }}
                 >
                   <Text
                     className={
@@ -618,12 +650,14 @@ export default function ProjectChiffrageSection() {
                 </Pressable>
                 <Pressable
                   disabled={index === data.postes.length - 1}
-                  onPress={() =>
-                    actions.reorderPoste.mutate({
-                      posteId: poste.id,
-                      afterId: data.postes[index + 1]?.id,
-                    })
-                  }
+                  onPress={() => {
+                    const move = stepMove(data.postes, index, "down");
+                    if (move)
+                      actions.reorderPoste.mutate({
+                        posteId: poste.id,
+                        ...move,
+                      });
+                  }}
                 >
                   <Text
                     className={
@@ -712,12 +746,14 @@ export default function ProjectChiffrageSection() {
                   />
                   <Input
                     testID="quote-supplier"
+                    maxLength={TEXT_LIMITS.chiffrage.supplierName}
                     label={t("chiffrage.supplierName")}
                     value={draft.supplier_name ?? ""}
                     onChangeText={set("supplier_name")}
                   />
                   <Input
                     testID="quote-url"
+                    maxLength={TEXT_LIMITS.chiffrage.url}
                     label={t("chiffrage.productUrl")}
                     value={draft.product_url ?? ""}
                     onChangeText={set("product_url")}
@@ -726,6 +762,7 @@ export default function ProjectChiffrageSection() {
                   />
                   <Input
                     testID="quote-note"
+                    maxLength={TEXT_LIMITS.chiffrage.note}
                     label={t("invoices.form.notes")}
                     value={draft.note ?? ""}
                     onChangeText={set("note")}
@@ -743,6 +780,7 @@ export default function ProjectChiffrageSection() {
                     }
                     value={draft.name ?? ""}
                     onChangeText={set("name")}
+                    maxLength={kind ? NAME_LIMIT[kind] : undefined}
                     autoFocus
                   />
                   {kind === "article" ? (
@@ -778,12 +816,14 @@ export default function ProjectChiffrageSection() {
                     <>
                       <Input
                         testID="store-address"
+                        maxLength={TEXT_LIMITS.chiffrage.address}
                         label={t("project.form.address")}
                         value={draft.address ?? ""}
                         onChangeText={set("address")}
                       />
                       <Input
                         testID="store-url"
+                        maxLength={TEXT_LIMITS.chiffrage.url}
                         label={t("chiffrage.website")}
                         value={draft.website_url ?? ""}
                         onChangeText={set("website_url")}
@@ -795,6 +835,7 @@ export default function ProjectChiffrageSection() {
                   {kind === "poste" || kind === "article" ? (
                     <Input
                       testID="chiffrage-note"
+                      maxLength={TEXT_LIMITS.chiffrage.note}
                       label={t("invoices.form.notes")}
                       value={draft.note ?? ""}
                       onChangeText={set("note")}
@@ -824,6 +865,7 @@ export default function ProjectChiffrageSection() {
             <View className="p-4">
               <Input
                 testID="article-image-url-input"
+                maxLength={TEXT_LIMITS.chiffrage.imageUrl}
                 label={t("chiffrage.imageUrl")}
                 value={imageUrl}
                 onChangeText={setImageUrl}

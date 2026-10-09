@@ -1,6 +1,7 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
-import { Card, ErrorState } from "@/components/ui/primitives";
+import { Card, EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
@@ -18,6 +19,7 @@ import {
   draftToUpdatePayload,
 } from "@/features/billing/billing-document-form";
 import {
+  billingKeys,
   openBillingFile,
   useBillingDocument,
   useCloneBillingDocument,
@@ -36,6 +38,7 @@ import { formatMoney } from "@/lib/format/money";
 import { ApiError } from "@/lib/query/api-error";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { toIsoDate } from "@/lib/format/date";
+import { MAX_BUSINESS_DATE } from "@/lib/format/date-bounds";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 
 /** Document detail: status transitions, PDF / XLSX share, duplicate, convert, delete, and the edit form. */
@@ -56,6 +59,21 @@ export default function BillingDocumentScreen() {
   const convertSheet = useRef<BottomSheetModal>(null);
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [paymentTerms, setPaymentTerms] = useState("");
+  const queryClient = useQueryClient();
+  // A 4xx is final: the document was deleted (or is hidden from this caller, which the API also
+  // answers with a 404), so a Retry could never succeed.
+  const unavailable =
+    query.error instanceof ApiError &&
+    query.error.status >= 400 &&
+    query.error.status < 500;
+  useEffect(() => {
+    // Drop it from the lists it was opened from; not this detail, which would only 404 again.
+    if (unavailable)
+      void queryClient.invalidateQueries({
+        queryKey: billingKeys.all,
+        predicate: (q) => q.queryKey[2] !== "detail",
+      });
+  }, [unavailable, queryClient]);
 
   const doc = query.data;
   if (query.isPending)
@@ -69,11 +87,15 @@ export default function BillingDocumentScreen() {
     return (
       <View className="flex-1 bg-paper">
         <ScreenHeader title={t("billing.title")} back />
-        <ErrorState
-          message={t("common.loadError")}
-          retryLabel={t("common.retry")}
-          onRetry={() => void query.refetch()}
-        />
+        {unavailable ? (
+          <EmptyState message={t("common.errors.notFound")} />
+        ) : (
+          <ErrorState
+            message={t("common.loadError")}
+            retryLabel={t("common.retry")}
+            onRetry={() => void query.refetch()}
+          />
+        )}
       </View>
     );
 
@@ -92,6 +114,11 @@ export default function BillingDocumentScreen() {
   const otherKind: BillingDocumentKind =
     doc.kind === "devis" ? "facture" : "devis";
   const busy = clone.isPending || convert.isPending || setStatus.isPending;
+  // The API refuses any change to a converted devis (409) until its facture is cancelled.
+  const lockedByFacture =
+    doc.kind === "devis" &&
+    Boolean(doc.converted_to_facture_id) &&
+    doc.converted_facture_status !== "cancelled";
 
   return (
     <View className="flex-1 bg-paper">
@@ -105,50 +132,76 @@ export default function BillingDocumentScreen() {
             <Text className="text-base font-semibold text-primary">
               {t(`billing.kind.${doc.kind}`)}
             </Text>
-            <BillingStatusBadge status={doc.status} />
+            <BillingStatusBadge kind={doc.kind} status={doc.status} />
           </View>
           <Text className="mt-1 text-xs text-muted-foreground">
             {doc.issuer_legal_name} → {doc.recipient_name}
           </Text>
-          <Text className="mt-1 text-sm text-primary">
-            {formatMoney(doc.total_ht)} HT · {formatMoney(doc.total_tva)} TVA ·{" "}
+          <Text testID="doc-totals" className="mt-1 text-sm text-primary">
+            {t("billing.form.amountHt", { amount: formatMoney(doc.total_ht) })}{" "}
+            ·{" "}
+            {t("billing.form.amountTva", {
+              amount: formatMoney(doc.total_tva),
+            })}{" "}
+            ·{" "}
             <Text className="font-semibold">
-              {formatMoney(doc.total_ttc)} TTC
+              {t("billing.form.amountTtc", {
+                amount: formatMoney(doc.total_ttc),
+              })}
             </Text>
           </Text>
         </Card>
 
-        <Text className="mb-1 text-xs text-muted-foreground">
-          {t("billing.actions.changeStatus")}
-        </Text>
-        <View className="mb-3 flex-row flex-wrap gap-2">
-          {allowedTransitions(doc.kind, doc.status).map((next) => (
+        {lockedByFacture ? (
+          <Card className="mb-3" testID="doc-locked-by-facture">
+            <Text className="mb-2 text-sm text-muted-foreground">
+              {t("billing.actions.convertedLocked")}
+            </Text>
             <Button
-              key={next}
-              testID={`status-${next}`}
-              label={t(
-                `billing.transitions.${transitionLabelKey(doc.kind, doc.status, next)}`,
-              )}
+              testID="doc-open-facture"
+              label={t("billing.actions.openFacture")}
               size="sm"
               variant="secondary"
-              disabled={busy}
               onPress={() =>
-                setStatus.mutate(
-                  { id: doc.id, new_status: next },
-                  {
-                    onError: (error) => {
-                      if (error instanceof ApiError && error.status === 409)
-                        showToast(
-                          t("billing.actions.invalidTransition"),
-                          "error",
-                        );
-                    },
-                  },
-                )
+                router.push(`/billing/documents/${doc.converted_to_facture_id}`)
               }
             />
-          ))}
-        </View>
+          </Card>
+        ) : (
+          <>
+            <Text className="mb-1 text-xs text-muted-foreground">
+              {t("billing.actions.changeStatus")}
+            </Text>
+            <View className="mb-3 flex-row flex-wrap gap-2">
+              {allowedTransitions(doc.kind, doc.status).map((next) => (
+                <Button
+                  key={next}
+                  testID={`status-${next}`}
+                  label={t(
+                    `billing.transitions.${transitionLabelKey(doc.kind, doc.status, next)}`,
+                  )}
+                  size="sm"
+                  variant="secondary"
+                  disabled={busy}
+                  onPress={() =>
+                    setStatus.mutate(
+                      { id: doc.id, new_status: next },
+                      {
+                        onError: (error) => {
+                          if (error instanceof ApiError && error.status === 409)
+                            showToast(
+                              t("billing.actions.invalidTransition"),
+                              "error",
+                            );
+                        },
+                      },
+                    )
+                  }
+                />
+              ))}
+            </View>
+          </>
+        )}
         <View className="mb-4 flex-row flex-wrap gap-2">
           <Button
             testID="doc-pdf"
@@ -201,6 +254,7 @@ export default function BillingDocumentScreen() {
           mode="edit"
           initial={draftFromSeed(doc.kind, doc)}
           documentNumber={doc.document_number}
+          readOnly={lockedByFacture}
           submitting={update.isPending}
           submitLabel={t("common.save")}
           onSubmit={(draft) =>
@@ -270,6 +324,9 @@ export default function BillingDocumentScreen() {
             value={dueDate}
             onChange={setDueDate}
             clearable
+            // The facture is issued today; the API refuses a due date before it.
+            minimumDate={toIsoDate(new Date())}
+            maximumDate={MAX_BUSINESS_DATE}
             doneLabel={t("common.ok")}
           />
           <Input
@@ -277,6 +334,7 @@ export default function BillingDocumentScreen() {
             label={t("billing.form.paymentTerms")}
             value={paymentTerms}
             onChangeText={setPaymentTerms}
+            maxLength={500}
           />
           <Button
             testID="convert-submit"

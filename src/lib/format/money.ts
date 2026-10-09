@@ -23,6 +23,26 @@ export function formatMoney(
 }
 
 /**
+ * A line's unit price like formatMoney, but with the decimals it carries (`15,015 €`, `200,00 €`):
+ * quantity × a price rounded to the cent would not give the line amount shown next to it.
+ * Capped at 6 decimals, which also hides float noise.
+ */
+export function formatUnitPrice(
+  amount: number | string | null | undefined,
+  currency = "EUR",
+): string {
+  if (amount === null || amount === undefined || amount === "") return "";
+  const value = typeof amount === "string" ? Number(amount) : amount;
+  if (!Number.isFinite(value)) return "";
+  return new Intl.NumberFormat(LOCALE_TAG[i18n.language] ?? "en-GB", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
+  }).format(value);
+}
+
+/**
  * Plain number (quantity, VAT rate, day count) in the active locale, trailing zeros dropped:
  * `1,5` (fr, vi), `1.5` (en). Null or unreadable → empty string.
  */
@@ -94,4 +114,23 @@ export function parseMoneyInput(text: string): number | null {
     return null;
   const value = Number(normalized);
   return Number.isFinite(value) ? value : null;
+}
+
+/** A typed amount rounded to the cents the server stores, so "0,004" reads as 0 rather than passing a "> 0" check. */
+export function parseCentsInput(text: string): number | null {
+  const value = parseMoneyInput(text);
+  return value === null ? null : Math.round(value * 100) / 100;
+}
+
+/**
+ * A computed amount as the text of an amount field: cents only, the locale's decimal mark, no
+ * thousands separator (`49,66` in fr/vi, `49.66` in en), so float noise such as `149.99 - 100.33`
+ * (`49.66000000000001`) is never pre-filled. parseMoneyInput reads it back.
+ */
+export function formatAmountInput(value: number): string {
+  if (!Number.isFinite(value)) return "";
+  return new Intl.NumberFormat(LOCALE_TAG[i18n.language] ?? "en-GB", {
+    maximumFractionDigits: 2,
+    useGrouping: false,
+  }).format(Number(value.toPrecision(15)));
 }

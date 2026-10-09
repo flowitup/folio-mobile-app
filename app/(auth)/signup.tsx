@@ -55,6 +55,14 @@ export default function SignupScreen() {
 
   async function sendCode() {
     if (!normalized) return setError(t("login.invalidPhone"));
+    if (normalized === phone && secondsLeft > 0) {
+      // "Change number" then the same number again inside the backend's per-number cooldown:
+      // the code already texted is still valid, and asking for another only answers 429 and
+      // strands the user on this step (the sign-in screen's hasCodeInFlight rule).
+      setError(null);
+      setStep("code");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {

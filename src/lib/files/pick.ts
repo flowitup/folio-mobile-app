@@ -36,13 +36,31 @@ function stamp(now: Date): string {
   ].join("-");
 }
 
+/**
+ * File extension for a MIME type. The raw subtype is not one: "video/quicktime" would
+ * give ".quicktime", which the upload API refuses.
+ */
+const EXTENSION_BY_MIME: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/heic": "heic",
+  "video/mp4": "mp4",
+  "video/quicktime": "mov",
+  "video/webm": "webm",
+};
+
 export function imageAssetToFile(
   asset: ImagePicker.ImagePickerAsset,
   now: Date = new Date(),
 ): PickedFile {
   const isVideo = asset.type === "video";
   const mimeType = asset.mimeType ?? (isVideo ? "video/mp4" : "image/jpeg");
-  const extension = mimeType.split("/")[1] ?? (isVideo ? "mp4" : "jpg");
+  // A meaningless name ("31.mov") still tells the right extension; keep it.
+  const extension =
+    asset.fileName?.match(/\.([A-Za-z0-9]+)$/)?.[1]?.toLowerCase() ??
+    EXTENSION_BY_MIME[mimeType.toLowerCase()] ??
+    (isVideo ? "mp4" : "jpg");
   const given =
     asset.fileName && !MEANINGLESS_NAME.test(asset.fileName)
       ? asset.fileName
