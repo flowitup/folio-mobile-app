@@ -80,7 +80,7 @@ describe("overview metrics", () => {
 
   it("computes budget and pending refunds", () => {
     expect(computeBudgetMetrics(1000, 160, 500)).toMatchObject({
-      left: 840,
+      left: 500,
       pct: 16,
       usesBudget: true,
     });
@@ -91,16 +91,17 @@ describe("overview metrics", () => {
     expect(computePendingRefunds(invoices)).toEqual({ count: 1, total: 40 });
   });
 
-  it("measures a budget against the credit-line spend, like the web", () => {
-    expect(computeBudgetMetrics(1000, 160, 500, 100)).toMatchObject({
-      spent: 100,
-      left: 900,
-      pct: 10,
-    });
-    // No budget: every expense counts, creditSpent is ignored.
-    expect(computeBudgetMetrics(null, 160, 500, 100)).toMatchObject({
+  it("measures a budget against the funds released, like the web", () => {
+    // 1000 credit, 500 released, 160 spent: 500 of credit still to release.
+    expect(computeBudgetMetrics(1000, 160, 500)).toMatchObject({
       spent: 160,
-      pct: 32,
+      left: 500,
+      pct: 16,
+    });
+    // No budget: released funds minus every expense.
+    expect(computeBudgetMetrics(null, 160, 500)).toMatchObject({
+      spent: 160,
+      left: 340,
     });
   });
 

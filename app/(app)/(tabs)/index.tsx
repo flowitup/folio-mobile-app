@@ -92,9 +92,9 @@ function OverviewTabContent() {
     const series = buildMonthlySpendSeries(rows, 6, referenceDate);
     return {
       spentTotal,
-      // Measured against the funds released into the project and every purse's spend, so
-      // "remaining" equals the two purses' left added up (as on the web Overview).
-      budget: computeBudgetMetrics(null, purseSpent, fundsReleased),
+      // Remaining = budget minus the funds released (as on the web Overview); the spend share
+      // counts every purse's spend.
+      budget: computeBudgetMetrics(budgetValue, purseSpent, fundsReleased),
       monthDelta: computeMonthDelta(series),
       pendingCompany: computePendingRefunds(rows),
       bank: computeBankReleaseMetrics(budgetValue, fundsReleased),
