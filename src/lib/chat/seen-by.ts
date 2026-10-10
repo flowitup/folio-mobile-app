@@ -15,7 +15,7 @@ export interface SeenMember {
 interface SeenMessage {
   id: string;
   created_at: string;
-  /** `null` for an assistant message (no member ever needs to be excluded as "its own sender"). */
+  /** `null` for a message without a member sender (never excluded as "its own sender"). */
   sender_id: string | null;
 }
 

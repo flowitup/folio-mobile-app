@@ -1789,29 +1789,7 @@
     "recordingFailed": "Le micro n'a pas pu démarrer.",
     "recordingLost": "L'enregistrement a été perdu.",
     "kindAdmin": "Administration",
-    "adminSubtitle": "Finances de l'entreprise, paie et activité de Folio",
-    "mentionSuggestion": "Mentionner Folio",
-    "replyToFolio": "Continuer",
-    "replyingTo": "Réponse à {{name}}"
-  },
-  "assistant": {
-    "statusQueued": "En attente",
-    "statusRunning": "En cours…",
-    "statusNotReady": "Pas encore prêt",
-    "statusBlocked": "Bloqué",
-    "statusDone": "Terminé",
-    "statusFailed": "Échec",
-    "statusNotFound": "Introuvable",
-    "badgeConfirmed": "Confirmé",
-    "badgeToConfirm": "À confirmer",
-    "badgeNeedsReview": "À vérifier",
-    "answered": "Répondu",
-    "openInvoice": "Ouvrir la facture — {{title}}",
-    "openMaterial": "Ouvrir le matériau — {{title}}",
-    "actionFailed": "L'action n'a pas pu être envoyée.",
-    "actionQueueUnavailable": "Folio est occupé, réessayez dans un instant.",
-    "notAddressed": "Seul l'auteur de la demande peut choisir",
-    "disabled": "L'assistant Folio n'est pas activé sur ce serveur."
+    "adminSubtitle": "Finances de l'entreprise, paie et activité de Folio"
   },
   "signup": {
     "title": "Créez votre profil",

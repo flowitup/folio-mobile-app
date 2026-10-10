@@ -54,7 +54,7 @@ export function timeOf(iso: string): string {
 }
 
 /** Whether a message should show the sender header (first of a run from one sender). A
- * `null` sender (the assistant, which has none) groups with other `null`-sender messages. */
+ * `null` sender (a legacy system row) groups with other `null`-sender messages. */
 export function showsSender<
   T extends { sender_id: string | null; mine: boolean },
 >(messages: T[], index: number): boolean {
