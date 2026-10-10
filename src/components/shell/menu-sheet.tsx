@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Pressable,
@@ -19,6 +20,7 @@ import {
   useBillingAccess,
   useMyCompanies,
 } from "@/features/companies/companies-api";
+import { useHiddenSections } from "@/features/companies/hidden-sections";
 import { useInventoryItems } from "@/features/inventory/inventory-api";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useProducts, useSuppliers } from "@/features/library/library-api";
@@ -109,6 +111,7 @@ export function MenuSheet() {
   const { user } = useAuth();
   const billing = useBillingAccess();
   const companyAdmin = isCompanyAdminAnywhere(user);
+  const hidden = useHiddenSections();
   const companies = useMyCompanies();
   const companyId = companies.data?.[0]?.id ?? null;
   const products = useProducts(companyId, {
@@ -127,7 +130,8 @@ export function MenuSheet() {
   };
 
   const projectSections = MENU_PROJECT_SECTIONS.filter(
-    (section) => !section.requiresUpdate || canUpdateProject,
+    (section) =>
+      (!section.requiresUpdate || canUpdateProject) && !hidden.has(section.key),
   );
 
   const librarySub =
@@ -147,45 +151,67 @@ export function MenuSheet() {
       })
     : undefined;
 
+  const areaRows: Omit<ComponentProps<typeof MenuRow>, "last">[] = [
+    ...(billing.allowed && !hidden.has("billing")
+      ? [
+          {
+            testID: "menu-billing",
+            icon: "file-text" as const,
+            title: t("shell.billingTitle"),
+            subtitle: t("shell.billingSub"),
+            onPress: () => go("/billing"),
+          },
+        ]
+      : []),
+    ...(hidden.has("library")
+      ? []
+      : [
+          {
+            testID: "menu-library",
+            icon: "package" as const,
+            title: t("library.title"),
+            subtitle: librarySub,
+            onPress: () => go("/library"),
+          },
+        ]),
+    ...(hidden.has("inventory")
+      ? []
+      : [
+          {
+            testID: "menu-inventory",
+            icon: "tool" as const,
+            title: t("inventory.title"),
+            subtitle: inventorySub,
+            onPress: () => go("/inventory"),
+          },
+        ]),
+    ...(companyAdmin
+      ? [
+          {
+            testID: "menu-company-members",
+            icon: "user-plus" as const,
+            title: t("companies.members.title"),
+            onPress: () => go("/company/members"),
+          },
+        ]
+      : []),
+  ];
+
   return (
     <ShellSheet open={sheet === "menu"} testID="menu-sheet">
       <ScrollView style={{ maxHeight: height * 0.62 }} bounces={false}>
         <Eyebrow className="mb-2">{t("shell.menu")}</Eyebrow>
-        <View className="overflow-hidden rounded-xl border border-line bg-card">
-          {billing.allowed ? (
-            <MenuRow
-              testID="menu-billing"
-              icon="file-text"
-              title={t("shell.billingTitle")}
-              subtitle={t("shell.billingSub")}
-              onPress={() => go("/billing")}
-            />
-          ) : null}
-          <MenuRow
-            testID="menu-library"
-            icon="package"
-            title={t("library.title")}
-            subtitle={librarySub}
-            onPress={() => go("/library")}
-          />
-          <MenuRow
-            testID="menu-inventory"
-            icon="tool"
-            title={t("inventory.title")}
-            subtitle={inventorySub}
-            onPress={() => go("/inventory")}
-            last={!companyAdmin}
-          />
-          {companyAdmin ? (
-            <MenuRow
-              testID="menu-company-members"
-              icon="user-plus"
-              title={t("companies.members.title")}
-              onPress={() => go("/company/members")}
-              last
-            />
-          ) : null}
-        </View>
+        {areaRows.length > 0 ? (
+          <View className="overflow-hidden rounded-xl border border-line bg-card">
+            {areaRows.map((row, index) => (
+              <MenuRow
+                key={row.testID}
+                {...row}
+                last={index === areaRows.length - 1}
+              />
+            ))}
+          </View>
+        ) : null}
         {projectId && !workerMode ? (
           <>
             <Eyebrow className="mb-2 mt-4">

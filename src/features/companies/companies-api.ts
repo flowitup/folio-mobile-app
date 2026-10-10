@@ -25,6 +25,8 @@ export interface Company {
   prefix_override: string | null;
   /** Shared join code, exposed to the company's admins (D1); null when none is active. */
   join_code?: string | null;
+  /** Navigation sections the company hides for its members; absent from an older API. */
+  hidden_sections?: string[];
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -135,7 +137,9 @@ export interface CreateCompanyPayload {
   default_payment_terms?: string | null;
   prefix_override?: string | null;
 }
-export type UpdateCompanyPayload = Partial<CreateCompanyPayload>;
+export type UpdateCompanyPayload = Partial<CreateCompanyPayload> & {
+  hidden_sections?: string[];
+};
 
 export const companyAdminKeys = {
   allCompanies: ["companies", "all"] as const,

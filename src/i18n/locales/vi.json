@@ -204,6 +204,11 @@
         "light": "Luôn dùng nền sáng",
         "dark": "Luôn dùng nền tối"
       }
+    },
+    "hiddenSections": {
+      "title": "Ẩn mục",
+      "intro": "Tắt những mục {{company}} không dùng. Mục bị tắt sẽ biến mất khỏi Menu của mọi thành viên trong công ty.",
+      "adminOnly": "Chỉ quản trị viên công ty mới đổi được cài đặt này."
     }
   },
   "members": {
