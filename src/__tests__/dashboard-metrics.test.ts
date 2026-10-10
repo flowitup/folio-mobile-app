@@ -91,6 +91,13 @@ describe("overview metrics", () => {
     expect(computePendingRefunds(invoices)).toEqual({ count: 1, total: 40 });
   });
 
+  it("measures a budget against every expense, personal included", () => {
+    expect(computeBudgetMetrics(1000, 160, 500)).toMatchObject({
+      left: 840,
+      pct: 16,
+    });
+  });
+
   it("builds the draw ledger", () => {
     expect(computeBankReleaseMetrics(1000, 500)).toMatchObject({
       remaining: 500,
