@@ -1,4 +1,6 @@
-import { screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+
+import i18n from "@/i18n";
 
 import ProjectSettingsSection from "../../app/(app)/(tabs)/projects/[id]/settings";
 import {
@@ -119,5 +121,31 @@ describe("Project settings per role", () => {
     await waitFor(() =>
       expect(screen.queryByTestId("project-edit")).toBeNull(),
     );
+  });
+});
+
+describe("Project settings load error", () => {
+  it("offers Retry, which loads the settings once the API answers again", async () => {
+    mockCurrent = persona("admin");
+    const answer = answerWithOwner();
+    let down = true;
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      down && path === "/api/v1/projects/{project_id}"
+        ? {
+            error: { error: "ServiceUnavailable" },
+            response: { status: 503, statusText: "SERVICE UNAVAILABLE" },
+          }
+        : answer(path, options),
+    );
+    await renderWithProviders(<ProjectSettingsSection />);
+
+    await waitFor(() => expect(screen.getByTestId("error-state")).toBeTruthy());
+    down = false;
+    await fireEvent.press(screen.getByText(i18n.t("common.retry")));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("project-edit")).toBeTruthy(),
+    );
+    expect(screen.queryByTestId("error-state")).toBeNull();
   });
 });

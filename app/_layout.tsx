@@ -27,6 +27,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider, useAuth } from "@/auth/auth-context";
+import { SessionUnavailable } from "@/components/auth/session-unavailable";
 import { DismissSheetsOnRouteChange } from "@/components/shell/dismiss-sheets-on-route-change";
 import { ToastProvider } from "@/components/ui/toast";
 import { shouldRetryQuery } from "@/lib/query/api-error";
@@ -73,6 +74,7 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const { status } = useAuth();
 
   if (status === "loading" || !fontsReady) return <Splash />;
+  if (status === "unavailable") return <SessionUnavailable />;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

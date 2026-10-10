@@ -22,7 +22,10 @@ import type {
   BillingDocumentStatus,
 } from "@/features/billing/billing-types";
 import { useBillingAccess } from "@/features/companies/companies-api";
-import { STATUSES_BY_KIND } from "@/lib/billing/billing-status-transitions";
+import {
+  STATUSES_BY_KIND,
+  statusLabelKey,
+} from "@/lib/billing/billing-status-transitions";
 import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
@@ -137,7 +140,7 @@ export default function BillingHub() {
                 { value: "__all__", label: t("billing.list.allStatuses") },
                 ...STATUSES_BY_KIND[kind].map((value) => ({
                   value,
-                  label: t(`billing.status.${value}`),
+                  label: t(`billing.status.${statusLabelKey(kind, value)}`),
                 })),
               ]}
               onChange={(value) =>
@@ -197,7 +200,9 @@ export default function BillingHub() {
                     <Text
                       className={`font-sans-semibold text-[11px] uppercase tracking-[0.44px] ${STATUS_CLASS[doc.status]}`}
                     >
-                      {t(`billing.status.${doc.status}`)}
+                      {t(
+                        `billing.status.${statusLabelKey(doc.kind, doc.status)}`,
+                      )}
                     </Text>
                   </View>
                 </Pressable>

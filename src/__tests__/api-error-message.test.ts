@@ -51,8 +51,67 @@ describe("apiErrorMessage", () => {
     );
   });
 
+  it("tells the last admin to promote someone instead of 'refresh and try again'", () => {
+    // Leave / demote / remove the company's only admin: a 409 that a refresh never fixes.
+    const lastAdmin = new ApiError(
+      409,
+      "Conflict",
+      "Company must keep at least one admin",
+      "last_admin",
+    );
+    const tVi = i18n.getFixedT("vi");
+    expect(apiErrorMessage(lastAdmin, tVi, "vi")).toBe(
+      "Công ty phải có ít nhất một quản trị viên. Hãy chỉ định một thành viên khác làm quản trị viên trước.",
+    );
+    expect(apiErrorMessage(lastAdmin, t, "fr")).toBe(
+      t("companies.errors.lastAdmin"),
+    );
+    expect(apiErrorMessage(lastAdmin, t, "fr")).not.toBe(
+      t("common.errors.conflict"),
+    );
+    expect(apiErrorMessage(lastAdmin, tEn, "en")).toBe(
+      tEn("companies.errors.lastAdmin"),
+    );
+  });
+
   it("falls back to a generic message for an unmapped status", () => {
     const odd = new ApiError(418, "Teapot", "I'm a teapot");
     expect(apiErrorMessage(odd, t, "vi")).toBe(t("common.requestFailed"));
+  });
+});
+
+describe("apiErrorMessage — worker phone", () => {
+  it("names the phone field when the API refuses a worker's phone", () => {
+    const invalidPhone = new ApiError(
+      400,
+      "InvalidPhone",
+      "Invalid phone number",
+    );
+    expect(apiErrorMessage(invalidPhone, t, "fr")).toBe(
+      "Saisissez un numéro de téléphone valide, par ex. 06 12 34 56 78 ou +84 912 345 678.",
+    );
+    expect(apiErrorMessage(invalidPhone, tEn, "en")).toBe(
+      tEn("common.errors.invalidPhone"),
+    );
+  });
+});
+
+describe("apiErrorMessage — person already on the project", () => {
+  it("says the person is already a worker instead of 'refresh and try again'", () => {
+    const twice = new ApiError(
+      409,
+      "WorkerAlreadyOnProject",
+      "This person is already a worker on this project",
+    );
+    expect(apiErrorMessage(twice, t, "fr")).toBe(
+      "Cette personne est déjà ouvrier sur ce chantier (peut-être désactivé).",
+    );
+    expect(apiErrorMessage(twice, t, "fr")).not.toBe(
+      t("common.errors.conflict"),
+    );
+    const tVi = i18n.getFixedT("vi");
+    expect(apiErrorMessage(twice, tVi, "vi")).toBe(
+      tVi("labor.workers.alreadyOnProject"),
+    );
   });
 });

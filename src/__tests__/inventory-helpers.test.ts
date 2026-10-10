@@ -125,7 +125,7 @@ describe("summarizeInventory", () => {
 });
 
 describe("groupInventoryByLocation", () => {
-  it("puts warehouses first, then sites, and dangling references last without a title", () => {
+  it("puts warehouses first, then sites, and sites the viewer cannot name last without a title", () => {
     const groups = groupInventoryByLocation(ITEMS, {
       warehouses: [WAREHOUSE],
       sites: [{ id: "p1", name: "Villa Thảo Điền", address: "Quận 2" }],
@@ -133,7 +133,7 @@ describe("groupInventoryByLocation", () => {
     expect(groups.map((group) => group.key)).toEqual([
       "warehouse:w1",
       "site:p1",
-      "unknown:site",
+      "other:site",
     ]);
     expect(groups[0]).toMatchObject({
       kind: "warehouse",
@@ -147,12 +147,29 @@ describe("groupInventoryByLocation", () => {
       subtitle: "Quận 2",
       quantity: 2,
     });
+    // A project missing from the viewer's list is one they are not assigned to (web: same key).
     expect(groups[2]).toMatchObject({
       kind: "site",
       title: null,
       subtitle: null,
+      otherSite: true,
       quantity: 1,
     });
+    expect(groups[0].otherSite).toBe(false);
+  });
+
+  it("keeps rows with no place at all under an unknown location", () => {
+    const groups = groupInventoryByLocation(
+      [
+        item({ id: "s", location_type: "site", warehouse_id: null }),
+        item({ id: "w", warehouse_id: "w-gone" }),
+      ],
+      { warehouses: [WAREHOUSE], sites: [] },
+    );
+    expect(groups.map((group) => [group.key, group.otherSite])).toEqual([
+      ["unknown:site", false],
+      ["unknown:warehouse", false],
+    ]);
   });
 
   it("sorts rows by name inside a group and groups by name", () => {

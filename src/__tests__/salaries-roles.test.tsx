@@ -8,6 +8,7 @@ import {
   answerGet,
   callsTo,
   containing,
+  ok,
   persona,
   renderWithProviders,
 } from "./helpers/release-qa-fixtures";
@@ -47,9 +48,16 @@ jest.mock("@/api/client", () => ({
   },
 }));
 
+const mockShowToast = jest.fn();
+jest.mock("@/components/ui/toast", () => ({
+  ...jest.requireActual("@/components/ui/toast"),
+  showToast: (...args: unknown[]) => mockShowToast(...args),
+}));
+
 const INVOICES_PATH = "/api/v1/projects/{project_id}/invoices";
 
 beforeEach(() => {
+  mockShowToast.mockReset();
   mockGet.mockReset();
   mockPost.mockReset();
   mockDelete.mockReset();
@@ -76,6 +84,69 @@ describe("Salaries per role", () => {
     await waitFor(() =>
       expect(screen.getByTestId("salary-amount").props.value).toBe("150"),
     );
+  });
+
+  it("files a payment made just after local midnight on the local day, not the UTC one", async () => {
+    mockCurrent = persona("manager");
+    mockPost.mockImplementation(async () => ok({}));
+    await renderWithProviders(<ProjectSalariesSection />);
+    await fireEvent.press(await screen.findByTestId(`salary-pay-${MONTH}`));
+    await waitFor(() =>
+      expect(screen.getByTestId("salary-amount").props.value).toBe("150"),
+    );
+
+    // A phone in Vietnam (UTC+7) at 06:30 on 1 Nov, whose UTC calendar day is still 31 Oct.
+    // Only the local calendar fields are shifted; the instant stays the same.
+    const RealDate = Date;
+    const NOW = RealDate.parse("2026-10-31T23:30:00Z");
+    const inHanoi = (date: Date) =>
+      new RealDate(date.getTime() + 7 * 3_600_000);
+    class HanoiDate extends RealDate {
+      constructor(...args: unknown[]) {
+        super(...((args.length ? args : [NOW]) as [number]));
+      }
+      static now() {
+        return NOW;
+      }
+      getFullYear() {
+        return inHanoi(this).getUTCFullYear();
+      }
+      getMonth() {
+        return inHanoi(this).getUTCMonth();
+      }
+      getDate() {
+        return inHanoi(this).getUTCDate();
+      }
+    }
+    global.Date = HanoiDate as DateConstructor;
+    try {
+      await fireEvent.press(screen.getByTestId("salary-pay-submit"));
+    } finally {
+      global.Date = RealDate;
+    }
+
+    await waitFor(() =>
+      expect(callsTo(mockPost, INVOICES_PATH)).toHaveLength(1),
+    );
+    expect(callsTo(mockPost, INVOICES_PATH)[0][1].body.issue_date).toBe(
+      "2026-11-01",
+    );
+  });
+
+  it("speaks of a payment, not an invoice, in one toast", async () => {
+    mockCurrent = persona("manager");
+    mockPost.mockImplementation(async () => ok({}));
+    await renderWithProviders(<ProjectSalariesSection />);
+    await fireEvent.press(await screen.findByTestId(`salary-pay-${MONTH}`));
+    await waitFor(() =>
+      expect(screen.getByTestId("salary-amount").props.value).toBe("150"),
+    );
+    await fireEvent.press(screen.getByTestId("salary-pay-submit"));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+    expect(mockShowToast.mock.calls).toEqual([
+      [i18n.t("salaries.paidToast"), "success"],
+    ]);
   });
 
   it("shows a member the same months read-only", async () => {

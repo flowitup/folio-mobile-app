@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Eyebrow } from "@/components/ui/typography";
 import { normalizePhone } from "@/lib/auth/phone-number";
+import { useCodeExpiry } from "@/lib/auth/use-code-expiry";
 import { INK_BLOCK } from "@/theme/tokens";
 
 const RESEND_SECONDS = 60;
@@ -35,9 +36,9 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
   const [now, setNow] = useState(() => Date.now());
   const [submitting, setSubmitting] = useState(false);
   // The backend decides the code's lifetime (OTP_TTL_SECONDS) and reports it on
-  // every request, so the sheet quotes what was actually sent rather than a
-  // number that silently drifts from the server's.
-  const [expiresInMinutes, setExpiresInMinutes] = useState(5);
+  // every request, so the sheet counts down what was actually sent rather than a
+  // number that silently drifts from the server's — and says when it has expired.
+  const [codeExpiresAt, setCodeExpiresAt] = useState<number | null>(null);
   // The code the backend has already rejected. Sending it again would spend
   // another of the five attempts for nothing, so the sheet waits for a change —
   // state, not a ref, because the sign-in button's own state depends on it.
@@ -51,6 +52,11 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [resendAt, now]);
+  const { minutesLeft, expired: codeExpired } = useCodeExpiry(
+    codeExpiresAt,
+    now,
+    setNow,
+  );
 
   const phone = normalizePhone(phoneInput);
   const secondsLeft =
@@ -65,6 +71,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
   const canVerify =
     new RegExp(`^\\d{${CODE_LENGTH}}$`).test(code) &&
     !submitting &&
+    !codeExpired &&
     code !== lastSubmitted;
 
   async function sendCode() {
@@ -80,14 +87,15 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     setError(null);
     try {
       const expiresIn = await requestOtp(phone);
-      setExpiresInMinutes(Math.max(1, Math.round(expiresIn / 60)));
+      const sentAt = Date.now();
+      setCodeExpiresAt(sentAt + expiresIn * 1000);
       setSentTo(phone);
       setCodeSentTo(phone);
       // A new code invalidates whatever is still in the boxes.
       setCode("");
       setLastSubmitted(null);
-      setResendAt(Date.now() + RESEND_SECONDS * 1000);
-      setNow(Date.now());
+      setResendAt(sentAt + RESEND_SECONDS * 1000);
+      setNow(sentAt);
     } catch (caught) {
       setError((caught as Error).message);
     } finally {
@@ -100,8 +108,9 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     // would still see the value from before that keystroke.
     const submitted = explicitCode ?? code;
     // The backend counts a wrong code against a 5-attempt limit, so never let an
-    // auto sign-in and a button press of the same code both go out.
-    if (submitting || !sentTo) return;
+    // auto sign-in and a button press of the same code both go out. An expired
+    // code can only be refused, and would spend an attempt too.
+    if (submitting || !sentTo || codeExpired) return;
     if (!new RegExp(`^\\d{${CODE_LENGTH}}$`).test(submitted)) return;
     if (submitted === lastSubmitted) return;
     setLastSubmitted(submitted);
@@ -238,13 +247,27 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
                 : t("login.resend")}
             </Text>
           </Pressable>
-          <Text className="font-sans text-[12.5px] text-muted">
-            {t("login.codeExpires", { minutes: expiresInMinutes })}
+          <Text
+            testID="login-code-expiry"
+            className={`font-sans text-[12.5px] ${codeExpired ? "text-negative" : "text-muted"}`}
+          >
+            {codeExpired
+              ? t("login.codeExpired")
+              : t("login.codeExpires", { count: minutesLeft })}
           </Text>
         </View>
       ) : (
         <View className="mb-[18px] mt-3">
           <SignInErrorLine error={error} />
+          {/* The retry stays off once the code has expired: say why. */}
+          {codeExpired ? (
+            <Text
+              testID="login-code-expiry"
+              className="mb-3 font-sans text-[12.5px] text-negative"
+            >
+              {t("login.codeExpired")}
+            </Text>
+          ) : null}
           <Pressable
             testID="login-resend"
             accessibilityRole="button"

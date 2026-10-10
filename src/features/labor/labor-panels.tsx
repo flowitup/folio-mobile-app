@@ -5,7 +5,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { Badge, Card, EmptyState } from "@/components/ui/primitives";
 import type { LaborEntry, Worker } from "@/features/labor/labor-types";
-import { formatMoney } from "@/lib/format/money";
+import { formatMoney, formatNumber } from "@/lib/format/money";
+import { dayCount } from "@/lib/labor/day-count";
 import { useTokens } from "@/theme/tokens";
 
 /** Colored worker used by every panel: the worker plus its avatar color. */
@@ -22,12 +23,24 @@ export function dayCardTitle(iso: string, localeTag: string): string {
 
 /** Shift badge label + tone for an entry; shared with the attendance list view. */
 export function shiftChip(entry: LaborEntry, t: (key: string) => string) {
+  // Supplement hours logged on top of a shift are shown next to it, as on the web.
+  const extra =
+    entry.supplement_hours > 0 ? ` + ${entry.supplement_hours} h` : "";
   if (entry.shift_type === "full")
-    return { label: t("labor.shift.full"), tone: "success" as const };
+    return {
+      label: `${t("labor.shift.full")}${extra}`,
+      tone: "success" as const,
+    };
   if (entry.shift_type === "half")
-    return { label: t("labor.shift.half"), tone: "warning" as const };
+    return {
+      label: `${t("labor.shift.half")}${extra}`,
+      tone: "warning" as const,
+    };
   if (entry.shift_type === "overtime")
-    return { label: t("labor.shift.overtime"), tone: "accent" as const };
+    return {
+      label: `${t("labor.shift.overtime")}${extra}`,
+      tone: "accent" as const,
+    };
   return { label: `+${entry.supplement_hours} h`, tone: "accent" as const };
 }
 
@@ -54,7 +67,7 @@ export function LaborKpis({ days, cost, unpaid, showPay = true }: KpiProps) {
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {days}
+          {formatNumber(days, 2) || "0"}
         </Text>
       </Card>
       {showPay ? (
@@ -273,7 +286,9 @@ export function WorkersPanel({
         <Pressable
           key={worker.id}
           testID={`worker-card-${worker.id}`}
-          accessibilityRole="button"
+          // Edit, rates and deactivate all need project:manage_labor.
+          accessibilityRole={canManage ? "button" : undefined}
+          disabled={!canManage}
           onPress={() => onWorker(worker)}
           className="active:opacity-70"
         >
@@ -306,7 +321,10 @@ export function WorkersPanel({
                 {formatMoney(worker.current_daily_rate ?? worker.daily_rate)}
               </Text>
               <Text className="font-sans text-[10.5px] text-muted">
-                {t("labor.workers.perDay", { count: daysOf(worker.id) })}
+                {t("labor.workers.perDay", {
+                  count: dayCount(daysOf(worker.id)),
+                  value: formatNumber(daysOf(worker.id), 2) || "0",
+                })}
               </Text>
             </View>
           </Card>

@@ -9,16 +9,16 @@ import type { HelpCatalogue, HelpChrome } from "./types";
 export const helpCatalogueFr: HelpCatalogue = [
   {
     id: "getting-started",
-    title: "Se connecter et rejoindre une société",
+    title: "Se connecter et rejoindre une entreprise",
     purpose:
-      "Folio vous connecte avec votre numéro de téléphone et un code reçu par SMS — il n'y a pas de mot de passe. Avant de voir quoi que ce soit, votre compte doit appartenir à une société.",
+      "Folio vous connecte avec votre numéro de téléphone et un code reçu par SMS — il n'y a pas de mot de passe. Avant de voir quoi que ce soit, votre compte doit appartenir à une entreprise.",
     steps: [
       "Saisissez votre numéro de téléphone et touchez « Envoyer le code ». Numéros français uniquement, sans le 0 initial.",
       "Entrez les six chiffres reçus par SMS. La connexion se fait automatiquement dès le sixième chiffre.",
       "Pas encore de compte ? Touchez « Créer un compte », confirmez votre numéro de la même manière, saisissez votre nom et touchez « Créer mon profil ».",
-      "Si vous n'appartenez à aucune société, choisissez « Créer une entreprise » — renseignez la raison sociale et l'adresse — ou « Rejoindre avec un code » et saisissez le code à 8 caractères fourni par votre administrateur.",
+      "Si vous n'appartenez à aucune entreprise, choisissez « Créer une entreprise » — renseignez la raison sociale et l'adresse — ou « Rejoindre avec un code » et saisissez le code à 8 caractères fourni par votre administrateur.",
       "Si vous avez rejoint comme membre sans avoir encore de chantier, vous restez sur « Presque prêt » jusqu'à ce qu'un administrateur vous affecte à un chantier. Tirez vers le bas pour actualiser.",
-      "Plus tard, Paramètres → « Rejoindre une autre société » rouvre le même écran de code.",
+      "Plus tard, Paramètres → « Rejoindre une autre entreprise » rouvre le même écran de code.",
     ],
     whoCanDoIt:
       "Tout le monde. « Créer un compte » n'apparaît que si le serveur autorise l'inscription libre.",
@@ -41,10 +41,10 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Touchez la cloche pour ce qui vous attend, et le point d'interrogation pour ce guide.",
     ],
     whoCanDoIt:
-      "Tout le monde peut changer de chantier et ouvrir son compte. Créer un chantier demande le droit de créer un chantier ou l'administration de la société. Devis et factures, membres de l'entreprise et documents n'apparaissent que pour les personnes qui y ont droit.",
+      "Tout le monde peut changer de chantier et ouvrir son compte. Créer un chantier demande le droit de créer un chantier ou l'administration de l'entreprise. Devis et factures, membres de l'entreprise et documents n'apparaissent que pour les personnes qui y ont droit.",
     gotchas: [
       "L'onglet Dépenses dessine son propre en-tête avec le sélecteur de mois : la cloche, votre avatar et ce guide n'y figurent pas — ouvrez le guide depuis un autre onglet.",
-      "Un nouveau chantier est créé dans votre société principale et vous en devenez le responsable.",
+      "Un nouveau chantier est créé dans votre entreprise principale et vous en devenez le responsable.",
     ],
   },
   {
@@ -55,7 +55,7 @@ export const helpCatalogueFr: HelpCatalogue = [
     steps: [
       "Lisez le chiffre principal en haut — ce qui reste, face à « Dépensé … sur … de crédit ».",
       "Utilisez les actions rapides : « Facture » ouvre une nouvelle dépense, « Débloquer » ouvre le même formulaire préréglé sur un déblocage bancaire, « Payer la MO » saute à l'onglet Main-d'œuvre sur son segment Paiements.",
-      "Surveillez les tuiles d'échéance : « Impayé » mène à « Payer », « À rembourser » ouvre les dépenses que la société vous doit encore.",
+      "Surveillez les tuiles d'échéance : « Impayé » mène à « Payer », « À rembourser » ouvre les dépenses que l'entreprise vous doit encore.",
       "Touchez la carte des dépenses du mois pour ouvrir le journal complet de ce mois.",
       "Touchez « Agenda » sur la carte « Cette semaine » pour ouvrir le Planning.",
       "« Aujourd'hui sur site » indique combien d'ouvriers sont attendus et la météo à l'adresse du chantier.",
@@ -217,12 +217,12 @@ export const helpCatalogueFr: HelpCatalogue = [
     id: "expense-detail",
     title: "Pièces jointes et remboursements d'une dépense",
     purpose:
-      "Tout sur une dépense : le montant, qui a été payé, les lignes, les fichiers joints, et si la société vous doit encore l'argent.",
+      "Tout sur une dépense : le montant, qui a été payé, les lignes, les fichiers joints, et si l'entreprise vous doit encore l'argent.",
     steps: [
       "Ouvrez une dépense depuis le journal. Le haut affiche le total, le destinataire, la date, le moyen de paiement et la caisse d'où elle provient.",
       "Les boutons ronds sont « PDF », « Joindre », « Modifier » et « Supprimer ».",
-      "Si vous avez payé vous-même une dépense matériaux & services, le bandeau « Avancé pour la société ? » vous permet de toucher « Transférer » pour lancer le suivi.",
-      "Une fois la dépense suivie et la société vous ayant remboursé, touchez « Remboursé ».",
+      "Si vous avez payé vous-même une dépense matériaux & services, le bandeau « Avancé pour l'entreprise ? » vous permet de toucher « Transférer » pour lancer le suivi.",
+      "Une fois la dépense suivie et l'entreprise vous ayant remboursé, touchez « Remboursé ».",
       "Sous « Pièces jointes », ajoutez une photo, piochez dans votre photothèque, ou choisissez un fichier. Chaque fichier peut être ouvert, renommé ou supprimé.",
       "Les pastilles de couleur définissent le surlignage de cette ligne dans le journal.",
     ],
@@ -235,18 +235,18 @@ export const helpCatalogueFr: HelpCatalogue = [
     id: "billing",
     title: "Devis et factures pour vos clients",
     purpose:
-      "Les documents que votre société émet pour ses propres clients — devis et factures — avec des modèles réutilisables et un suivi des dépenses en attente de remboursement.",
+      "Les documents que votre entreprise émet pour ses propres clients — devis et factures — avec des modèles réutilisables et un suivi des dépenses en attente de remboursement.",
     steps: [
       "Ouvrez Menu → « Devis & factures » et basculez entre « Devis » et « Factures ». Cherchez par numéro ou destinataire et filtrez par statut.",
       "Touchez « Nouveau » et choisissez « Vierge », « Depuis un existant » (tout est copié sauf les dates) ou « Depuis un modèle ».",
-      "Renseignez la société émettrice, le chantier, le bloc destinataire, les dates, les lignes et les totaux, puis touchez « Créer ».",
+      "Renseignez l'entreprise émettrice, le chantier, le bloc destinataire, les dates, les lignes et les totaux, puis touchez « Créer ».",
       "Sur un document, faites avancer son statut — envoyé, accepté, payée, annulée — et exportez-le en PDF ou en XLSX.",
       "« Dupliquer » copie un document ; un devis accepté se transforme en facture avec « Convertir en facture ».",
       "« Modèles » contient vos modèles de devis et de facture ; « Utiliser » crée un document à partir de l'un d'eux.",
-      "« Dépenses remboursables » suit les dépenses de chantier en attente de remboursement : ajoutez-les, fixez leur statut, et dites si la société, la banque ou les deux ont remboursé.",
+      "« Dépenses remboursables » suit les dépenses de chantier en attente de remboursement : ajoutez-les, fixez leur statut, et dites si l'entreprise, la banque ou les deux ont remboursé.",
     ],
     whoCanDoIt:
-      "Les administrateurs de société uniquement. Les autres ne voient même pas la ligne dans le Menu.",
+      "Les administrateurs d'entreprise uniquement. Les autres ne voient même pas la ligne dans le Menu.",
     webOnlyNote:
       "L'application web sépare les devis et les factures en deux sections ; le téléphone garde les deux derrière une seule liste.",
   },
@@ -257,18 +257,18 @@ export const helpCatalogueFr: HelpCatalogue = [
       "L'annuaire de l'entreprise : qui en fait partie, quel rôle chacun occupe, quelles permissions lui ont été accordées ou refusées en plus, et par où entrent les nouveaux.",
     steps: [
       "Ouvrez Menu → « Membres de l'entreprise ». Si vous administrez plusieurs entreprises, choisissez-en une en haut.",
-      "Le code société est tout en haut — créez-le, renouvelez-le, partagez-le ou révoquez-le depuis là.",
+      "Le code entreprise est tout en haut — créez-le, renouvelez-le, partagez-le ou révoquez-le depuis là.",
       "Touchez « Ajouter par téléphone » pour ajouter quelqu'un par son numéro, avec un nom facultatif et un rôle membre ou responsable.",
       "« Importer d'une autre entreprise » recopie des personnes depuis une entreprise que vous administrez aussi.",
       "Dans la liste des membres, changez un rôle directement sur la ligne, ou ouvrez « Permissions personnalisées » pour autoriser ou refuser une permission précise, sur toute l'entreprise ou sur un seul chantier.",
       "« Profils en attente » liste les personnes que vous avez ajoutées par téléphone et qui ne se sont pas encore connectées.",
     ],
     whoCanDoIt:
-      "Les administrateurs de société. Les membres qui sont déjà administrateurs n'ont pas de panneau de permissions personnalisées.",
+      "Les administrateurs d'entreprise. Les membres qui sont déjà administrateurs n'ont pas de panneau de permissions personnalisées.",
     webOnlyNote:
       "L'application web propose le même annuaire dans Paramètres → Entreprise.",
     gotchas: [
-      "Deux portes d'entrée coexistent : le code société réutilisable que chacun peut saisir, et un jeton d'invitation à usage unique qui expire au bout de sept jours.",
+      "Deux portes d'entrée coexistent : le code entreprise réutilisable que chacun peut saisir, et un jeton d'invitation à usage unique qui expire au bout de sept jours.",
     ],
   },
   {
@@ -287,7 +287,7 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Les personnes qui peuvent gérer les membres ou inviter sur le chantier. Vous ne pouvez pas vous retirer vous-même.",
     gotchas: [
       "Les nouvelles personnes sont d'abord ajoutées à l'entreprise, par téléphone, depuis l'écran des membres de l'entreprise — impossible de créer une invitation par e-mail ici.",
-      "Les administrateurs de société valent pour tous les chantiers de leur société et n'apparaissent jamais dans la liste.",
+      "Les administrateurs d'entreprise valent pour tous les chantiers de leur entreprise et n'apparaissent jamais dans la liste.",
     ],
   },
   {
@@ -306,17 +306,17 @@ export const helpCatalogueFr: HelpCatalogue = [
     whoCanDoIt:
       "Toute personne qui peut ouvrir le Menu atteint la bibliothèque. C'est le serveur qui décide si vos modifications sont acceptées, et il vous prévient quand elles ne le sont pas.",
     gotchas: [
-      "Les compteurs de produits et de fournisseurs affichés sur la ligne du Menu viennent de votre première société, qui n'est pas forcément celle du chantier.",
+      "Les compteurs de produits et de fournisseurs affichés sur la ligne du Menu viennent de votre première entreprise, qui n'est pas forcément celle du chantier.",
     ],
   },
   {
     id: "inventory",
     title: "L'inventaire du matériel",
     purpose:
-      "Tous les outils et machines de la société — perceuses, visseuses, échelles — avec leur nombre, leur état et leur emplacement : un dépôt avec son adresse, ou un chantier.",
+      "Tous les outils et machines de l'entreprise — perceuses, visseuses, échelles — avec leur nombre, leur état et leur emplacement : un dépôt avec son adresse, ou un chantier.",
     steps: [
       "Ouvrez Menu → « Inventaire du matériel ». Les tuiles en haut comptent les unités au total, en état, hors service, en dépôt et sur chantier.",
-      "Touchez « Dépôts » pour ajouter les endroits où la société range ses outils, chacun avec un nom et une adresse ; un dépôt qui contient encore des unités ne peut pas être supprimé.",
+      "Touchez « Dépôts » pour ajouter les endroits où l'entreprise range ses outils, chacun avec un nom et une adresse ; un dépôt qui contient encore des unités ne peut pas être supprimé.",
       "Touchez « Ajouter » : nom — obligatoire — catégorie, quantité, en état ou hors service, puis l'emplacement : un dépôt ou l'un de vos chantiers. Une référence ou un numéro de série et des notes sont facultatifs.",
       "La liste est groupée par emplacement, dépôts en premier. Utilisez le champ de recherche, le sélecteur « Partout / Dépôt / Sur chantier » et les puces d'état pour la filtrer.",
       "Touchez une ligne pour la modifier — la passer hors service après une casse, la déplacer du dépôt vers un chantier, corriger la quantité.",
@@ -326,7 +326,7 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Toute personne qui peut ouvrir le Menu atteint l'inventaire. C'est le serveur qui décide si vos modifications sont acceptées, et il vous prévient quand elles ne le sont pas.",
     gotchas: [
       "Une ligne est un lot d'objets identiques, au même endroit et dans le même état : trois perceuses en état au dépôt et une perceuse cassée sur un chantier font deux lignes.",
-      "Les compteurs de la ligne du Menu viennent de votre première société, qui n'est pas forcément celle du chantier.",
+      "Les compteurs de la ligne du Menu viennent de votre première entreprise, qui n'est pas forcément celle du chantier.",
     ],
   },
   {
@@ -409,7 +409,7 @@ export const helpCatalogueFr: HelpCatalogue = [
     id: "chat",
     title: "La discussion d'équipe",
     purpose:
-      "Une conversation en texte et en photos avec votre société et l'équipe du chantier, un canal par société et par chantier.",
+      "Une conversation en texte et en photos avec votre entreprise et l'équipe du chantier, un canal par entreprise et par chantier.",
     steps: [
       "Touchez le bouton rond de message en bas à droite d'un onglet de chantier.",
       "Choisissez un canal parmi les pastilles du haut ; un point signale ceux qui ont des messages non lus.",
@@ -418,7 +418,7 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Les avatars sous le dernier message montrent qui a lu jusque-là.",
     ],
     whoCanDoIt:
-      "Tout le monde. Les canaux que vous voyez suivent vos accès société et les chantiers sur lesquels vous êtes.",
+      "Tout le monde. Les canaux que vous voyez suivent vos accès entreprise et les chantiers sur lesquels vous êtes.",
     webOnlyNote:
       "L'application web propose la même discussion d'équipe, derrière un bouton dans le coin de l'écran : une conversation se poursuit d'un support à l'autre.",
     gotchas: [
@@ -439,7 +439,7 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Quand rien n'est dû, la feuille le dit simplement.",
     ],
     whoCanDoIt:
-      "Tout le monde voit la cloche ; ce qu'elle contient dépend de vous. Les pointages vont à ceux qui gèrent les présences, les nouveaux membres aux administrateurs de société.",
+      "Tout le monde voit la cloche ; ce qu'elle contient dépend de vous. Les pointages vont à ceux qui gèrent les présences, les nouveaux membres aux administrateurs d'entreprise.",
     gotchas: [
       "Les nouveaux membres ne sont pas encore comptés dans le point : celui-ci peut donc sous-estimer ce qui attend.",
       "C'est la cloche des validations. Les notifications push qui arrivent sur votre téléphone se règlent ailleurs, dans Paramètres → Notifications.",
@@ -449,20 +449,20 @@ export const helpCatalogueFr: HelpCatalogue = [
     id: "settings",
     title: "Paramètres, moyens de paiement et rôles",
     purpose:
-      "Votre compte, vos sociétés et les listes dont se sert tout le reste de l'application : moyens de paiement, rôles main-d'œuvre et notifications reçues sur ce téléphone.",
+      "Votre compte, vos entreprises et les listes dont se sert tout le reste de l'application : moyens de paiement, rôles main-d'œuvre et notifications reçues sur ce téléphone.",
     steps: [
       "Touchez vos initiales, puis « Paramètres ».",
-      "« Moyens de paiement » nomme les façons de payer les factures d'une société. Saisissez un nom et touchez « Ajouter » ; touchez-en un pour le renommer. « Espèces » est intégré et ne peut pas être supprimé.",
+      "« Moyens de paiement » nomme les façons de payer les factures d'une entreprise. Saisissez un nom et touchez « Ajouter » ; touchez-en un pour le renommer. « Espèces » est intégré et ne peut pas être supprimé.",
       "« Rôles main-d'œuvre » contient les rôles que vous attribuez aux ouvriers, chacun avec sa couleur. Touchez « Nouveau rôle », nommez-le, choisissez une couleur et enregistrez.",
       "« Notifications » choisit les notifications push qui arrivent sur ce téléphone : un interrupteur général, puis discussion d'équipe, présences, tâches, équipe et accès, et argent.",
-      "« Mes sociétés » liste les sociétés auxquelles vous êtes rattaché. Les administrateurs peuvent modifier les informations légales, distribuer des codes société et des jetons d'invitation, gérer les utilisateurs rattachés et supprimer la société.",
+      "« Mes entreprises » liste les entreprises auxquelles vous êtes rattaché. Les administrateurs peuvent modifier les informations légales, distribuer des codes entreprise et des jetons d'invitation, gérer les utilisateurs rattachés et supprimer l'entreprise.",
       "« Fusionner des personnes » fond un doublon dans la bonne personne et lui transfère ses ouvriers.",
       "Le bas de l'écran porte la version de l'application et « Se déconnecter ».",
     ],
     whoCanDoIt:
-      "Tout le monde accède aux Paramètres. Modifier les moyens de paiement demande d'administrer la société. Les choix de notification sont propres à ce téléphone.",
+      "Tout le monde accède aux Paramètres. Modifier les moyens de paiement demande d'administrer l'entreprise. Les choix de notification sont propres à ce téléphone.",
     gotchas: [
-      "Les compteurs et le nom de société affichés sur les lignes des paramètres viennent de votre première société, pas du chantier sélectionné.",
+      "Les compteurs et le nom d'entreprise affichés sur les lignes des paramètres viennent de votre première entreprise, pas du chantier sélectionné.",
       "Retirer un moyen de paiement ne change rien aux factures existantes ; cela empêche seulement les nouvelles de l'utiliser.",
     ],
   },

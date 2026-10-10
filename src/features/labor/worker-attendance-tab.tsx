@@ -42,7 +42,7 @@ import {
   formatMonth,
   toIsoDate,
 } from "@/lib/format/date";
-import { formatMoney } from "@/lib/format/money";
+import { formatMoney, formatNumber } from "@/lib/format/money";
 import {
   SELF_ATTENDANCE_MAX_BACKDATE_DAYS,
   canSelfLogDay,
@@ -50,6 +50,7 @@ import {
 } from "@/lib/labor/attendance-day";
 import { monthRange } from "@/lib/labor/month-range";
 import { classifyOwnEdit } from "@/lib/labor/own-attendance-edit";
+import { parseSupplementHours } from "@/lib/labor/supplement-hours";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
 
@@ -105,6 +106,7 @@ export function WorkerAttendanceTab() {
   const [editShift, setEditShift] = useState<ShiftType>("full");
   const [editHours, setEditHours] = useState("0");
   const [editNote, setEditNote] = useState("");
+  const editHoursInvalid = parseSupplementHours(editHours) === null;
   useRefetchOnFocus(entries.refetch);
   useRefetchOnFocus(summary.refetch);
   // A manager's validation lands on the roster too (pending → present) and, for a caller with
@@ -156,7 +158,9 @@ export function WorkerAttendanceTab() {
   }
 
   function submitEdit(entry: LaborEntry) {
-    const hours = Math.max(0, Math.min(12, Number(editHours) || 0));
+    const hours = parseSupplementHours(editHours);
+    // Blocked in the form; a typed "1,5" or "14" is never sent as another value.
+    if (hours === null) return;
     const proposal = {
       shift_type: editShift,
       supplement_hours: hours,
@@ -296,6 +300,11 @@ export function WorkerAttendanceTab() {
                       value={editHours}
                       onChangeText={setEditHours}
                       keyboardType="number-pad"
+                      error={
+                        editHoursInvalid
+                          ? t("labor.log.supplementInvalidHint")
+                          : null
+                      }
                     />
                     <Input
                       testID="worker-edit-note"
@@ -321,6 +330,7 @@ export function WorkerAttendanceTab() {
                               : t("worker.editSubmit")
                           }
                           loading={editOwn.isPending}
+                          disabled={editHoursInvalid}
                           onPress={() => submitEdit(selectedEntry)}
                         />
                       </View>
@@ -385,6 +395,9 @@ export function WorkerAttendanceTab() {
               separately via `payByWorkerId`, only fetched for a caller with view_pay. */}
           <DayRoster
             upcoming={selectedDay > today}
+            dayLabel={
+              selectedDay === today ? undefined : formatDate(selectedDay)
+            }
             rows={roster.data}
             loading={roster.isPending}
             error={roster.isError}
@@ -396,7 +409,7 @@ export function WorkerAttendanceTab() {
         <View className="flex-row gap-2">
           <Kpi
             label={t("worker.kpi.days")}
-            value={String(summary.data?.total_days ?? 0)}
+            value={formatNumber(summary.data?.total_days ?? 0, 2) || "0"}
             testID="worker-kpi-days"
           />
           <Kpi

@@ -10,6 +10,7 @@ import {
 import type { Invoice, InvoiceType } from "@/features/invoices/invoice-types";
 import { formatMoney } from "@/lib/format/money";
 import { ledgerTypeOf } from "@/lib/invoices/group-invoices-by-month";
+import { highlightRowTint, invoiceTotals } from "@/lib/invoices/invoice-totals";
 import { INK_BLOCK, useTokens } from "@/theme/tokens";
 
 /**
@@ -112,17 +113,15 @@ export function PendingRefundBanner({
   );
 }
 
-/** Tabs where the web ledger shows a VAT column: Σ qty × price × vat_rate / 100. */
+/** Tabs where the web ledger shows a VAT column. */
 const TVA_TYPES = new Set<InvoiceType>([
   "released_funds",
   "materials_services",
   "others",
 ]);
+/** The VAT as the detail card and print page split it: TTC − the lines' rounded HT. */
 export function invoiceTva(items: Invoice["items"]): number {
-  return items.reduce(
-    (sum, it) => sum + it.quantity * it.unit_price * ((it.vat_rate ?? 0) / 100),
-    0,
-  );
+  return invoiceTotals(items).tva;
 }
 
 /** Row badge: refund state (warning while pending), avoir settlement, or "auto". */
@@ -146,7 +145,7 @@ export function invoiceBadge(
 
 /**
  * 1b ledger row: 4×36 color bar of the type, recipient 15/500, meta "06/09 · HĐ-041 · VAT 1.140",
- * mono amount (released funds `+` in positive) and the badge under it.
+ * mono amount (released funds `+` in positive) and the badge under it. A highlight color tints the row.
  */
 export function ExpenseRow({
   invoice,
@@ -187,6 +186,7 @@ export function ExpenseRow({
       accessibilityRole="button"
       onPress={onPress}
       className={`flex-row items-center gap-3 px-4 py-3.5 active:opacity-70 ${first ? "" : "border-t border-line"}`}
+      style={{ backgroundColor: highlightRowTint(invoice.highlight_color) }}
     >
       <View
         className="h-9 w-1 rounded-sm"

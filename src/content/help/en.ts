@@ -332,14 +332,14 @@ export const helpCatalogueEn: HelpCatalogue = [
     id: "chiffrage",
     title: "Pricing materials",
     purpose:
-      "Price the materials for the job: sections, then articles per room, then a price per shop, with a basket and a running total for each shop.",
+      "Price the materials for the job: sections, then items per room, then a price per shop, with a basket and a running total for each shop.",
     steps: [
-      "Open Menu → Chiffrage and build the frame with “Add poste”, “Add shop”, “Add room” and “Add unit”.",
-      "Inside a section, tap “Add article” and give it a name, quantity, unit and room — or use “Pick from the library” to pull in a product you already have.",
-      "On an article, tap “Add price” and enter the unit price excluding VAT, the VAT rate, the shop, the supplier and a product URL.",
+      "Open Menu → Chiffrage and build the frame with “Add section”, “Add shop”, “Add room” and “Add unit”.",
+      "Inside a section, tap “Add an item” and give it a name, quantity, unit and room — or use “Pick from the library” to pull in a product you already have.",
+      "On an item, tap “Add price” and enter the unit price excluding VAT, the VAT rate, the shop, the supplier and a product URL.",
       "Attach a picture by taking a photo or giving an image URL.",
-      "Read the totals excluding and including VAT, and the count of articles still without a price.",
-      "A shop basket says “covers everything” when it can supply every article.",
+      "Read the totals excluding and including VAT, and the count of items still without a price.",
+      "A shop basket says “covers everything” when it can supply every item.",
     ],
     whoCanDoIt:
       "Any project member who can open the Menu. The server decides whether your changes are accepted.",

@@ -1,7 +1,13 @@
 import type { TFunction } from "i18next";
 
+import { parseIsoDate } from "@/lib/format/date";
+
 import { isLibraryCategorySlug } from "./library-types";
-import type { ImportPayload, ImportRecord } from "./library-types";
+import type {
+  ImportPayload,
+  ImportRecord,
+  LibraryPurchase,
+} from "./library-types";
 
 export const PAGE_SIZE = 20;
 export const MAX_COMPARE = 4;
@@ -14,6 +20,18 @@ export function localizeCategory(
   if (!value) return t("library.uncategorized");
   if (isLibraryCategorySlug(value)) return t(`library.categories.${value}`);
   return value;
+}
+
+/**
+ * Purchase history, newest first. `purchased_at` is RFC-1123 text (`Sun, 06 Sep 2026 00:00:00 GMT`),
+ * so compare days, not strings (those sort by weekday). Same-day purchases keep the API order.
+ */
+export function sortPurchasesNewestFirst(
+  purchases: readonly LibraryPurchase[],
+): LibraryPurchase[] {
+  const day = (purchase: LibraryPurchase) =>
+    parseIsoDate(purchase.purchased_at)?.getTime() ?? 0;
+  return [...purchases].sort((a, b) => day(b) - day(a));
 }
 
 const RECORD_KEYS: (keyof ImportRecord)[] = [

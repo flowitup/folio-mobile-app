@@ -1880,6 +1880,11 @@
       "MemberGrantsListResponse": {
         "description": "Response body for GET /companies/<company_id>/members/<user_id>/grants.",
         "properties": {
+          "company_wide_only": {
+            "items": { "type": "string" },
+            "title": "Company Wide Only",
+            "type": "array"
+          },
           "customisable": {
             "items": { "type": "string" },
             "title": "Customisable",
@@ -1891,7 +1896,7 @@
             "type": "array"
           }
         },
-        "required": ["grants", "customisable"],
+        "required": ["grants", "customisable", "company_wide_only"],
         "title": "MemberGrantsListResponse",
         "type": "object"
       },
@@ -5170,6 +5175,26 @@
       }
     },
     "/api/v1/companies/{company_id}/members/{person_id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "in": "path",
+            "name": "person_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Cancel a pending member added by phone who has no account yet (admin only)",
+        "tags": ["companies"]
+      },
       "patch": {
         "parameters": [
           {
@@ -6680,6 +6705,25 @@
       }
     },
     "/api/v1/projects/{project_id}/chiffrage/quotes/{quote_id}/select": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "in": "path",
+            "name": "quote_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["chiffrage"]
+      },
       "post": {
         "parameters": [
           {

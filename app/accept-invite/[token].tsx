@@ -73,10 +73,14 @@ function inlineErrorKey(error: InviteActionError): string {
       return "login.invalidPhone";
     case "phone_registered":
       return "login.errors.phoneTaken";
+    case "account_exists":
+      return "acceptInvite.errors.accountExists";
     case "invalid_code":
       return "login.errors.invalidCode";
     case "throttled":
       return "login.errors.throttled";
+    case "hourly_limit":
+      return "login.errors.hourlyLimit";
     case "sms_failed":
       return "login.errors.smsFailed";
     default:
@@ -145,7 +149,15 @@ export default function AcceptInviteScreen() {
         setState({ kind: "error", reason });
         return;
       }
-      setError(t(inlineErrorKey(caught)));
+      // `count`: minutes left on the hourly code cap, which its message names.
+      setError(
+        t(
+          inlineErrorKey(caught),
+          caught.retryAfterMinutes === undefined
+            ? undefined
+            : { count: caught.retryAfterMinutes },
+        ),
+      );
       return;
     }
     setError(
@@ -214,9 +226,16 @@ export default function AcceptInviteScreen() {
         // card below offers nothing but signing out. A signed-out invitee has no app behind this
         // screen, and the header's fallback would push them into the signed-in tabs.
         back={status === "signedIn"}
-        title={t("acceptInvite.title", {
-          projectName: state.kind === "ready" ? state.invite.project_name : "…",
-        })}
+        // A dead link is no invitation: "You're invited to join …" above "This invitation link
+        // is invalid" contradicted itself (the web says "Invitation unavailable" too).
+        title={
+          state.kind === "error"
+            ? t("acceptInvite.errors.title")
+            : t("acceptInvite.title", {
+                projectName:
+                  state.kind === "ready" ? state.invite.project_name : "…",
+              })
+        }
       />
       <ScrollView
         contentContainerClassName="p-4 pb-12"

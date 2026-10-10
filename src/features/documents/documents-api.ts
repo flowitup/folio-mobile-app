@@ -103,13 +103,29 @@ export function useDocumentTags(projectId: string, enabled = true) {
   });
 }
 
+/**
+ * Someone with a document in the project. `display_name` is the name, else the real e-mail, else
+ * the phone (never a synthetic or erased address); it is "" for an erased account (`is_deleted`).
+ */
+export type DocumentUploader = {
+  user_id: string;
+  display_name: string;
+  phone?: string | null;
+  is_deleted?: boolean;
+};
+
+/** The uploader filter's label for `who`, or null for an erased account (shown as a former member). */
+export function uploaderLabel(who: DocumentUploader): string | null {
+  return who.is_deleted ? null : who.display_name.trim() || null;
+}
+
 /** Distinct uploaders of the project's documents — the uploader filter's options. */
 export function useDocumentUploaders(projectId: string, enabled = true) {
   return useQuery({
     queryKey: [...documentKeys.all(projectId), "uploaders"],
     enabled: Boolean(projectId) && enabled,
     queryFn: async () =>
-      unwrapAs<{ items?: { user_id: string; display_name: string }[] }>(
+      unwrapAs<{ items?: DocumentUploader[] }>(
         await api.GET("/api/v1/projects/{project_id}/documents/uploaders", {
           params: { path: { project_id: projectId } },
         }),
@@ -131,8 +147,11 @@ export function useUploadDocument(projectId: string) {
   });
 }
 
+/**
+ * Silent on both ends: the edit sheet chains it with the tag save, toasts "Saved." once at the
+ * end and shows a refused name under the name field.
+ */
 export function useRenameDocument(projectId: string) {
-  const { t } = useTranslation();
   return useApiMutation<
     { documentId: string; filename: string },
     ProjectDocument
@@ -150,12 +169,12 @@ export function useRenameDocument(projectId: string) {
         ),
       ),
     invalidates: [documentKeys.all(projectId)],
-    successMessage: t("common.saved"),
+    onError: () => true,
   });
 }
 
+/** No success toast: the edit sheet toasts "Saved." once after the rename and the tags. */
 export function useSetDocumentTags(projectId: string) {
-  const { t } = useTranslation();
   return useApiMutation<
     { documentId: string; tags: string[] },
     ProjectDocument
@@ -173,7 +192,6 @@ export function useSetDocumentTags(projectId: string) {
         ),
       ),
     invalidates: [documentKeys.all(projectId), documentKeys.tags(projectId)],
-    successMessage: t("common.saved"),
   });
 }
 

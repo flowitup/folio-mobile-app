@@ -4,6 +4,7 @@ import i18n from "@/i18n";
 import LaborTab from "../../app/(app)/(tabs)/labor";
 import { WorkerAttendanceTab } from "@/features/labor/worker-attendance-tab";
 import type { LaborEntry, Worker } from "@/features/labor/labor-types";
+import { formatDate } from "@/lib/format/date";
 import { formatMoney, formatNumber } from "@/lib/format/money";
 import {
   ENTRIES,
@@ -135,8 +136,10 @@ describe("labor tab · manager", () => {
 
     expect(await screen.findByTestId("labor-title")).toBeTruthy();
     await fireEvent.press(screen.getByTestId("labor-tab-calendar"));
+    // Locale decimals, as on every other figure ("2,5" in vi / fr).
     expect(await screen.findByTestId("labor-kpi-days")).toHaveTextContent(
-      /^2\.5$/,
+      formatNumber(2.5),
+      { exact: true },
     );
     expect(screen.getByTestId("labor-kpi-cost")).toHaveTextContent(
       containing(formatMoney(330)),
@@ -201,6 +204,49 @@ describe("labor tab · manager denied project:manage_invoices (D8)", () => {
     await waitFor(() =>
       expect(screen.queryByTestId("payment-record-all")).toBeNull(),
     );
+  });
+});
+
+describe("labor tab · pay visible but project:manage_labor denied (D8)", () => {
+  // The backend answers 403 to every labor write without manage_labor, so the
+  // screen offers none: the roster, the entries and the day details are read-only.
+  beforeEach(() => {
+    mockPersona = persona("manager", { deny: ["project:manage_labor"] });
+  });
+
+  it("does not open the worker actions from a worker card", async () => {
+    mockParams = { segment: "workers" };
+    await renderWithProviders(<LaborTab />);
+
+    await fireEvent.press(
+      await screen.findByTestId(`worker-card-${WORKER_MINH.id}`),
+    );
+    expect(screen.queryByTestId(`worker-edit-${WORKER_MINH.id}`)).toBeNull();
+    expect(screen.queryByTestId(`worker-rates-${WORKER_MINH.id}`)).toBeNull();
+    expect(screen.queryByTestId(`worker-delete-${WORKER_MINH.id}`)).toBeNull();
+    expect(screen.queryByTestId("worker-add")).toBeNull();
+  });
+
+  it("does not open the entry editor from the list view", async () => {
+    mockParams = { segment: "calendar" };
+    const [first] = ENTRIES;
+    await renderWithProviders(<LaborTab />);
+
+    await fireEvent.press(await screen.findByTestId("attendance-view-list"));
+    await fireEvent.press(await screen.findByTestId(`list-entry-${first.id}`));
+    expect(
+      screen.queryByText(`${first.worker_name} · ${formatDate(first.date)}`),
+    ).toBeNull();
+  });
+
+  it("shows the day details without the activity and description controls", async () => {
+    mockParams = { segment: "calendar" };
+    await renderWithProviders(<LaborTab />);
+
+    expect(await screen.findByTestId("day-description-text")).toBeTruthy();
+    expect(screen.queryByTestId("activity-add")).toBeNull();
+    expect(screen.queryByTestId("activity-title")).toBeNull();
+    expect(screen.queryByTestId("day-description-save")).toBeNull();
   });
 });
 

@@ -31,3 +31,15 @@ export function phoneOfSyntheticEmail(
   const match = email?.trim().match(SYNTHETIC_EMAIL);
   return match ? `+${match[1]}` : null;
 }
+
+/**
+ * How to reach an account: its real e-mail, else its current phone, else the phone its
+ * synthetic address was built from. The address keeps the sign-up number after a phone change,
+ * so the `phone` field, when the payload has it, is the one to show.
+ */
+export function accountContact(
+  email: string | null | undefined,
+  phone?: string | null,
+): string | null {
+  return realEmail(email) ?? (phone?.trim() || null) ?? phoneOfSyntheticEmail(email);
+}

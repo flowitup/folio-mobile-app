@@ -59,3 +59,37 @@ describe("naming a picked image", () => {
     expect(file.name).toBe("video-2026-09-16-033907.mp4");
   });
 });
+
+/**
+ * Android reports a .mov received from an iPhone as "31.mov" with the type
+ * video/quicktime; the raw MIME subtype gave "video-….quicktime", which the
+ * upload API refuses (415).
+ */
+describe("the extension of a renamed picked file", () => {
+  it("keeps the extension of a meaningless name", () => {
+    const file = imageAssetToFile(
+      asset({ type: "video", mimeType: "video/quicktime", fileName: "31.mov" }),
+      AT,
+    );
+
+    expect(file.name).toBe("video-2026-09-16-033907.mov");
+  });
+
+  it("maps video/quicktime to .mov when there is no name", () => {
+    const file = imageAssetToFile(
+      asset({ type: "video", mimeType: "video/quicktime", fileName: null }),
+      AT,
+    );
+
+    expect(file.name).toBe("video-2026-09-16-033907.mov");
+  });
+
+  it("maps image/jpeg to .jpg when there is no name", () => {
+    const file = imageAssetToFile(
+      asset({ mimeType: "image/jpeg", fileName: null }),
+      AT,
+    );
+
+    expect(file.name).toBe("photo-2026-09-16-033907.jpg");
+  });
+});

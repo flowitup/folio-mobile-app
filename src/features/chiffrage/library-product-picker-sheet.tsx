@@ -111,7 +111,7 @@ export const LibraryProductPickerSheet = forwardRef<BottomSheetModal, Props>(
                 {supplierName.get(product.supplier_id) ?? ""} ·{" "}
                 {product.supplier_reference}
                 {product.last_unit_price != null
-                  ? ` · ${formatMoney(product.last_unit_price)} HT`
+                  ? ` · ${formatMoney(product.last_unit_price)} ${t("chiffrage.htShort")}`
                   : ""}
               </Text>
             </Pressable>

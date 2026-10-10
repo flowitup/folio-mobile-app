@@ -39,6 +39,14 @@ export function apiErrorMessage(
   const extension = /extension must remain (\.\w+)/i.exec(error.message);
   if (error.code === "INVALID_FILENAME" && extension)
     return t("common.errors.keepExtension", { ext: extension[1] });
+  // Leaving, demoting or removing the company's only admin: the generic 409 says "refresh and
+  // try again", which never helps — someone else has to be made admin first.
+  if (error.reason === "last_admin") return t("companies.errors.lastAdmin");
+  // A worker's phone that is not a phone number ("hello world"): say which field to fix.
+  if (error.code === "InvalidPhone") return t("common.errors.invalidPhone");
+  // Adding a worker for someone already on the roster (the generic 409's "refresh" never helps).
+  if (error.code === "WorkerAlreadyOnProject")
+    return t("labor.workers.alreadyOnProject");
   if (language === "en") return error.message;
   const key = STATUS_KEYS[error.status];
   return key ? t(key) : t("common.requestFailed");

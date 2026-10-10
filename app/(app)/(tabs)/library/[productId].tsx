@@ -12,7 +12,6 @@ import {
   View,
 } from "react-native";
 
-import { useCan } from "@/auth/use-can";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +19,7 @@ import { Badge, Card, ErrorState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast, ToastViewport } from "@/components/ui/toast";
+import { useCompanyCan } from "@/features/companies/companies-api";
 import {
   productImagePath,
   useDeleteProduct,
@@ -29,13 +29,16 @@ import {
   useUpdateProduct,
   useUploadProductImage,
 } from "@/features/library/library-api";
-import { localizeCategory } from "@/features/library/library-helpers";
+import {
+  localizeCategory,
+  sortPurchasesNewestFirst,
+} from "@/features/library/library-helpers";
 import type { UpdateProductPayload } from "@/features/library/library-types";
 import { ProductFormSheet } from "@/features/library/product-form-sheet";
 import { captureImage } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
-import { formatMoney } from "@/lib/format/money";
+import { formatMoney, formatNumber } from "@/lib/format/money";
 
 /** Product detail: image, metadata, purchase history, edit sheet, image actions, typed-name delete. */
 export default function LibraryProductScreen() {
@@ -54,7 +57,10 @@ export default function LibraryProductScreen() {
   const [imageUrl, setImageUrl] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [confirmName, setConfirmName] = useState("");
-  const canManage = useCan("bibliotheque:manage");
+  const canManage = useCompanyCan(
+    "bibliotheque:manage",
+    product?.company_id ?? null,
+  );
 
   if (query.isPending)
     return (
@@ -76,9 +82,7 @@ export default function LibraryProductScreen() {
     );
 
   const supplier = suppliers.data?.find((s) => s.id === product.supplier_id);
-  const purchases = [...(query.data?.purchases ?? [])].sort((a, b) =>
-    b.purchased_at.localeCompare(a.purchased_at),
-  );
+  const purchases = sortPurchasesNewestFirst(query.data?.purchases ?? []);
 
   function submitEdit(payload: UpdateProductPayload, image: PickedFile | null) {
     if (!product) return;
@@ -240,7 +244,7 @@ export default function LibraryProductScreen() {
                   </Text>
                   <Text className="text-xs text-muted-foreground">
                     {t(`library.documentType.${purchase.source_document_type}`)}{" "}
-                    · {t("library.quantity")} {Number(purchase.quantity)}
+                    · {t("library.quantity")} {formatNumber(purchase.quantity)}
                   </Text>
                 </View>
                 <Text className="text-sm text-primary">

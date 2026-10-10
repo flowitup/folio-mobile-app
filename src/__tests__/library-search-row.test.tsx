@@ -16,7 +16,10 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({}),
   useFocusEffect: () => undefined,
 }));
-jest.mock("@/auth/use-can", () => ({ useCan: () => true }));
+// Manage rights come from the company on screen (GET /companies `permissions`).
+jest.mock("@/auth/auth-context", () => ({
+  useAuth: () => ({ user: { id: "u1", permissions: [] } }),
+}));
 
 const mockGet = jest.fn();
 jest.mock("@/api/client", () => ({
@@ -37,6 +40,7 @@ beforeEach(() => {
             {
               company: { id: "c1", legal_name: "Folio QA" },
               access: { is_primary: true, attached_at: "x", role: "admin" },
+              permissions: ["bibliotheque:manage"],
             },
           ],
         })

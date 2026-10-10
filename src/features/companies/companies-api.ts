@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
 import { useAuth } from "@/auth/auth-context";
-import { isPlatformOps } from "@/auth/permissions";
+import { can, isPlatformOps } from "@/auth/permissions";
+import { projectKeys } from "@/features/projects/projects-api";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
@@ -36,12 +37,18 @@ export interface MyCompany extends Company {
   is_primary: boolean;
   attached_at: string;
   role: CompanyRole;
+  /**
+   * What the caller can do in this company (role + D8 grants). Absent from an older API,
+   * in which case the token-wide `user.permissions` is the only answer.
+   */
+  permissions?: string[];
 }
 
 type MyCompaniesResponse = {
   items: {
     company: Company;
     access: { is_primary: boolean; attached_at: string; role: CompanyRole };
+    permissions?: string[];
   }[];
 };
 
@@ -49,6 +56,20 @@ export const companyKeys = {
   all: ["companies"] as const,
   mine: ["companies", "mine"] as const,
 };
+
+/**
+ * Primary first, then most recently attached. `attached_at` is RFC-1123 text
+ * (`Fri, 09 Oct 2026 18:00:33 GMT`), so compare instants, not strings (those sort by weekday).
+ */
+export function byPrimaryThenRecent(
+  a: Pick<MyCompany, "is_primary" | "attached_at">,
+  b: Pick<MyCompany, "is_primary" | "attached_at">,
+): number {
+  return (
+    Number(b.is_primary) - Number(a.is_primary) ||
+    (Date.parse(b.attached_at) || 0) - (Date.parse(a.attached_at) || 0)
+  );
+}
 
 /** Companies the caller is attached to, primary first then most recently attached. */
 export function useMyCompanies() {
@@ -59,14 +80,30 @@ export function useMyCompanies() {
         await api.GET("/api/v1/companies"),
       );
       return data.items
-        .map<MyCompany>(({ company, access }) => ({ ...company, ...access }))
-        .sort(
-          (a, b) =>
-            Number(b.is_primary) - Number(a.is_primary) ||
-            b.attached_at.localeCompare(a.attached_at),
-        );
+        .map<MyCompany>(({ company, access, permissions }) => ({
+          ...company,
+          ...access,
+          permissions,
+        }))
+        .sort(byPrimaryThenRecent);
     },
   });
+}
+
+/**
+ * True when the caller holds `permission` in `companyId`. Library and inventory writes are
+ * checked against the company they target, while `user.permissions` is resolved from the
+ * primary company only: an admin of the primary company may be a plain member of the
+ * company picked on screen, and the reverse.
+ */
+export function useCompanyCan(
+  permission: string,
+  companyId: string | null | undefined,
+): boolean {
+  const { user } = useAuth();
+  const companies = useMyCompanies();
+  const company = companies.data?.find((entry) => entry.id === companyId);
+  return can(user, permission, company?.permissions);
 }
 
 /**
@@ -179,6 +216,7 @@ export function useDeleteCompany() {
 /** Detach the caller from a company (member leaves). */
 export function useDetachCompany() {
   const { t } = useTranslation();
+  const { refreshUser } = useAuth();
   return useApiMutation<{ id: string }>({
     mutationFn: async ({ id }) =>
       unwrapVoid(
@@ -186,13 +224,16 @@ export function useDetachCompany() {
           params: { path: { company_id: id } },
         }),
       ),
-    invalidates: [companyKeys.all],
+    invalidates: [companyKeys.all, projectKeys.all],
     successMessage: t("companies.toast.detached"),
+    // `user.companies` (account sheet, admin gates) lives in the auth context, not the cache.
+    onSuccess: () => void refreshUser(),
   });
 }
 
 export function useSetPrimaryCompany() {
   const { t } = useTranslation();
+  const { refreshUser } = useAuth();
   return useApiMutation<{ id: string }>({
     mutationFn: async ({ id }) =>
       unwrapVoid(
@@ -200,8 +241,10 @@ export function useSetPrimaryCompany() {
           body: { company_id: id } as never,
         }),
       ),
-    invalidates: [companyKeys.all],
+    invalidates: [companyKeys.all, projectKeys.all],
     successMessage: t("companies.toast.primarySet"),
+    // `/auth/me` permissions are scoped to the primary company, so they change with it.
+    onSuccess: () => void refreshUser(),
   });
 }
 
@@ -277,13 +320,16 @@ export function useRevokeJoinCode() {
 /** Join a company as member with its shared code (onboarding + "join another company"). */
 export function useJoinCompanyByCode() {
   const { t } = useTranslation();
+  const { refreshUser } = useAuth();
   return useApiMutation<{ code: string }, Company>({
     mutationFn: async ({ code }) =>
       unwrapAs<Company>(
         await api.POST("/api/v1/companies/join", { body: { code } }),
       ),
-    invalidates: [companyKeys.all],
+    invalidates: [companyKeys.all, projectKeys.all],
     successMessage: t("companies.join.successToast"),
+    // The new company joins `user.companies` (and may become primary): held in the auth context.
+    onSuccess: () => void refreshUser(),
     // The join screen renders a translated inline error for every failure; the default
     // toast would only add the server's English sentence on top of it.
     onError: () => true,

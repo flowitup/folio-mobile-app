@@ -10,6 +10,7 @@ import {
 
 import { Card, EmptyState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
+import { useChatEnabled } from "@/features/chat/chat-api";
 import {
   NOTIFICATION_CATEGORIES,
   useNotificationPreferences,
@@ -33,6 +34,11 @@ export default function NotificationPreferencesScreen() {
   const tokens = useTokens();
   const prefs = useNotificationPreferences();
   const update = useUpdateNotificationPreferences();
+  // No chat switch while the chat feature is off: there is nothing to be notified about.
+  const chatEnabled = useChatEnabled();
+  const categories = NOTIFICATION_CATEGORIES.filter(
+    (category) => category !== "chat" || chatEnabled,
+  );
   // Optimistic view while a save is in flight; cleared on settle so the cache wins again.
   const [optimistic, setOptimistic] = useState<NotificationPreferences | null>(
     null,
@@ -86,7 +92,7 @@ export default function NotificationPreferencesScreen() {
               subtitle={t("settings.notificationPrefs.pushEnabledDesc")}
               right={switchFor("push_enabled", update.isPending)}
             />
-            {NOTIFICATION_CATEGORIES.map((category) => (
+            {categories.map((category) => (
               <ListRow
                 key={category}
                 grouped

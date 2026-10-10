@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
-import { useCan } from "@/auth/use-can";
 import { Button } from "@/components/ui/button";
 import { ChipRow, Segmented } from "@/components/ui/chip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -20,7 +19,10 @@ import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { showToast } from "@/components/ui/toast";
 import { Eyebrow } from "@/components/ui/typography";
-import { useMyCompanies } from "@/features/companies/companies-api";
+import {
+  useCompanyCan,
+  useMyCompanies,
+} from "@/features/companies/companies-api";
 import {
   useCreateInventoryItem,
   useDeleteInventoryItem,
@@ -103,7 +105,7 @@ export default function InventoryScreen() {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
   const { projects, projectId } = useSelectedProject();
-  const canManage = useCan("inventory:manage");
+  const canManage = useCompanyCan("inventory:manage", effectiveCompany);
 
   const items = useInventoryItems(effectiveCompany);
   const warehouses = useWarehouses(effectiveCompany);
@@ -368,7 +370,10 @@ export default function InventoryScreen() {
                   />
                   <View className="min-w-0 flex-1">
                     <Eyebrow>
-                      {group.title ?? t("inventory.unknownLocation")}
+                      {group.title ??
+                        (group.otherSite
+                          ? t("inventory.otherSite")
+                          : t("inventory.unknownLocation"))}
                     </Eyebrow>
                     {group.subtitle ? (
                       <Text

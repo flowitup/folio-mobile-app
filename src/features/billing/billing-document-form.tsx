@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { useProjects } from "@/features/projects/projects-api";
+import { statusLabelKey } from "@/lib/billing/billing-status-transitions";
 import { computeBillingTotals } from "@/lib/billing/billing-totals";
 import { parseIsoDate, toIsoDate } from "@/lib/format/date";
-import { formatMoney } from "@/lib/format/money";
+import { formatMoney, formatNumber } from "@/lib/format/money";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 
 import {
@@ -184,6 +185,8 @@ type Props = {
   submitting: boolean;
   submitLabel: string;
   onSubmit: (draft: DocumentDraft) => void;
+  /** Shown but not editable, with no save button (a devis locked by its facture). */
+  readOnly?: boolean;
 };
 
 /** Devis / facture form: company, project, recipient, dates, lines with live totals, notes. */
@@ -195,6 +198,7 @@ export function BillingDocumentForm({
   submitting,
   submitLabel,
   onSubmit,
+  readOnly = false,
 }: Props) {
   const { t } = useTranslation();
   const projects = useProjects();
@@ -228,7 +232,7 @@ export function BillingDocumentForm({
   ];
 
   return (
-    <View>
+    <View pointerEvents={readOnly ? "none" : "auto"} testID="billing-doc-form">
       {mode !== "edit" ? (
         <CompanyPicker
           kind={kind}
@@ -253,7 +257,7 @@ export function BillingDocumentForm({
             value={draft.import_status}
             options={IMPORT_STATUSES.map((value) => ({
               value,
-              label: t(`billing.status.${value}`),
+              label: t(`billing.status.${statusLabelKey(kind, value)}`),
             }))}
             onChange={(v) => set("import_status", v)}
           />
@@ -368,7 +372,7 @@ export function BillingDocumentForm({
         {totals.vatLines.map((line) => (
           <View key={line.rate} className="flex-row justify-between">
             <Text className="text-sm text-muted-foreground">
-              {t("billing.form.tva", { rate: line.rate })}
+              {t("billing.form.tva", { rate: formatNumber(line.rate, 2) })}
             </Text>
             <Text className="text-sm text-primary">
               {formatMoney(line.tvaAmount)}
@@ -409,12 +413,14 @@ export function BillingDocumentForm({
         onChangeText={(v) => set("signature_block_text", v)}
         multiline
       />
-      <Button
-        testID="doc-submit"
-        label={submitLabel}
-        loading={submitting}
-        onPress={submit}
-      />
+      {readOnly ? null : (
+        <Button
+          testID="doc-submit"
+          label={submitLabel}
+          loading={submitting}
+          onPress={submit}
+        />
+      )}
     </View>
   );
 }

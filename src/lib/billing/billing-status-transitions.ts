@@ -34,6 +34,14 @@ export function allowedTransitions(
   return (kind === "devis" ? DEVIS : FACTURE)[status] ?? [];
 }
 
+/** i18n key suffix (under `billing.status`); a facture is feminine in French ("Envoyée"). */
+export function statusLabelKey(
+  kind: BillingDocumentKind,
+  status: BillingDocumentStatus,
+): string {
+  return kind === "facture" && status === "sent" ? "sentFacture" : status;
+}
+
 /** i18n key suffix (under `billing.transitions`) for a from → to move. */
 export function transitionLabelKey(
   kind: BillingDocumentKind,
@@ -43,8 +51,10 @@ export function transitionLabelKey(
   if (kind === "devis") {
     if (from === "accepted" && to === "sent") return "revertToSent";
     if (from === "rejected" && to === "draft") return "reopen";
-  } else if (from === "paid" && to === "cancelled")
-    return "markAsCancelledRefund";
+  } else {
+    if (from === "paid" && to === "cancelled") return "markAsCancelledRefund";
+    if (to === "sent") return "markAsSentFacture";
+  }
   return `markAs${to.charAt(0).toUpperCase()}${to.slice(1)}`;
 }
 

@@ -27,6 +27,23 @@ describe("unwrap", () => {
     ).toThrow(new ApiError(404, "NotFound", "Project not found"));
   });
 
+  it("keeps the envelope's machine-readable reason", () => {
+    try {
+      unwrap({
+        error: {
+          error: "Conflict",
+          message: "Company must keep at least one admin",
+          reason: "last_admin",
+        },
+        response: { status: 409, statusText: "Conflict" },
+      });
+      throw new Error("did not throw");
+    } catch (caught) {
+      expect(caught).toBeInstanceOf(ApiError);
+      expect((caught as ApiError).reason).toBe("last_admin");
+    }
+  });
+
   it("falls back to the HTTP status when the body is not an envelope", () => {
     try {
       unwrap({

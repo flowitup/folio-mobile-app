@@ -10,6 +10,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
 import { pickImages } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
+import { TEXT_LIMITS } from "@/lib/format/text-limits";
 
 import { LIBRARY_CATEGORY_SLUGS } from "./library-types";
 import type {
@@ -154,6 +155,7 @@ export const ProductFormSheet = forwardRef<BottomSheetModal, Props>(
                 <>
                   <Input
                     testID="product-supplier-name"
+                    maxLength={TEXT_LIMITS.product.supplierName}
                     label={t("library.fields.supplierName")}
                     value={supplierName}
                     onChangeText={setSupplierName}
@@ -161,6 +163,7 @@ export const ProductFormSheet = forwardRef<BottomSheetModal, Props>(
                   />
                   <Input
                     testID="product-supplier-website"
+                    maxLength={TEXT_LIMITS.product.url}
                     label={t("library.fields.supplierWebsite")}
                     value={supplierWebsite}
                     onChangeText={setSupplierWebsite}
@@ -177,6 +180,7 @@ export const ProductFormSheet = forwardRef<BottomSheetModal, Props>(
           )}
           <Input
             testID="product-name"
+            maxLength={TEXT_LIMITS.product.name}
             label={t("library.fields.name")}
             value={name}
             onChangeText={setName}
@@ -185,6 +189,7 @@ export const ProductFormSheet = forwardRef<BottomSheetModal, Props>(
           {!editing ? (
             <Input
               testID="product-reference"
+              maxLength={TEXT_LIMITS.product.supplierReference}
               label={t("library.fields.reference")}
               value={reference}
               onChangeText={setReference}
@@ -207,12 +212,14 @@ export const ProductFormSheet = forwardRef<BottomSheetModal, Props>(
           />
           <Input
             testID="product-size"
+            maxLength={TEXT_LIMITS.product.size}
             label={t("library.fields.size")}
             value={size}
             onChangeText={setSize}
           />
           <Input
             testID="product-description"
+            maxLength={TEXT_LIMITS.product.description}
             label={t("library.fields.description")}
             value={description}
             onChangeText={setDescription}
@@ -220,6 +227,7 @@ export const ProductFormSheet = forwardRef<BottomSheetModal, Props>(
           />
           <Input
             testID="product-url"
+            maxLength={TEXT_LIMITS.product.url}
             label={t("library.fields.productUrl")}
             value={productUrl}
             onChangeText={setProductUrl}

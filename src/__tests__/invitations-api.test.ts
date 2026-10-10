@@ -40,6 +40,7 @@ describe("requestInviteCode", () => {
     [400, {}, "invalid_phone"],
     [404, {}, "not_found"],
     [409, { reason: "phone_registered" }, "phone_registered"],
+    [409, { reason: "account_exists" }, "account_exists"],
     [409, {}, "generic"],
     [410, { reason: "expired" }, "expired"],
     [410, { reason: "revoked" }, "revoked"],
@@ -58,6 +59,18 @@ describe("requestInviteCode", () => {
       ).rejects.toMatchObject({ reason });
     },
   );
+
+  it("tells the number's hourly code cap apart from the resend gap", async () => {
+    // Regression: the cap lasts up to an hour but read "Wait a minute and try again".
+    mockFetch.mockResolvedValueOnce({
+      ...jsonResponse(429, { error: "OtpHourlyLimit", message: "Too many" }),
+      headers: new Headers({ "Retry-After": "2585" }),
+    } as Response);
+
+    await expect(
+      requestInviteCode({ token: "tok", phone: "+33612345678" }),
+    ).rejects.toMatchObject({ reason: "hourly_limit", retryAfterMinutes: 44 });
+  });
 
   it("throws InviteActionError even when the body is not JSON", async () => {
     mockFetch.mockResolvedValueOnce({

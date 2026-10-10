@@ -88,8 +88,11 @@ export default function MyCompaniesScreen() {
               {company.address}
             </Text>
             <Text className="mt-1 text-xs text-muted-foreground">
-              SIRET {company.siret ?? "—"} · TVA {company.tva_number ?? "—"} ·
-              IBAN {company.iban ?? "—"} · BIC {company.bic ?? "—"}
+              {t("companies.form.fields.siret.label")}: {company.siret ?? "—"} ·{" "}
+              {t("companies.form.fields.tvaNumber.label")}:{" "}
+              {company.tva_number ?? "—"} ·{" "}
+              {t("companies.form.fields.iban.label")}: {company.iban ?? "—"} ·{" "}
+              {t("companies.form.fields.bic.label")}: {company.bic ?? "—"}
             </Text>
             <Text className="mt-1 text-xs text-muted-foreground">
               {t("settings.role", { role: t(`companies.x.${company.role}`) })}

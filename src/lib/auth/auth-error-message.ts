@@ -30,6 +30,22 @@ export class AuthRequestError extends Error {
   }
 }
 
+/**
+ * The backend refuses a code for two reasons: the short gap between two codes ("wait a minute")
+ * and the per-number hourly cap (`error: "OtpHourlyLimit"`), which can last close to an hour.
+ * Whole minutes (rounded up) left on the cap, from the Retry-After header; null for the short gap.
+ */
+export function hourlyLimitMinutes(
+  errorCode: unknown,
+  retryAfter: string | null | undefined,
+): number | null {
+  if (errorCode !== "OtpHourlyLimit") return null;
+  const seconds = Number(retryAfter);
+  // The backend always sends Retry-After with the cap; without it, the cap lasts at most an hour.
+  if (!retryAfter || !Number.isFinite(seconds) || seconds <= 0) return 60;
+  return Math.ceil(seconds / 60);
+}
+
 /** i18n key for a recognised failure, or null to show the server's message unchanged. */
 export function authErrorKey(
   flow: AuthFlow,
@@ -46,7 +62,10 @@ export function authErrorKey(
         ? "account.phone.errors.sameNumber"
         : "login.invalidPhone";
     case 429:
-      return "login.errors.throttled";
+      // The hourly cap takes `count` (minutes): see `hourlyLimitMinutes`.
+      return errorCode === "OtpHourlyLimit"
+        ? "login.errors.hourlyLimit"
+        : "login.errors.throttled";
     case 503:
       return "login.errors.smsFailed";
     case 409:

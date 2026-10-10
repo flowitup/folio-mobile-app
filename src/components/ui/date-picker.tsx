@@ -21,6 +21,9 @@ type Props = {
   clearable?: boolean;
   doneLabel?: string;
   testID?: string;
+  /** Inclusive ISO `YYYY-MM-DD` bounds the picker cannot scroll past. */
+  minimumDate?: string;
+  maximumDate?: string;
 };
 
 /** Date field. iOS opens an inline spinner in a modal, Android the native dialog. */
@@ -32,8 +35,14 @@ export function DatePicker({
   clearable,
   doneLabel = "OK",
   testID,
+  minimumDate,
+  maximumDate,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const bounds = {
+    minimumDate: parseIsoDate(minimumDate) ?? undefined,
+    maximumDate: parseIsoDate(maximumDate) ?? undefined,
+  };
   const [draft, setDraft] = useState<Date>(parseIsoDate(value) ?? new Date());
 
   function handleChange(event: DateTimePickerEvent, date?: Date) {
@@ -89,6 +98,7 @@ export function DatePicker({
           mode="date"
           locale={localeTag()}
           onChange={handleChange}
+          {...bounds}
         />
       ) : null}
 
@@ -113,6 +123,7 @@ export function DatePicker({
                 display="spinner"
                 locale={localeTag()}
                 onChange={handleChange}
+                {...bounds}
               />
               <Button
                 label={doneLabel}

@@ -30,8 +30,9 @@ import {
 } from "@/features/notes/notes-api";
 import type { Note, NoteCategory } from "@/features/notes/notes-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
-import { formatDate } from "@/lib/format/date";
+import { formatDate, localDayKey } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { TEXT_LIMITS } from "@/lib/format/text-limits";
 
 /**
  * Project journal: category chips + search, date-grouped cards, open/done toggle,
@@ -71,12 +72,12 @@ export default function ProjectNotesSection() {
         return false;
       return true;
     });
+    // Grouped by the device's calendar day, not the UTC one.
     const map = new Map<string, Note[]>();
-    for (const note of filtered)
-      map.set(note.created_at.slice(0, 10), [
-        ...(map.get(note.created_at.slice(0, 10)) ?? []),
-        note,
-      ]);
+    for (const note of filtered) {
+      const day = localDayKey(note.created_at);
+      map.set(day, [...(map.get(day) ?? []), note]);
+    }
     return Array.from(map.entries()).sort(([a], [b]) => b.localeCompare(a));
   }, [notes.data, category, search]);
 
@@ -236,6 +237,7 @@ export default function ProjectNotesSection() {
             <View className="p-4">
               <Input
                 testID="note-title"
+                maxLength={TEXT_LIMITS.note.title}
                 label={t("notes.title")}
                 value={title}
                 onChangeText={(value) => {
@@ -247,6 +249,7 @@ export default function ProjectNotesSection() {
               />
               <Input
                 testID="note-description"
+                maxLength={TEXT_LIMITS.note.description}
                 label={t("notes.description")}
                 value={description}
                 onChangeText={setDescription}

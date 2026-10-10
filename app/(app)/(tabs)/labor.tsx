@@ -426,10 +426,15 @@ function LaborTabContent() {
                 entries={entries.data ?? []}
                 colorOf={colorOf}
                 roleOf={roleOf}
-                onEntry={(entry) => {
-                  setEditingEntry(entry);
-                  setTimeout(() => entrySheet.current?.open(), 0);
-                }}
+                // Editing an entry needs project:manage_labor, as on the day card.
+                onEntry={
+                  canManageLabor
+                    ? (entry) => {
+                        setEditingEntry(entry);
+                        setTimeout(() => entrySheet.current?.open(), 0);
+                      }
+                    : () => undefined
+                }
               />
             ) : (
               <View
@@ -580,6 +585,7 @@ function LaborTabContent() {
       <DayDetailsSheet
         ref={detailsSheet}
         projectId={id}
+        readOnly={!canManageLabor}
         date={selectedDay}
         entries={dayEntries}
         activities={(activities.data ?? []).filter(

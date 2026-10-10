@@ -42,25 +42,45 @@ export function setSessionExpiredHandler(handler: (() => void) | null): void {
   onSessionExpired = handler;
 }
 
-// Single-flight refresh: concurrent 401s share one refresh request.
-let refreshInFlight: Promise<string | null> | null = null;
+/**
+ * What a refresh attempt established. `"rejected"`: the refresh token is gone or the server
+ * refused it, so the session is over. `"unavailable"`: nothing was decided about the token —
+ * offline, a rate limit, a 5xx (a deploy, a proxy) — and the stored session must survive for
+ * the next attempt instead of sending the user back to SMS sign-in.
+ */
+export type RefreshOutcome =
+  { accessToken: string } | "rejected" | "unavailable";
 
-export async function refreshAccessToken(): Promise<string | null> {
+/**
+ * The only answers /auth/refresh gives about the token itself (flask-jwt-extended: revoked,
+ * expired, invalid or malformed). Anything else — a 429, a 5xx, a proxy's or WAF's 403/404
+ * during a deploy — says nothing about it.
+ */
+function isRefusedStatus(status: number): boolean {
+  return status === 401 || status === 422;
+}
+
+// Single-flight refresh: concurrent 401s share one refresh request.
+let refreshInFlight: Promise<RefreshOutcome> | null = null;
+
+export async function refreshAccessToken(): Promise<RefreshOutcome> {
   if (refreshInFlight) return refreshInFlight;
-  refreshInFlight = (async () => {
+  refreshInFlight = (async (): Promise<RefreshOutcome> => {
     const { refreshToken } = await getStoredTokens();
-    if (!refreshToken) return null;
+    if (!refreshToken) return "rejected";
     const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
       method: "POST",
       headers: { Authorization: `Bearer ${refreshToken}` },
     });
-    if (!response.ok) return null;
+    if (!response.ok)
+      return isRefusedStatus(response.status) ? "rejected" : "unavailable";
     const body = (await response.json()) as { access_token?: string };
-    if (!body.access_token) return null;
+    if (!body.access_token) return "unavailable";
     await setAccessToken(body.access_token);
-    return body.access_token;
+    return { accessToken: body.access_token };
   })()
-    .catch(() => null)
+    // A network error, or a body that is not the API's (a captive portal page).
+    .catch((): RefreshOutcome => "unavailable")
     .finally(() => {
       refreshInFlight = null;
     });
@@ -86,13 +106,15 @@ const authMiddleware: Middleware = {
     if (response.status !== 401 || isAuthPath(request.url) || !retry)
       return undefined;
 
-    const newToken = await refreshAccessToken();
-    if (!newToken) {
+    const refreshed = await refreshAccessToken();
+    // Server unreachable: keep the session and hand back the 401, which the caller can retry.
+    if (refreshed === "unavailable") return undefined;
+    if (refreshed === "rejected") {
       await clearStoredTokens();
       onSessionExpired?.();
       return undefined;
     }
-    retry.headers.set("Authorization", `Bearer ${newToken}`);
+    retry.headers.set("Authorization", `Bearer ${refreshed.accessToken}`);
     const retried = await fetch(retry);
     // openapi-fetch requires a global Response instance when the response is replaced.
     return new Response(await retried.arrayBuffer(), {

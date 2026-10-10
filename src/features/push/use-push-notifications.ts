@@ -3,10 +3,15 @@ import { useRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import { useEffect } from "react";
 
+import { useAuth } from "@/auth/auth-context";
 import { requestShellSheet } from "@/components/shell/shell-context";
-import { registerPushDevice } from "@/features/push/push-device-registration";
+import {
+  clearHandledPushResponse,
+  registerPushDevice,
+} from "@/features/push/push-device-registration";
 import { selectProjectOnNextShell } from "@/features/projects/selected-project";
 import {
+  pushChangesOwnAccess,
   routeForNotification,
   staleKeysForPush,
 } from "@/lib/push/notification-route";
@@ -30,6 +35,7 @@ Notifications.setNotificationHandler({
 export function usePushNotifications(): void {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { refreshUser } = useAuth();
 
   useEffect(() => {
     void registerPushDevice();
@@ -37,6 +43,9 @@ export function usePushNotifications(): void {
     const invalidate = (data: PushData | null | undefined) => {
       for (const queryKey of staleKeysForPush(data))
         void queryClient.invalidateQueries({ queryKey });
+      // The user's own role, grants or company access changed: the companies and permissions
+      // held in the auth context (`/auth/me`) are stale too.
+      if (pushChangesOwnAccess(data)) void refreshUser();
     };
 
     const open = (data: PushData | null | undefined) => {
@@ -52,18 +61,22 @@ export function usePushNotifications(): void {
         invalidate(notification.request.content.data as PushData),
     );
     const responded = Notifications.addNotificationResponseReceivedListener(
-      (response) =>
-        open(response.notification.request.content.data as PushData),
-    );
-    // Cold start from a push: the response is handed over once, before listeners attach.
-    void Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response)
+      (response) => {
         open(response.notification.request.content.data as PushData);
+        clearHandledPushResponse();
+      },
+    );
+    // Cold start from a push: the response is handed over once, before listeners attach. It is
+    // cleared once handled, or this group would replay it when it mounts again after sign-in.
+    void Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (!response) return;
+      open(response.notification.request.content.data as PushData);
+      clearHandledPushResponse();
     });
 
     return () => {
       received.remove();
       responded.remove();
     };
-  }, [queryClient, router]);
+  }, [queryClient, router, refreshUser]);
 }

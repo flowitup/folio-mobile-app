@@ -4,6 +4,7 @@ import { Text, View } from "react-native";
 import { Card } from "@/components/ui/primitives";
 import { Eyebrow } from "@/components/ui/typography";
 import type { Invoice } from "@/features/invoices/invoice-types";
+import { formatMonth } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 
 /**
@@ -19,7 +20,9 @@ export function InvoiceInfoCard({ invoice }: { invoice: Invoice }) {
     },
     {
       label: t("invoices.form.serviceMonth"),
-      value: invoice.service_month?.slice(0, 7),
+      value: invoice.service_month
+        ? formatMonth(invoice.service_month.slice(0, 7))
+        : null,
     },
     { label: t("invoices.refundOf"), value: invoice.refunds_invoice_number },
     {

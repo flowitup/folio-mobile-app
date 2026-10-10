@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState, ErrorState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
+import { Select } from "@/components/ui/select";
 import {
   useBillingTemplates,
   useDeleteBillingTemplate,
@@ -21,14 +22,31 @@ import type {
   BillingDocumentKind,
   BillingDocumentTemplate,
 } from "@/features/billing/billing-types";
-import { formatDate } from "@/lib/format/date";
+import { useMyCompanies } from "@/features/companies/companies-api";
+import { formatInstant } from "@/lib/format/date";
+import { formatNumber } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
-/** Templates grouped by kind; tap to edit, "Use" starts a document from it, long-press deletes. */
+/**
+ * Templates grouped by kind; tap to edit, "Use" starts a document from it, long-press deletes.
+ * Templates belong to a company: an admin of several picks which one (default: the primary),
+ * as on the web, and a new template lands in that company.
+ */
 export default function BillingTemplatesScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const templates = useBillingTemplates();
+  const companies = useMyCompanies();
+  const adminCompanies = useMemo(
+    () => (companies.data ?? []).filter((c) => c.role === "admin"),
+    [companies.data],
+  );
+  const [pickedCompany, setPickedCompany] = useState<string | null>(null);
+  const companyId =
+    pickedCompany ??
+    (adminCompanies.find((c) => c.is_primary) ?? adminCompanies[0])?.id ??
+    null;
+  // Waits for the companies so the list is not first fetched for the wrong one.
+  const templates = useBillingTemplates(null, companyId, !companies.isPending);
   const remove = useDeleteBillingTemplate();
   useRefetchOnFocus(templates.refetch);
   const [deleting, setDeleting] = useState<BillingDocumentTemplate | null>(
@@ -50,11 +68,28 @@ export default function BillingTemplatesScreen() {
             testID="template-new"
             label={`＋ ${t("billing.list.new")}`}
             size="sm"
-            onPress={() => router.push("/billing/templates/new")}
+            onPress={() =>
+              router.push({
+                pathname: "/billing/templates/new",
+                params: companyId ? { company: companyId } : {},
+              })
+            }
           />
         }
       />
       <ScrollView contentContainerClassName="p-4 pb-12">
+        {adminCompanies.length > 1 ? (
+          <Select
+            testID="templates-company"
+            label={t("billing.templates.company")}
+            value={companyId}
+            options={adminCompanies.map((c) => ({
+              value: c.id,
+              label: c.legal_name,
+            }))}
+            onChange={setPickedCompany}
+          />
+        ) : null}
         {templates.isPending ? <ActivityIndicator className="mt-8" /> : null}
         {templates.isError && !templates.data ? (
           <ErrorState
@@ -79,7 +114,7 @@ export default function BillingTemplatesScreen() {
                   <ListRow
                     testID={`template-${item.id}`}
                     title={item.name}
-                    subtitle={`${t("billing.templates.itemsCount", { count: item.items.length })} · ${item.default_vat_rate ? `${t("billing.templates.defaultVatRate")} ${item.default_vat_rate}` : t("billing.templates.vatRateNone")} · ${formatDate(item.updated_at)}`}
+                    subtitle={`${t("billing.templates.itemsCount", { count: item.items.length })} · ${item.default_vat_rate ? `${t("billing.templates.defaultVatRate")} ${formatNumber(item.default_vat_rate, 2)}` : t("billing.templates.vatRateNone")} · ${formatInstant(item.updated_at)}`}
                     right={
                       <Pressable
                         testID={`template-use-${item.id}`}
@@ -87,7 +122,11 @@ export default function BillingTemplatesScreen() {
                         onPress={() =>
                           router.push({
                             pathname: "/billing/documents/new",
-                            params: { kind: item.kind, template: item.id },
+                            params: {
+                              kind: item.kind,
+                              template: item.id,
+                              ...(companyId ? { company: companyId } : {}),
+                            },
                           })
                         }
                       >

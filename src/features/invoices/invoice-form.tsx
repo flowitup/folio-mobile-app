@@ -9,6 +9,7 @@ import { MonthPicker } from "@/components/ui/month-picker";
 import { Card } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { currentMonth, localeTag, toIsoDate } from "@/lib/format/date";
+import { MAX_BUSINESS_DATE, MIN_BUSINESS_DATE } from "@/lib/format/date-bounds";
 import { formatMoney, parseMoneyInput } from "@/lib/format/money";
 import {
   MAX_LINE_QUANTITY,
@@ -107,8 +108,10 @@ export function InvoiceForm({
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(
     initial?.payment_method_id ?? null,
   );
-  const [serviceMonth, setServiceMonth] = useState<string>(
-    initial?.service_month?.slice(0, 7) ?? currentMonth(),
+  // A new labor payment starts on the current month; an edit keeps what the row has, so an
+  // older payment saved without a month is not silently moved onto this month on save.
+  const [serviceMonth, setServiceMonth] = useState<string | null>(
+    initial ? (initial.service_month?.slice(0, 7) ?? null) : currentMonth(),
   );
   const [workerId, setWorkerId] = useState<string | null>(
     initial?.worker_id ?? null,
@@ -220,8 +223,9 @@ export function InvoiceForm({
       type,
       issue_date: issueDate,
       recipient_name: recipient,
-      recipient_address: recipientAddress.trim() || undefined,
-      notes: notes.trim() || undefined,
+      // On edit an emptied field goes as "" so the API clears it (a missing key means "keep").
+      recipient_address: recipientAddress.trim() || (editing ? "" : undefined),
+      notes: notes.trim() || (editing ? "" : undefined),
       items,
       payment_method_id: paymentMethodId,
       highlight_color: highlight,
@@ -234,7 +238,10 @@ export function InvoiceForm({
           }
         : {}),
       ...(type === "labor"
-        ? { worker_id: workerId, service_month: `${serviceMonth}-01` }
+        ? {
+            worker_id: workerId,
+            service_month: serviceMonth ? `${serviceMonth}-01` : null,
+          }
         : {}),
     };
     onSubmit(payload);
@@ -271,6 +278,8 @@ export function InvoiceForm({
         value={issueDate}
         onChange={setIssueDate}
         doneLabel={t("common.ok")}
+        minimumDate={MIN_BUSINESS_DATE}
+        maximumDate={MAX_BUSINESS_DATE}
       />
 
       {type === "labor" ? (
@@ -291,11 +300,44 @@ export function InvoiceForm({
           <Text className="mb-1 text-sm text-muted-foreground">
             {t("invoices.form.serviceMonth")}
           </Text>
-          <MonthPicker
-            testID="invoice-service-month"
-            value={serviceMonth}
-            onChange={setServiceMonth}
-          />
+          {serviceMonth ? (
+            <>
+              <MonthPicker
+                testID="invoice-service-month"
+                value={serviceMonth}
+                onChange={setServiceMonth}
+              />
+              {editing ? (
+                <Pressable
+                  testID="invoice-service-month-clear"
+                  accessibilityRole="button"
+                  hitSlop={8}
+                  onPress={() => setServiceMonth(null)}
+                  className="-mt-1 mb-3 self-start"
+                >
+                  <Text className="text-sm text-muted-foreground underline">
+                    {t("invoices.form.serviceMonthClear")}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </>
+          ) : (
+            <View className="mb-3 flex-row items-center justify-between rounded-full border border-line bg-card py-1 pl-4 pr-1">
+              <Text
+                className="text-[13px] text-muted-foreground"
+                testID="invoice-service-month-none"
+              >
+                {t("invoices.form.serviceMonthNone")}
+              </Text>
+              <Button
+                testID="invoice-service-month-set"
+                label={t("invoices.form.serviceMonthSet")}
+                variant="secondary"
+                size="sm"
+                onPress={() => setServiceMonth(currentMonth())}
+              />
+            </View>
+          )}
         </>
       ) : null}
 
@@ -491,6 +533,9 @@ export function InvoiceForm({
       <View className="mb-4 flex-row flex-wrap">
         <Pressable
           testID="invoice-highlight-none"
+          accessibilityRole="button"
+          accessibilityLabel={t("invoices.detail.noHighlight")}
+          accessibilityState={{ selected: highlight === null }}
           onPress={() => setHighlight(null)}
           className={`mb-2 mr-2 h-9 w-9 items-center justify-center rounded-full border ${highlight === null ? "border-4 border-primary" : "border-border"}`}
         >
@@ -500,6 +545,9 @@ export function InvoiceForm({
           <Pressable
             key={color}
             testID={`invoice-highlight-${color}`}
+            accessibilityRole="button"
+            accessibilityLabel={t(`invoices.highlightColors.${color}`)}
+            accessibilityState={{ selected: highlight === color }}
             onPress={() => setHighlight(color)}
             className={`mb-2 mr-2 h-9 w-9 rounded-full ${highlight === color ? "border-4 border-primary" : ""}`}
             style={{ backgroundColor: HIGHLIGHT_COLORS[color] }}

@@ -14,6 +14,7 @@ import {
   parseQuantity,
 } from "@/lib/inventory/inventory-helpers";
 import type { SiteRef } from "@/lib/inventory/inventory-helpers";
+import { TEXT_LIMITS } from "@/lib/format/text-limits";
 
 import {
   INVENTORY_CATEGORY_SLUGS,
@@ -82,9 +83,13 @@ export const InventoryItemFormSheet = forwardRef<BottomSheetModal, Props>(
       initial?.warehouse_id ?? warehouses[0]?.id ?? null,
     );
     // A row being edited keeps its own site even if it is no longer listed; a new row only
-    // ever starts on a site of this company.
+    // ever starts on a site of this company. A site row whose project was deleted has none:
+    // it starts empty so a save asks where it is, instead of moving it to a default site.
     const [projectId, setProjectId] = useState<string | null>(
-      initial?.project_id ?? defaultSiteId(defaultProjectId, sites),
+      initial?.project_id ??
+        (initial?.location_type === "site"
+          ? null
+          : defaultSiteId(defaultProjectId, sites)),
     );
     const [reference, setReference] = useState(initial?.reference ?? "");
     const [description, setDescription] = useState(initial?.description ?? "");
@@ -150,6 +155,7 @@ export const InventoryItemFormSheet = forwardRef<BottomSheetModal, Props>(
         <View className="p-4">
           <Input
             testID="inventory-name"
+            maxLength={TEXT_LIMITS.inventoryItem.name}
             label={t("inventory.fields.name")}
             value={name}
             onChangeText={setName}
@@ -252,6 +258,7 @@ export const InventoryItemFormSheet = forwardRef<BottomSheetModal, Props>(
           )}
           <Input
             testID="inventory-reference"
+            maxLength={TEXT_LIMITS.inventoryItem.reference}
             label={t("inventory.fields.reference")}
             value={reference}
             onChangeText={setReference}
@@ -260,6 +267,7 @@ export const InventoryItemFormSheet = forwardRef<BottomSheetModal, Props>(
           />
           <Input
             testID="inventory-description"
+            maxLength={TEXT_LIMITS.inventoryItem.description}
             label={t("inventory.fields.description")}
             value={description}
             onChangeText={setDescription}

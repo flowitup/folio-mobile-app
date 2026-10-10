@@ -52,8 +52,21 @@ async function renderScreen() {
   );
 }
 
+/** GET /features: chat on unless a test turns it off. */
+let mockChatFeature = true;
+
+/** Answers GET /notifications/preferences with `prefs`, and GET /features with the flag. */
+function serve(prefs: unknown) {
+  mockGet.mockImplementation(async (path: string) =>
+    path === "/api/v1/features"
+      ? { data: { chat: mockChatFeature, assistant: false } }
+      : prefs,
+  );
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
+  mockChatFeature = true;
 });
 
 afterEach(() => {
@@ -62,7 +75,7 @@ afterEach(() => {
 
 describe("Settings → Notifications", () => {
   it("renders the master switch plus one switch per category from the server state", async () => {
-    mockGet.mockResolvedValue({ data: { ...ALL_ON, chat: false } });
+    serve({ data: { ...ALL_ON, chat: false } });
     await renderScreen();
 
     expect(await screen.findByTestId("notification-prefs")).toBeTruthy();
@@ -79,7 +92,7 @@ describe("Settings → Notifications", () => {
   });
 
   it("sends only the toggled field and keeps the server's answer", async () => {
-    mockGet.mockResolvedValue({ data: ALL_ON });
+    serve({ data: ALL_ON });
     mockPut.mockResolvedValue({ data: { ...ALL_ON, tasks: false } });
     await renderScreen();
 
@@ -95,11 +108,15 @@ describe("Settings → Notifications", () => {
       (await screen.findByTestId("notification-pref-tasks")).props.value,
     ).toBe(false);
     // One GET at mount; the PUT response fed the cache, no refetch needed.
-    expect(mockGet).toHaveBeenCalledTimes(1);
+    expect(
+      mockGet.mock.calls.filter(
+        ([path]) => path === "/api/v1/notifications/preferences",
+      ),
+    ).toHaveLength(1);
   });
 
   it("snaps the switch back when the save fails", async () => {
-    mockGet.mockResolvedValue({ data: ALL_ON });
+    serve({ data: ALL_ON });
     mockPut.mockResolvedValue({
       error: { error: "InternalError", message: "boom" },
       response: { status: 500 },
@@ -117,7 +134,7 @@ describe("Settings → Notifications", () => {
   });
 
   it("greys out every category while the master switch is off", async () => {
-    mockGet.mockResolvedValue({ data: { ...ALL_ON, push_enabled: false } });
+    serve({ data: { ...ALL_ON, push_enabled: false } });
     await renderScreen();
 
     await screen.findByTestId("notification-prefs");
@@ -137,8 +154,18 @@ describe("Settings → Notifications", () => {
     }
   });
 
+  it("hides the chat switch while the chat feature is off", async () => {
+    mockChatFeature = false;
+    serve({ data: ALL_ON });
+    await renderScreen();
+
+    expect(await screen.findByTestId("notification-pref-tasks")).toBeTruthy();
+    expect(screen.queryByTestId("notification-pref-chat")).toBeNull();
+    expect(screen.getAllByRole("switch")).toHaveLength(5);
+  });
+
   it("shows the load error instead of switches when the fetch fails", async () => {
-    mockGet.mockResolvedValue({
+    serve({
       error: { error: "InternalError", message: "boom" },
       response: { status: 500 },
     });

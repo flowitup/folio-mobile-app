@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "@/config/env";
+import { hourlyLimitMinutes } from "@/lib/auth/auth-error-message";
 
 import type { components } from "@/api/generated/schema";
 
@@ -47,8 +48,10 @@ export type InviteActionErrorReason =
   | InviteErrorReason
   | "invalid_phone"
   | "phone_registered"
+  | "account_exists"
   | "invalid_code"
   | "throttled"
+  | "hourly_limit"
   | "sms_failed"
   | "generic";
 
@@ -58,11 +61,18 @@ export type AcceptedSession = components["schemas"]["AcceptInviteResponse"];
 /** Thrown by `requestInviteCode` and `acceptInvite`; `reason` drives which message the screen shows. */
 export class InviteActionError extends Error {
   reason: InviteActionErrorReason;
+  /** `hourly_limit` only: whole minutes left on the number's hourly code cap. */
+  retryAfterMinutes?: number;
 
-  constructor(reason: InviteActionErrorReason, message?: string) {
+  constructor(
+    reason: InviteActionErrorReason,
+    message?: string,
+    retryAfterMinutes?: number,
+  ) {
     super(message ?? reason);
     this.name = "InviteActionError";
     this.reason = reason;
+    this.retryAfterMinutes = retryAfterMinutes;
   }
 }
 
@@ -70,7 +80,7 @@ export class InviteActionError extends Error {
 async function inviteActionError(
   response: Response,
 ): Promise<InviteActionError> {
-  let body: { reason?: string; message?: string } = {};
+  let body: { error?: string; reason?: string; message?: string } = {};
   try {
     body = (await response.json()) as typeof body;
   } catch {
@@ -84,8 +94,12 @@ async function inviteActionError(
     case 404:
       return new InviteActionError("not_found", body.message);
     case 409:
+      // account_exists: the invited address already has an account, which only its own
+      // phone can accept for.
       return new InviteActionError(
-        body.reason === "phone_registered" ? "phone_registered" : "generic",
+        body.reason === "phone_registered" || body.reason === "account_exists"
+          ? body.reason
+          : "generic",
         body.message,
       );
     case 410:
@@ -96,8 +110,16 @@ async function inviteActionError(
       )
         return new InviteActionError(body.reason, body.message);
       return new InviteActionError("expired", body.message);
-    case 429:
-      return new InviteActionError("throttled", body.message);
+    case 429: {
+      // The number's hourly code cap lasts up to an hour, unlike the one-minute resend gap.
+      const minutes = hourlyLimitMinutes(
+        body.error,
+        response.headers?.get("Retry-After"),
+      );
+      return minutes === null
+        ? new InviteActionError("throttled", body.message)
+        : new InviteActionError("hourly_limit", body.message, minutes);
+    }
     case 503:
       return new InviteActionError("sms_failed", body.message);
     default:

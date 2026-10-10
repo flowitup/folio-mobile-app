@@ -4,14 +4,16 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 
-import { useCan } from "@/auth/use-can";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Select } from "@/components/ui/select";
 import { showToast } from "@/components/ui/toast";
-import { useMyCompanies } from "@/features/companies/companies-api";
+import {
+  useCompanyCan,
+  useMyCompanies,
+} from "@/features/companies/companies-api";
 import { useImportLibrary } from "@/features/library/library-api";
 import { parseImportPayload } from "@/features/library/library-helpers";
 import type { ImportResult } from "@/features/library/library-types";
@@ -27,7 +29,7 @@ export default function LibraryImportScreen() {
     params.companyId ?? null,
   );
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
-  const canManage = useCan("bibliotheque:manage");
+  const canManage = useCompanyCan("bibliotheque:manage", effectiveCompany);
   const [text, setText] = useState("");
   const [result, setResult] = useState<ImportResult | null>(null);
   const importLibrary = useImportLibrary();

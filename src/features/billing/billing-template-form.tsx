@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
+import { formatNumber, parseMoneyInput } from "@/lib/format/money";
 
 import {
   BillingItemsEditor,
@@ -48,12 +49,21 @@ export function BillingTemplateForm({
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [terms, setTerms] = useState(initial?.terms ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
+  const [vatError, setVatError] = useState<string | null>(null);
   const [itemErrors, setItemErrors] = useState<Record<number, ItemErrors>>({});
   const [itemsError, setItemsError] = useState<string | null>(null);
 
   function submit() {
     const trimmed = name.trim();
     setNameError(trimmed ? null : t("billing.templates.nameRequired"));
+    // Optional, but when typed it must read as a rate the API takes ("1 000,5" or 150 is not).
+    const vatText = vat.trim();
+    const vatRate = vatText ? parseMoneyInput(vatText) : null;
+    const vatInvalid =
+      vatText !== "" && (vatRate === null || vatRate < 0 || vatRate > 100);
+    setVatError(
+      vatInvalid ? t("billing.form.errors.itemVatRatePositive") : null,
+    );
     const errors = validateItems(t, items);
     setItemErrors(errors);
     // validateItems only walks the lines it is given, so an empty template passed it and
@@ -62,14 +72,14 @@ export function BillingTemplateForm({
     setItemsError(
       missingItems ? t("billing.form.errors.atLeastOneItem") : null,
     );
-    if (!trimmed || missingItems || hasItemErrors(errors)) return;
+    if (!trimmed || vatInvalid || missingItems || hasItemErrors(errors)) return;
     onSubmit({
       kind,
       name: trimmed,
       items: itemsToPayload(items),
       notes: notes.trim() || null,
       terms: terms.trim() || null,
-      default_vat_rate: vat.trim() ? vat.trim().replace(",", ".") : null,
+      default_vat_rate: vatRate === null ? null : String(vatRate),
     });
   }
 
@@ -105,12 +115,13 @@ export function BillingTemplateForm({
         value={vat}
         onChangeText={setVat}
         keyboardType="decimal-pad"
+        error={vatError}
       />
       <View className="mb-4 flex-row flex-wrap gap-1">
         {VAT_PRESETS.map((preset) => (
           <Pressable key={preset} onPress={() => setVat(preset)}>
             <Badge
-              label={`${preset} %`}
+              label={`${formatNumber(preset, 2)} %`}
               tone={vat === preset ? "success" : "neutral"}
             />
           </Pressable>
@@ -135,6 +146,8 @@ export function BillingTemplateForm({
         value={notes}
         onChangeText={setNotes}
         multiline
+        // Same cap as a document's notes: a template must make a savable document.
+        maxLength={2000}
       />
       <Input
         testID="template-terms"
@@ -142,6 +155,7 @@ export function BillingTemplateForm({
         value={terms}
         onChangeText={setTerms}
         multiline
+        maxLength={2000}
       />
       <Button
         testID="template-submit"

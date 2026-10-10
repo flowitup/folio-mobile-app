@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
-import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
+import { showToast } from "@/components/ui/toast";
+import { ApiError, unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
 import type {
@@ -83,6 +84,7 @@ export function useUpdateWarehouse() {
 
 export function useDeleteWarehouse() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   return useApiMutation<{ id: string }>({
     mutationFn: async ({ id }) =>
       unwrapVoid(
@@ -92,6 +94,14 @@ export function useDeleteWarehouse() {
       ),
     invalidates: [inventoryKeys.all],
     successMessage: t("inventory.toast.warehouseDeleted"),
+    // 409: rows still point at the warehouse (the list on screen was stale). Say so in the
+    // user's language and reload the rows, instead of the generic "conflict" message.
+    onError: (error) => {
+      if (!(error instanceof ApiError && error.status === 409)) return false;
+      showToast(t("inventory.warehouses.deleteBlockedRows"), "error");
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
+      return true;
+    },
   });
 }
 

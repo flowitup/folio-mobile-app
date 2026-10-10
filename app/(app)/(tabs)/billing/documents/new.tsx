@@ -1,6 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -36,6 +36,7 @@ import type {
   BillingDocumentTemplate,
 } from "@/features/billing/billing-types";
 import { CompanyPicker } from "@/features/billing/company-picker";
+import { useMyCompanies } from "@/features/companies/companies-api";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 
@@ -47,6 +48,8 @@ export default function NewBillingDocumentScreen() {
     kind?: string;
     mode?: string;
     template?: string;
+    /** Company of `template` (the templates list's company). */
+    company?: string;
   }>();
   const kind: BillingDocumentKind =
     params.kind === "facture" ? "facture" : "devis";
@@ -62,12 +65,33 @@ export default function NewBillingDocumentScreen() {
   const [existingOpen, setExistingOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(Boolean(params.template));
   const recent = useRecentBillingDocuments(existingOpen);
-  const templates = useBillingTemplates(kind);
   const [template, setTemplate] = useState<BillingDocumentTemplate | null>(
     null,
   );
   const [recipient, setRecipient] = useState("");
-  const [templateCompany, setTemplateCompany] = useState<string | null>(null);
+  const [templateCompany, setTemplateCompany] = useState<string | null>(
+    params.company ?? null,
+  );
+  // Templates belong to a company: the sheet lists those of the company picked in it. The list
+  // waits for that pick (made as the sheet opens) unless the caller administers no company.
+  const companies = useMyCompanies();
+  const noIssuer =
+    !companies.isPending &&
+    !(companies.data ?? []).some((c) => c.role === "admin");
+  const templates = useBillingTemplates(
+    kind,
+    templateCompany,
+    templatesOpen &&
+      (Boolean(templateCompany) || Boolean(params.template) || noIssuer),
+  );
+  const pickTemplateCompany = useCallback(
+    (companyId: string | null) => {
+      // A template picked in another company is not one of this company's.
+      if (companyId !== templateCompany) setTemplate(null);
+      setTemplateCompany(companyId);
+    },
+    [templateCompany],
+  );
   const [recipientError, setRecipientError] = useState<string | null>(null);
 
   // "Use" from the templates list lands here with the template preselected.
@@ -195,8 +219,8 @@ export default function NewBillingDocumentScreen() {
               key={doc.id}
               testID={`existing-${doc.id}`}
               title={`${doc.document_number} · ${doc.recipient_name}`}
-              subtitle={`${t(`billing.kind.${doc.kind}`)} · ${formatDate(doc.issue_date)} · ${formatMoney(doc.total_ttc)} TTC`}
-              right={<BillingStatusBadge status={doc.status} />}
+              subtitle={`${t(`billing.kind.${doc.kind}`)} · ${formatDate(doc.issue_date)} · ${t("billing.form.amountTtc", { amount: formatMoney(doc.total_ttc) })}`}
+              right={<BillingStatusBadge kind={doc.kind} status={doc.status} />}
               onPress={() => {
                 setSeed(doc);
                 setSeedKey(`existing-${doc.id}`);
@@ -213,6 +237,11 @@ export default function NewBillingDocumentScreen() {
         snapPoints={["80%"]}
       >
         <View className="p-4">
+          <CompanyPicker
+            kind={kind}
+            value={templateCompany}
+            onChange={pickTemplateCompany}
+          />
           {templates.isPending && templatesOpen ? <ActivityIndicator /> : null}
           {templates.data && templates.data.length === 0 ? (
             <EmptyState message={t("billing.fromTemplate.none")} />
@@ -236,11 +265,6 @@ export default function NewBillingDocumentScreen() {
           ))}
           {preselected ? (
             <View className="mt-3">
-              <CompanyPicker
-                kind={kind}
-                value={templateCompany}
-                onChange={setTemplateCompany}
-              />
               <Input
                 testID="template-recipient"
                 label={t("billing.fromTemplate.recipient")}

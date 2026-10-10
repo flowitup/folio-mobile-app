@@ -1,17 +1,28 @@
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/primitives";
-import { statusTone } from "@/lib/billing/billing-status-transitions";
+import {
+  statusLabelKey,
+  statusTone,
+} from "@/lib/billing/billing-status-transitions";
 
-import type { BillingDocumentStatus } from "./billing-types";
+import type {
+  BillingDocumentKind,
+  BillingDocumentStatus,
+} from "./billing-types";
 
 export function BillingStatusBadge({
+  kind,
   status,
 }: {
+  kind: BillingDocumentKind;
   status: BillingDocumentStatus;
 }) {
   const { t } = useTranslation();
   return (
-    <Badge label={t(`billing.status.${status}`)} tone={statusTone(status)} />
+    <Badge
+      label={t(`billing.status.${statusLabelKey(kind, status)}`)}
+      tone={statusTone(status)}
+    />
   );
 }

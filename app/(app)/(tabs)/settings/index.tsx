@@ -22,7 +22,10 @@ export default function SettingsHub() {
   const superadmin = isPlatformOps(user);
   const companies = useMyCompanies();
   const primary = companies.data?.[0];
-  const paymentMethods = usePaymentMethods(primary?.id);
+  // Same list as the screen this row opens (inactive methods included), so the count matches its rows.
+  const paymentMethods = usePaymentMethods(primary?.id, {
+    includeInactive: true,
+  });
   const roles = useLaborRoles();
   const appVersion = Constants.expoConfig?.version ?? "—";
   const { preference: themePreference } = useThemePreference();

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react-native";
 
-import "@/i18n";
+import i18n from "@/i18n";
 import { DayRoster } from "@/features/labor/day-roster";
 import type { RosterRow } from "@/features/labor/roster-api";
 
@@ -57,5 +57,29 @@ describe("DayRoster", () => {
     expect(screen.getByTestId("error-state")).toBeTruthy();
     expect(screen.queryByTestId("empty-state")).toBeNull();
     expect(screen.queryByText("No one is scheduled today.")).toBeNull();
+  });
+
+  it("names the selected day, not 'today', in the empty and error texts", async () => {
+    await i18n.changeLanguage("en");
+    const { rerender } = await render(
+      <DayRoster rows={[]} loading={false} dayLabel="1 Oct 2026" />,
+    );
+    expect(screen.getByText("No one is scheduled on 1 Oct 2026.")).toBeTruthy();
+
+    await rerender(
+      <DayRoster
+        rows={undefined}
+        loading={false}
+        error
+        dayLabel="1 Oct 2026"
+      />,
+    );
+    expect(
+      screen.getByText("Could not load the roster for 1 Oct 2026."),
+    ).toBeTruthy();
+
+    // Today keeps the "today" wording.
+    await rerender(<DayRoster rows={[]} loading={false} />);
+    expect(screen.getByText("No one is scheduled today.")).toBeTruthy();
   });
 });

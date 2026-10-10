@@ -34,10 +34,12 @@ export async function authedFetch(
   if (first.status !== 401) return first;
 
   const refreshed = await refreshAccessToken();
-  if (!refreshed) {
+  // Server unreachable: the session stays, the caller gets the 401 and can try again.
+  if (refreshed === "unavailable") return first;
+  if (refreshed === "rejected") {
     await clearStoredTokens();
     notifySessionExpired();
     return first;
   }
-  return send(refreshed);
+  return send(refreshed.accessToken);
 }

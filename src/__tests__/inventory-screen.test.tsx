@@ -130,11 +130,13 @@ jest.mock("@/features/projects/selected-project", () => ({
 const mockGet = jest.fn();
 const mockPost = jest.fn();
 const mockPatch = jest.fn();
+const mockDelete = jest.fn();
 jest.mock("@/api/client", () => ({
   api: {
     GET: (...args: unknown[]) => mockGet(...args),
     POST: (...args: unknown[]) => mockPost(...args),
     PATCH: (...args: unknown[]) => mockPatch(...args),
+    DELETE: (...args: unknown[]) => mockDelete(...args),
   },
 }));
 
@@ -146,6 +148,7 @@ beforeEach(async () => {
   mockGet.mockReset();
   mockPost.mockReset();
   mockPatch.mockReset();
+  mockDelete.mockReset();
   mockPost.mockImplementation(async () => ok({ id: "new" }));
   mockPatch.mockImplementation(async () => ok({ id: "drill" }));
   mockGet.mockImplementation(async (path: string) => {
@@ -210,6 +213,27 @@ describe("inventory screen", () => {
     ).toHaveTextContent(/12 Nguyễn Hữu Cảnh/);
     expect(screen.getByTestId("inventory-group-site:p1")).toHaveTextContent(
       /Villa Thảo Điền/,
+    );
+  });
+
+  it("labels a site the viewer is not assigned to as such, not as an unknown place", async () => {
+    const fallback = mockGet.getMockImplementation()!;
+    mockGet.mockImplementation(async (path: string, init: unknown) =>
+      path === "/api/v1/inventory/items"
+        ? ok({
+            items: [
+              ...ITEMS,
+              { ...ITEMS[1], id: "ladder", project_id: "p-not-mine" },
+            ],
+            total: 3,
+          })
+        : fallback(path, init),
+    );
+    await renderWithProviders(<InventoryScreen />);
+    await screen.findByTestId("inventory-item-ladder");
+
+    expect(screen.getByTestId("inventory-group-other:site")).toHaveTextContent(
+      /A site you are not assigned to/,
     );
   });
 
@@ -391,6 +415,58 @@ describe("warehouses screen", () => {
     expect(screen.queryByTestId("confirm-dialog")).toBeNull();
   });
 
+  it("refuses to delete a warehouse whose only rows are at quantity 0", async () => {
+    const fallback = mockGet.getMockImplementation()!;
+    mockGet.mockImplementation(async (path: string, init: unknown) =>
+      path === "/api/v1/inventory/items"
+        ? ok({ items: [{ ...ITEMS[0], quantity: 0 }], total: 1 })
+        : fallback(path, init),
+    );
+    await renderWithProviders(<WarehousesScreen />);
+    await screen.findByTestId("warehouse-w1");
+
+    await fireEvent.press(screen.getByTestId("warehouse-w1"));
+    await fireEvent.press(screen.getByTestId("warehouse-delete"));
+    expect(showToast).toHaveBeenCalledWith(
+      i18n.t("inventory.warehouses.deleteBlockedRows"),
+      "error",
+    );
+    expect(screen.queryByTestId("confirm-dialog")).toBeNull();
+  });
+
+  it("explains a 409 from the server in the user's language", async () => {
+    await i18n.changeLanguage("fr");
+    const fallback = mockGet.getMockImplementation()!;
+    mockGet.mockImplementation(async (path: string, init: unknown) =>
+      path === "/api/v1/inventory/items"
+        ? ok({ items: [], total: 0 })
+        : fallback(path, init),
+    );
+    mockDelete.mockImplementation(async () => ({
+      error: {
+        error: "Conflict",
+        message: "This warehouse still holds inventory rows",
+      },
+      response: { status: 409, statusText: "Conflict" },
+    }));
+    await renderWithProviders(<WarehousesScreen />);
+    await screen.findByTestId("warehouse-w1");
+
+    await fireEvent.press(screen.getByTestId("warehouse-w1"));
+    await fireEvent.press(screen.getByTestId("warehouse-delete"));
+    await fireEvent.press(screen.getByTestId("confirm-ok"));
+    await waitFor(() =>
+      expect(showToast).toHaveBeenCalledWith(
+        i18n.t("inventory.warehouses.deleteBlockedRows"),
+        "error",
+      ),
+    );
+    expect(showToast).not.toHaveBeenCalledWith(
+      i18n.t("common.errors.conflict"),
+      "error",
+    );
+  });
+
   it("shows an error state with a retry when the warehouses cannot be loaded", async () => {
     mockGet.mockImplementation(async (path: string) => {
       if (path === "/api/v1/inventory/warehouses")
@@ -440,6 +516,51 @@ describe("without inventory:manage", () => {
     expect(screen.queryByTestId("warehouse-add")).toBeNull();
     await fireEvent.press(screen.getByTestId("warehouse-w1"));
     expect(screen.queryByTestId("warehouse-delete")).toBeNull();
+  });
+});
+
+describe("permissions of the company on screen", () => {
+  // `user.permissions` comes from the primary company; inventory writes are checked against
+  // the company they target, which GET /companies now lists permissions for.
+  function companiesWith(permissions: string[]) {
+    const fallback = mockGet.getMockImplementation()!;
+    mockGet.mockImplementation(async (path: string, init: unknown) =>
+      path === "/api/v1/companies"
+        ? ok({
+            items: [
+              {
+                company: { id: COMPANY_ID, legal_name: "Folio QA" },
+                access: {
+                  is_primary: false,
+                  attached_at: "2026-01-01",
+                  role: "member",
+                },
+                permissions,
+              },
+            ],
+          })
+        : fallback(path, init),
+    );
+  }
+
+  it("hides writes in a company where the caller is a member, despite the primary's rights", async () => {
+    mockPermissions = MANAGE;
+    companiesWith(["user:read"]);
+    await renderWithProviders(<InventoryScreen />);
+
+    expect(await screen.findByTestId("inventory-item-drill")).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.queryByTestId("inventory-add")).toBeNull(),
+    );
+  });
+
+  it("offers writes in a company that grants them, though the primary does not", async () => {
+    mockPermissions = ["user:read"];
+    companiesWith(["inventory:manage", "user:read"]);
+    await renderWithProviders(<WarehousesScreen />);
+
+    expect(await screen.findByTestId("warehouse-w1")).toBeTruthy();
+    expect(await screen.findByTestId("warehouse-add")).toBeTruthy();
   });
 });
 

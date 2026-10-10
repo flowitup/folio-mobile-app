@@ -19,9 +19,13 @@ import {
 } from "@/features/companies/companies-api";
 import {
   useAttachedUsers,
+  useCancelPendingMember,
   useCompanyPersons,
 } from "@/features/companies/company-members-api";
-import type { AttachedUser } from "@/features/companies/company-members-api";
+import type {
+  AttachedUser,
+  CompanyPersonEntry,
+} from "@/features/companies/company-members-api";
 import {
   JoinCodeCard,
   MemberRow,
@@ -55,8 +59,10 @@ export default function CompanyMembersScreen() {
   );
   const setRole = useSetMemberRole();
   const boot = useBootAttachedUser();
+  const cancelPending = useCancelPendingMember();
 
   const [booting, setBooting] = useState<AttachedUser | null>(null);
+  const [cancelling, setCancelling] = useState<CompanyPersonEntry | null>(null);
   const [grantsMember, setGrantsMember] = useState<AttachedUser | null>(null);
   const addSheet = useRef<BottomSheetModal>(null);
   const importSheet = useRef<BottomSheetModal>(null);
@@ -185,7 +191,11 @@ export default function CompanyMembersScreen() {
           <EmptyState message={t("companies.members.pending.empty")} />
         ) : null}
         {pendingPersons.map((person) => (
-          <PendingPersonRow key={person.person_id} person={person} />
+          <PendingPersonRow
+            key={person.person_id}
+            person={person}
+            onCancel={() => setCancelling(person)}
+          />
         ))}
       </ScrollView>
 
@@ -217,6 +227,26 @@ export default function CompanyMembersScreen() {
           boot.mutate(
             { companyId: activeCompanyId, userId: booting.user_id },
             { onSettled: () => setBooting(null) },
+          )
+        }
+      />
+
+      <ConfirmDialog
+        visible={cancelling !== null}
+        title={t("companies.members.pending.cancelConfirm", {
+          name: cancelling?.name ?? "",
+        })}
+        confirmLabel={t("companies.members.pending.cancel")}
+        cancelLabel={t("companies.members.pending.keep")}
+        destructive
+        loading={cancelPending.isPending}
+        onCancel={() => setCancelling(null)}
+        onConfirm={() =>
+          cancelling &&
+          activeCompanyId &&
+          cancelPending.mutate(
+            { companyId: activeCompanyId, personId: cancelling.person_id },
+            { onSettled: () => setCancelling(null) },
           )
         }
       />

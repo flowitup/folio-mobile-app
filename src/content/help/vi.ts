@@ -71,7 +71,7 @@ export const helpCatalogueVi: HelpCatalogue = [
     purpose:
       "Bảng công việc của công trình, mỗi lần xem một cột. Quản lý và thợ nhìn thấy cùng một bảng.",
     steps: [
-      "Chọn cột ở thanh chọn: Tồn đọng, Cần làm, Đang làm, Bị chặn hoặc Xong.",
+      "Chọn cột ở thanh chọn: Việc tồn đọng, Cần làm, Đang làm, Bị chặn hoặc Xong.",
       "Bấm “Công việc” để thêm một việc: bắt buộc có tiêu đề, rồi mô tả, cột, ưu tiên, hạn và nhãn. Bấm “Lưu”.",
       "Bấm vào một thẻ để mở ra sửa lại.",
       "Tích ô trên thẻ để đẩy thẳng việc sang Xong, hoặc đưa ngược về Cần làm.",

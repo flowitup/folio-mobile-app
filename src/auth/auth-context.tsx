@@ -17,7 +17,11 @@ import {
   refreshAccessToken,
   setSessionExpiredHandler,
 } from "@/api/client";
-import { unregisterPushDevice } from "@/features/push/push-device-registration";
+import {
+  clearHandledPushResponse,
+  forgetPushToken,
+  unregisterPushDevice,
+} from "@/features/push/push-device-registration";
 import {
   clearStoredTokens,
   getStoredTokens,
@@ -26,7 +30,11 @@ import {
 
 import type { components } from "@/api/generated/schema";
 import i18n from "@/i18n";
-import { authErrorKey, AuthRequestError } from "@/lib/auth/auth-error-message";
+import {
+  authErrorKey,
+  AuthRequestError,
+  hourlyLimitMinutes,
+} from "@/lib/auth/auth-error-message";
 import type { AuthFlow } from "@/lib/auth/auth-error-message";
 
 // `is_platform_ops` (D5) is not on the generated `UserResponse` yet — the backend ships it in
@@ -40,11 +48,17 @@ export type AuthUser = components["schemas"]["UserResponse"] & {
 // "expiring" ones return the 7-day token. Sign-out hands the refresh token back so the
 // backend revokes it either way.
 
-type AuthStatus = "loading" | "signedOut" | "signedIn";
+/**
+ * `unavailable`: a session is stored but launch could not confirm it — offline, a 5xx, a rate
+ * limit. The tokens are kept and the root layout shows a retry screen instead of sign-in.
+ */
+type AuthStatus = "loading" | "signedOut" | "signedIn" | "unavailable";
 
 type AuthContextValue = {
   status: AuthStatus;
   user: AuthUser | null;
+  /** Checks the stored session again after launch found the server unreachable. */
+  retrySession: () => Promise<void>;
   /** Asks the backend to text a 6-digit code; resolves with the code's lifetime in seconds. */
   requestOtp: (phone: string) => Promise<number>;
   signInWithOtp: (phone: string, code: string) => Promise<void>;
@@ -100,18 +114,20 @@ export type AdoptableSession = components["schemas"]["AcceptInviteResponse"];
 function authError(
   flow: AuthFlow,
   error: unknown,
-  response: { status: number } | undefined,
+  response: Pick<Response, "status" | "headers"> | undefined,
 ): AuthRequestError {
   // Recognised failures get a translated string; the rest keep the server's own wording,
   // which is more specific than any catch-all we could write. The status travels with the
   // error so a screen can branch on it instead of matching the translated sentence.
-  const key = authErrorKey(
-    flow,
-    response?.status,
-    (error as { error?: string } | undefined)?.error,
+  const errorCode = (error as { error?: string } | undefined)?.error;
+  const key = authErrorKey(flow, response?.status, errorCode);
+  // The hourly code cap names how long to wait (Retry-After), not "wait a minute".
+  const minutes = hourlyLimitMinutes(
+    errorCode,
+    response?.headers?.get("Retry-After"),
   );
   const message = key
-    ? i18n.t(key)
+    ? i18n.t(key, minutes === null ? undefined : { count: minutes })
     : ((error as { message?: string } | undefined)?.message ??
       `HTTP ${response?.status ?? "?"}`);
   return new AuthRequestError(message, response?.status);
@@ -126,6 +142,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signOutLocally = useCallback(async () => {
     await clearStoredTokens();
+    // A push tapped under the leaving account must not be replayed for the next one.
+    clearHandledPushResponse();
     // Every cached query belonged to the account that just left: without this the next
     // account reads its companies/projects from the cache (30s stale window) and the
     // onboarding gate decides on someone else's data.
@@ -135,18 +153,40 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [queryClient]);
 
   // Restore the session on launch: a stored refresh token is enough, the client refreshes on 401.
+  // Only a definite answer ends the session — no stored token, an account that is gone, or a
+  // refresh token the server refused (the client has cleared the tokens by then). Offline, a
+  // 5xx or a 429 keeps the tokens and lands on the retry screen instead of SMS sign-in.
+  const restoreInFlight = useRef(false);
+  const restoreSession = useCallback(async () => {
+    if (restoreInFlight.current) return;
+    restoreInFlight.current = true;
+    try {
+      const { refreshToken } = await getStoredTokens();
+      if (!refreshToken) return await signOutLocally();
+      const { data, response } = await api.GET("/api/v1/auth/me");
+      if (data) {
+        setUser(data);
+        setStatus("signedIn");
+        return;
+      }
+      const { refreshToken: kept } = await getStoredTokens();
+      if (response.status === 404 || !kept) return await signOutLocally();
+      setStatus("unavailable");
+    } catch {
+      // Offline: openapi-fetch rethrows the network error.
+      setStatus("unavailable");
+    } finally {
+      restoreInFlight.current = false;
+    }
+  }, [signOutLocally]);
+
   useEffect(() => {
     setSessionExpiredHandler(() => void signOutLocally());
     (async () => {
-      const { refreshToken } = await getStoredTokens();
-      if (!refreshToken) return signOutLocally();
-      const { data } = await api.GET("/api/v1/auth/me");
-      if (!data) return signOutLocally();
-      setUser(data);
-      setStatus("signedIn");
+      await restoreSession();
     })();
     return () => setSessionExpiredHandler(null);
-  }, [signOutLocally]);
+  }, [signOutLocally, restoreSession]);
 
   // Shared post-login step for both OTP flows (sign-in and sign-up). Their responses embed
   // a `user` snapshot that carries `companies` in normal operation; only fall back to a
@@ -181,6 +221,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       await refreshAccessToken();
       const { data } = await api.GET("/api/v1/auth/me");
       if (data) setUser(data);
+    } catch {
+      // Offline: keep the user we have; the next foreground tries again.
     } finally {
       refreshInFlight.current = false;
     }
@@ -189,18 +231,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
   // Foreground/background also drives TanStack Query's focus manager directly (React Native has
   // no `visibilitychange` event, so the default browser-only detection never fires) — this makes
   // `useMyCompanies`/`useProjects`/directory queries refetch on foreground alongside the
-  // `refreshUser` call above.
+  // `refreshUser` call above. A launch that found the server unreachable checks again too.
   useEffect(() => {
     const subscription = AppState.addEventListener(
       "change",
       (next: AppStateStatus) => {
         const focused = next === "active";
         focusManager.setFocused(focused);
-        if (focused) void refreshUser();
+        if (!focused) return;
+        if (statusRef.current === "unavailable") void restoreSession();
+        else void refreshUser();
       },
     );
     return () => subscription.remove();
-  }, [refreshUser]);
+  }, [refreshUser, restoreSession]);
 
   const requestOtp = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
@@ -292,9 +336,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [signOutLocally]);
 
   const deleteAccount = useCallback(async () => {
-    // Unregister first, while the token is still valid: this also clears the
-    // push token held in SecureStore, which the backend cannot reach.
-    await unregisterPushDevice();
+    // Push registration is left alone until the erasure succeeds: a refused deletion (last
+    // admin, server error) keeps the user signed in, and must keep their pushes coming.
     const { refreshToken } = await getStoredTokens();
     const { error, response } = await api.DELETE("/api/v1/auth/me", {
       body: { refresh_token: refreshToken },
@@ -309,6 +352,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       throw new Error(i18n.t("account.delete.failed"));
     }
 
+    // The erasure removed the account's push devices server-side; forget the token held in
+    // SecureStore, which the backend cannot reach.
+    await forgetPushToken();
     // The account is gone; drop the local session regardless of what the
     // logout endpoint would have done — the token no longer authenticates.
     await signOutLocally();
@@ -318,6 +364,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     () => ({
       status,
       user,
+      retrySession: restoreSession,
       requestOtp,
       signInWithOtp,
       signInWithSession,
@@ -332,6 +379,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [
       status,
       user,
+      restoreSession,
       requestOtp,
       signInWithOtp,
       signInWithSession,

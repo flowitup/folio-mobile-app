@@ -69,3 +69,52 @@ describe("billing template lines", () => {
     expect(onSubmit.mock.calls[0][0].items).toHaveLength(1);
   });
 });
+
+/** Template notes and terms share a document's 2,000-character cap, so a template always makes a savable document. */
+describe("billing template text caps", () => {
+  it("caps notes and terms at 2000 characters", async () => {
+    await renderForm(jest.fn());
+    expect(screen.getByTestId("template-notes").props.maxLength).toBe(2000);
+    expect(screen.getByTestId("template-terms").props.maxLength).toBe(2000);
+  });
+});
+
+/** The default VAT used to go out with only a comma swap, so 150 or "1 000,5" came back as a 422. */
+describe("billing template default VAT", () => {
+  async function fillValid() {
+    await fireEvent.changeText(screen.getByTestId("template-name"), "Tpl");
+    await fireEvent.press(screen.getByTestId("item-add"));
+    await fireEvent.changeText(
+      screen.getByTestId("item-description-0"),
+      "Pose",
+    );
+  }
+
+  it.each(["150", "1 000,5", "abc"])(
+    "flags %p under the field and does not save",
+    async (typed) => {
+      const onSubmit = jest.fn();
+      await renderForm(onSubmit);
+      await fillValid();
+      await fireEvent.changeText(screen.getByTestId("template-vat"), typed);
+      await fireEvent.press(screen.getByTestId("template-submit"));
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(
+        screen.getByText(i18n.t("billing.form.errors.itemVatRatePositive")),
+      ).toBeTruthy();
+    },
+  );
+
+  it("sends a typed rate as a plain decimal, and a blank one as null", async () => {
+    const onSubmit = jest.fn();
+    await renderForm(onSubmit);
+    await fillValid();
+    await fireEvent.changeText(screen.getByTestId("template-vat"), "5,5");
+    await fireEvent.press(screen.getByTestId("template-submit"));
+    expect(onSubmit.mock.calls[0][0].default_vat_rate).toBe("5.5");
+
+    await fireEvent.changeText(screen.getByTestId("template-vat"), "");
+    await fireEvent.press(screen.getByTestId("template-submit"));
+    expect(onSubmit.mock.calls[1][0].default_vat_rate).toBeNull();
+  });
+});

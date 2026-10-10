@@ -95,8 +95,8 @@ export function PaymentMethodsSection({ companyId, readOnly = false }: Props) {
               <Badge label={t("paymentMethods.inactive")} />
             ) : null}
             {/* A built-in method is seeded with the company and the API always refuses to
-                delete it, so offering the action only ever ends in an error banner. */}
-            {!readOnly ? (
+                deactivate or delete it, so offering either action only ever ends in an error. */}
+            {!readOnly && !(method.is_builtin && method.is_active) ? (
               <Pressable
                 testID={`pm-toggle-active-${method.id}`}
                 onPress={() =>
@@ -127,6 +127,7 @@ export function PaymentMethodsSection({ companyId, readOnly = false }: Props) {
               </Pressable>
             ) : null}
           </View>
+          {/* The two flags are exclusive (the API refuses both at once): ticking one clears the other. */}
           {!readOnly ? (
             <View className="mt-2">
               <Checkbox
@@ -134,7 +135,11 @@ export function PaymentMethodsSection({ companyId, readOnly = false }: Props) {
                 label={t("paymentMethods.paidByCompany")}
                 value={Boolean(method.is_company_payment)}
                 onChange={(next) =>
-                  update.mutate({ id: method.id, is_company_payment: next })
+                  update.mutate({
+                    id: method.id,
+                    is_company_payment: next,
+                    ...(next ? { is_personal_payment: false } : {}),
+                  })
                 }
               />
               <Checkbox
@@ -142,7 +147,11 @@ export function PaymentMethodsSection({ companyId, readOnly = false }: Props) {
                 label={t("paymentMethods.personalPayment")}
                 value={Boolean(method.is_personal_payment)}
                 onChange={(next) =>
-                  update.mutate({ id: method.id, is_personal_payment: next })
+                  update.mutate({
+                    id: method.id,
+                    is_personal_payment: next,
+                    ...(next ? { is_company_payment: false } : {}),
+                  })
                 }
               />
             </View>

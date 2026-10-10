@@ -8,6 +8,8 @@ import ProjectDocumentsSection from "../../app/(app)/(tabs)/projects/[id]/docume
 /**
  * Saving the document edit sheet renames first, then sets the tags. A refused rename used to
  * be swallowed: the tags were still saved and the sheet closed, losing the typed name.
+ * The refusal shows once, under the name field (no toast on top), and a save that renames
+ * and retags toasts "Saved." once, not once per step.
  */
 const PROJECT_ID = "p1";
 const SCOPED = ["project:read", "project:update"];
@@ -65,6 +67,11 @@ jest.mock("@/api/client", () => ({
     PUT: (...args: unknown[]) => mockPut(...args),
   },
 }));
+const mockShowToast = jest.fn();
+jest.mock("@/components/ui/toast", () => ({
+  ...jest.requireActual("@/components/ui/toast"),
+  showToast: (...args: unknown[]) => mockShowToast(...args),
+}));
 const mockAuthedFetch = jest.fn();
 jest.mock("@/api/authed-fetch", () => ({
   authedFetch: (...args: unknown[]) => mockAuthedFetch(...args),
@@ -76,6 +83,7 @@ beforeEach(async () => {
   mockPatch.mockReset();
   mockPut.mockReset();
   mockAuthedFetch.mockReset();
+  mockShowToast.mockReset();
   mockAuthedFetch.mockResolvedValue({
     ok: true,
     json: async () => ({ items: [DOCUMENT], total: 1, page: 1, per_page: 25 }),
@@ -114,8 +122,25 @@ describe("document edit sheet", () => {
     await waitFor(() => expect(mockPatch).toHaveBeenCalled());
     expect(
       await screen.findAllByText("A document with that name exists"),
-    ).not.toHaveLength(0);
+    ).toHaveLength(1);
+    expect(mockShowToast).not.toHaveBeenCalled();
     expect(mockPut).not.toHaveBeenCalled();
     expect(screen.getByTestId("document-name").props.value).toBe("plan-v2.pdf");
+  });
+
+  it("toasts Saved once for a rename plus new tags", async () => {
+    mockPatch.mockResolvedValue(ok({ ...DOCUMENT, filename: "plan-v2.pdf" }));
+    await renderWithProviders(<ProjectDocumentsSection />);
+    await fireEvent.press(await screen.findByTestId("document-edit-d1"));
+    await fireEvent.changeText(
+      screen.getByTestId("document-name"),
+      "plan-v2.pdf",
+    );
+    await fireEvent.changeText(screen.getByTestId("document-tags"), "lot-2");
+    await fireEvent.press(screen.getByTestId("document-save"));
+
+    await waitFor(() => expect(mockPut).toHaveBeenCalled());
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+    expect(mockShowToast.mock.calls).toEqual([["Saved.", "success"]]);
   });
 });

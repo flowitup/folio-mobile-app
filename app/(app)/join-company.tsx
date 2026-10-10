@@ -20,6 +20,7 @@ import {
 } from "@/features/companies/companies-api";
 import { normalizeJoinCode } from "@/lib/companies/join-code";
 import { joinErrorKey } from "@/lib/companies/join-error-message";
+import { apiErrorMessage } from "@/lib/query/api-error-message";
 import { useTokens } from "@/theme/tokens";
 
 /**
@@ -27,7 +28,7 @@ import { useTokens } from "@/theme/tokens";
  * Shown right after sign-up (no company yet) and from Settings › Join another company (?another=1).
  */
 export default function JoinCompanyScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const tokens = useTokens();
   const router = useRouter();
   const { another } = useLocalSearchParams<{ another?: string }>();
@@ -56,8 +57,10 @@ export default function JoinCompanyScreen() {
           else router.replace("/");
         },
         onError: (caught) => {
+          // Offline (a TypeError), a 5xx or another status: the raw message is "Network
+          // request failed", "HTTP 502 …" or English server text, never copy for this screen.
           const key = joinErrorKey(caught);
-          setError(key ? t(key) : (caught as Error).message);
+          setError(key ? t(key) : apiErrorMessage(caught, t, i18n.language));
         },
       },
     );

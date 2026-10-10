@@ -10,6 +10,7 @@ import { Icon } from "@/components/ui/icon";
 import { showToast } from "@/components/ui/toast";
 import { Eyebrow } from "@/components/ui/typography";
 import { normalizePhone } from "@/lib/auth/phone-number";
+import { useCodeExpiry } from "@/lib/auth/use-code-expiry";
 import { useTokens } from "@/theme/tokens";
 
 // Matches the backend's per-number resend throttle, as on sign-in.
@@ -28,7 +29,7 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
-  const [expiresInMinutes, setExpiresInMinutes] = useState(5);
+  const [codeExpiresAt, setCodeExpiresAt] = useState<number | null>(null);
   const [resendAt, setResendAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [submitting, setSubmitting] = useState(false);
@@ -39,13 +40,21 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [resendAt, now]);
+  const { minutesLeft, expired: codeExpired } = useCodeExpiry(
+    codeExpiresAt,
+    now,
+    setNow,
+  );
 
   const phone = normalizePhone(phoneInput);
   const secondsLeft =
     resendAt === null ? 0 : Math.max(0, Math.ceil((resendAt - now) / 1000));
   const canSend = phone !== null && !submitting;
   const canConfirm =
-    CODE_PATTERN.test(code) && !submitting && code !== lastSubmitted;
+    CODE_PATTERN.test(code) &&
+    !submitting &&
+    !codeExpired &&
+    code !== lastSubmitted;
 
   async function sendCode(target: string | null = phone) {
     if (!target) return setError(t("login.invalidPhone"));
@@ -56,12 +65,13 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
     setError(null);
     try {
       const expiresIn = await requestPhoneChangeCode(target);
-      setExpiresInMinutes(Math.max(1, Math.round(expiresIn / 60)));
+      const sentAt = Date.now();
+      setCodeExpiresAt(sentAt + expiresIn * 1000);
       setSentTo(target);
       setCode("");
       setLastSubmitted(null);
-      setResendAt(Date.now() + RESEND_SECONDS * 1000);
-      setNow(Date.now());
+      setResendAt(sentAt + RESEND_SECONDS * 1000);
+      setNow(sentAt);
     } catch (caught) {
       setError((caught as Error).message);
     } finally {
@@ -71,8 +81,10 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
 
   async function confirm(explicitCode?: string) {
     const submitted = explicitCode ?? code;
-    // Each wrong code spends one of five attempts: never send the same one twice.
-    if (submitting || !sentTo || !CODE_PATTERN.test(submitted)) return;
+    // Each wrong code spends one of five attempts: never send the same one twice,
+    // nor one that has expired and can only be refused.
+    if (submitting || !sentTo || codeExpired || !CODE_PATTERN.test(submitted))
+      return;
     if (submitted === lastSubmitted) return;
     setLastSubmitted(submitted);
     setSubmitting(true);
@@ -151,8 +163,13 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
               : t("login.resend")}
           </Text>
         </Pressable>
-        <Text className="font-sans text-[12.5px] text-muted">
-          {t("login.codeExpires", { minutes: expiresInMinutes })}
+        <Text
+          testID="change-phone-code-expiry"
+          className={`font-sans text-[12.5px] ${codeExpired ? "text-negative" : "text-muted"}`}
+        >
+          {codeExpired
+            ? t("login.codeExpired")
+            : t("login.codeExpires", { count: minutesLeft })}
         </Text>
       </View>
       <ErrorLine error={error} />

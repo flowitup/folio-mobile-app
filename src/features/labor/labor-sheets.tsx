@@ -23,16 +23,22 @@ import { useCompanyPersons } from "@/features/companies/company-members-api";
 import { useMembers } from "@/features/projects/members-api";
 import { formatDate, toIsoDate } from "@/lib/format/date";
 import { normalizePhone } from "@/lib/auth/phone-number";
-import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import {
+  formatMoney,
+  parseCentsInput,
+  parseMoneyInput,
+} from "@/lib/format/money";
 import { MAX_DAILY_AMOUNT } from "@/lib/format/numeric-bounds";
 import {
   NEW_PERSON,
   directoryCandidates,
   prefillFromDirectory,
 } from "@/lib/labor/company-directory-candidates";
+import { accountOptionLabel } from "@/lib/labor/account-option-label";
 import { laborRoleLabel } from "@/lib/labor/labor-role-label";
 import { countRepricedDays } from "@/lib/labor/rate-change-impact";
 import { currentDailyRate } from "@/lib/labor/rate-history";
+import { parseSupplementHours } from "@/lib/labor/supplement-hours";
 
 import {
   useCreateRateChange,
@@ -176,7 +182,8 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
       // Identity comes from the picked Person; only the legacy manual path needs a name.
       if (!picked && !name.trim())
         return setNameError(t("labor.workers.nameRequired"));
-      const dailyRate = parseMoneyInput(rate);
+      // Rounded as the server stores it: "0,004" is a rate of 0, refused like 0.
+      const dailyRate = parseCentsInput(rate);
       if (!dailyRate || dailyRate <= 0)
         return setRateError(t("labor.workers.rateRequired"));
       if (dailyRate > MAX_DAILY_AMOUNT)
@@ -301,9 +308,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
                 { value: NO_ACCOUNT, label: t("labor.workers.accountNone") },
                 ...(members.data ?? []).map((member) => ({
                   value: member.user_id,
-                  label: member.display_name
-                    ? `${member.display_name} · ${member.email}`
-                    : member.email,
+                  label: accountOptionLabel(member),
                 })),
               ]}
               onChange={(value) =>
@@ -374,7 +379,8 @@ export const RateChangesSheet = forwardRef<
   }));
 
   function submit() {
-    const dailyRate = parseMoneyInput(rate);
+    // Rounded as the server stores it: "0,004" is a rate of 0, refused like 0.
+    const dailyRate = parseCentsInput(rate);
     if (!dailyRate || dailyRate <= 0)
       return setError(t("labor.workers.rateRequired"));
     if (dailyRate > MAX_DAILY_AMOUNT)
@@ -745,7 +751,9 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
 
     // The backend rejects these shapes (web: `canSubmit`), so Save stays inert and says why
     // instead of letting the request fail with a raw server message.
-    const supplementHours = Math.max(0, Math.min(12, Number(supplement) || 0));
+    const parsedSupplement = parseSupplementHours(supplement);
+    const isSupplementInvalid = parsedSupplement === null;
+    const supplementHours = parsedSupplement ?? 0;
     const overrideValue = override.trim() ? parseMoneyInput(override) : null;
     const isEmptyRow = shift === "none" && supplementHours === 0;
     const isOverrideWithoutShift = shift === "none" && override.trim() !== "";
@@ -755,17 +763,19 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
       override.trim() !== "" && (overrideValue === null || overrideValue <= 0);
     const isOverrideTooLarge =
       overrideValue !== null && overrideValue > MAX_DAILY_AMOUNT;
-    const blockedReason = isEmptyRow
-      ? t("labor.log.emptyRowHint")
-      : isOverrideWithoutShift
-        ? t("labor.log.overrideNeedsShiftHint")
-        : isOverrideInvalid
-          ? t("labor.log.overrideInvalidHint")
-          : isOverrideTooLarge
-            ? t("labor.log.overrideTooLargeHint", {
-                max: formatMoney(MAX_DAILY_AMOUNT),
-              })
-            : null;
+    const blockedReason = isSupplementInvalid
+      ? t("labor.log.supplementInvalidHint")
+      : isEmptyRow
+        ? t("labor.log.emptyRowHint")
+        : isOverrideWithoutShift
+          ? t("labor.log.overrideNeedsShiftHint")
+          : isOverrideInvalid
+            ? t("labor.log.overrideInvalidHint")
+            : isOverrideTooLarge
+              ? t("labor.log.overrideTooLargeHint", {
+                  max: formatMoney(MAX_DAILY_AMOUNT),
+                })
+              : null;
 
     return (
       <Sheet

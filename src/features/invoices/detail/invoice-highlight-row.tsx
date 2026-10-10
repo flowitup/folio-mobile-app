@@ -42,7 +42,7 @@ export function InvoiceHighlightRow({
           key={color}
           testID={`detail-highlight-${color}`}
           accessibilityRole="button"
-          accessibilityLabel={color}
+          accessibilityLabel={t(`invoices.highlightColors.${color}`)}
           accessibilityState={{ selected: value === color, disabled }}
           disabled={disabled}
           onPress={() => onChange(color)}
