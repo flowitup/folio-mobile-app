@@ -80,27 +80,19 @@ function OverviewTabContent() {
   );
   const rows = useMemo(() => invoices.data?.invoices ?? [], [invoices.data]);
   const fundsReleased = invoices.data?.funds_released_total ?? 0;
-  const companySpent =
-    (invoices.data?.company_spent_total ?? project?.spent_by_credits ?? 0) +
-    (invoices.data?.company_cash_advanced_total ?? 0);
-  const personalSpent =
-    invoices.data?.personal_spent_total ?? project?.spent_personal ?? 0;
-  const purseSpent = companySpent + personalSpent;
   const budgetValue = project?.budget == null ? null : Number(project.budget);
   const metrics = useMemo(() => {
     const spentTotal = computeSpentTotal(rows);
     const series = buildMonthlySpendSeries(rows, 6, referenceDate);
     return {
       spentTotal,
-      // Remaining = budget minus the funds released (as on the web Overview); the spend share
-      // counts every purse's spend.
-      budget: computeBudgetMetrics(budgetValue, purseSpent, fundsReleased),
+      budget: computeBudgetMetrics(budgetValue, spentTotal, fundsReleased),
       monthDelta: computeMonthDelta(series),
       pendingCompany: computePendingRefunds(rows),
       bank: computeBankReleaseMetrics(budgetValue, fundsReleased),
       buckets: buildTypeMonthlyBuckets(rows, 6, referenceDate),
     };
-  }, [rows, budgetValue, fundsReleased, referenceDate, purseSpent]);
+  }, [rows, budgetValue, fundsReleased, referenceDate]);
   const agenda = useMemo(
     () => groupAgendaTasks(tasks.data ?? [], referenceDate),
     [tasks.data, referenceDate],

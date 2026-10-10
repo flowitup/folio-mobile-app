@@ -101,7 +101,7 @@ export function OverviewHero({
                     ? "dashboard.overview.spentOfCredit"
                     : "dashboard.overview.spentOfReleased",
                   {
-                    spent: formatMoney(budget.spent),
+                    spent: formatMoney(spentTotal),
                     total: formatMoney(budget.denominator),
                   },
                 )}

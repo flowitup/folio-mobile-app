@@ -183,20 +183,13 @@ export function computeMonthDelta(series: MonthlySpendPoint[]): MonthDelta {
 
 export interface BudgetMetrics {
   denominator: number;
-  /** Everything spent, measured against the denominator for the ring share. */
-  spent: number;
   usesBudget: boolean;
   /**
    * False when there is neither a budget nor any released funds: nothing to measure the
    * spending against, so "remaining" and the spent share have no meaning.
    */
   hasDenominator: boolean;
-  /**
-   * With a budget set, the budget not yet released (budget − funds released); without one, the
-   * funds released not yet spent (as the web Overview).
-   */
   left: number;
-  /** Rounded percent of the denominator spent. */
   pct: number;
   pctClamped: number;
 }
@@ -208,14 +201,11 @@ export function computeBudgetMetrics(
 ): BudgetMetrics {
   const usesBudget = typeof budget === "number" && budget > 0;
   const denominator = usesBudget ? budget : fundsReleasedTotal;
-  const left = usesBudget
-    ? denominator - fundsReleasedTotal
-    : denominator - spentTotal;
+  const left = denominator - spentTotal;
   const pct =
     denominator > 0 ? Math.round((spentTotal / denominator) * 100) : 0;
   return {
     denominator,
-    spent: spentTotal,
     usesBudget,
     hasDenominator: denominator > 0,
     left,
