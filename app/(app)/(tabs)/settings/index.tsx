@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { useMyCompanies } from "@/features/companies/companies-api";
+import { useCanManageHiddenSections } from "@/features/companies/hidden-sections";
 import { usePaymentMethods } from "@/features/invoices/invoices-api";
 import { useLaborRoles } from "@/features/labor/labor-api";
 
@@ -29,6 +30,7 @@ export default function SettingsHub() {
   const roles = useLaborRoles();
   const appVersion = Constants.expoConfig?.version ?? "—";
   const { preference: themePreference } = useThemePreference();
+  const canHideSections = useCanManageHiddenSections();
 
   const rows: { key: string; label: string; value?: string; path: string }[] = [
     {
@@ -62,6 +64,16 @@ export default function SettingsHub() {
       value: t(`settings.appearance.options.${themePreference}`),
       path: "/settings/appearance",
     },
+    ...(canHideSections && primary
+      ? [
+          {
+            key: "hidden-sections",
+            label: t("settings.hiddenSections.title"),
+            value: String(primary.hidden_sections?.length ?? 0),
+            path: "/settings/hidden-sections",
+          },
+        ]
+      : []),
     {
       key: "join-company",
       label: t("settings.joinCompany"),

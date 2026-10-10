@@ -204,6 +204,11 @@
         "light": "Always the light palette",
         "dark": "Always the dark palette"
       }
+    },
+    "hiddenSections": {
+      "title": "Hidden sections",
+      "intro": "Switch off the sections {{company}} does not use. A switched-off section disappears from the Menu of every member of the company.",
+      "adminOnly": "Only a company admin can change this setting."
     }
   },
   "members": {
