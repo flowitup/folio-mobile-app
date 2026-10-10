@@ -10,6 +10,7 @@ import {
   registerPushDevice,
 } from "@/features/push/push-device-registration";
 import { selectProjectOnNextShell } from "@/features/projects/selected-project";
+import i18n from "@/i18n";
 import {
   pushChangesOwnAccess,
   routeForNotification,
@@ -74,7 +75,13 @@ export function usePushNotifications(): void {
       clearHandledPushResponse();
     });
 
+    // Pushes are rendered server-side in the language the device registered with, so a
+    // language picked in Settings (or restored from storage after launch) is re-sent.
+    const reRegister = () => void registerPushDevice();
+    i18n.on("languageChanged", reRegister);
+
     return () => {
+      i18n.off("languageChanged", reRegister);
       received.remove();
       responded.remove();
     };
