@@ -208,82 +208,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/assistant/actions": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Answer an assistant choice message */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["SubmitActionBody"];
-        };
-      };
-      responses: {
-        /** @description Response */
-        202: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["ActionAcceptedResponse"];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/assistant/audit": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List the assistant's supervision log for a company (admin only) */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": components["schemas"]["AssistantAuditListResponse"];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/attachments/{attachment_id}": {
     parameters: {
       query?: never;
@@ -7731,45 +7655,6 @@ export interface components {
        */
       role: string;
     };
-    /** AssistantAuditListResponse */
-    AssistantAuditListResponse: {
-      /** Items */
-      items: components["schemas"]["AssistantAuditRow"][];
-    };
-    /**
-     * AssistantAuditRow
-     * @description One row of GET /assistant/audit — the web supervision page's list item.
-     */
-    AssistantAuditRow: {
-      /** Channel Key */
-      channel_key: string;
-      /** Cost Usd */
-      cost_usd: number | string;
-      /**
-       * Created At
-       * Format: date-time
-       */
-      created_at: string;
-      /** Feature */
-      feature: string | null;
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string;
-      /** Intent */
-      intent: string | null;
-      /** Outcome */
-      outcome: string | null;
-      /** Refused Reason */
-      refused_reason: string | null;
-      /** Trace Id */
-      trace_id: string | null;
-      /** User Id */
-      user_id: string | null;
-      /** User Name */
-      user_name: string;
-    };
     /**
      * AttachUserToCompanyResponse
      * @description Response of POST /companies/<id>/access/<user_id>.
@@ -8569,8 +8454,6 @@ export interface components {
      * @description Feature flags of this deployment, as seen by the apps.
      */
     FeaturesResponse: {
-      /** Assistant */
-      assistant: boolean;
       /** Chat */
       chat: boolean;
     };
@@ -8944,11 +8827,6 @@ export interface components {
       created_at: string;
       /** Id */
       id: string;
-      /**
-       * Mentions Assistant
-       * @default false
-       */
-      mentions_assistant: boolean;
       /** Mine */
       mine: boolean;
       /**
@@ -9454,7 +9332,7 @@ export interface components {
      * @description JSON body of POST /chat/channels/<key>/messages (text-only messages).
      *
      *     Messages with an image or a voice note use multipart/form-data instead: ``body`` text
-     *     part + ``file`` (+ optional ``lang``/``reply_to_id`` form fields).
+     *     part + ``file`` (+ optional ``lang`` form field).
      */
     SendMessageBody: {
       /** Body */
@@ -9464,11 +9342,6 @@ export interface components {
        * @default null
        */
       lang: ("vi" | "fr" | "en") | null;
-      /**
-       * Reply To Id
-       * @default null
-       */
-      reply_to_id: string | null;
     };
     /**
      * SetDayDescriptionSchema
@@ -9531,23 +9404,6 @@ export interface components {
       display_name: string;
       /** Phone */
       phone: string;
-    };
-    /**
-     * SubmitActionBody
-     * @description JSON body of POST /assistant/actions (a tapped choice option).
-     */
-    SubmitActionBody: {
-      /** Action */
-      action: string;
-      /** Payload */
-      payload?: {
-        [key: string]: unknown;
-      };
-      /**
-       * Reply To Id
-       * Format: uuid
-       */
-      reply_to_id: string;
     };
     /** UnregisterPushDeviceRequest */
     UnregisterPushDeviceRequest: {

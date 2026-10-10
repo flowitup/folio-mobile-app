@@ -59,7 +59,7 @@ let mockChatFeature = true;
 function serve(prefs: unknown) {
   mockGet.mockImplementation(async (path: string) =>
     path === "/api/v1/features"
-      ? { data: { chat: mockChatFeature, assistant: false } }
+      ? { data: { chat: mockChatFeature } }
       : prefs,
   );
 }

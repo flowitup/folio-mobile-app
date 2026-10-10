@@ -15,9 +15,7 @@ import { useAuth } from "@/auth/auth-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
-import type { ChatMessage } from "@/features/chat/chat-api";
 import {
-  useAssistantEnabled,
   useChatChannels,
   useChatEnabled,
   useFeatures,
@@ -26,7 +24,6 @@ import {
   useSendChatMessage,
 } from "@/features/chat/chat-api";
 import { ChatComposer } from "@/features/chat/chat-composer";
-import type { ChatComposerHandle } from "@/features/chat/chat-composer";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
 import type { PickedFile } from "@/lib/files/pick";
 import type { SupportedLocale } from "@/i18n";
@@ -49,9 +46,6 @@ export default function ChatScreen() {
   // `enabled` is false both while the flag is loading and when chat is off, so the
   // features query is what says which — see the disabled branch below.
   const features = useFeatures();
-  // Off (or still unknown): the composer's `@folio` suggestion, the "Ask again" button and
-  // choice buttons all go inert — the backend answers any of those with 404 `FeatureDisabled`.
-  const assistantEnabled = useAssistantEnabled();
   const channels = useChatChannels(enabled, 15_000);
   const channelList = useMemo(() => channels.data ?? [], [channels.data]);
   const [selected, setSelected] = useState<string | null>(
@@ -65,17 +59,6 @@ export default function ChatScreen() {
   const markRead = useMarkChatRead();
   const send = useSendChatMessage(channelKey ?? "");
   const scrollRef = useRef<ScrollView>(null);
-  const composerRef = useRef<ChatComposerHandle>(null);
-  // Set by the "Hỏi tiếp" button under an assistant message; cleared on send, on dismissal,
-  // or when the reader switches to a different channel.
-  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
-  // Adjusting state during render (React's documented pattern) rather than in an effect: a
-  // reply left pending on the channel just switched away from must not leak into the next one.
-  const [replyChannelKey, setReplyChannelKey] = useState(channelKey);
-  if (channelKey !== replyChannelKey) {
-    setReplyChannelKey(channelKey);
-    setReplyTo(null);
-  }
 
   const channel = useMemo(
     () => channelList.find((c) => c.key === channelKey) ?? null,
@@ -112,9 +95,7 @@ export default function ChatScreen() {
   }, [lastMessageId]);
 
   // Sending implies having read the channel; the composer clears itself once this resolves.
-  // `lang` (the reader's UI language) now goes on every send, and `replyToId` — when the
-  // reader tapped "Hỏi tiếp" on an assistant message — addresses the assistant even without
-  // typing `@folio`.
+  // `lang` (the reader's UI language) goes on every send.
   async function submit(message: {
     body: string;
     file: PickedFile | null;
@@ -122,15 +103,8 @@ export default function ChatScreen() {
     await send.mutateAsync({
       ...message,
       lang: i18n.language as SupportedLocale,
-      ...(replyTo ? { replyToId: replyTo.id } : {}),
     });
-    setReplyTo(null);
     if (channelKey) markRead.mutate({ channelKey });
-  }
-
-  function replyToAssistant(message: ChatMessage): void {
-    setReplyTo(message);
-    composerRef.current?.focus();
   }
 
   return (
@@ -267,44 +241,14 @@ export default function ChatScreen() {
             </Text>
           ) : null}
           {items.length > 0 ? (
-            <ChatMessageList
-              messages={items}
-              seen={seen}
-              onReplyToAssistant={replyToAssistant}
-              assistantEnabled={assistantEnabled}
-            />
+            <ChatMessageList messages={items} seen={seen} />
           ) : null}
         </ScrollView>
 
-        {replyTo ? (
-          <View
-            testID="chat-reply-bar"
-            className="flex-row items-center gap-2 border-t border-line bg-paper-2 px-4 py-2"
-          >
-            <Icon name="corner-up-left" size={14} color={tokens.muted} />
-            <Text
-              className="flex-1 font-sans text-[12px] text-muted"
-              numberOfLines={1}
-            >
-              {t("chat.replyingTo", { name: replyTo.sender_name })}
-            </Text>
-            <Pressable
-              testID="chat-cancel-reply"
-              accessibilityRole="button"
-              onPress={() => setReplyTo(null)}
-              hitSlop={8}
-            >
-              <Icon name="x" size={14} color={tokens.muted} />
-            </Pressable>
-          </View>
-        ) : null}
-
         <ChatComposer
-          ref={composerRef}
           disabled={!channelKey}
           sending={send.isPending}
           onSend={submit}
-          assistantEnabled={assistantEnabled}
         />
       </KeyboardAvoidingView>
     </View>

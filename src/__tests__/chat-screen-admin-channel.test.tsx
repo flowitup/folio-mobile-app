@@ -1,8 +1,7 @@
 /**
  * `ChatScreen`'s channel chip row: the `admin` kind gets a lock icon and the "Quản trị" /
  * "Administration" label instead of its own name, and its header subtitle names the admin
- * scope — the assistant no longer pins a channel of its own (see `chat-mention.test.ts` and
- * `chat-assistant-cards.test.tsx` for the mention/renderer behaviour).
+ * scope.
  */
 import { render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -84,9 +83,8 @@ const CHANNELS = [
 
 jest.mock("@/features/chat/chat-api", () => ({
   useChatEnabled: () => true,
-  useAssistantEnabled: () => true,
   useFeatures: () => ({
-    data: { chat: true, assistant: true },
+    data: { chat: true },
     isPending: false,
     isFetched: true,
   }),
