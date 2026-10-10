@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
+import { activeLocale } from "@/i18n";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
@@ -74,11 +75,29 @@ export type CompanyEvent = {
   attached_at: string;
 };
 
+/**
+ * One entry of the activity feed: a chat message, a task move, an invoice or quote status
+ * change, a membership change. The text is already in the app's language; `data` is the push
+ * payload (`kind` plus ids), so a tap routes exactly like the push did.
+ */
+export type ActivityEvent = {
+  id: string;
+  category: string;
+  kind: string;
+  title: string;
+  body: string;
+  data: Record<string, string>;
+  created_at: string;
+  read: boolean;
+};
+
 export type NotificationsResponse = {
   items: DueNotification[];
   attendance_pending: AttendancePending[];
   /** Derived, not stored (D1) — excluded from `count` until both clients ship (Phase 2). */
   company_events: CompanyEvent[];
+  /** Newest first. Absent on a back end that predates the feed. */
+  events: ActivityEvent[];
   count: number;
 };
 
@@ -151,12 +170,16 @@ export function useNotifications() {
     refetchInterval: 60_000,
     queryFn: async () => {
       const body = unwrapAs<Partial<NotificationsResponse>>(
-        await api.GET("/api/v1/notifications"),
+        // The back end writes the activity entries in the language we ask for.
+        await api.GET("/api/v1/notifications", {
+          params: { query: { locale: activeLocale() } },
+        }),
       );
       return {
         items: body.items ?? [],
         attendance_pending: body.attendance_pending ?? [],
         company_events: body.company_events ?? [],
+        events: body.events ?? [],
         count: body.count ?? 0,
       } satisfies NotificationsResponse;
     },
@@ -170,6 +193,19 @@ export function useDismissNotification() {
       unwrapVoid(
         await api.POST("/api/v1/notifications/{note_id}/dismiss", {
           params: { path: { note_id: noteId } },
+        }),
+      ),
+    invalidates: [noteKeys.notifications],
+  });
+}
+
+/** Mark activity entries read: the given ids, or every entry when `ids` is omitted. */
+export function useMarkActivityRead() {
+  return useApiMutation<{ ids?: string[] }>({
+    mutationFn: async ({ ids }) =>
+      unwrapVoid(
+        await api.POST("/api/v1/notifications/events/read", {
+          body: (ids ? { ids } : {}) as never,
         }),
       ),
     invalidates: [noteKeys.notifications],

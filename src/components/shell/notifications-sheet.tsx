@@ -9,15 +9,20 @@ import { Badge } from "@/components/ui/primitives";
 import { Eyebrow } from "@/components/ui/typography";
 import {
   useDismissNotification,
+  useMarkActivityRead,
   useNotifications,
+  type ActivityEvent,
 } from "@/features/notes/notes-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
-import { formatDate } from "@/lib/format/date";
+import { formatDate, formatInstant } from "@/lib/format/date";
+import { routeForNotification } from "@/lib/push/notification-route";
 import { useTokens } from "@/theme/tokens";
 
 /**
  * Bell sheet: attendance entries waiting for this manager's validation (Duyệt / Từ chối), then
- * due reminders (notes with a due date) across projects — tap to open, "Bỏ qua" to dismiss.
+ * due reminders (notes with a due date) across projects — tap to open, "Bỏ qua" to dismiss —
+ * then the activity feed (chat, tasks, invoices, membership): a tap marks the entry read and
+ * lands where the push would have.
  */
 export function NotificationsSheet() {
   const { t } = useTranslation();
@@ -27,11 +32,23 @@ export function NotificationsSheet() {
   const { select } = useSelectedProject();
   const notifications = useNotifications();
   const dismiss = useDismissNotification();
+  const markRead = useMarkActivityRead();
   const pending = (notifications.data?.items ?? []).filter(
     (item) => !item.dismissed,
   );
   const attendance = notifications.data?.attendance_pending ?? [];
   const companyEvents = notifications.data?.company_events ?? [];
+  const events = notifications.data?.events ?? [];
+  const unreadEvents = events.filter((event) => !event.read).length;
+
+  function openEvent(event: ActivityEvent) {
+    if (!event.read) markRead.mutate({ ids: [event.id] });
+    const route = routeForNotification(event.data);
+    if (!route.path && !route.projectId) return;
+    closeSheet();
+    if (route.projectId) select(route.projectId);
+    if (route.path) router.push(route.path as never);
+  }
 
   return (
     <ShellSheet
@@ -139,6 +156,67 @@ export function NotificationsSheet() {
           ))}
         </View>
       </View>
+      {events.length > 0 ? (
+        <View className="mt-4">
+          <View className="mb-2 flex-row items-center justify-between">
+            <Eyebrow>
+              {t("notifications.activity.title", { count: unreadEvents })}
+            </Eyebrow>
+            {unreadEvents > 0 ? (
+              <Pressable
+                testID="notification-mark-all-read"
+                accessibilityRole="button"
+                onPress={() => markRead.mutate({})}
+                hitSlop={8}
+                className="active:opacity-70"
+              >
+                <Text className="font-sans text-xs text-accent-ink">
+                  {t("notifications.activity.markAllRead")}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+          <View className="overflow-hidden rounded-xl border border-line bg-card">
+            {events.map((event) => (
+              <Pressable
+                key={event.id}
+                testID={`notification-event-${event.id}`}
+                accessibilityRole="button"
+                onPress={() => openEvent(event)}
+                className="flex-row items-start gap-2.5 border-b border-line px-3.5 py-3 active:opacity-70"
+              >
+                <View
+                  testID={
+                    event.read
+                      ? undefined
+                      : `notification-event-unread-${event.id}`
+                  }
+                  className={`mt-1.5 h-2 w-2 rounded-full ${event.read ? "" : "bg-accent"}`}
+                />
+                <View className="min-w-0 flex-1">
+                  <Text
+                    className={`text-[14px] text-ink ${event.read ? "font-sans" : "font-sans-medium"}`}
+                    numberOfLines={1}
+                  >
+                    {event.title}
+                  </Text>
+                  {event.body ? (
+                    <Text
+                      className="font-sans text-[12.5px] text-muted"
+                      numberOfLines={2}
+                    >
+                      {event.body}
+                    </Text>
+                  ) : null}
+                  <Text className="mt-0.5 font-mono text-[11px] text-muted">
+                    {formatInstant(event.created_at)}
+                  </Text>
+                </View>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
     </ShellSheet>
   );
 }

@@ -691,6 +691,10 @@
     "newMembers": {
       "title": "Thành viên mới ({{count}})",
       "unassigned": "Chưa được phân công"
+    },
+    "activity": {
+      "title": "Hoạt động ({{count}} chưa đọc)",
+      "markAllRead": "Đánh dấu đã đọc"
     }
   },
   "tasks": {
