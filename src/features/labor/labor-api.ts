@@ -104,13 +104,22 @@ export function useWorkers(projectId: string, enabled = true) {
   });
 }
 
-export function useLaborRoles() {
+/**
+ * Roles are company-scoped. Without `companyId` the backend answers with the caller's
+ * PRIMARY company, which is the wrong list on a project of another company: its ids are
+ * refused with "Labor role not found" when saved on a worker. Pass the project's company.
+ */
+export function useLaborRoles(companyId?: string | null) {
   return useQuery({
-    queryKey: laborKeys.roles,
+    queryKey: companyId
+      ? ([...laborKeys.roles, companyId] as const)
+      : laborKeys.roles,
     staleTime: 10 * 60_000,
     queryFn: async () => {
       const data = unwrapAs<{ roles?: LaborRole[]; palette?: string[] }>(
-        await api.GET("/api/v1/labor/roles"),
+        await api.GET("/api/v1/labor/roles", {
+          params: { query: companyId ? { company_id: companyId } : {} },
+        } as never),
       );
       return { roles: data.roles ?? [], palette: data.palette ?? [] };
     },

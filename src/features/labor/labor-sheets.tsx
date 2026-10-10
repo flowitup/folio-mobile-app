@@ -89,7 +89,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     const { t } = useTranslation();
     const { user } = useAuth();
     const sheet = useRef<BottomSheetModal>(null);
-    const roles = useLaborRoles();
+    const roles = useLaborRoles(companyId);
     const members = useMembers(projectId ?? "");
     // The backend reserves the directory for a company admin or manager: anyone else
     // must never issue the request, not even once (it would 403).
