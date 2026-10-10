@@ -1,5 +1,6 @@
 {
   "common": {
+    "close": "Close",
     "fileSize": {
       "kb": "{{value}} KB",
       "mb": "{{value}} MB"

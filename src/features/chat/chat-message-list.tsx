@@ -1,5 +1,12 @@
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { useState } from "react";
+import {
+  Modal,
+  Pressable,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
 import { Avatar } from "@/components/ui/avatar";
 import { AuthedImage } from "@/components/ui/authed-image";
@@ -63,6 +70,52 @@ function SeenBy({ members, mine }: { members: ChatMember[]; mine: boolean }) {
   );
 }
 
+/** Full-screen view of a chat picture; tap anywhere or use the close button to dismiss. */
+function ChatImageViewer({
+  path,
+  filename,
+  visible,
+  onClose,
+}: {
+  path: string;
+  filename: string;
+  visible: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  return (
+    <Modal
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <Pressable
+        testID="chat-image-viewer"
+        onPress={onClose}
+        className="flex-1 items-center justify-center bg-black"
+      >
+        <AuthedImage
+          path={path}
+          style={{ width, height }}
+          resizeMode="contain"
+          accessibilityLabel={filename}
+        />
+        <Pressable
+          testID="chat-image-viewer-close"
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t("common.close")}
+          className="absolute right-4 top-12 rounded-full bg-black/60 px-3 py-1"
+        >
+          <Text className="text-lg text-white">✕</Text>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
 /** One bubble row: incoming = avatar + name + card bubble; mine = positive bubble on the right. */
 function MessageRow({
   message,
@@ -74,6 +127,7 @@ function MessageRow({
   seenBy: ChatMember[] | undefined;
 }) {
   const tokens = useTokens();
+  const [viewing, setViewing] = useState(false);
   const mine = message.mine;
   // Anything that is not a recording renders as the picture card, as it did before voice notes.
   const voiceNote =
@@ -124,7 +178,13 @@ function MessageRow({
         ) : null}
         {voiceNote ? <ChatVoiceBubble message={message} mine={mine} /> : null}
         {message.attachment && !voiceNote ? (
-          <View className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card">
+          <Pressable
+            testID="chat-attachment-image"
+            onPress={() => setViewing(true)}
+            accessibilityRole="imagebutton"
+            accessibilityLabel={message.attachment.filename}
+            className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card"
+          >
             <View className="h-[120px] items-center justify-center bg-paper-2">
               {/* Placeholder glyph sits under the image; it only shows until the bytes arrive. */}
               <Icon name="image" size={28} color={tokens.muted} />
@@ -142,7 +202,15 @@ function MessageRow({
               {message.attachment.filename} ·{" "}
               {formatFileSize(message.attachment.size_bytes)}
             </Text>
-          </View>
+          </Pressable>
+        ) : null}
+        {message.attachment && !voiceNote ? (
+          <ChatImageViewer
+            path={message.attachment.url}
+            filename={message.attachment.filename}
+            visible={viewing}
+            onClose={() => setViewing(false)}
+          />
         ) : null}
         <Text className="px-1 font-sans text-[10px] text-muted-2">
           {timeOf(message.created_at)}

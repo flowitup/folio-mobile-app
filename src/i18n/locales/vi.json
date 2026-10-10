@@ -1,5 +1,6 @@
 {
   "common": {
+    "close": "Đóng",
     "fileSize": {
       "kb": "{{value}} KB",
       "mb": "{{value}} MB"
