@@ -10,6 +10,7 @@ import { useBillingAccess } from "@/features/companies/companies-api";
 import {
   AgendaCard,
   MonthSpendCard,
+  TypeTrendsCard,
 } from "@/features/dashboard/overview-cards";
 import { OverviewDueTiles } from "@/features/dashboard/overview-due-tiles";
 import { OverviewHero } from "@/features/dashboard/overview-hero";
@@ -85,13 +86,24 @@ function OverviewTabContent() {
     const series = buildMonthlySpendSeries(rows, 6, referenceDate);
     return {
       spentTotal,
-      budget: computeBudgetMetrics(budgetValue, spentTotal, fundsReleased),
+      budget: computeBudgetMetrics(
+        budgetValue,
+        spentTotal,
+        fundsReleased,
+        project?.spent_by_credits,
+      ),
       monthDelta: computeMonthDelta(series),
       pendingCompany: computePendingRefunds(rows),
       bank: computeBankReleaseMetrics(budgetValue, fundsReleased),
       buckets: buildTypeMonthlyBuckets(rows, 6, referenceDate),
     };
-  }, [rows, budgetValue, fundsReleased, referenceDate]);
+  }, [
+    rows,
+    budgetValue,
+    fundsReleased,
+    referenceDate,
+    project?.spent_by_credits,
+  ]);
   const agenda = useMemo(
     () => groupAgendaTasks(tasks.data ?? [], referenceDate),
     [tasks.data, referenceDate],
@@ -116,7 +128,9 @@ function OverviewTabContent() {
             budget={metrics.budget}
             spentTotal={metrics.spentTotal}
             spentByCredits={
-              invoices.data?.company_spent_total ?? project.spent_by_credits ?? 0
+              invoices.data?.company_spent_total ??
+              project.spent_by_credits ??
+              0
             }
             spentPersonal={
               invoices.data?.personal_spent_total ?? project.spent_personal ?? 0
@@ -187,6 +201,10 @@ function OverviewTabContent() {
                 currentMonthKey={metrics.monthDelta.current.key}
                 totalCurrent={metrics.monthDelta.current.total}
                 totalDeltaPct={metrics.monthDelta.deltaPct}
+                onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+              />
+              <TypeTrendsCard
+                buckets={metrics.buckets}
                 onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
               />
             </>

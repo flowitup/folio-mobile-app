@@ -5,7 +5,10 @@ import { shortMonthLabel } from "@/components/ui/month-picker";
 import { Card } from "@/components/ui/primitives";
 import { SectionLink } from "@/components/ui/typography";
 import type { AgendaGroup } from "@/lib/dashboard/overview-agenda";
-import type { TypeMonthlyBucket } from "@/lib/dashboard/overview-metrics";
+import {
+  sharedMonthlyMax,
+  type TypeMonthlyBucket,
+} from "@/lib/dashboard/overview-metrics";
 import { formatMoney } from "@/lib/format/money";
 import { useTokens } from "@/theme/tokens";
 import type { Tokens } from "@/theme/tokens";
@@ -141,6 +144,95 @@ export function MonthSpendCard({
             </View>
           ))}
         </View>
+      </Card>
+    </Pressable>
+  );
+}
+
+const TREND_BAR_AREA = 56;
+
+/**
+ * Web "Monthly spend by type": one small multiple per expense type, six month bars on one shared
+ * scale with the current month solid and the earlier ones faded, net of returns.
+ */
+export function TypeTrendsCard({
+  buckets,
+  onOpenExpenses,
+}: {
+  buckets: TypeMonthlyBucket[];
+  onOpenExpenses: () => void;
+}) {
+  const { t } = useTranslation();
+  const tokens = useTokens();
+  const colors = expenseTypeColor(tokens);
+  const sharedMax = sharedMonthlyMax(buckets);
+  const sixMonthTotal = buckets.reduce((acc, bucket) => acc + bucket.total, 0);
+  return (
+    <Pressable
+      testID="overview-type-trends"
+      accessibilityRole="button"
+      onPress={onOpenExpenses}
+      className="active:opacity-80"
+    >
+      <Card radius={20} elevated>
+        <View className="flex-row items-baseline justify-between">
+          <Text className="font-sans-semibold text-[15px] leading-[18px] text-ink">
+            {t("dashboard.overview.spendByType")}
+          </Text>
+          <Text className="font-mono-semibold text-[13px] text-ink">
+            {formatMoney(sixMonthTotal)}
+          </Text>
+        </View>
+        {buckets.map((bucket) => {
+          const lastIdx = bucket.monthly.length - 1;
+          return (
+            <View key={bucket.type} className="mt-4">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center gap-[5px]">
+                  <View
+                    className="h-2 w-2 rounded-sm"
+                    style={{ backgroundColor: colors[bucket.type] }}
+                  />
+                  <Text className="font-sans-medium text-[12.5px] text-ink">
+                    {t(`expenses.filters.${bucket.type}`)}
+                  </Text>
+                </View>
+                <Text className="font-mono text-[13px] text-ink">
+                  {formatMoney(bucket.total)}
+                </Text>
+              </View>
+              <View
+                className="mt-2 flex-row items-end gap-1.5 border-b border-line"
+                style={{ height: TREND_BAR_AREA }}
+              >
+                {bucket.monthly.map((point, i) => (
+                  <View
+                    key={point.key}
+                    className="flex-1 rounded-t-[3px]"
+                    style={{
+                      height: Math.max(
+                        (Math.max(point.total, 0) / sharedMax) * TREND_BAR_AREA,
+                        2,
+                      ),
+                      backgroundColor: colors[bucket.type],
+                      opacity: i === lastIdx ? 1 : 0.55,
+                    }}
+                  />
+                ))}
+              </View>
+              <View className="mt-1 flex-row gap-1.5">
+                {bucket.monthly.map((point) => (
+                  <Text
+                    key={point.key}
+                    className="flex-1 text-center font-sans text-[10px] text-muted-2"
+                  >
+                    {Number(point.key.slice(5, 7))}
+                  </Text>
+                ))}
+              </View>
+            </View>
+          );
+        })}
       </Card>
     </Pressable>
   );

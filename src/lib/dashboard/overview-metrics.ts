@@ -183,6 +183,9 @@ export function computeMonthDelta(series: MonthlySpendPoint[]): MonthDelta {
 
 export interface BudgetMetrics {
   denominator: number;
+  /** What the share and the remaining are measured with: the credit-line spend when a budget
+   * is set (as the web Overview and the Projects page), else every expense. */
+  spent: number;
   usesBudget: boolean;
   /**
    * False when there is neither a budget nor any released funds: nothing to measure the
@@ -194,18 +197,25 @@ export interface BudgetMetrics {
   pctClamped: number;
 }
 
+/**
+ * `creditSpent` is the project's `spent_by_credits`. With a budget set, "remaining" is the budget
+ * minus that, as on the web Overview; otherwise every expense counts.
+ */
 export function computeBudgetMetrics(
   budget: number | null | undefined,
   spentTotal: number,
   fundsReleasedTotal: number,
+  creditSpent?: number | null,
 ): BudgetMetrics {
   const usesBudget = typeof budget === "number" && budget > 0;
   const denominator = usesBudget ? budget : fundsReleasedTotal;
-  const left = denominator - spentTotal;
-  const pct =
-    denominator > 0 ? Math.round((spentTotal / denominator) * 100) : 0;
+  const spent =
+    usesBudget && typeof creditSpent === "number" ? creditSpent : spentTotal;
+  const left = denominator - spent;
+  const pct = denominator > 0 ? Math.round((spent / denominator) * 100) : 0;
   return {
     denominator,
+    spent,
     usesBudget,
     hasDenominator: denominator > 0,
     left,

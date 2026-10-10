@@ -91,6 +91,19 @@ describe("overview metrics", () => {
     expect(computePendingRefunds(invoices)).toEqual({ count: 1, total: 40 });
   });
 
+  it("measures a budget against the credit-line spend, like the web", () => {
+    expect(computeBudgetMetrics(1000, 160, 500, 100)).toMatchObject({
+      spent: 100,
+      left: 900,
+      pct: 10,
+    });
+    // No budget: every expense counts, creditSpent is ignored.
+    expect(computeBudgetMetrics(null, 160, 500, 100)).toMatchObject({
+      spent: 160,
+      pct: 32,
+    });
+  });
+
   it("builds the draw ledger", () => {
     expect(computeBankReleaseMetrics(1000, 500)).toMatchObject({
       remaining: 500,
