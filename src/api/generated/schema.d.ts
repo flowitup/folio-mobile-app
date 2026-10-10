@@ -9185,6 +9185,8 @@ export interface components {
     };
     /** RegisterPushDeviceRequest */
     RegisterPushDeviceRequest: {
+      /** Locale */
+      locale?: ("vi" | "fr" | "en") | null;
       /**
        * Platform
        * @enum {string}

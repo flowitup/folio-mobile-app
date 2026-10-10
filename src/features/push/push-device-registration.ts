@@ -5,6 +5,7 @@ import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
 import { api } from "@/api/client";
+import { activeLocale } from "@/i18n";
 
 // Remembered so sign-out can tell the backend to forget this device.
 const PUSH_TOKEN_KEY = "folio.push.token";
@@ -35,7 +36,12 @@ export async function registerPushDevice(): Promise<string | null> {
       projectId ? { projectId } : undefined,
     );
     const { response } = await api.POST("/api/v1/push/devices", {
-      body: { token, platform: Platform.OS === "ios" ? "ios" : "android" },
+      body: {
+        token,
+        platform: Platform.OS === "ios" ? "ios" : "android",
+        // Pushes are written server-side: tell it which language this app shows.
+        locale: activeLocale(),
+      },
     });
     if (!response.ok) return null;
     await SecureStore.setItemAsync(PUSH_TOKEN_KEY, token);
