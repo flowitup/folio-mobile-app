@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import {
+  Alert,
   Modal,
   Pressable,
   Text,
@@ -121,14 +122,68 @@ function MessageRow({
   message,
   showSender,
   seenBy,
+  onReport,
+  onBlock,
 }: {
   message: ChatMessage;
   showSender: boolean;
   seenBy: ChatMember[] | undefined;
+  onReport?: (messageId: string) => void;
+  onBlock?: (userId: string) => void;
 }) {
+  const { t } = useTranslation();
   const tokens = useTokens();
   const [viewing, setViewing] = useState(false);
   const mine = message.mine;
+  // Someone else's message can be reported or its sender blocked (App Store 1.2).
+  const senderId = message.sender_id;
+  const canModerate =
+    !mine &&
+    senderId !== null &&
+    senderId !== undefined &&
+    onReport !== undefined &&
+    onBlock !== undefined;
+  const openMenu = () => {
+    if (!canModerate) return;
+    Alert.alert(message.sender_name, undefined, [
+      {
+        text: t("chat.moderation.report"),
+        onPress: () =>
+          Alert.alert(
+            t("chat.moderation.reportTitle"),
+            t("chat.moderation.reportBody"),
+            [
+              { text: t("common.cancel"), style: "cancel" },
+              {
+                text: t("chat.moderation.report"),
+                style: "destructive",
+                onPress: () => onReport?.(message.id),
+              },
+            ],
+          ),
+      },
+      {
+        text: t("chat.moderation.block", { name: message.sender_name }),
+        style: "destructive",
+        onPress: () =>
+          Alert.alert(
+            t("chat.moderation.blockTitle", { name: message.sender_name }),
+            t("chat.moderation.blockBody"),
+            [
+              { text: t("common.cancel"), style: "cancel" },
+              {
+                text: t("chat.moderation.blockConfirm"),
+                style: "destructive",
+                onPress: () => {
+                  if (senderId) onBlock?.(senderId);
+                },
+              },
+            ],
+          ),
+      },
+      { text: t("common.cancel"), style: "cancel" },
+    ]);
+  };
   // Anything that is not a recording renders as the picture card, as it did before voice notes.
   const voiceNote =
     message.attachment !== null &&
@@ -160,7 +215,10 @@ function MessageRow({
           </Text>
         ) : null}
         {message.body ? (
-          <View
+          <Pressable
+            onLongPress={canModerate ? openMenu : undefined}
+            delayLongPress={350}
+            accessibilityRole="text"
             className={`px-3 py-[9px] ${mine ? "bg-positive" : "border border-line bg-card"}`}
             style={{
               borderTopLeftRadius: 16,
@@ -174,7 +232,7 @@ function MessageRow({
             >
               {message.body}
             </Text>
-          </View>
+          </Pressable>
         ) : null}
         {voiceNote ? <ChatVoiceBubble message={message} mine={mine} /> : null}
         {message.attachment && !voiceNote ? (
@@ -212,9 +270,24 @@ function MessageRow({
             onClose={() => setViewing(false)}
           />
         ) : null}
-        <Text className="px-1 font-sans text-[10px] text-muted-2">
-          {timeOf(message.created_at)}
-        </Text>
+        <View className="flex-row items-center gap-2 px-1">
+          <Text className="font-sans text-[10px] text-muted-2">
+            {timeOf(message.created_at)}
+          </Text>
+          {canModerate ? (
+            <Pressable
+              testID={`chat-message-menu-${message.id}`}
+              onPress={openMenu}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t("chat.moderation.menu")}
+            >
+              <Text className="font-sans-semibold text-[13px] leading-[13px] text-muted">
+                ⋯
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
         {seenBy && seenBy.length > 0 ? (
           <SeenBy members={seenBy} mine={mine} />
         ) : null}
@@ -230,9 +303,14 @@ function MessageRow({
 export function ChatMessageList({
   messages,
   seen,
+  onReport,
+  onBlock,
 }: {
   messages: ChatMessage[];
   seen?: Map<string, ChatMember[]>;
+  /** With both handlers, someone else's message gets a Report / Block menu (guideline 1.2). */
+  onReport?: (messageId: string) => void;
+  onBlock?: (userId: string) => void;
 }) {
   const { t } = useTranslation();
   const groups = groupMessagesByDay(messages);
@@ -254,6 +332,8 @@ export function ChatMessageList({
                 message={message}
                 showSender={showsSender(group.messages, index)}
                 seenBy={seen?.get(message.id)}
+                onReport={onReport}
+                onBlock={onBlock}
               />
             ))}
           </View>

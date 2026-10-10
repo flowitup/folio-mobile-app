@@ -14,15 +14,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/auth/auth-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
+import { showToast } from "@/components/ui/toast";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import {
+  useBlockChatUser,
+  useBlockedUsers,
   useChatChannels,
   useChatEnabled,
   useFeatures,
   useChatMessages,
   useMarkChatRead,
+  useReportChatMessage,
   useSendChatMessage,
 } from "@/features/chat/chat-api";
+import { BlockedUsersSheet } from "@/features/chat/blocked-users-sheet";
 import { ChatComposer } from "@/features/chat/chat-composer";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
 import type { PickedFile } from "@/lib/files/pick";
@@ -55,6 +60,10 @@ export default function ChatScreen() {
     selected && channelList.some((c) => c.key === selected)
       ? selected
       : (channelList[0]?.key ?? null);
+  const blocked = useBlockedUsers(enabled);
+  const report = useReportChatMessage();
+  const block = useBlockChatUser();
+  const [blockedOpen, setBlockedOpen] = useState(false);
   const messages = useChatMessages(channelKey);
   const markRead = useMarkChatRead();
   const send = useSendChatMessage(channelKey ?? "");
@@ -139,6 +148,19 @@ export default function ChatScreen() {
                 : ""}
           </Text>
         </View>
+        {(blocked.data?.length ?? 0) > 0 ? (
+          <Pressable
+            testID="chat-blocked-open"
+            accessibilityRole="button"
+            onPress={() => setBlockedOpen(true)}
+            hitSlop={8}
+            className="rounded-full border border-line px-2.5 py-1 active:opacity-70"
+          >
+            <Text className="font-sans-medium text-[11.5px] text-ink">
+              {t("chat.moderation.manage")} ({blocked.data?.length})
+            </Text>
+          </Pressable>
+        ) : null}
         <View className="flex-row">
           {members.slice(0, 2).map((member, index) => (
             <View
@@ -241,7 +263,28 @@ export default function ChatScreen() {
             </Text>
           ) : null}
           {items.length > 0 ? (
-            <ChatMessageList messages={items} seen={seen} />
+            <ChatMessageList
+              messages={items}
+              seen={seen}
+              onReport={(messageId) =>
+                report.mutate(
+                  { messageId },
+                  {
+                    onSuccess: () =>
+                      showToast(t("chat.moderation.reported"), "success"),
+                  },
+                )
+              }
+              onBlock={(userId) =>
+                block.mutate(
+                  { userId },
+                  {
+                    onSuccess: () =>
+                      showToast(t("chat.moderation.blocked"), "success"),
+                  },
+                )
+              }
+            />
           ) : null}
         </ScrollView>
 
@@ -251,6 +294,10 @@ export default function ChatScreen() {
           onSend={submit}
         />
       </KeyboardAvoidingView>
+      <BlockedUsersSheet
+        visible={blockedOpen}
+        onClose={() => setBlockedOpen(false)}
+      />
     </View>
   );
 }

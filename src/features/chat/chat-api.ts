@@ -118,3 +118,57 @@ export function useMarkChatRead() {
     onError: () => true,
   });
 }
+
+export type BlockedUser = { id: string; name: string };
+
+export const blockedKey = ["chat", "blocks"] as const;
+
+/** People the caller blocked in chat (their messages and pushes are hidden). */
+export function useBlockedUsers(enabled: boolean) {
+  return useQuery({
+    queryKey: blockedKey,
+    enabled,
+    queryFn: async () =>
+      unwrapAs<{ items: BlockedUser[] }>(
+        await api.GET("/api/v1/chat/blocks" as never),
+      ).items,
+  });
+}
+
+/** Reports one message to the moderators (App Store guideline 1.2). Idempotent on the server. */
+export function useReportChatMessage() {
+  return useApiMutation<{ messageId: string; reason?: string }, void>({
+    mutationFn: async ({ messageId, reason }) =>
+      unwrapVoid(
+        await api.POST(
+          `/api/v1/chat/messages/${encodeURIComponent(messageId)}/report` as never,
+          { body: (reason ? { reason } : {}) as never } as never,
+        ),
+      ),
+  });
+}
+
+/** Hides a person's messages from the caller; refreshes messages, channels and the blocked list. */
+export function useBlockChatUser() {
+  return useApiMutation<{ userId: string }, void>({
+    mutationFn: async ({ userId }) =>
+      unwrapVoid(
+        await api.PUT(
+          `/api/v1/chat/blocks/${encodeURIComponent(userId)}` as never,
+        ),
+      ),
+    invalidates: [["chat"]],
+  });
+}
+
+export function useUnblockChatUser() {
+  return useApiMutation<{ userId: string }, void>({
+    mutationFn: async ({ userId }) =>
+      unwrapVoid(
+        await api.DELETE(
+          `/api/v1/chat/blocks/${encodeURIComponent(userId)}` as never,
+        ),
+      ),
+    invalidates: [["chat"]],
+  });
+}
