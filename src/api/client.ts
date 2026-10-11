@@ -7,6 +7,7 @@ import {
   setAccessToken,
 } from "@/auth/token-storage";
 
+import { apiFetch } from "./api-fetch";
 import type { paths } from "./generated/schema";
 
 // Endpoints that carry their own credentials — an SMS code, a refresh token or
@@ -115,9 +116,14 @@ const authMiddleware: Middleware = {
       return undefined;
     }
     retry.headers.set("Authorization", `Bearer ${refreshed.accessToken}`);
-    const retried = await fetch(retry);
+    const retried = await apiFetch(retry);
     // openapi-fetch requires a global Response instance when the response is replaced.
-    return new Response(await retried.arrayBuffer(), {
+    // Read as text, not bytes: a Response rebuilt from an ArrayBuffer can decode UTF-8 one byte
+    // at a time and garble accents.
+    const retriedBody = [204, 205, 304].includes(retried.status)
+      ? null
+      : await retried.text();
+    return new Response(retriedBody, {
       status: retried.status,
       statusText: retried.statusText,
       headers: retried.headers,
@@ -129,5 +135,8 @@ const authMiddleware: Middleware = {
 };
 
 /** Typed Folio API client. Paths and schemas come from the generated OpenAPI types. */
-export const api = createClient<paths>({ baseUrl: API_BASE_URL });
+export const api = createClient<paths>({
+  baseUrl: API_BASE_URL,
+  fetch: (request) => apiFetch(request),
+});
 api.use(authMiddleware);
