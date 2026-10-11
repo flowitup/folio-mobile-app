@@ -1,5 +1,13 @@
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { useState } from "react";
+import {
+  Alert,
+  Modal,
+  Pressable,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
 import { Avatar } from "@/components/ui/avatar";
 import { AuthedImage } from "@/components/ui/authed-image";
@@ -63,18 +71,119 @@ function SeenBy({ members, mine }: { members: ChatMember[]; mine: boolean }) {
   );
 }
 
+/** Full-screen view of a chat picture; tap anywhere or use the close button to dismiss. */
+function ChatImageViewer({
+  path,
+  filename,
+  visible,
+  onClose,
+}: {
+  path: string;
+  filename: string;
+  visible: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  return (
+    <Modal
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <Pressable
+        testID="chat-image-viewer"
+        onPress={onClose}
+        className="flex-1 items-center justify-center bg-black"
+      >
+        <AuthedImage
+          path={path}
+          style={{ width, height }}
+          resizeMode="contain"
+          accessibilityLabel={filename}
+        />
+        <Pressable
+          testID="chat-image-viewer-close"
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t("common.close")}
+          className="absolute right-4 top-12 rounded-full bg-black/60 px-3 py-1"
+        >
+          <Text className="text-lg text-white">✕</Text>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
 /** One bubble row: incoming = avatar + name + card bubble; mine = positive bubble on the right. */
 function MessageRow({
   message,
   showSender,
   seenBy,
+  onReport,
+  onBlock,
 }: {
   message: ChatMessage;
   showSender: boolean;
   seenBy: ChatMember[] | undefined;
+  onReport?: (messageId: string) => void;
+  onBlock?: (userId: string) => void;
 }) {
+  const { t } = useTranslation();
   const tokens = useTokens();
+  const [viewing, setViewing] = useState(false);
   const mine = message.mine;
+  // Someone else's message can be reported or its sender blocked (App Store 1.2).
+  const senderId = message.sender_id;
+  const canModerate =
+    !mine &&
+    senderId !== null &&
+    senderId !== undefined &&
+    onReport !== undefined &&
+    onBlock !== undefined;
+  const openMenu = () => {
+    if (!canModerate) return;
+    Alert.alert(message.sender_name, undefined, [
+      {
+        text: t("chat.moderation.report"),
+        onPress: () =>
+          Alert.alert(
+            t("chat.moderation.reportTitle"),
+            t("chat.moderation.reportBody"),
+            [
+              { text: t("common.cancel"), style: "cancel" },
+              {
+                text: t("chat.moderation.report"),
+                style: "destructive",
+                onPress: () => onReport?.(message.id),
+              },
+            ],
+          ),
+      },
+      {
+        text: t("chat.moderation.block", { name: message.sender_name }),
+        style: "destructive",
+        onPress: () =>
+          Alert.alert(
+            t("chat.moderation.blockTitle", { name: message.sender_name }),
+            t("chat.moderation.blockBody"),
+            [
+              { text: t("common.cancel"), style: "cancel" },
+              {
+                text: t("chat.moderation.blockConfirm"),
+                style: "destructive",
+                onPress: () => {
+                  if (senderId) onBlock?.(senderId);
+                },
+              },
+            ],
+          ),
+      },
+      { text: t("common.cancel"), style: "cancel" },
+    ]);
+  };
   // Anything that is not a recording renders as the picture card, as it did before voice notes.
   const voiceNote =
     message.attachment !== null &&
@@ -106,7 +215,10 @@ function MessageRow({
           </Text>
         ) : null}
         {message.body ? (
-          <View
+          <Pressable
+            onLongPress={canModerate ? openMenu : undefined}
+            delayLongPress={350}
+            accessibilityRole="text"
             className={`px-3 py-[9px] ${mine ? "bg-positive" : "border border-line bg-card"}`}
             style={{
               borderTopLeftRadius: 16,
@@ -120,11 +232,17 @@ function MessageRow({
             >
               {message.body}
             </Text>
-          </View>
+          </Pressable>
         ) : null}
         {voiceNote ? <ChatVoiceBubble message={message} mine={mine} /> : null}
         {message.attachment && !voiceNote ? (
-          <View className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card">
+          <Pressable
+            testID="chat-attachment-image"
+            onPress={() => setViewing(true)}
+            accessibilityRole="imagebutton"
+            accessibilityLabel={message.attachment.filename}
+            className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card"
+          >
             <View className="h-[120px] items-center justify-center bg-paper-2">
               {/* Placeholder glyph sits under the image; it only shows until the bytes arrive. */}
               <Icon name="image" size={28} color={tokens.muted} />
@@ -142,11 +260,34 @@ function MessageRow({
               {message.attachment.filename} ·{" "}
               {formatFileSize(message.attachment.size_bytes)}
             </Text>
-          </View>
+          </Pressable>
         ) : null}
-        <Text className="px-1 font-sans text-[10px] text-muted-2">
-          {timeOf(message.created_at)}
-        </Text>
+        {message.attachment && !voiceNote ? (
+          <ChatImageViewer
+            path={message.attachment.url}
+            filename={message.attachment.filename}
+            visible={viewing}
+            onClose={() => setViewing(false)}
+          />
+        ) : null}
+        <View className="flex-row items-center gap-2 px-1">
+          <Text className="font-sans text-[10px] text-muted-2">
+            {timeOf(message.created_at)}
+          </Text>
+          {canModerate ? (
+            <Pressable
+              testID={`chat-message-menu-${message.id}`}
+              onPress={openMenu}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t("chat.moderation.menu")}
+            >
+              <Text className="font-sans-semibold text-[13px] leading-[13px] text-muted">
+                ⋯
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
         {seenBy && seenBy.length > 0 ? (
           <SeenBy members={seenBy} mine={mine} />
         ) : null}
@@ -162,9 +303,14 @@ function MessageRow({
 export function ChatMessageList({
   messages,
   seen,
+  onReport,
+  onBlock,
 }: {
   messages: ChatMessage[];
   seen?: Map<string, ChatMember[]>;
+  /** With both handlers, someone else's message gets a Report / Block menu (guideline 1.2). */
+  onReport?: (messageId: string) => void;
+  onBlock?: (userId: string) => void;
 }) {
   const { t } = useTranslation();
   const groups = groupMessagesByDay(messages);
@@ -186,6 +332,8 @@ export function ChatMessageList({
                 message={message}
                 showSender={showsSender(group.messages, index)}
                 seenBy={seen?.get(message.id)}
+                onReport={onReport}
+                onBlock={onBlock}
               />
             ))}
           </View>

@@ -97,6 +97,10 @@ jest.mock("@/features/chat/chat-api", () => ({
   }),
   useMarkChatRead: () => ({ mutate: jest.fn() }),
   useSendChatMessage: () => ({ mutateAsync: jest.fn(), isPending: false }),
+  useBlockedUsers: () => ({ data: [] }),
+  useReportChatMessage: () => ({ mutate: jest.fn() }),
+  useBlockChatUser: () => ({ mutate: jest.fn() }),
+  useUnblockChatUser: () => ({ mutate: jest.fn() }),
 }));
 
 const SAFE_AREA_METRICS: Metrics = {

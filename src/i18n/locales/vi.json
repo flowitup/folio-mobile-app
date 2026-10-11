@@ -1,5 +1,6 @@
 {
   "common": {
+    "close": "Đóng",
     "fileSize": {
       "kb": "{{value}} KB",
       "mb": "{{value}} MB"
@@ -1793,7 +1794,23 @@
     "recordingFailed": "Không khởi động được micro.",
     "recordingLost": "Bản ghi đã bị mất.",
     "kindAdmin": "Quản trị",
-    "adminSubtitle": "Tài chính công ty, lương và hoạt động của Folio"
+    "adminSubtitle": "Tài chính công ty, lương và hoạt động của Folio",
+    "moderation": {
+      "menu": "Tùy chọn tin nhắn",
+      "report": "Báo cáo tin nhắn",
+      "reportTitle": "Báo cáo tin nhắn này?",
+      "reportBody": "Tin nhắn sẽ được gửi cho quản trị viên công ty của bạn và đội ngũ Folio để xem xét.",
+      "reported": "Đã báo cáo. Cảm ơn bạn.",
+      "block": "Chặn {{name}}",
+      "blockTitle": "Chặn {{name}}?",
+      "blockBody": "Bạn sẽ không còn thấy tin nhắn hay nhận thông báo từ người này. Bạn có thể bỏ chặn bất cứ lúc nào trong phần chat.",
+      "blockConfirm": "Chặn",
+      "blocked": "Đã chặn người dùng.",
+      "manage": "Đã chặn",
+      "blockedTitle": "Người đã chặn",
+      "unblock": "Bỏ chặn",
+      "none": "Chưa chặn ai."
+    }
   },
   "signup": {
     "title": "Tạo hồ sơ của bạn",
