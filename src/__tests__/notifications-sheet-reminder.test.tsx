@@ -48,6 +48,7 @@ jest.mock("@/features/notes/notes-api", () => ({
     },
   }),
   useDismissNotification: () => ({ mutate: jest.fn() }),
+  useMarkActivityRead: () => ({ mutate: jest.fn() }),
 }));
 
 describe("notifications sheet · reminder", () => {

@@ -2337,6 +2337,13 @@
       "RegisterPushDeviceRequest": {
         "additionalProperties": false,
         "properties": {
+          "locale": {
+            "anyOf": [
+              { "enum": ["vi", "fr", "en"], "type": "string" },
+              { "type": "null" }
+            ],
+            "title": "Locale"
+          },
           "platform": {
             "enum": ["ios", "android"],
             "title": "Platform",
@@ -5734,7 +5741,22 @@
     },
     "/api/v1/notifications": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "locale",
+            "required": false,
+            "schema": { "enum": ["vi", "fr", "en"], "type": "string" }
+          }
+        ],
         "responses": { "200": { "description": "Success" } },
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["notifications"]
+      }
+    },
+    "/api/v1/notifications/events/read": {
+      "post": {
+        "responses": { "204": { "description": "No Content" } },
         "security": [{ "bearerAuth": [] }],
         "tags": ["notifications"]
       }

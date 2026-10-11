@@ -692,6 +692,10 @@
     "newMembers": {
       "title": "New members ({{count}})",
       "unassigned": "Not assigned yet"
+    },
+    "activity": {
+      "title": "Activity ({{count}} unread)",
+      "markAllRead": "Mark all read"
     }
   },
   "tasks": {

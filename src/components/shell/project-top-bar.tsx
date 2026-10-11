@@ -33,7 +33,8 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
   const notifications = useNotifications();
   const pendingCount =
     (notifications.data?.items ?? []).filter((item) => !item.dismissed).length +
-    (notifications.data?.attendance_pending.length ?? 0);
+    (notifications.data?.attendance_pending.length ?? 0) +
+    (notifications.data?.events ?? []).filter((event) => !event.read).length;
   const ink = tone === "ink";
   useInkStatusBar(ink);
 

@@ -3341,7 +3341,9 @@ export interface paths {
     };
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          locale?: "vi" | "fr" | "en";
+        };
         header?: never;
         path?: never;
         cookie?: never;
@@ -3359,6 +3361,39 @@ export interface paths {
     };
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/notifications/events/read": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;

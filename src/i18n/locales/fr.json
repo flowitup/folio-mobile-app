@@ -692,6 +692,10 @@
     "newMembers": {
       "title": "Nouveaux membres ({{count}})",
       "unassigned": "Pas encore affecté"
+    },
+    "activity": {
+      "title": "Activité ({{count}} non lus)",
+      "markAllRead": "Tout marquer comme lu"
     }
   },
   "tasks": {

@@ -53,6 +53,7 @@ jest.mock("@/features/projects/selected-project", () => ({
 jest.mock("@/features/notes/notes-api", () => ({
   useNotifications: () => ({ data: { items: [], attendance_pending: [] } }),
   useDismissNotification: () => ({ mutate: jest.fn(), isPending: false }),
+  useMarkActivityRead: () => ({ mutate: jest.fn() }),
 }));
 
 // Safe-area metrics the bar reads for its top inset. The width is inert here: React Native
