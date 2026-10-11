@@ -1790,7 +1790,23 @@
     "recordingFailed": "Le micro n'a pas pu démarrer.",
     "recordingLost": "L'enregistrement a été perdu.",
     "kindAdmin": "Administration",
-    "adminSubtitle": "Finances de l'entreprise, paie et activité de Folio"
+    "adminSubtitle": "Finances de l'entreprise, paie et activité de Folio",
+    "moderation": {
+      "menu": "Options du message",
+      "report": "Signaler le message",
+      "reportTitle": "Signaler ce message ?",
+      "reportBody": "Il sera transmis aux modérateurs de votre entreprise et à l'équipe Folio pour examen.",
+      "reported": "Signalé. Merci.",
+      "block": "Bloquer {{name}}",
+      "blockTitle": "Bloquer {{name}} ?",
+      "blockBody": "Vous ne verrez plus ses messages ni ses notifications. Vous pouvez le débloquer à tout moment depuis la messagerie.",
+      "blockConfirm": "Bloquer",
+      "blocked": "Utilisateur bloqué.",
+      "manage": "Bloqués",
+      "blockedTitle": "Personnes bloquées",
+      "unblock": "Débloquer",
+      "none": "Personne n'est bloqué."
+    }
   },
   "signup": {
     "title": "Créez votre profil",

@@ -1790,7 +1790,23 @@
     "recordingFailed": "The microphone could not be started.",
     "recordingLost": "The recording was lost.",
     "kindAdmin": "Administration",
-    "adminSubtitle": "Company finance, payroll and Folio activity"
+    "adminSubtitle": "Company finance, payroll and Folio activity",
+    "moderation": {
+      "menu": "Message options",
+      "report": "Report message",
+      "reportTitle": "Report this message?",
+      "reportBody": "It will be sent to the moderators of your company and the Folio team for review.",
+      "reported": "Reported. Thank you.",
+      "block": "Block {{name}}",
+      "blockTitle": "Block {{name}}?",
+      "blockBody": "You will no longer see their messages or receive their notifications. You can unblock them any time from the chat.",
+      "blockConfirm": "Block",
+      "blocked": "User blocked.",
+      "manage": "Blocked",
+      "blockedTitle": "Blocked people",
+      "unblock": "Unblock",
+      "none": "Nobody is blocked."
+    }
   },
   "signup": {
     "title": "Create your profile",
