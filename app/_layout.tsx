@@ -28,8 +28,10 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider, useAuth } from "@/auth/auth-context";
 import { SessionUnavailable } from "@/components/auth/session-unavailable";
+import { UpdateRequired } from "@/components/auth/update-required";
 import { DismissSheetsOnRouteChange } from "@/components/shell/dismiss-sheets-on-route-change";
 import { ToastProvider } from "@/components/ui/toast";
+import { useUpdateGate } from "@/lib/app-update/use-update-gate";
 import { shouldRetryQuery } from "@/lib/query/api-error";
 import { ThemePreferenceProvider } from "@/theme/theme-preference";
 import { useTokens } from "@/theme/tokens";
@@ -72,7 +74,11 @@ function Splash() {
 // accept-invite is reachable in both states (deep link), the screen decides what to show.
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const { status } = useAuth();
+  const updateGate = useUpdateGate();
 
+  // A build below the server's minimum version can't be used, signed in or not.
+  if (updateGate.required)
+    return <UpdateRequired url={updateGate.url} version={updateGate.version} />;
   if (status === "loading" || !fontsReady) return <Splash />;
   if (status === "unavailable") return <SessionUnavailable />;
 
