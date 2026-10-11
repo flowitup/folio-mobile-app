@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import { useAuth } from "@/auth/auth-context";
 import { isPlatformOps } from "@/auth/permissions";
+import { RefreshStaleOnNavigation } from "@/components/shell/refresh-stale-on-navigation";
 import { useMyCompanies } from "@/features/companies/companies-api";
 import { usePushNotifications } from "@/features/push/use-push-notifications";
 import { useProjects } from "@/features/projects/projects-api";
@@ -13,25 +14,31 @@ export default function AppLayout() {
   useOnboardingGate();
   usePushNotifications();
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" />
-      {/* Onboarding hub: a user without a company creates or joins one before seeing the shell. */}
-      <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
-      <Stack.Screen
-        name="onboarding-create"
-        options={{ animation: "slide_from_right" }}
-      />
-      <Stack.Screen name="onboarding-waiting" options={{ animation: "fade" }} />
-      {/* Join a company by code — onboarding step, or "join another company" from Settings. */}
-      <Stack.Screen name="join-company" options={{ animation: "fade" }} />
-      {/* Team chat overlay (feature-flagged): full screen over the shell, slides in from the right. */}
-      <Stack.Screen name="chat" options={{ animation: "slide_from_right" }} />
-      {/* In-app PDF viewer (documents, attachments, billing, exports): over the shell. */}
-      <Stack.Screen
-        name="pdf-viewer"
-        options={{ animation: "slide_from_right" }}
-      />
-    </Stack>
+    <>
+      <RefreshStaleOnNavigation />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        {/* Onboarding hub: a user without a company creates or joins one before seeing the shell. */}
+        <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
+        <Stack.Screen
+          name="onboarding-create"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="onboarding-waiting"
+          options={{ animation: "fade" }}
+        />
+        {/* Join a company by code — onboarding step, or "join another company" from Settings. */}
+        <Stack.Screen name="join-company" options={{ animation: "fade" }} />
+        {/* Team chat overlay (feature-flagged): full screen over the shell, slides in from the right. */}
+        <Stack.Screen name="chat" options={{ animation: "slide_from_right" }} />
+        {/* In-app PDF viewer (documents, attachments, billing, exports): over the shell. */}
+        <Stack.Screen
+          name="pdf-viewer"
+          options={{ animation: "slide_from_right" }}
+        />
+      </Stack>
+    </>
   );
 }
 

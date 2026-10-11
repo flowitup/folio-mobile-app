@@ -99,6 +99,7 @@ export function useSendChatMessage(channelKey: string) {
         }),
       );
     },
+    refreshAll: false,
     invalidates: [chatKeys.messages(channelKey), chatKeys.channels],
   });
 }
@@ -107,6 +108,7 @@ export function useSendChatMessage(channelKey: string) {
 export function useMarkChatRead() {
   const queryClient = useQueryClient();
   return useApiMutation<{ channelKey: string }, void>({
+    refreshAll: false,
     mutationFn: async ({ channelKey }) =>
       unwrapVoid(
         await api.POST("/api/v1/chat/channels/{channel_key}/read", {
@@ -138,6 +140,7 @@ export function useBlockedUsers(enabled: boolean) {
 /** Reports one message to the moderators (App Store guideline 1.2). Idempotent on the server. */
 export function useReportChatMessage() {
   return useApiMutation<{ messageId: string; reason?: string }, void>({
+    refreshAll: false,
     mutationFn: async ({ messageId, reason }) =>
       unwrapVoid(
         await api.POST(

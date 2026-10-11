@@ -53,6 +53,7 @@ export function useUpdateNotificationPreferences() {
             body: changes as never,
           }),
         ),
+      refreshAll: false,
       onSuccess: (data) =>
         queryClient.setQueryData(notificationPreferenceKeys.all, data),
     },
