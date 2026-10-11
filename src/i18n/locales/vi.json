@@ -73,6 +73,12 @@
       "body": "Bạn vẫn đang đăng nhập. Hãy kiểm tra kết nối mạng rồi thử lại."
     }
   },
+  "updateRequired": {
+    "title": "Cần cập nhật",
+    "body": "Phiên bản Folio này không còn được hỗ trợ. Hãy cập nhật lên bản mới nhất để tiếp tục sử dụng.",
+    "action": "Cập nhật Folio",
+    "hint": "Phiên bản của bạn: {{version}}. Đã cập nhật rồi? Hãy mở lại ứng dụng."
+  },
   "home": {
     "welcome": "Đã đăng nhập: {{email}}",
     "projects": "Công trình",

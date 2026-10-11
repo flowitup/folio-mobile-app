@@ -73,6 +73,12 @@
       "body": "You're still signed in. Check your connection, then try again."
     }
   },
+  "updateRequired": {
+    "title": "Update required",
+    "body": "This version of Folio is no longer supported. Update to the latest version to keep using the app.",
+    "action": "Update Folio",
+    "hint": "Your version: {{version}}. Already updated? Reopen the app."
+  },
   "home": {
     "welcome": "Signed in as {{email}}",
     "projects": "Projects",

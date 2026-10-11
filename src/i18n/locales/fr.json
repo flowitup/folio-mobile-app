@@ -73,6 +73,12 @@
       "body": "Vous êtes toujours connecté. Vérifiez votre connexion, puis réessayez."
     }
   },
+  "updateRequired": {
+    "title": "Mise à jour requise",
+    "body": "Cette version de Folio n'est plus prise en charge. Installez la dernière version pour continuer à utiliser l'application.",
+    "action": "Mettre à jour Folio",
+    "hint": "Votre version : {{version}}. Déjà à jour ? Rouvrez l’application."
+  },
   "home": {
     "welcome": "Connecté en tant que {{email}}",
     "projects": "Chantiers",
