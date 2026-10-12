@@ -21,6 +21,12 @@ import {
   showsSender,
   timeOf,
 } from "@/lib/chat/group-messages-by-day";
+import {
+  REACTION_EMOJIS,
+  isReactionEmoji,
+  reactionCounts,
+} from "@/lib/chat/reactions";
+import type { ReactionEmoji } from "@/lib/chat/reactions";
 import { isVoiceNote } from "@/lib/chat/voice-note";
 import { useTokens, workerColor } from "@/theme/tokens";
 
@@ -67,6 +73,50 @@ function SeenBy({ members, mine }: { members: ChatMember[]; mine: boolean }) {
           +{members.length - shown.length}
         </Text>
       ) : null}
+    </View>
+  );
+}
+
+/** Emoji + count chips under a bubble; the viewer's own one is highlighted, a tap toggles it. */
+function ReactionChips({
+  message,
+  viewerId,
+  onReact,
+}: {
+  message: ChatMessage;
+  viewerId: string | null | undefined;
+  onReact: (messageId: string, emoji: ReactionEmoji) => void;
+}) {
+  const { t } = useTranslation();
+  const counts = reactionCounts(message.reactions, viewerId);
+  if (counts.length === 0) return null;
+  return (
+    <View
+      className={`flex-row flex-wrap gap-1 px-1 ${message.mine ? "justify-end" : "justify-start"}`}
+    >
+      {counts.map(({ emoji, count, mine }) => {
+        const known = isReactionEmoji(emoji);
+        return (
+          <Pressable
+            key={emoji}
+            testID={`chat-reaction-${message.id}-${(REACTION_EMOJIS as readonly string[]).indexOf(emoji)}`}
+            onPress={known ? () => onReact(message.id, emoji) : undefined}
+            disabled={!known}
+            hitSlop={4}
+            accessibilityRole="button"
+            accessibilityLabel={t("chat.details.chip", { emoji, count })}
+            accessibilityState={{ selected: mine }}
+            className={`h-6 flex-row items-center gap-1 rounded-full border px-2 active:opacity-70 ${mine ? "border-positive bg-positive-tint" : "border-line bg-card"}`}
+          >
+            <Text className="text-[12px] leading-4">{emoji}</Text>
+            <Text
+              className={`font-sans-medium text-[11px] ${mine ? "text-positive" : "text-muted"}`}
+            >
+              {count}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -122,14 +172,20 @@ function MessageRow({
   message,
   showSender,
   seenBy,
+  viewerId,
   onReport,
   onBlock,
+  onOpenDetails,
+  onReact,
 }: {
   message: ChatMessage;
   showSender: boolean;
   seenBy: ChatMember[] | undefined;
+  viewerId: string | null | undefined;
   onReport?: (messageId: string) => void;
   onBlock?: (userId: string) => void;
+  onOpenDetails?: (messageId: string) => void;
+  onReact?: (messageId: string, emoji: ReactionEmoji) => void;
 }) {
   const { t } = useTranslation();
   const tokens = useTokens();
@@ -143,6 +199,11 @@ function MessageRow({
     senderId !== undefined &&
     onReport !== undefined &&
     onBlock !== undefined;
+  // Only people's messages open the details sheet and carry reactions, not legacy bot rows.
+  const openDetails =
+    message.sender_type === "user" && onOpenDetails
+      ? () => onOpenDetails(message.id)
+      : undefined;
   const openMenu = () => {
     if (!canModerate) return;
     Alert.alert(message.sender_name, undefined, [
@@ -216,9 +277,12 @@ function MessageRow({
         ) : null}
         {message.body ? (
           <Pressable
+            testID={`chat-message-${message.id}`}
+            onPress={openDetails}
             onLongPress={canModerate ? openMenu : undefined}
             delayLongPress={350}
-            accessibilityRole="text"
+            accessibilityRole={openDetails ? "button" : "text"}
+            accessibilityHint={openDetails ? t("chat.details.open") : undefined}
             className={`px-3 py-[9px] ${mine ? "bg-positive" : "border border-line bg-card"}`}
             style={{
               borderTopLeftRadius: 16,
@@ -234,11 +298,27 @@ function MessageRow({
             </Text>
           </Pressable>
         ) : null}
-        {voiceNote ? <ChatVoiceBubble message={message} mine={mine} /> : null}
+        {voiceNote && openDetails ? (
+          // The play button keeps its own tap; the rest of the pill opens the details. Not an
+          // accessibility element itself, or VoiceOver would swallow the play button inside it.
+          <Pressable
+            testID={`chat-voice-bubble-${message.id}`}
+            onPress={openDetails}
+            accessible={false}
+          >
+            <ChatVoiceBubble message={message} mine={mine} />
+          </Pressable>
+        ) : null}
+        {voiceNote && !openDetails ? (
+          <ChatVoiceBubble message={message} mine={mine} />
+        ) : null}
         {message.attachment && !voiceNote ? (
           <Pressable
             testID="chat-attachment-image"
             onPress={() => setViewing(true)}
+            // A tap opens the picture, so the details sheet is on a long press here.
+            onLongPress={openDetails}
+            delayLongPress={350}
             accessibilityRole="imagebutton"
             accessibilityLabel={message.attachment.filename}
             className="w-[200px] overflow-hidden rounded-[14px] border border-line bg-card"
@@ -268,6 +348,13 @@ function MessageRow({
             filename={message.attachment.filename}
             visible={viewing}
             onClose={() => setViewing(false)}
+          />
+        ) : null}
+        {message.sender_type === "user" && onReact ? (
+          <ReactionChips
+            message={message}
+            viewerId={viewerId}
+            onReact={onReact}
           />
         ) : null}
         <View className="flex-row items-center gap-2 px-1">
@@ -303,14 +390,23 @@ function MessageRow({
 export function ChatMessageList({
   messages,
   seen,
+  viewerId,
   onReport,
   onBlock,
+  onOpenDetails,
+  onReact,
 }: {
   messages: ChatMessage[];
   seen?: Map<string, ChatMember[]>;
+  /** The signed-in user, whose own reaction chip is highlighted. */
+  viewerId?: string | null;
   /** With both handlers, someone else's message gets a Report / Block menu (guideline 1.2). */
   onReport?: (messageId: string) => void;
   onBlock?: (userId: string) => void;
+  /** Tap on a person's message bubble (long press on a picture): reactions and "seen by". */
+  onOpenDetails?: (messageId: string) => void;
+  /** Tap on a reaction chip: toggles the viewer's reaction to that emoji. */
+  onReact?: (messageId: string, emoji: ReactionEmoji) => void;
 }) {
   const { t } = useTranslation();
   const groups = groupMessagesByDay(messages);
@@ -332,8 +428,11 @@ export function ChatMessageList({
                 message={message}
                 showSender={showsSender(group.messages, index)}
                 seenBy={seen?.get(message.id)}
+                viewerId={viewerId}
                 onReport={onReport}
                 onBlock={onBlock}
+                onOpenDetails={onOpenDetails}
+                onReact={onReact}
               />
             ))}
           </View>

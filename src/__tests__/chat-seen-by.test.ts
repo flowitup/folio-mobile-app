@@ -1,4 +1,8 @@
-import { seenByMessage } from "@/lib/chat/seen-by";
+import {
+  readAtLabel,
+  readersOfMessage,
+  seenByMessage,
+} from "@/lib/chat/seen-by";
 
 const msg = (id: string, iso: string, sender: string) => ({
   id,
@@ -62,5 +66,46 @@ describe("seenByMessage", () => {
       "alice",
     );
     expect(seen.get("m3")?.map((m) => m.name)).toEqual(["Carol", "Dan"]);
+  });
+});
+
+describe("readersOfMessage", () => {
+  it("lists every member whose marker is at or after the message, sender excluded, earliest first", () => {
+    const readers = readersOfMessage(messages[1], [
+      { id: "bob", name: "Bob", last_read_at: "2026-09-04T12:00:00+00:00" },
+      { id: "carol", name: "Carol", last_read_at: "2026-09-04T10:30:00+00:00" },
+      { id: "alice", name: "Alice", last_read_at: "2026-09-04T10:05:00+00:00" },
+      { id: "dan", name: "Dan", last_read_at: "2026-09-04T10:04:59+00:00" },
+      { id: "eve", name: "Eve", last_read_at: null },
+      { id: "zed", name: "Zed", last_read_at: "not a date" },
+    ]);
+    expect(readers.map((r) => [r.member.id, r.readAt])).toEqual([
+      ["alice", "2026-09-04T10:05:00+00:00"],
+      ["carol", "2026-09-04T10:30:00+00:00"],
+    ]);
+  });
+
+  it("is empty when nobody has caught up yet", () => {
+    expect(
+      readersOfMessage(messages[2], [
+        { id: "bob", name: "Bob", last_read_at: "2026-09-04T10:09:00+00:00" },
+      ]),
+    ).toEqual([]);
+  });
+});
+
+describe("readAtLabel", () => {
+  const today = new Date(2026, 8, 4, 18, 0);
+
+  it("shows only the time for a read today", () => {
+    expect(readAtLabel(new Date(2026, 8, 4, 9, 7).toISOString(), today)).toBe(
+      "09:07",
+    );
+  });
+
+  it("adds the day for an earlier read", () => {
+    expect(readAtLabel(new Date(2026, 8, 2, 21, 30).toISOString(), today)).toBe(
+      "02/09 21:30",
+    );
   });
 });

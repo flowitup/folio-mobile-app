@@ -1,9 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
 
 import { api } from "@/api/client";
+import { toggleReaction } from "@/lib/chat/reactions";
+import type { ReactionEmoji } from "@/lib/chat/reactions";
 import { uploadMultipart } from "@/lib/files/upload";
 import type { PickedFile } from "@/lib/files/pick";
-import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
+import { unwrap, unwrapAs, unwrapVoid } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
 import type { components } from "@/api/generated/schema";
@@ -12,6 +15,7 @@ import type { SupportedLocale } from "@/i18n";
 export type ChatChannel = components["schemas"]["ChannelResponse"];
 export type ChatMessage = components["schemas"]["MessageResponse"];
 export type ChatMember = components["schemas"]["MemberResponse"];
+export type ChatReaction = components["schemas"]["ReactionResponse"];
 export type Features = components["schemas"]["FeaturesResponse"];
 export type ChatMessagesPage = { items: ChatMessage[]; members: ChatMember[] };
 
@@ -118,6 +122,83 @@ export function useMarkChatRead() {
     onSuccess: () =>
       void queryClient.invalidateQueries({ queryKey: chatKeys.channels }),
     onError: () => true,
+  });
+}
+
+/** Writes one message's reactions into the cached messages page of its channel. */
+function writeReactions(
+  queryClient: QueryClient,
+  channelKey: string,
+  messageId: string,
+  reactions: ChatReaction[],
+): void {
+  queryClient.setQueryData<ChatMessagesPage>(
+    chatKeys.messages(channelKey),
+    (page) =>
+      page && {
+        ...page,
+        items: page.items.map((message) =>
+          message.id === messageId ? { ...message, reactions } : message,
+        ),
+      },
+  );
+}
+
+/**
+ * Taps an emoji on a message for the viewer: sets it, swaps theirs for it, or removes it when it
+ * is already theirs (one reaction per person). The cached page changes at once; the server's list
+ * replaces it on success, and a failure puts the old list back and refetches the channel.
+ */
+export function useToggleChatReaction(
+  channelKey: string,
+  viewerId: string | null | undefined,
+) {
+  const queryClient = useQueryClient();
+  return useApiMutation<
+    { messageId: string; emoji: ReactionEmoji },
+    ChatReaction[]
+  >({
+    refreshAll: false,
+    mutationFn: async ({ messageId, emoji }) => {
+      if (!viewerId) throw new Error("Reacting needs a signed-in user");
+      const key = chatKeys.messages(channelKey);
+      // A poll landing mid-request would overwrite the optimistic list with the old one.
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous =
+        queryClient
+          .getQueryData<ChatMessagesPage>(key)
+          ?.items.find((message) => message.id === messageId)?.reactions ?? [];
+      const next = toggleReaction(
+        previous,
+        viewerId,
+        emoji,
+        new Date().toISOString(),
+      );
+      writeReactions(queryClient, channelKey, messageId, next.reactions);
+      const path = { message_id: messageId };
+      try {
+        const result =
+          next.change.kind === "set"
+            ? await api.PUT("/api/v1/chat/messages/{message_id}/reaction", {
+                params: { path },
+                body: { emoji: next.change.emoji },
+              })
+            : await api.DELETE("/api/v1/chat/messages/{message_id}/reaction", {
+                params: { path },
+              });
+        return unwrap(result).reactions;
+      } catch (error) {
+        writeReactions(queryClient, channelKey, messageId, previous);
+        throw error;
+      }
+    },
+    onSuccess: (reactions, { messageId }) =>
+      writeReactions(queryClient, channelKey, messageId, reactions),
+    onError: () => {
+      void queryClient.invalidateQueries({
+        queryKey: chatKeys.messages(channelKey),
+      });
+    },
   });
 }
 

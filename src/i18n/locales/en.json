@@ -1816,6 +1816,17 @@
       "blockedTitle": "Blocked people",
       "unblock": "Unblock",
       "none": "Nobody is blocked."
+    },
+    "details": {
+      "title": "Message details",
+      "open": "Message details: reactions and seen by",
+      "react": "React with {{emoji}}",
+      "reactions": "Reactions",
+      "seenBy": "Seen by",
+      "nobodySeen": "Nobody has seen it yet",
+      "unknownMember": "Former member",
+      "chip_one": "{{emoji}} {{count}} reaction",
+      "chip_other": "{{emoji}} {{count}} reactions"
     }
   },
   "signup": {

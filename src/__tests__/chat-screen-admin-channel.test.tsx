@@ -101,6 +101,7 @@ jest.mock("@/features/chat/chat-api", () => ({
   useReportChatMessage: () => ({ mutate: jest.fn() }),
   useBlockChatUser: () => ({ mutate: jest.fn() }),
   useUnblockChatUser: () => ({ mutate: jest.fn() }),
+  useToggleChatReaction: () => ({ mutate: jest.fn() }),
 }));
 
 const SAFE_AREA_METRICS: Metrics = {
