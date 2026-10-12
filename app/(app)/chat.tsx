@@ -26,10 +26,12 @@ import {
   useMarkChatRead,
   useReportChatMessage,
   useSendChatMessage,
+  useToggleChatReaction,
 } from "@/features/chat/chat-api";
 import { BlockedUsersSheet } from "@/features/chat/blocked-users-sheet";
 import { ChatComposer } from "@/features/chat/chat-composer";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
+import { MessageDetailsSheet } from "@/features/chat/message-details-sheet";
 import type { PickedFile } from "@/lib/files/pick";
 import type { SupportedLocale } from "@/i18n";
 import { seenByMessage } from "@/lib/chat/seen-by";
@@ -67,6 +69,9 @@ export default function ChatScreen() {
   const messages = useChatMessages(channelKey);
   const markRead = useMarkChatRead();
   const send = useSendChatMessage(channelKey ?? "");
+  const react = useToggleChatReaction(channelKey ?? "", user?.id);
+  // The message whose details sheet is open; looked up in the live page so it tracks each poll.
+  const [detailsId, setDetailsId] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   const channel = useMemo(
@@ -76,6 +81,9 @@ export default function ChatScreen() {
   const isAdminChannel = channel?.kind === "admin";
   const members = messages.data?.members ?? [];
   const items = messages.data?.items ?? [];
+  const detailsMessage = detailsId
+    ? (items.find((m) => m.id === detailsId) ?? null)
+    : null;
   const lastMessageId = items[items.length - 1]?.id;
   const lastMessageMine = items[items.length - 1]?.mine ?? true;
   // Who has read up to which message ("seen" avatars); recomputed on every poll.
@@ -266,6 +274,9 @@ export default function ChatScreen() {
             <ChatMessageList
               messages={items}
               seen={seen}
+              viewerId={user?.id}
+              onOpenDetails={setDetailsId}
+              onReact={(messageId, emoji) => react.mutate({ messageId, emoji })}
               onReport={(messageId) =>
                 report.mutate(
                   { messageId },
@@ -294,6 +305,13 @@ export default function ChatScreen() {
           onSend={submit}
         />
       </KeyboardAvoidingView>
+      <MessageDetailsSheet
+        message={detailsMessage}
+        members={members}
+        viewerId={user?.id}
+        onReact={(messageId, emoji) => react.mutate({ messageId, emoji })}
+        onClose={() => setDetailsId(null)}
+      />
       <BlockedUsersSheet
         visible={blockedOpen}
         onClose={() => setBlockedOpen(false)}

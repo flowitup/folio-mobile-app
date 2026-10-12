@@ -1891,6 +1891,70 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/chat/messages/{message_id}/reaction": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Leave (or change) the caller's emoji on a message */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          message_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["SetReactionBody"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ReactionsResponse"];
+          };
+        };
+      };
+    };
+    post?: never;
+    /** Take the caller's emoji off a message */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          message_id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Success */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ReactionsResponse"];
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/companies": {
     parameters: {
       query?: never;
@@ -8871,6 +8935,8 @@ export interface components {
       payload: {
         [key: string]: unknown;
       } | null;
+      /** Reactions */
+      reactions?: components["schemas"]["ReactionResponse"][];
       /**
        * Reply To Id
        * @default null
@@ -9200,6 +9266,20 @@ export interface components {
       /** User Count */
       user_count: number;
     };
+    /** ReactionResponse */
+    ReactionResponse: {
+      /** Created At */
+      created_at: string;
+      /** Emoji */
+      emoji: string;
+      /** User Id */
+      user_id: string;
+    };
+    /** ReactionsResponse */
+    ReactionsResponse: {
+      /** Reactions */
+      reactions: components["schemas"]["ReactionResponse"][];
+    };
     /**
      * RefreshResponse
      * @description Refresh token response.
@@ -9421,6 +9501,14 @@ export interface components {
        * Format: uuid
        */
       company_id: string;
+    };
+    /**
+     * SetReactionBody
+     * @description Body of PUT /chat/messages/<id>/reaction: one of the six accepted emoji.
+     */
+    SetReactionBody: {
+      /** Emoji */
+      emoji: string;
     };
     /**
      * SignupRequestBody

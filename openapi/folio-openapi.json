@@ -1876,6 +1876,11 @@
             "default": null,
             "title": "Payload"
           },
+          "reactions": {
+            "items": { "$ref": "#/components/schemas/ReactionResponse" },
+            "title": "Reactions",
+            "type": "array"
+          },
           "reply_to_id": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "default": null,
@@ -2315,6 +2320,28 @@
         "title": "ProjectResponse",
         "type": "object"
       },
+      "ReactionResponse": {
+        "properties": {
+          "created_at": { "title": "Created At", "type": "string" },
+          "emoji": { "title": "Emoji", "type": "string" },
+          "user_id": { "title": "User Id", "type": "string" }
+        },
+        "required": ["user_id", "emoji", "created_at"],
+        "title": "ReactionResponse",
+        "type": "object"
+      },
+      "ReactionsResponse": {
+        "properties": {
+          "reactions": {
+            "items": { "$ref": "#/components/schemas/ReactionResponse" },
+            "title": "Reactions",
+            "type": "array"
+          }
+        },
+        "required": ["reactions"],
+        "title": "ReactionsResponse",
+        "type": "object"
+      },
       "RefreshResponse": {
         "description": "Refresh token response.",
         "properties": {
@@ -2632,6 +2659,21 @@
         },
         "required": ["company_id"],
         "title": "SetPrimaryCompanyRequest",
+        "type": "object"
+      },
+      "SetReactionBody": {
+        "additionalProperties": false,
+        "description": "Body of PUT /chat/messages/<id>/reaction: one of the six accepted emoji.",
+        "properties": {
+          "emoji": {
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Emoji",
+            "type": "string"
+          }
+        },
+        "required": ["emoji"],
+        "title": "SetReactionBody",
         "type": "object"
       },
       "SignupRequestBody": {
@@ -4713,6 +4755,62 @@
         "responses": { "200": { "description": "Success" } },
         "security": [{ "bearerAuth": [] }],
         "summary": "Download a message attachment (channel members only)",
+        "tags": ["chat"]
+      }
+    },
+    "/api/v1/chat/messages/{message_id}/reaction": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReactionsResponse" }
+              }
+            },
+            "description": "Success"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Take the caller's emoji off a message",
+        "tags": ["chat"]
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SetReactionBody" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReactionsResponse" }
+              }
+            },
+            "description": "Success"
+          }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Leave (or change) the caller's emoji on a message",
         "tags": ["chat"]
       }
     },

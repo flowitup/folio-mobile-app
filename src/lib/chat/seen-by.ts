@@ -5,6 +5,8 @@
  * once, under the newest message created at or before that marker — the Messenger
  * convention — and never under their own messages or for the viewer themself.
  */
+import { dayKeyOf, timeOf } from "@/lib/chat/group-messages-by-day";
+import { toIsoDate } from "@/lib/format/date";
 
 export interface SeenMember {
   id: string;
@@ -43,4 +45,37 @@ export function seenByMessage<M extends SeenMember, T extends SeenMessage>(
     result.set(seen.id, list);
   }
   return result;
+}
+
+export interface MessageReader<M extends SeenMember> {
+  member: M;
+  /** The member's read marker (`last_read_at`), i.e. when they had read up to this message. */
+  readAt: string;
+}
+
+/**
+ * Everyone who has read up to one message (their marker is at or after it), for the message
+ * details sheet: the sender is left out, readers come in the order they caught up.
+ */
+export function readersOfMessage<M extends SeenMember>(
+  message: Pick<SeenMessage, "created_at" | "sender_id">,
+  members: M[],
+): MessageReader<M>[] {
+  const createdAt = Date.parse(message.created_at);
+  if (Number.isNaN(createdAt)) return [];
+  const readers: { reader: MessageReader<M>; at: number }[] = [];
+  for (const member of members) {
+    if (!member.last_read_at || member.id === message.sender_id) continue;
+    const at = Date.parse(member.last_read_at);
+    if (Number.isNaN(at) || at < createdAt) continue;
+    readers.push({ reader: { member, readAt: member.last_read_at }, at });
+  }
+  return readers.sort((a, b) => a.at - b.at).map((entry) => entry.reader);
+}
+
+/** When a reader caught up: `HH:mm` today, `dd/mm HH:mm` on an earlier day (local time). */
+export function readAtLabel(iso: string, today: Date = new Date()): string {
+  const day = dayKeyOf(iso);
+  if (day === toIsoDate(today)) return timeOf(iso);
+  return `${day.slice(8, 10)}/${day.slice(5, 7)} ${timeOf(iso)}`;
 }

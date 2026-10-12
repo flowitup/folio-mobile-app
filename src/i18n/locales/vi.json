@@ -1816,6 +1816,17 @@
       "blockedTitle": "Người đã chặn",
       "unblock": "Bỏ chặn",
       "none": "Chưa chặn ai."
+    },
+    "details": {
+      "title": "Chi tiết tin nhắn",
+      "open": "Chi tiết tin nhắn: cảm xúc và người đã xem",
+      "react": "Thả {{emoji}}",
+      "reactions": "Cảm xúc",
+      "seenBy": "Đã xem bởi",
+      "nobodySeen": "Chưa ai xem",
+      "unknownMember": "Thành viên cũ",
+      "chip_one": "{{emoji}} {{count}} lượt thả",
+      "chip_other": "{{emoji}} {{count}} lượt thả"
     }
   },
   "signup": {
