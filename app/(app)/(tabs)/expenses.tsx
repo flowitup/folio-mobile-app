@@ -3,8 +3,8 @@ import { useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { useShell } from "@/components/shell/shell-context";
 import { ChipRow } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
@@ -34,7 +34,6 @@ import {
   groupInvoicesByMonth,
   ledgerTypeOf,
 } from "@/lib/invoices/group-invoices-by-month";
-import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { DARK, INK_BLOCK, useTokens } from "@/theme/tokens";
 import { useInkStatusBar } from "@/theme/use-ink-status-bar";
@@ -65,16 +64,10 @@ function ExpensesTabContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const tokens = useTokens();
-  const insets = useSafeAreaInsets();
   // This screen builds its own ink header, so it owns the bar over it.
   useInkStatusBar(true);
-  const { openSheet, tabBarHeight } = useShell();
-  const {
-    projectId,
-    project,
-    isPending: projectPending,
-    isError: projectError,
-  } = useSelectedProject();
+  const { tabBarHeight } = useShell();
+  const { projectId, project } = useSelectedProject();
   const [filter, setFilter] = useState<Filter>("all");
   const [month, setMonth] = useState(currentMonth());
   const invoices = useInvoices(projectId);
@@ -160,48 +153,27 @@ function ExpensesTabContent() {
         gap={14}
         bottomPadding={fabOffset + FAB_SIZE + 12}
         header={
-          <View
-            className="flex-row items-center gap-2 bg-ink-block pl-5 pr-4"
-            style={{ paddingTop: insets.top + 8 }}
-          >
-            <Pressable
-              testID="top-bar-switcher"
-              accessibilityRole="button"
-              onPress={() => openSheet("switcher")}
-              className="min-w-0 flex-1 active:opacity-70"
-            >
-              <View className="flex-row items-center gap-1">
-                <Text
-                  className="font-sans text-[11px] leading-[14px] text-ink-block-muted"
-                  numberOfLines={1}
-                >
-                  {project
-                    ? projectDisplayName(project)
-                    : projectPending
-                      ? "…"
-                      : projectError
-                        ? t("home.loadError")
-                        : t("home.noProjects")}
-                </Text>
-                <Icon name="chevron-down" size={10} color={INK_BLOCK.muted} />
-              </View>
+          <View className="bg-ink-block">
+            <ProjectTopBar tone="ink" />
+            <View className="flex-row items-center gap-2 pb-1 pl-5 pr-4 pt-3">
               <Text
                 testID="expenses-title"
-                className="font-serif-medium text-[26px] leading-[30px] text-on-ink-block"
+                className="min-w-0 flex-1 font-serif-medium text-[26px] leading-[30px] text-on-ink-block"
+                numberOfLines={1}
               >
                 {t("tabs.expenses")}
               </Text>
-            </Pressable>
-            <MonthPicker
-              compact
-              tone="ink"
-              testID="expenses-month"
-              value={month}
-              max={latestMonth}
-              onChange={setMonth}
-              prevLabel={t("expenses.prevMonth")}
-              nextLabel={t("expenses.nextMonth")}
-            />
+              <MonthPicker
+                compact
+                tone="ink"
+                testID="expenses-month"
+                value={month}
+                max={latestMonth}
+                onChange={setMonth}
+                prevLabel={t("expenses.prevMonth")}
+                nextLabel={t("expenses.nextMonth")}
+              />
+            </View>
           </View>
         }
         hero={
@@ -234,7 +206,10 @@ function ExpensesTabContent() {
                         meta.company_name ?? t("invoices.summary.companyPurse")
                       }
                       released={releasedCompany}
-                      spent={(meta.company_spent_total ?? summary.company.spent) + cashAdvanced}
+                      spent={
+                        (meta.company_spent_total ?? summary.company.spent) +
+                        cashAdvanced
+                      }
                       cashAdvanced={cashAdvanced}
                       tone="company"
                     />
@@ -242,7 +217,9 @@ function ExpensesTabContent() {
                       testID="expenses-purse-personal"
                       label={t("invoices.summary.personalPurse")}
                       released={releasedPersonal}
-                      spent={meta.personal_spent_total ?? summary.personal.spent}
+                      spent={
+                        meta.personal_spent_total ?? summary.personal.spent
+                      }
                       tone="personal"
                     />
                   </View>
