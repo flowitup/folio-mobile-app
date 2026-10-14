@@ -62,8 +62,10 @@ export function useChatMessages(
   return useQuery({
     queryKey: chatKeys.messages(channelKey ?? ""),
     enabled: Boolean(channelKey),
-    // A thread opened from a push or the bell shows what the server has now, not the page
-    // cached the last time it was open.
+    // A thread opened from a push, the bell or the conversation list shows what the server has
+    // now, not the page cached the last time it was open: never fresh, so switching channel
+    // refetches too (not only mounting the screen).
+    staleTime: 0,
     refetchOnMount: "always",
     refetchInterval: channelKey ? refetchInterval : false,
     queryFn: async () =>
