@@ -1,9 +1,9 @@
 /**
- * `ChatScreen`'s channel chip row: the `admin` kind gets a lock icon and the "Quản trị" /
- * "Administration" label instead of its own name, and its header subtitle names the admin
- * scope.
+ * `ChatScreen`'s Messenger-style conversation list: it opens on the list (no deep link), a row
+ * opens its thread, the back arrow of a thread returns to the list, and a deep link goes
+ * straight to the thread.
  */
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 
@@ -71,13 +71,13 @@ const CHANNELS = [
     unread_count: 0,
   },
   {
-    id: "ch-admin",
-    key: "admin:c1",
-    kind: "admin",
+    id: "ch-project",
+    key: "project:p1",
+    kind: "project",
     last_message_at: null,
     member_count: 2,
-    name: "AVN Construction",
-    unread_count: 0,
+    name: "Nhà 13",
+    unread_count: 1,
   },
 ];
 
@@ -117,31 +117,35 @@ async function renderChatScreen() {
   );
 }
 
-describe("ChatScreen admin channel chip", () => {
+describe("ChatScreen conversation list", () => {
   beforeEach(() => {
     mockParams = {};
   });
 
-  it("shows the lock icon and the admin label instead of the channel's own name", async () => {
+  it("opens on the list, opens a thread from a row and comes back with the back arrow", async () => {
     await i18n.changeLanguage("vi");
     await renderChatScreen();
 
-    expect(screen.getByTestId("chat-channel-admin:c1-lock")).toBeTruthy();
-    expect(screen.getByText("Quản trị")).toBeTruthy();
-    // The company channel keeps its own name and no lock.
-    expect(screen.queryByTestId("chat-channel-company:c1-lock")).toBeNull();
+    expect(screen.getByTestId("chat-list-screen")).toBeTruthy();
+    expect(screen.getByText("Nhà 13")).toBeTruthy();
+    expect(screen.getByTestId("chat-unread-project:p1")).toBeTruthy();
+    expect(screen.queryByTestId("chat-input")).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("chat-channel-project:p1"));
+    expect(screen.queryByTestId("chat-list-screen")).toBeNull();
+    expect(screen.getByTestId("chat-title").props.children).toBe("Nhà 13");
+    expect(screen.getByTestId("chat-input")).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId("chat-close"));
+    expect(screen.getByTestId("chat-list-screen")).toBeTruthy();
   });
 
-  it("names the admin scope in the header subtitle once the admin channel is selected", async () => {
-    mockParams = { channel: "admin:c1" };
+  it("goes straight to the thread with a deep link", async () => {
+    mockParams = { channel: "project:p1" };
     await i18n.changeLanguage("en");
     await renderChatScreen();
 
-    expect(screen.getByTestId("chat-title").props.children).toBe(
-      "AVN Construction",
-    );
-    expect(
-      screen.getByText("Company finance, payroll and Folio activity"),
-    ).toBeTruthy();
+    expect(screen.queryByTestId("chat-list-screen")).toBeNull();
+    expect(screen.getByTestId("chat-title").props.children).toBe("Nhà 13");
   });
 });

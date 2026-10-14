@@ -33,12 +33,12 @@ export function VoicePill({
   const tint = mine ? "#ffffff" : tokens.ink;
   return (
     <View
-      className={`w-[210px] flex-row items-center gap-2.5 px-3 py-[9px] ${mine ? "bg-positive" : "border border-line bg-card"}`}
+      className={`w-[210px] flex-row items-center gap-2.5 px-3 py-[9px] ${mine ? "bg-[#0084ff]" : "bg-[#e9eaee] dark:bg-[#2c2a26]"}`}
       style={{
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
-        borderBottomLeftRadius: mine ? 16 : 4,
-        borderBottomRightRadius: mine ? 4 : 16,
+        borderBottomLeftRadius: mine ? 18 : 4,
+        borderBottomRightRadius: mine ? 4 : 18,
       }}
     >
       <Pressable
