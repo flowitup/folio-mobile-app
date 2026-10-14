@@ -1799,8 +1799,8 @@
     "voiceLoadFailed": "This voice message could not be loaded.",
     "recordingFailed": "The microphone could not be started.",
     "recordingLost": "The recording was lost.",
-    "kindAdmin": "Administration",
-    "adminSubtitle": "Company finance, payroll and Folio activity",
+    "kindCompany": "Company",
+    "kindProject": "Project",
     "moderation": {
       "menu": "Message options",
       "report": "Report message",

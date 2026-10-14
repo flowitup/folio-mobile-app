@@ -13,10 +13,12 @@ import { Avatar } from "@/components/ui/avatar";
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Icon } from "@/components/ui/icon";
 import type { ChatMember, ChatMessage } from "@/features/chat/chat-api";
+import { bubbleRadii, useChatColors } from "@/features/chat/chat-colors";
 import { ChatVoiceBubble } from "@/features/chat/chat-voice-note";
 import { formatFileSize } from "@/lib/format/file-size";
 import {
   dayDividerLabel,
+  endsRun,
   groupMessagesByDay,
   showsSender,
   timeOf,
@@ -58,12 +60,12 @@ function SeenBy({ members, mine }: { members: ChatMember[]; mine: boolean }) {
       {shown.map((member, index) => (
         <View
           key={member.id}
-          style={{ marginLeft: index === 0 ? 0 : -5 }}
+          style={{ marginLeft: index === 0 ? 0 : 2 }}
           className="rounded-full border border-paper"
         >
           <Avatar
             name={member.name}
-            size={14}
+            size={16}
             color={senderColor(member.id, tokens)}
           />
         </View>
@@ -92,7 +94,7 @@ function ReactionChips({
   if (counts.length === 0) return null;
   return (
     <View
-      className={`flex-row flex-wrap gap-1 px-1 ${message.mine ? "justify-end" : "justify-start"}`}
+      className={`z-10 -mt-2 flex-row flex-wrap gap-1 px-2 ${message.mine ? "justify-end" : "justify-start"}`}
     >
       {counts.map(({ emoji, count, mine }) => {
         const known = isReactionEmoji(emoji);
@@ -106,11 +108,11 @@ function ReactionChips({
             accessibilityRole="button"
             accessibilityLabel={t("chat.details.chip", { emoji, count })}
             accessibilityState={{ selected: mine }}
-            className={`h-6 flex-row items-center gap-1 rounded-full border px-2 active:opacity-70 ${mine ? "border-positive bg-positive-tint" : "border-line bg-card"}`}
+            className={`h-6 flex-row items-center gap-1 rounded-full border px-2 active:opacity-70 ${mine ? "border-[#0084ff] bg-[#e5f1ff]" : "border-line bg-card"}`}
           >
             <Text className="text-[12px] leading-4">{emoji}</Text>
             <Text
-              className={`font-sans-medium text-[11px] ${mine ? "text-positive" : "text-muted"}`}
+              className={`font-sans-medium text-[11px] ${mine ? "text-[#0084ff]" : "text-muted"}`}
             >
               {count}
             </Text>
@@ -167,10 +169,15 @@ function ChatImageViewer({
   );
 }
 
-/** One bubble row: incoming = avatar + name + card bubble; mine = positive bubble on the right. */
+/**
+ * One bubble row (Messenger look): mine = blue bubble on the right, incoming = grey bubble on
+ * the left with the avatar beside the last bubble of a run and the name above the first.
+ */
 function MessageRow({
   message,
   showSender,
+  lastOfRun,
+  gapBefore,
   seenBy,
   viewerId,
   onReport,
@@ -180,6 +187,8 @@ function MessageRow({
 }: {
   message: ChatMessage;
   showSender: boolean;
+  lastOfRun: boolean;
+  gapBefore: boolean;
   seenBy: ChatMember[] | undefined;
   viewerId: string | null | undefined;
   onReport?: (messageId: string) => void;
@@ -189,6 +198,7 @@ function MessageRow({
 }) {
   const { t } = useTranslation();
   const tokens = useTokens();
+  const colors = useChatColors();
   const [viewing, setViewing] = useState(false);
   const mine = message.mine;
   // Someone else's message can be reported or its sender blocked (App Store 1.2).
@@ -254,11 +264,11 @@ function MessageRow({
   // rendered specially: whatever text they carry shows as a plain bubble.
   return (
     <View
-      className={`flex-row items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
+      className={`flex-row items-end gap-2 ${gapBefore ? "mt-2" : ""} ${mine ? "justify-end" : "justify-start"}`}
     >
       {!mine ? (
         <View className="w-7">
-          {showSender ? (
+          {lastOfRun ? (
             <Avatar
               name={message.sender_name}
               size={28}
@@ -268,10 +278,10 @@ function MessageRow({
         </View>
       ) : null}
       <View
-        className={`max-w-[76%] gap-[3px] ${mine ? "items-end" : "items-start"}`}
+        className={`max-w-[76%] gap-[2px] ${mine ? "items-end" : "items-start"}`}
       >
         {showSender ? (
-          <Text className="pl-1 font-sans text-[11px] text-muted">
+          <Text className="pl-3 font-sans text-[11px] text-muted">
             {message.sender_name}
           </Text>
         ) : null}
@@ -283,16 +293,15 @@ function MessageRow({
             delayLongPress={350}
             accessibilityRole={openDetails ? "button" : "text"}
             accessibilityHint={openDetails ? t("chat.details.open") : undefined}
-            className={`px-3 py-[9px] ${mine ? "bg-positive" : "border border-line bg-card"}`}
+            className="px-3.5 py-2"
             style={{
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-              borderBottomLeftRadius: mine ? 16 : 4,
-              borderBottomRightRadius: mine ? 4 : 16,
+              backgroundColor: mine ? colors.blue : colors.bubble,
+              ...bubbleRadii(mine, !showSender, !lastOfRun),
             }}
           >
             <Text
-              className={`font-sans text-[14px] leading-5 ${mine ? "text-white" : "text-ink"}`}
+              className="font-sans text-[14.5px] leading-5"
+              style={{ color: mine ? "#ffffff" : colors.bubbleText }}
             >
               {message.body}
             </Text>
@@ -357,10 +366,14 @@ function MessageRow({
             onReact={onReact}
           />
         ) : null}
-        <View className="flex-row items-center gap-2 px-1">
-          <Text className="font-sans text-[10px] text-muted-2">
-            {timeOf(message.created_at)}
-          </Text>
+        <View
+          className={`flex-row items-center gap-2 px-1 ${lastOfRun || canModerate ? "" : "hidden"}`}
+        >
+          {lastOfRun ? (
+            <Text className="font-sans text-[10px] text-muted-2">
+              {timeOf(message.created_at)}
+            </Text>
+          ) : null}
           {canModerate ? (
             <Pressable
               testID={`chat-message-menu-${message.id}`}
@@ -411,12 +424,12 @@ export function ChatMessageList({
   const { t } = useTranslation();
   const groups = groupMessagesByDay(messages);
   return (
-    <View className="gap-2.5" testID="chat-message-list">
+    <View className="gap-2" testID="chat-message-list">
       {groups.map((group) => {
         const label = dayDividerLabel(group.dayKey);
         return (
-          <View key={group.dayKey} className="gap-2.5">
-            <Text className="mb-1 text-center font-sans text-[11px] text-muted">
+          <View key={group.dayKey} className="gap-[3px]">
+            <Text className="my-2 text-center font-sans-medium text-[11px] text-muted">
               {/* Today / Yesterday carry the date beside them; an older divider is already the date. */}
               {"token" in label
                 ? `${t(`chat.${label.token}`)} · ${group.dayKey.slice(8, 10)}/${group.dayKey.slice(5, 7)}`
@@ -427,6 +440,8 @@ export function ChatMessageList({
                 key={message.id}
                 message={message}
                 showSender={showsSender(group.messages, index)}
+                lastOfRun={endsRun(group.messages, index)}
+                gapBefore={index > 0 && endsRun(group.messages, index - 1)}
                 seenBy={seen?.get(message.id)}
                 viewerId={viewerId}
                 onReport={onReport}

@@ -20,6 +20,7 @@ import {
 } from "@/lib/chat/voice-note";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
+import { useChatColors } from "@/features/chat/chat-colors";
 import { useTokens } from "@/theme/tokens";
 
 type Props = {
@@ -49,6 +50,7 @@ export function ChatComposer({
 }: Props) {
   const { t } = useTranslation();
   const tokens = useTokens();
+  const colors = useChatColors();
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState("");
   const [file, setFile] = useState<PickedFile | null>(null);
@@ -164,11 +166,14 @@ export function ChatComposer({
       ) : null}
 
       <View
-        className="flex-row items-center gap-2 border-t border-line bg-paper px-3 pt-2.5"
+        className="flex-row items-center gap-1 border-t border-line bg-card px-2 pt-2"
         style={{ paddingBottom: Math.max(insets.bottom, 12) }}
       >
         {voice.recording ? (
-          <View className="h-[42px] flex-1 flex-row items-center gap-2.5 rounded-full border border-line-2 bg-card px-3.5">
+          <View
+            className="h-[38px] flex-1 flex-row items-center gap-2.5 rounded-full px-3.5"
+            style={{ backgroundColor: colors.input }}
+          >
             <View className="h-2 w-2 rounded-full bg-negative" />
             <Text className="font-sans text-[13px] text-ink">
               {t("chat.recording")}
@@ -202,11 +207,12 @@ export function ChatComposer({
               onPress={() => void attach("library")}
               className="h-10 w-10 items-center justify-center rounded-full active:opacity-70"
             >
-              <Icon name="plus" size={22} color={tokens.ink} />
+              <Icon name="plus" size={24} color={colors.blue} />
             </Pressable>
             <TextInput
               testID="chat-input"
-              className="h-[42px] flex-1 rounded-full border border-line-2 bg-card px-3.5 font-sans text-[14px] text-ink"
+              className="h-[38px] flex-1 rounded-full px-3.5 font-sans text-[14.5px] text-ink"
+              style={{ backgroundColor: colors.input }}
               placeholder={t("chat.placeholder")}
               placeholderTextColor={tokens.muted}
               value={draft}
@@ -225,7 +231,7 @@ export function ChatComposer({
                 onPress={() => void attach("camera")}
                 className="h-10 w-10 items-center justify-center active:opacity-70"
               >
-                <Icon name="camera" size={22} color={tokens.ink} />
+                <Icon name="camera" size={22} color={colors.blue} />
               </Pressable>
             ) : null}
           </>
@@ -245,7 +251,7 @@ export function ChatComposer({
           <Icon
             name={voice.recording ? "square" : "mic"}
             size={voice.recording ? 16 : 21}
-            color={voice.recording ? "#ffffff" : tokens.ink}
+            color={voice.recording ? "#ffffff" : colors.blue}
           />
         </Pressable>
 
@@ -255,12 +261,12 @@ export function ChatComposer({
           accessibilityLabel={t("chat.send")}
           disabled={!canSend}
           onPress={() => void submit()}
-          className={`h-10 w-10 items-center justify-center rounded-full bg-positive ${canSend ? "active:opacity-70" : "opacity-50"}`}
+          className={`h-10 w-10 items-center justify-center rounded-full ${canSend ? "active:opacity-70" : "opacity-40"}`}
         >
           {sending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.blue} />
           ) : (
-            <Icon name="send" size={18} color="#ffffff" />
+            <Icon name="send" size={22} color={colors.blue} />
           )}
         </Pressable>
       </View>

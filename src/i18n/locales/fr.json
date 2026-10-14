@@ -1799,8 +1799,8 @@
     "voiceLoadFailed": "Ce message vocal n'a pas pu être chargé.",
     "recordingFailed": "Le micro n'a pas pu démarrer.",
     "recordingLost": "L'enregistrement a été perdu.",
-    "kindAdmin": "Administration",
-    "adminSubtitle": "Finances de l'entreprise, paie et activité de Folio",
+    "kindCompany": "Entreprise",
+    "kindProject": "Chantier",
     "moderation": {
       "menu": "Options du message",
       "report": "Signaler le message",
