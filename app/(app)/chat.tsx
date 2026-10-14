@@ -226,9 +226,6 @@ export default function ChatScreen() {
                     setShowList(false);
                   }}
                   className="flex-row items-center gap-3 rounded-xl px-2.5 py-2 active:opacity-70"
-                  style={
-                    active ? { backgroundColor: colors.blueTint } : undefined
-                  }
                 >
                   <Avatar
                     name={item.name}

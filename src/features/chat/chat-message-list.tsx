@@ -60,12 +60,12 @@ function SeenBy({ members, mine }: { members: ChatMember[]; mine: boolean }) {
       {shown.map((member, index) => (
         <View
           key={member.id}
-          style={{ marginLeft: index === 0 ? 0 : -5 }}
+          style={{ marginLeft: index === 0 ? 0 : 2 }}
           className="rounded-full border border-paper"
         >
           <Avatar
             name={member.name}
-            size={14}
+            size={16}
             color={senderColor(member.id, tokens)}
           />
         </View>
