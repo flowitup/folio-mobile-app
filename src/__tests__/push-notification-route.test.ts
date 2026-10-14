@@ -189,6 +189,12 @@ describe("staleKeysForPush", () => {
     expect(staleKeysForPush(null)).toEqual([["notifications"]]);
   });
 
+  it("also refreshes the chat channels and threads for a chat message", () => {
+    expect(
+      staleKeysForPush({ kind: "chat_message", channel_key: "project:p1" }),
+    ).toEqual([["notifications"], ["chat"]]);
+  });
+
   it("also refreshes the project list when the user joins or leaves a project", () => {
     expect(staleKeysForPush({ kind: "project_member_added" })).toEqual([
       ["notifications"],

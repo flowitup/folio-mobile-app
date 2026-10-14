@@ -148,4 +148,23 @@ describe("ChatScreen conversation list", () => {
     expect(screen.queryByTestId("chat-list-screen")).toBeNull();
     expect(screen.getByTestId("chat-title").props.children).toBe("Nhà 13");
   });
+
+  it("follows a new deep link while the chat is already open", async () => {
+    mockParams = { channel: "company:c1" };
+    await i18n.changeLanguage("en");
+    const tree = () => (
+      <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
+        <ChatScreen />
+      </SafeAreaProvider>
+    );
+    const view = await render(tree());
+    expect(screen.getByTestId("chat-title").props.children).toBe(
+      "AVN Construction",
+    );
+
+    // A push for another conversation is tapped: same screen, new `channel` param.
+    mockParams = { channel: "project:p1" };
+    await view.rerender(tree());
+    expect(screen.getByTestId("chat-title").props.children).toBe("Nhà 13");
+  });
 });
