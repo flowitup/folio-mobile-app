@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1084027280556",
+    "project_id": "folio-mobile-flowitup-82baf",
+    "storage_bucket": "folio-mobile-flowitup-82baf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1084027280556:android:7b7f885a5a2c0ea34d1309",
+        "android_client_info": {
+          "package_name": "com.flowitup.folio"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoFwUhrSDuZPsXYopLWvx-Wnl6NlUwT2c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

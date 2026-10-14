@@ -2,7 +2,7 @@
   "expo": {
     "name": "Folio",
     "slug": "folio-mobile-app",
-    "version": "0.5.25",
+    "version": "0.5.26",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "folio",
@@ -19,6 +19,7 @@
     },
     "android": {
       "package": "com.flowitup.folio",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
