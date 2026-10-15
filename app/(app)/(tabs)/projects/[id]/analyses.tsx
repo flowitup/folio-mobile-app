@@ -36,7 +36,10 @@ import {
 } from "@/features/analyses/analyses-api";
 import type { Analysis } from "@/features/analyses/analyses-api";
 import {
+  isGestureMessage,
+  newReportNonce,
   prepareReportHtml,
+  reportGestureScript,
   reportNavigation,
 } from "@/features/analyses/report-html";
 import { useProjectCan } from "@/features/projects/use-project-can";
@@ -45,6 +48,43 @@ import { pickDocuments } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatInstant } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+
+/**
+ * The report WebView. State is per viewing (the component is keyed on the report): the nonce a real
+ * tap is reported with is unknown to the report's own scripts.
+ */
+function ReportViewer({ html }: { html: string }) {
+  const [nonce] = useState(newReportNonce);
+  const lastTapAt = useRef<number | null>(null);
+  return (
+    <WebView
+      // Every request reaches the guard below, which keeps the report in place.
+      originWhitelist={["*"]}
+      source={{ html: prepareReportHtml(html) }}
+      injectedJavaScriptBeforeContentLoaded={
+        Platform.OS === "android" ? reportGestureScript(nonce) : undefined
+      }
+      // Only records that a real tap happened; nothing a report posts can do more.
+      onMessage={(event) => {
+        if (isGestureMessage(event.nativeEvent.data, nonce))
+          lastTapAt.current = Date.now();
+      }}
+      onShouldStartLoadWithRequest={(request) => {
+        const action = reportNavigation(
+          request,
+          Platform.OS,
+          lastTapAt.current,
+        );
+        if (action === "external")
+          Linking.openURL(request.url).catch(() => undefined);
+        return action === "allow";
+      }}
+      setSupportMultipleWindows={false}
+      javaScriptCanOpenWindowsAutomatically={false}
+      style={{ flex: 1 }}
+    />
+  );
+}
 
 /**
  * Stored HTML analysis reports: search + tag filter, upload with metadata, inline viewer, edit,
@@ -330,20 +370,7 @@ export default function ProjectAnalysesSection() {
               <Text className="p-4 text-danger">{t("analyses.loadError")}</Text>
             ) : null}
             {content.data ? (
-              <WebView
-                // Every request reaches the guard below, which keeps the report in place.
-                originWhitelist={["*"]}
-                source={{ html: prepareReportHtml(content.data) }}
-                onShouldStartLoadWithRequest={(request) => {
-                  const action = reportNavigation(request, Platform.OS);
-                  if (action === "external")
-                    Linking.openURL(request.url).catch(() => undefined);
-                  return action === "allow";
-                }}
-                setSupportMultipleWindows={false}
-                javaScriptCanOpenWindowsAutomatically={false}
-                style={{ flex: 1 }}
-              />
+              <ReportViewer key={viewing.id} html={content.data} />
             ) : null}
             <ToastViewport />
           </View>

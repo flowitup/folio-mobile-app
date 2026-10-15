@@ -40,20 +40,70 @@ export function prepareReportHtml(html: string): string {
 /** Schemes a report link may hand to the system (browser, mail, phone); never app deep links. */
 const EXTERNAL_SCHEME = /^(https?|mailto|tel):/i;
 
+/** How long a tap in the report keeps a link navigation "user initiated" (Android only). */
+export const GESTURE_WINDOW_MS = 3000;
+
+/** True when the last trusted tap reached us less than {@link GESTURE_WINDOW_MS} ago. */
+export function isRecentGesture(
+  gestureAt: number | null | undefined,
+  now: number = Date.now(),
+): boolean {
+  return (
+    gestureAt != null &&
+    now - gestureAt >= 0 &&
+    now - gestureAt <= GESTURE_WINDOW_MS
+  );
+}
+
+/**
+ * Android reports every navigation as `other`, so a scripted `location.href` looks like a tapped
+ * link. This script runs before the report's own scripts and tells the app about real taps only
+ * (`isTrusted` is false for synthetic events). The report's scripts could post messages too, so the
+ * message carries a per-viewing nonce that lives only in this closure, and the bridge is taken off
+ * `window` once captured.
+ */
+export function reportGestureScript(nonce: string): string {
+  return `(function(){var rn=window.ReactNativeWebView;if(!rn)return;var m=JSON.stringify({folioTap:${JSON.stringify(nonce)}});try{delete window.ReactNativeWebView;}catch(x){}window.addEventListener("click",function(e){if(e.isTrusted)rn.postMessage(m);},true);})();true;`;
+}
+
+/** A fresh per-viewing secret for {@link reportGestureScript}; a stored report cannot know it. */
+export function newReportNonce(): string {
+  return `${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
+}
+
+/** Whether a WebView message is the tap signal of this viewing; any other message is ignored. */
+export function isGestureMessage(data: string, nonce: string): boolean {
+  try {
+    const message: unknown = JSON.parse(data);
+    return (
+      typeof message === "object" &&
+      message !== null &&
+      (message as { folioTap?: unknown }).folioTap === nonce
+    );
+  } catch {
+    return false;
+  }
+}
+
 /**
  * What the WebView does with a navigation request from a report: stay on the report document
  * (`about:blank` and its `#anchors`), open a link outside the app, or refuse. Nothing ever replaces
- * the report inside Folio's viewer. iOS reports real clicks; Android always says `other`, so there a
- * link (or a scripted redirect) can only open the system browser, where the address is visible.
+ * the report inside Folio's viewer. iOS reports real clicks; Android always says `other`, so there
+ * a link only opens outside the app right after a trusted tap in the report (`gestureAt`, see
+ * {@link reportGestureScript}), never on a scripted redirect.
  */
 export function reportNavigation(
   request: { url: string; navigationType?: string; isTopFrame?: boolean },
   os: string,
+  gestureAt?: number | null,
+  now: number = Date.now(),
 ): "allow" | "external" | "block" {
   if (request.url.startsWith("about:")) return "allow";
   if (request.isTopFrame === false || !EXTERNAL_SCHEME.test(request.url))
     return "block";
-  return os === "android" || request.navigationType === "click"
-    ? "external"
-    : "block";
+  const userInitiated =
+    os === "android"
+      ? isRecentGesture(gestureAt, now)
+      : request.navigationType === "click";
+  return userInitiated ? "external" : "block";
 }
