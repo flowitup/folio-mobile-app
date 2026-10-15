@@ -23,6 +23,7 @@ import { SELECTED_PROJECT_KEY } from "@/features/projects/selected-project-key";
 import {
   clearHandledPushResponse,
   forgetPushToken,
+  releasePushRegistrationLocally,
   unregisterPushDevice,
 } from "@/features/push/push-device-registration";
 import {
@@ -146,6 +147,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signOutLocally = useCallback(async () => {
     await clearStoredTokens();
+    // This session is over for good (never reached while merely `unavailable`): stop the
+    // account's pushes on this phone. Not awaited, and never allowed to hold the sign-out.
+    try {
+      void releasePushRegistrationLocally().catch(() => undefined);
+    } catch {
+      // best effort
+    }
     // A push tapped under the leaving account must not be replayed for the next one.
     clearHandledPushResponse();
     // Every cached query belonged to the account that just left: without this the next

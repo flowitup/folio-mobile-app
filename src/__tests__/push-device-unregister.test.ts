@@ -7,7 +7,10 @@
 import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 
-import { unregisterPushDevice } from "@/features/push/push-device-registration";
+import {
+  releasePushRegistrationLocally,
+  unregisterPushDevice,
+} from "@/features/push/push-device-registration";
 
 jest.mock("expo-secure-store", () => {
   const store = new Map<string, string>();
@@ -83,5 +86,41 @@ describe("unregisterPushDevice", () => {
     expect(
       Notifications.unregisterForNotificationsAsync,
     ).not.toHaveBeenCalled();
+  });
+});
+
+describe("releasePushRegistrationLocally", () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    await SecureStore.setItemAsync(TOKEN_KEY, TOKEN);
+  });
+
+  it("stops OS delivery and forgets the token without any request", async () => {
+    await releasePushRegistrationLocally();
+
+    expect(mockDelete).not.toHaveBeenCalled();
+    expect(Notifications.unregisterForNotificationsAsync).toHaveBeenCalledTimes(
+      1,
+    );
+    expect(await SecureStore.getItemAsync(TOKEN_KEY)).toBeNull();
+  });
+
+  it("does nothing when this install never registered a token", async () => {
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
+
+    await releasePushRegistrationLocally();
+
+    expect(
+      Notifications.unregisterForNotificationsAsync,
+    ).not.toHaveBeenCalled();
+  });
+
+  it("forgets the token and does not throw when the OS call fails", async () => {
+    (
+      Notifications.unregisterForNotificationsAsync as jest.Mock
+    ).mockRejectedValueOnce(new Error("no native module"));
+
+    await expect(releasePushRegistrationLocally()).resolves.toBeUndefined();
+    expect(await SecureStore.getItemAsync(TOKEN_KEY)).toBeNull();
   });
 });
