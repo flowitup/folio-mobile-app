@@ -66,6 +66,14 @@ function ReportViewer({ html }: { html: string }) {
         touchFrom.current = { x: pageX, y: pageY };
         lastTapAt.current = Date.now();
       }}
+      onTouchMove={(event) => {
+        const { pageX, pageY } = event.nativeEvent;
+        if (
+          touchFrom.current &&
+          !isTapMove(touchFrom.current, { x: pageX, y: pageY })
+        )
+          lastTapAt.current = null;
+      }}
       onTouchEnd={(event) => {
         const { pageX, pageY } = event.nativeEvent;
         if (
@@ -73,6 +81,9 @@ function ReportViewer({ html }: { html: string }) {
           !isTapMove(touchFrom.current, { x: pageX, y: pageY })
         )
           lastTapAt.current = null;
+      }}
+      onTouchCancel={() => {
+        lastTapAt.current = null;
       }}
     >
       <WebView

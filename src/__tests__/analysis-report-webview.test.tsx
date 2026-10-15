@@ -126,6 +126,33 @@ describe("report WebView on Android", () => {
     expect(openURL).not.toHaveBeenCalled();
   });
 
+  it("stops trusting a touch once the finger moves past the tap slop, before it lifts", async () => {
+    const web = await openReport();
+    const view = screen.getByTestId("analysis-report");
+    await fireEvent(view, "touchStart", touch(50, 400));
+    await fireEvent(view, "touchMove", touch(50, 380));
+    web.onShouldStartLoadWithRequest!(REDIRECT);
+    expect(openURL).not.toHaveBeenCalled();
+  });
+
+  it("keeps trusting a touch that only jitters within the slop", async () => {
+    const web = await openReport();
+    const view = screen.getByTestId("analysis-report");
+    await fireEvent(view, "touchStart", touch(50, 400));
+    await fireEvent(view, "touchMove", touch(52, 402));
+    web.onShouldStartLoadWithRequest!(REDIRECT);
+    expect(openURL).toHaveBeenCalledWith(REDIRECT.url);
+  });
+
+  it("does not trust a cancelled touch", async () => {
+    const web = await openReport();
+    const view = screen.getByTestId("analysis-report");
+    await fireEvent(view, "touchStart", touch(50, 50));
+    await fireEvent(view, "touchCancel", touch(50, 50));
+    web.onShouldStartLoadWithRequest!(REDIRECT);
+    expect(openURL).not.toHaveBeenCalled();
+  });
+
   it("stops trusting a tap after the window", async () => {
     const web = await openReport();
     const now = jest.spyOn(Date, "now");
