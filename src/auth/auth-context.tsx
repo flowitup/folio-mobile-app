@@ -1,4 +1,5 @@
 import { focusManager, useQueryClient } from "@tanstack/react-query";
+import * as SecureStore from "expo-secure-store";
 import {
   createContext,
   useCallback,
@@ -17,6 +18,7 @@ import {
   refreshAccessToken,
   setSessionExpiredHandler,
 } from "@/api/client";
+import { SELECTED_PROJECT_KEY } from "@/features/projects/selected-project-key";
 import {
   clearHandledPushResponse,
   forgetPushToken,
@@ -36,6 +38,7 @@ import {
   hourlyLimitMinutes,
 } from "@/lib/auth/auth-error-message";
 import type { AuthFlow } from "@/lib/auth/auth-error-message";
+import { clearLocalUserFiles } from "@/lib/files/clear-local-files";
 
 // `is_platform_ops` (D5) is not on the generated `UserResponse` yet — the backend ships it in
 // a later phase of the roles/permissions redesign. Declared optional here so the app reads it
@@ -148,6 +151,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
     // account reads its companies/projects from the cache (30s stale window) and the
     // onboarding gate decides on someone else's data.
     queryClient.clear();
+    // Downloaded invoices, picked document copies and voice notes belong to that account too.
+    // Cleanup must never keep the user signed in, so a failure here is ignored.
+    try {
+      clearLocalUserFiles();
+    } catch {
+      // best effort
+    }
+    await SecureStore.deleteItemAsync(SELECTED_PROJECT_KEY).catch(
+      () => undefined,
+    );
     setUser(null);
     setStatus("signedOut");
   }, [queryClient]);

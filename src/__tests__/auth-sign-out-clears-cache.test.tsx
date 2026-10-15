@@ -24,7 +24,19 @@ jest.mock("@/auth/token-storage", () => ({
 
 jest.mock("@/features/push/push-device-registration", () => ({
   unregisterPushDevice: jest.fn(async () => undefined),
+  forgetPushToken: jest.fn(async () => undefined),
   clearHandledPushResponse: jest.fn(),
+}));
+
+const mockClearFiles = jest.fn();
+jest.mock("@/lib/files/clear-local-files", () => ({
+  clearLocalUserFiles: () => mockClearFiles(),
+}));
+const mockDeleteItem = jest.fn(async (_key: string) => undefined);
+jest.mock("expo-secure-store", () => ({
+  getItemAsync: jest.fn(async () => null),
+  setItemAsync: jest.fn(async () => undefined),
+  deleteItemAsync: (key: string) => mockDeleteItem(key),
 }));
 
 const mockGet = jest.fn(async () => ({
@@ -39,16 +51,18 @@ jest.mock("@/api/client", () => ({
   api: {
     GET: (...args: unknown[]) => mockGet(...(args as [])),
     POST: jest.fn(async () => ({ data: {}, response: { ok: true } })),
+    DELETE: jest.fn(async () => ({ response: { ok: true, status: 200 } })),
   },
   refreshAccessToken: jest.fn(async () => "new-access-token"),
   setSessionExpiredHandler: jest.fn(),
 }));
 
 function SignOutProbe() {
-  const { status, signOut } = useAuth();
+  const { status, signOut, deleteAccount } = useAuth();
   return (
     <Pressable testID="sign-out" onPress={() => void signOut()}>
       <Text testID="status">{status}</Text>
+      <Pressable testID="delete" onPress={() => void deleteAccount()} />
     </Pressable>
   );
 }
@@ -76,5 +90,51 @@ describe("signing out", () => {
     );
     expect(queryClient.getQueryData(["companies", "mine"])).toBeUndefined();
     expect(queryClient.getQueryCache().getAll()).toHaveLength(0);
+  });
+
+  describe("local files", () => {
+    async function renderSignedIn() {
+      await render(
+        <QueryClientProvider client={new QueryClient()}>
+          <AuthProvider>
+            <SignOutProbe />
+          </AuthProvider>
+        </QueryClientProvider>,
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId("status")).toHaveTextContent("signedIn"),
+      );
+    }
+    const signedOut = () =>
+      waitFor(() =>
+        expect(screen.getByTestId("status")).toHaveTextContent("signedOut"),
+      );
+
+    beforeEach(() => {
+      mockClearFiles.mockReset();
+      mockDeleteItem.mockClear();
+    });
+
+    it.each(["sign-out", "delete"])(
+      "clears the downloaded files and the remembered project (%s)",
+      async (button) => {
+        await renderSignedIn();
+        await fireEvent.press(screen.getByTestId(button));
+        await signedOut();
+        expect(mockClearFiles).toHaveBeenCalledTimes(1);
+        expect(mockDeleteItem).toHaveBeenCalledWith("folio.dashboard.project");
+      },
+    );
+
+    it("signs out even when the file cleanup or the key deletion fails", async () => {
+      mockClearFiles.mockImplementation(() => {
+        throw new Error("EBUSY");
+      });
+      mockDeleteItem.mockRejectedValueOnce(new Error("keychain locked"));
+      await renderSignedIn();
+      await fireEvent.press(screen.getByTestId("sign-out"));
+      await signedOut();
+      expect(mockClearFiles).toHaveBeenCalled();
+    });
   });
 });
