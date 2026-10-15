@@ -1,4 +1,5 @@
 import { focusManager, useQueryClient } from "@tanstack/react-query";
+import * as SecureStore from "expo-secure-store";
 import {
   createContext,
   useCallback,
@@ -17,9 +18,13 @@ import {
   refreshAccessToken,
   setSessionExpiredHandler,
 } from "@/api/client";
+import { LAST_COMPANY_KEYS } from "@/features/billing/last-company-key";
+import { SELECTED_PROJECT_KEY } from "@/features/projects/selected-project-key";
 import {
   clearHandledPushResponse,
   forgetPushToken,
+  registerPushDevice,
+  releasePushRegistrationLocally,
   unregisterPushDevice,
 } from "@/features/push/push-device-registration";
 import {
@@ -36,6 +41,7 @@ import {
   hourlyLimitMinutes,
 } from "@/lib/auth/auth-error-message";
 import type { AuthFlow } from "@/lib/auth/auth-error-message";
+import { clearLocalUserFiles } from "@/lib/files/clear-local-files";
 
 // `is_platform_ops` (D5) is not on the generated `UserResponse` yet — the backend ships it in
 // a later phase of the roles/permissions redesign. Declared optional here so the app reads it
@@ -142,12 +148,33 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signOutLocally = useCallback(async () => {
     await clearStoredTokens();
+    // This session is over for good (never reached while merely `unavailable`): stop the
+    // account's pushes on this phone. Not awaited, and never allowed to hold the sign-out.
+    try {
+      void releasePushRegistrationLocally().catch(() => undefined);
+    } catch {
+      // best effort
+    }
     // A push tapped under the leaving account must not be replayed for the next one.
     clearHandledPushResponse();
     // Every cached query belonged to the account that just left: without this the next
     // account reads its companies/projects from the cache (30s stale window) and the
     // onboarding gate decides on someone else's data.
     queryClient.clear();
+    // Downloaded invoices, picked document copies and voice notes belong to that account too.
+    // Cleanup must never keep the user signed in, so a failure here is ignored.
+    try {
+      clearLocalUserFiles();
+    } catch {
+      // best effort
+    }
+    // Not awaited: a keychain call that stalls must not hold the sign-out.
+    try {
+      for (const key of [SELECTED_PROJECT_KEY, ...LAST_COMPANY_KEYS])
+        void SecureStore.deleteItemAsync(key).catch(() => undefined);
+    } catch {
+      // best effort
+    }
     setUser(null);
     setStatus("signedOut");
   }, [queryClient]);
@@ -319,6 +346,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const { access_token, refresh_token, ...me } = data;
       await setStoredTokens(access_token, refresh_token);
       setUser(me);
+      // The change also removed every push device of the account, this phone's included, and
+      // the signed-in area registers only when it mounts: register again now, best effort.
+      void Promise.resolve()
+        .then(registerPushDevice)
+        .catch(() => undefined);
     },
     [],
   );

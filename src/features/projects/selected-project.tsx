@@ -11,9 +11,7 @@ import type { PropsWithChildren } from "react";
 
 import { useProjects } from "@/features/projects/projects-api";
 import type { Project } from "@/features/projects/projects-api";
-
-// Same key the previous dashboard used, so an upgrade keeps the user's project.
-const PROJECT_KEY = "folio.dashboard.project";
+import { SELECTED_PROJECT_KEY } from "@/features/projects/selected-project-key";
 
 type SelectedProjectValue = {
   projects: Project[];
@@ -51,14 +49,16 @@ export function SelectedProjectProvider({ children }: PropsWithChildren) {
   });
 
   useEffect(() => {
-    SecureStore.getItemAsync(PROJECT_KEY)
+    SecureStore.getItemAsync(SELECTED_PROJECT_KEY)
       .catch(() => null)
       .then((value) => setStored(value));
   }, []);
 
   const select = useCallback((id: string) => {
     setChosen(id);
-    void SecureStore.setItemAsync(PROJECT_KEY, id).catch(() => undefined);
+    void SecureStore.setItemAsync(SELECTED_PROJECT_KEY, id).catch(
+      () => undefined,
+    );
   }, []);
   useEffect(() => {
     mountedSelect = select;

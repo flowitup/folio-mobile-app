@@ -40,20 +40,51 @@ export function prepareReportHtml(html: string): string {
 /** Schemes a report link may hand to the system (browser, mail, phone); never app deep links. */
 const EXTERNAL_SCHEME = /^(https?|mailto|tel):/i;
 
+/** How long a tap on the report keeps a link navigation "user initiated" (Android only). */
+export const GESTURE_WINDOW_MS = 3000;
+
+/** A touch that travels further than this (px) is a scroll or a swipe, not a tap. */
+export const TAP_SLOP_PX = 16;
+
+/** True when a touch that began at `from` and ended at `to` stayed put, i.e. was a tap. */
+export function isTapMove(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): boolean {
+  return Math.hypot(to.x - from.x, to.y - from.y) <= TAP_SLOP_PX;
+}
+
+/** True when the last tap on the report began less than {@link GESTURE_WINDOW_MS} ago. */
+export function isRecentGesture(
+  gestureAt: number | null | undefined,
+  now: number = Date.now(),
+): boolean {
+  return (
+    gestureAt != null &&
+    now - gestureAt >= 0 &&
+    now - gestureAt <= GESTURE_WINDOW_MS
+  );
+}
+
 /**
  * What the WebView does with a navigation request from a report: stay on the report document
  * (`about:blank` and its `#anchors`), open a link outside the app, or refuse. Nothing ever replaces
- * the report inside Folio's viewer. iOS reports real clicks; Android always says `other`, so there a
- * link (or a scripted redirect) can only open the system browser, where the address is visible.
+ * the report inside Folio's viewer. iOS reports real clicks; Android always says `other`, so there
+ * a link only opens outside the app shortly after a tap on the viewer (`gestureAt`, taken from the
+ * native touch events around the WebView, which the report's scripts cannot reach or forge).
  */
 export function reportNavigation(
   request: { url: string; navigationType?: string; isTopFrame?: boolean },
   os: string,
+  gestureAt?: number | null,
+  now: number = Date.now(),
 ): "allow" | "external" | "block" {
   if (request.url.startsWith("about:")) return "allow";
   if (request.isTopFrame === false || !EXTERNAL_SCHEME.test(request.url))
     return "block";
-  return os === "android" || request.navigationType === "click"
-    ? "external"
-    : "block";
+  const userInitiated =
+    os === "android"
+      ? isRecentGesture(gestureAt, now)
+      : request.navigationType === "click";
+  return userInitiated ? "external" : "block";
 }

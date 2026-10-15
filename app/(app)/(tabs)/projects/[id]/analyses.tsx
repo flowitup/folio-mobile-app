@@ -36,6 +36,7 @@ import {
 } from "@/features/analyses/analyses-api";
 import type { Analysis } from "@/features/analyses/analyses-api";
 import {
+  isTapMove,
   prepareReportHtml,
   reportNavigation,
 } from "@/features/analyses/report-html";
@@ -45,6 +46,69 @@ import { pickDocuments } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatInstant } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+
+/**
+ * The report WebView. Android reports every navigation as `other`, so a scripted redirect cannot be
+ * told from a tapped link by the WebView itself. The only signal the report cannot reach is the
+ * native touch stream: React Native's root view forwards every touch to JS even when the WebView
+ * consumes it, and a touch always starts before the navigation it causes. A scroll or swipe does
+ * not count, and one tap opens at most one link.
+ */
+function ReportViewer({ html }: { html: string }) {
+  const lastTapAt = useRef<number | null>(null);
+  const touchFrom = useRef<{ x: number; y: number } | null>(null);
+  return (
+    <View
+      testID="analysis-report"
+      style={{ flex: 1 }}
+      onTouchStart={(event) => {
+        const { pageX, pageY } = event.nativeEvent;
+        touchFrom.current = { x: pageX, y: pageY };
+        lastTapAt.current = Date.now();
+      }}
+      onTouchMove={(event) => {
+        const { pageX, pageY } = event.nativeEvent;
+        if (
+          touchFrom.current &&
+          !isTapMove(touchFrom.current, { x: pageX, y: pageY })
+        )
+          lastTapAt.current = null;
+      }}
+      onTouchEnd={(event) => {
+        const { pageX, pageY } = event.nativeEvent;
+        if (
+          touchFrom.current &&
+          !isTapMove(touchFrom.current, { x: pageX, y: pageY })
+        )
+          lastTapAt.current = null;
+      }}
+      onTouchCancel={() => {
+        lastTapAt.current = null;
+      }}
+    >
+      <WebView
+        // Every request reaches the guard below, which keeps the report in place.
+        originWhitelist={["*"]}
+        source={{ html: prepareReportHtml(html) }}
+        onShouldStartLoadWithRequest={(request) => {
+          const action = reportNavigation(
+            request,
+            Platform.OS,
+            lastTapAt.current,
+          );
+          if (action === "external") {
+            lastTapAt.current = null;
+            Linking.openURL(request.url).catch(() => undefined);
+          }
+          return action === "allow";
+        }}
+        setSupportMultipleWindows={false}
+        javaScriptCanOpenWindowsAutomatically={false}
+        style={{ flex: 1 }}
+      />
+    </View>
+  );
+}
 
 /**
  * Stored HTML analysis reports: search + tag filter, upload with metadata, inline viewer, edit,
@@ -330,20 +394,7 @@ export default function ProjectAnalysesSection() {
               <Text className="p-4 text-danger">{t("analyses.loadError")}</Text>
             ) : null}
             {content.data ? (
-              <WebView
-                // Every request reaches the guard below, which keeps the report in place.
-                originWhitelist={["*"]}
-                source={{ html: prepareReportHtml(content.data) }}
-                onShouldStartLoadWithRequest={(request) => {
-                  const action = reportNavigation(request, Platform.OS);
-                  if (action === "external")
-                    Linking.openURL(request.url).catch(() => undefined);
-                  return action === "allow";
-                }}
-                setSupportMultipleWindows={false}
-                javaScriptCanOpenWindowsAutomatically={false}
-                style={{ flex: 1 }}
-              />
+              <ReportViewer key={viewing.id} html={content.data} />
             ) : null}
             <ToastViewport />
           </View>

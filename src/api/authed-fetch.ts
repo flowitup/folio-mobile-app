@@ -21,12 +21,12 @@ export async function authedFetch(
   url: string,
   init: RequestInit = {},
 ): Promise<Response> {
-  if (!isApiOrigin(url)) return fetch(url, init);
+  if (!isApiOrigin(url)) return fetch(url, { ...init, credentials: "omit" });
 
   const send = async (token: string | null) => {
     const headers = new Headers(init.headers);
     if (token) headers.set("Authorization", `Bearer ${token}`);
-    return fetch(url, { ...init, headers });
+    return fetch(url, { ...init, headers, credentials: "omit" });
   };
 
   const { accessToken } = await getStoredTokens();

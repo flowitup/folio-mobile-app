@@ -161,6 +161,8 @@ jobs:
 
       - name: Commit version bump to PR
         if: steps.compute-version.outputs.version_bumped == 'true'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           NEW_VERSION="${{ steps.compute-version.outputs.new_version }}"
           git config user.name "github-actions[bot]"
@@ -168,7 +170,7 @@ jobs:
           if ! git diff --quiet package.json package-lock.json app.json; then
             git add package.json package-lock.json app.json
             git commit -m "chore: bump version to $NEW_VERSION"
-            git push origin "${{ github.head_ref }}"
+            git push origin "$HEAD_REF"
           else
             echo "Files already at version $NEW_VERSION"
           fi
@@ -187,7 +189,9 @@ jobs:
 
       - name: Pull latest changes (post-bump commit)
         if: github.event_name == 'pull_request'
-        run: git pull origin "${{ github.head_ref }}" || true
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: git pull origin "$HEAD_REF" || true
 
       - uses: actions/setup-node@v6
         with:
@@ -211,7 +215,9 @@ jobs:
 
       - name: Pull latest changes (post-bump commit)
         if: github.event_name == 'pull_request'
-        run: git pull origin "${{ github.head_ref }}" || true
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: git pull origin "$HEAD_REF" || true
 
       - uses: actions/setup-node@v6
         with:
@@ -237,7 +243,9 @@ jobs:
 
       - name: Pull latest changes (post-bump commit)
         if: github.event_name == 'pull_request'
-        run: git pull origin "${{ github.head_ref }}" || true
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: git pull origin "$HEAD_REF" || true
 
       - uses: actions/setup-node@v6
         with:

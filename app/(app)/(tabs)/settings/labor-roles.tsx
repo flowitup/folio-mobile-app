@@ -17,7 +17,10 @@ import { Input } from "@/components/ui/input";
 import { EmptyState, ErrorState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
-import { useMyCompanies } from "@/features/companies/companies-api";
+import {
+  currentCompanyId,
+  useMyCompanies,
+} from "@/features/companies/companies-api";
 import {
   useCreateLaborRole,
   useDeleteLaborRole,
@@ -37,10 +40,13 @@ export default function LaborRolesScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const companies = useMyCompanies();
-  // The backend scopes labor-role writes to the caller's primary company; no primary flag
-  // means no manageable company, whatever the list order.
-  const primaryCompanyId = companies.data?.find((c) => c.is_primary)?.id;
-  const mayManage = isCompanyAdminOrManager(user, primaryCompanyId);
+  // The backend scopes labor-role writes to the caller's primary company, or their only one
+  // when an admin attached them (never primary); several and no primary means none, whatever
+  // the list order.
+  const mayManage = isCompanyAdminOrManager(
+    user,
+    currentCompanyId(companies.data),
+  );
   const roles = useLaborRoles();
   useRefetchOnFocus(roles.refetch);
   const create = useCreateLaborRole();

@@ -58,10 +58,12 @@ jest.mock("@/auth/token-storage", () => ({
 const mockUnregister = jest.fn(async () => undefined);
 const mockForgetPushToken = jest.fn(async () => undefined);
 const mockClearPushResponse = jest.fn();
+const mockReleasePush = jest.fn(async () => undefined);
 jest.mock("@/features/push/push-device-registration", () => ({
   unregisterPushDevice: () => mockUnregister(),
   forgetPushToken: () => mockForgetPushToken(),
   clearHandledPushResponse: () => mockClearPushResponse(),
+  releasePushRegistrationLocally: () => mockReleasePush(),
 }));
 
 const mockGet = jest.fn();
@@ -142,6 +144,8 @@ describe("session restore at launch", () => {
         expect(screen.getByTestId("session-unavailable")).toBeOnTheScreen(),
       );
       expect(mockClearStoredTokens).not.toHaveBeenCalled();
+      // Still the same session: its pushes keep flowing.
+      expect(mockReleasePush).not.toHaveBeenCalled();
     },
   );
 
@@ -171,6 +175,38 @@ describe("session restore at launch", () => {
 
     await waitFor(() => expect(status()).toHaveTextContent("signedOut"));
     expect(mockClearStoredTokens).toHaveBeenCalled();
+    expect(mockReleasePush).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops this phone's pushes when the refresh token was refused", async () => {
+    mockGet.mockImplementation(async () => {
+      mockStoredRefresh = null;
+      return failed(401);
+    });
+    await renderApp();
+
+    await waitFor(() => expect(status()).toHaveTextContent("signedOut"));
+    expect(mockReleasePush).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not stop the pushes when offline", async () => {
+    mockGet.mockRejectedValue(new TypeError("Network request failed"));
+    await renderApp();
+    await waitFor(() =>
+      expect(screen.getByTestId("session-unavailable")).toBeOnTheScreen(),
+    );
+
+    expect(mockReleasePush).not.toHaveBeenCalled();
+  });
+
+  it("still signs out when the push cleanup throws", async () => {
+    mockReleasePush.mockImplementationOnce(() => {
+      throw new Error("native module missing");
+    });
+    mockGet.mockResolvedValue(failed(404));
+    await renderApp();
+
+    await waitFor(() => expect(status()).toHaveTextContent("signedOut"));
   });
 
   it("leaves the splash when offline, and Retry restores the session", async () => {

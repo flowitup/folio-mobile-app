@@ -7,9 +7,7 @@ import { Select } from "@/components/ui/select";
 import { useMyCompanies } from "@/features/companies/companies-api";
 
 import type { BillingDocumentKind } from "./billing-types";
-
-const storageKey = (kind: BillingDocumentKind) =>
-  `folio.billing.lastCompany.${kind}`;
+import { lastCompanyKey as storageKey } from "./last-company-key";
 
 type Props = {
   kind: BillingDocumentKind;

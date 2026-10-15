@@ -15,7 +15,9 @@ const NONE: UpdateGate = { required: false, url: "", version: "" };
 
 async function fetchGate(): Promise<UpdateGate> {
   const version = Constants.expoConfig?.version;
-  const response = await fetch(`${API_BASE_URL}/api/v1/app-version`);
+  const response = await fetch(`${API_BASE_URL}/api/v1/app-version`, {
+    credentials: "omit",
+  });
   if (!response.ok) return NONE;
   const policy = (await response.json()) as Policy;
   const mine = Platform.OS === "ios" ? policy.ios : policy.android;

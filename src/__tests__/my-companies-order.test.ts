@@ -4,7 +4,10 @@
  * came before "Mon, 12 Oct") instead of by date.
  */
 
-import { byPrimaryThenRecent } from "@/features/companies/companies-api";
+import {
+  byPrimaryThenRecent,
+  currentCompanyId,
+} from "@/features/companies/companies-api";
 
 jest.mock("@/api/client", () => ({ api: {} }));
 jest.mock("@/auth/auth-context", () => ({ useAuth: () => ({ user: null }) }));
@@ -56,5 +59,27 @@ describe("byPrimaryThenRecent", () => {
     expect([...companies].sort(byPrimaryThenRecent).map((c) => c.name)).toEqual(
       ["Evening", "Morning"],
     );
+  });
+});
+
+describe("currentCompanyId", () => {
+  const company = (id: string, is_primary: boolean) => ({ id, is_primary });
+
+  it("prefers the primary company", () => {
+    expect(currentCompanyId([company("a", false), company("b", true)])).toBe(
+      "b",
+    );
+  });
+
+  it("falls back to the only company when an admin attached it (never primary)", () => {
+    expect(currentCompanyId([company("a", false)])).toBe("a");
+  });
+
+  it("has none to assume with several companies and no primary, or no data", () => {
+    expect(currentCompanyId([company("a", false), company("b", false)])).toBe(
+      undefined,
+    );
+    expect(currentCompanyId([])).toBe(undefined);
+    expect(currentCompanyId(undefined)).toBe(undefined);
   });
 });

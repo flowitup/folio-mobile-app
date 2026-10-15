@@ -14,7 +14,7 @@ jest.mock("expo-secure-store", () => {
   };
 });
 
-type Call = { url: string; auth: string | null };
+type Call = { url: string; auth: string | null; credentials?: string };
 
 function mockFetch(responder: (call: Call, index: number) => Response) {
   const calls: Call[] = [];
@@ -22,7 +22,7 @@ function mockFetch(responder: (call: Call, index: number) => Response) {
     async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.toString();
       const auth = new Headers(init?.headers).get("Authorization");
-      const call = { url, auth };
+      const call = { url, auth, credentials: init?.credentials };
       calls.push(call);
       return responder(call, calls.length - 1);
     },
@@ -42,6 +42,25 @@ describe("authedFetch", () => {
     await authedFetch("https://storage.example.net/bucket/key?sig=1");
     expect(calls[0].auth).toBe("Bearer access-1");
     expect(calls[1].auth).toBeNull();
+  });
+
+  it("never sends or stores cookies, on the API or elsewhere, nor on the refresh", async () => {
+    const calls = mockFetch((call, index) => {
+      if (call.url.endsWith("/auth/refresh"))
+        return new Response(JSON.stringify({ access_token: "access-2" }), {
+          status: 200,
+        });
+      return new Response("{}", { status: index === 0 ? 401 : 200 });
+    });
+    await authedFetch(`${API_BASE_URL}/api/v1/projects`);
+    await authedFetch("https://storage.example.net/bucket/key?sig=1");
+    expect(calls).toHaveLength(4);
+    expect(calls.map((c) => c.credentials)).toEqual([
+      "omit",
+      "omit",
+      "omit",
+      "omit",
+    ]);
   });
 
   it("refreshes once and retries on 401", async () => {

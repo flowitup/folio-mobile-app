@@ -76,6 +76,25 @@ export async function unregisterPushDevice(): Promise<void> {
 }
 
 /**
+ * Automatic sign-out (refresh token refused, account gone): there is no session left to tell the
+ * backend with, so only this install can stop the leaving account's pushes. Stops OS delivery
+ * and forgets the remembered token, without any request. Does nothing when this install never
+ * registered a token; never throws.
+ */
+export async function releasePushRegistrationLocally(): Promise<void> {
+  try {
+    const token = await SecureStore.getItemAsync(PUSH_TOKEN_KEY);
+    if (!token) return;
+    await Notifications.unregisterForNotificationsAsync().catch(
+      () => undefined,
+    );
+    await SecureStore.deleteItemAsync(PUSH_TOKEN_KEY);
+  } catch {
+    // Nothing to clean up.
+  }
+}
+
+/**
  * Account deletion: the erasure already removed every push device of the account server-side,
  * so only the token this install remembers is left to forget.
  */

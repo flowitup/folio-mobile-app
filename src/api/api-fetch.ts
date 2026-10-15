@@ -33,7 +33,11 @@ export function apiFetch(
         once: true,
       });
   }
-  return fetchImpl(request, { signal: controller.signal }).finally(() =>
-    clearTimeout(timer),
-  );
+  // `omit`: the session lives in SecureStore and goes out as an Authorization header. With the
+  // default `include`, the native stack would also keep the API's auth cookies in its own
+  // (backup-eligible) cookie store, where sign-out does not clear them.
+  return fetchImpl(request, {
+    signal: controller.signal,
+    credentials: "omit",
+  }).finally(() => clearTimeout(timer));
 }
