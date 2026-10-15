@@ -123,8 +123,24 @@ describe("signing out", () => {
         await signedOut();
         expect(mockClearFiles).toHaveBeenCalledTimes(1);
         expect(mockDeleteItem).toHaveBeenCalledWith("folio.dashboard.project");
+        expect(mockDeleteItem).toHaveBeenCalledWith(
+          "folio.billing.lastCompany.devis",
+        );
+        expect(mockDeleteItem).toHaveBeenCalledWith(
+          "folio.billing.lastCompany.facture",
+        );
       },
     );
+
+    it("does not wait for a key deletion that never settles, nor for one that throws", async () => {
+      mockDeleteItem.mockImplementationOnce(() => new Promise(() => undefined));
+      mockDeleteItem.mockImplementationOnce(() => {
+        throw new Error("sync failure");
+      });
+      await renderSignedIn();
+      await fireEvent.press(screen.getByTestId("sign-out"));
+      await signedOut();
+    });
 
     it("signs out even when the file cleanup or the key deletion fails", async () => {
       mockClearFiles.mockImplementation(() => {

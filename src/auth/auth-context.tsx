@@ -18,6 +18,7 @@ import {
   refreshAccessToken,
   setSessionExpiredHandler,
 } from "@/api/client";
+import { LAST_COMPANY_KEYS } from "@/features/billing/last-company-key";
 import { SELECTED_PROJECT_KEY } from "@/features/projects/selected-project-key";
 import {
   clearHandledPushResponse,
@@ -158,9 +159,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
     } catch {
       // best effort
     }
-    await SecureStore.deleteItemAsync(SELECTED_PROJECT_KEY).catch(
-      () => undefined,
-    );
+    // Not awaited: a keychain call that stalls must not hold the sign-out.
+    try {
+      for (const key of [SELECTED_PROJECT_KEY, ...LAST_COMPANY_KEYS])
+        void SecureStore.deleteItemAsync(key).catch(() => undefined);
+    } catch {
+      // best effort
+    }
     setUser(null);
     setStatus("signedOut");
   }, [queryClient]);
