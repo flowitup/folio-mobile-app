@@ -73,6 +73,20 @@ export function byPrimaryThenRecent(
   );
 }
 
+/**
+ * The company the account acts in when none is picked: the primary one, else the only one.
+ * Companies an admin attached the user to are never primary, and the backend then falls back to
+ * the account's single company; with several and no primary there is none to assume.
+ */
+export function currentCompanyId(
+  companies: readonly Pick<MyCompany, "id" | "is_primary">[] | undefined,
+): string | undefined {
+  return (
+    companies?.find((c) => c.is_primary)?.id ??
+    (companies?.length === 1 ? companies[0].id : undefined)
+  );
+}
+
 /** Companies the caller is attached to, primary first then most recently attached. */
 export function useMyCompanies() {
   return useQuery({
