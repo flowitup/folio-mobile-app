@@ -44,24 +44,16 @@ scrolling ink hero with the headline figure (`InkFigure`, ring gauge drawn with 
 
 ## Team chat
 
-Chat and the Folio Assistant are separate backend feature flags, read once per session from
-`GET /api/v1/features` (`src/features/chat/chat-api.ts`, `useChatEnabled` / `useAssistantEnabled`):
-
-- `chat` (backend `FEATURE_CHAT`) gates the chat button; chat routes answer 404 when it is off.
-- `assistant` (backend `FEATURE_ASSISTANT` plus its two core provider keys) gates the assistant
-  controls — the `@folio` composer suggestion, the "Ask again" reply button and the choice buttons under
-  an assistant message — whose routes answer 404 when it is off.
+Chat is gated by a backend feature flag, read once per session from
+`GET /api/v1/features` (`src/features/chat/chat-api.ts`, `useChatEnabled`): `chat` (backend
+`FEATURE_CHAT`) gates the chat button, and chat routes answer 404 when it is off.
 
 How chat behaves:
 
-- Channels are virtual: one per company (`company:<uuid>`), one per project (`project:<uuid>`), and one
-  per company for admins (`admin:<uuid>`, company admins + platform ops, shown with a lock chip);
-  membership follows company access and project/admin standing.
+- Channels are virtual: one per company (`company:<uuid>`) and one per project (`project:<uuid>`);
+  membership follows company access and project standing.
 - Messages are text and/or one attachment — an image (jpeg / png / webp) or a voice recording
   (aac/m4a family, 5 min max) — ≤ 10 MiB, sent as JSON (text-only) or multipart.
-- The assistant answers inside those same channels, addressed with an `@folio` mention or a reply to one
-  of its messages; its replies can carry a card, a set of choice buttons, or a background-job status
-  (`src/lib/chat/assistant.ts`).
 - Chat data is polled, not pushed: the open channel is re-fetched every 5 s; the channel chips inside
   chat refresh every 15 s, and the floating button's unread badge every 30 s while a project tab is
   showing (`src/features/chat/chat-api.ts`). New messages also trigger a device notification that opens
@@ -158,8 +150,7 @@ and leave `EXPO_PUBLIC_API_BASE_URL` unset — the app picks `http://localhost:5
 and `http://10.0.2.2:5000` on the Android emulator itself (`src/config/env.ts`). Chat needs
 `FEATURE_CHAT=1` on the API: put it in folio-back-end's `.env` when running `uv run flask run`, or add
 it to the `api` service's environment when using its Docker setup (its `docker-compose.yml` doesn't
-pass it through). The assistant also needs `FEATURE_ASSISTANT=1`, `DEEPSEEK_API_KEY` and
-`TYPESAFE_API_KEY`, plus the backend's RQ worker running to answer. Production API:
+pass it through). Production API:
 `https://folio.flowitup.com`.
 
 `expo-dev-client` is not a dependency, so there is no dev-client launcher or
