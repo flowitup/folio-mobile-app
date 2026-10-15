@@ -30,6 +30,7 @@ import {
   useUploadProductImage,
 } from "@/features/library/library-api";
 import {
+  isHttpUrl,
   localizeCategory,
   sortPurchasesNewestFirst,
 } from "@/features/library/library-helpers";
@@ -204,10 +205,13 @@ export default function LibraryProductScreen() {
               <Badge label={product.size} tone="warning" />
             ) : null}
           </View>
-          {product.product_url ? (
+          {isHttpUrl(product.product_url) ? (
             <Pressable
               testID="product-open-url"
-              onPress={() => void Linking.openURL(product.product_url!)}
+              onPress={() => {
+                if (isHttpUrl(product.product_url))
+                  void Linking.openURL(product.product_url.trim());
+              }}
               className="mt-2"
             >
               <Text className="text-sm text-primary underline">

@@ -12,6 +12,11 @@ import type {
 export const PAGE_SIZE = 20;
 export const MAX_COMPARE = 4;
 
+/** Only web links may be shown and opened from a product: `tel:`, `sms:` and app schemes launch other handlers. */
+export function isHttpUrl(url: string | null | undefined): url is string {
+  return !!url && /^https?:\/\//i.test(url.trim());
+}
+
 /** Known slug → i18n label; null → "uncategorised"; unknown legacy value → raw. */
 export function localizeCategory(
   t: TFunction,
