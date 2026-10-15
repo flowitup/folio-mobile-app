@@ -20,6 +20,7 @@ export async function verifyInvite(
 ): Promise<VerifyInviteResponse | { error: InviteErrorReason }> {
   const response = await fetch(
     `${API_BASE_URL}/api/v1/invitations/verify/${encodeURIComponent(token)}`,
+    { credentials: "omit" },
   );
   if (response.status === 404) return { error: "not_found" };
   if (response.status === 410) {
@@ -143,6 +144,7 @@ export async function requestInviteCode(payload: {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "omit",
       body: JSON.stringify(payload),
     },
   );
@@ -166,6 +168,7 @@ export async function acceptInvite(payload: {
   const response = await fetch(`${API_BASE_URL}/api/v1/invitations/accept`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "omit",
     body: JSON.stringify(payload),
   });
   if (!response.ok) throw await inviteActionError(response);

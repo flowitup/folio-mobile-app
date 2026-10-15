@@ -67,3 +67,13 @@ it("gives a write longer than a read", async () => {
   await assertion;
   expect(seen[0].signal?.aborted).toBe(true);
 });
+
+it("never sends or stores the API's cookies", async () => {
+  const ok = jest.fn(async () => new Response("{}"));
+  await apiFetch(
+    new Request("https://api.test/api/v1/projects"),
+    ok as unknown as typeof fetch,
+  );
+  const init = (ok.mock.calls[0] as unknown as [Request, RequestInit])[1];
+  expect(init.credentials).toBe("omit");
+});

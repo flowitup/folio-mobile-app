@@ -72,6 +72,7 @@ export async function refreshAccessToken(): Promise<RefreshOutcome> {
     const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
       method: "POST",
       headers: { Authorization: `Bearer ${refreshToken}` },
+      credentials: "omit",
     });
     if (!response.ok)
       return isRefusedStatus(response.status) ? "rejected" : "unavailable";
