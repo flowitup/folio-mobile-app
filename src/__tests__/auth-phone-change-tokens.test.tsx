@@ -15,6 +15,7 @@ import { Pressable, Text } from "react-native";
 
 import { AuthProvider, useAuth } from "@/auth/auth-context";
 import { setStoredTokens } from "@/auth/token-storage";
+import { registerPushDevice } from "@/features/push/push-device-registration";
 
 jest.mock("@/auth/token-storage", () => ({
   getStoredTokens: jest.fn(async () => ({
@@ -26,6 +27,7 @@ jest.mock("@/auth/token-storage", () => ({
 }));
 
 jest.mock("@/features/push/push-device-registration", () => ({
+  registerPushDevice: jest.fn(async () => null),
   unregisterPushDevice: jest.fn(async () => undefined),
   releasePushRegistrationLocally: jest.fn(async () => undefined),
 }));
@@ -95,6 +97,65 @@ describe("confirming a phone change", () => {
     expect(setStoredTokens).toHaveBeenCalledWith(
       "fresh-access",
       "fresh-refresh",
+    );
+    expect(screen.getByTestId("status")).toHaveTextContent("signedIn");
+  });
+
+  it("registers this phone's push device again, since the change removed it server-side", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: {
+        ...ME,
+        phone: "+33622222222",
+        access_token: "fresh-access",
+        refresh_token: "fresh-refresh",
+      },
+      response: { ok: true, status: 200 },
+    });
+    (registerPushDevice as jest.Mock).mockClear();
+
+    await render(
+      <QueryClientProvider client={new QueryClient()}>
+        <AuthProvider>
+          <ConfirmProbe />
+        </AuthProvider>
+      </QueryClientProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("status")).toHaveTextContent("signedIn"),
+    );
+    expect(registerPushDevice).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByTestId("confirm"));
+
+    await waitFor(() => expect(registerPushDevice).toHaveBeenCalledTimes(1));
+  });
+
+  it("keeps the confirmation successful when the re-registration fails", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: {
+        ...ME,
+        phone: "+33622222222",
+        access_token: "fresh-access",
+        refresh_token: "fresh-refresh",
+      },
+      response: { ok: true, status: 200 },
+    });
+    (registerPushDevice as jest.Mock).mockRejectedValueOnce(new Error("down"));
+
+    await render(
+      <QueryClientProvider client={new QueryClient()}>
+        <AuthProvider>
+          <ConfirmProbe />
+        </AuthProvider>
+      </QueryClientProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("status")).toHaveTextContent("signedIn"),
+    );
+    await fireEvent.press(screen.getByTestId("confirm"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("phone")).toHaveTextContent("+33622222222"),
     );
     expect(screen.getByTestId("status")).toHaveTextContent("signedIn");
   });

@@ -23,6 +23,7 @@ import { SELECTED_PROJECT_KEY } from "@/features/projects/selected-project-key";
 import {
   clearHandledPushResponse,
   forgetPushToken,
+  registerPushDevice,
   releasePushRegistrationLocally,
   unregisterPushDevice,
 } from "@/features/push/push-device-registration";
@@ -345,6 +346,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const { access_token, refresh_token, ...me } = data;
       await setStoredTokens(access_token, refresh_token);
       setUser(me);
+      // The change also removed every push device of the account, this phone's included, and
+      // the signed-in area registers only when it mounts: register again now, best effort.
+      void Promise.resolve()
+        .then(registerPushDevice)
+        .catch(() => undefined);
     },
     [],
   );
