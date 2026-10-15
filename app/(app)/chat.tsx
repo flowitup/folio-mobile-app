@@ -70,9 +70,29 @@ export default function ChatScreen() {
   );
   // Opened without a deep link: start on the conversation list (skipped with a single channel).
   const [showList, setShowList] = useState(!params.channel);
-  const channelKey =
-    selected && channelList.some((c) => c.key === selected)
-      ? selected
+  // A push or bell tap while the chat is already open only changes the route params; follow
+  // them (adjusting state during render, keyed on the param), or the screen keeps showing the
+  // conversation it was on.
+  const [seenParam, setSeenParam] = useState(params.channel);
+  if (params.channel !== seenParam) {
+    setSeenParam(params.channel);
+    if (params.channel) {
+      setSelected(params.channel);
+      setShowList(false);
+    }
+  }
+  // The requested channel can be newer than the cached list (a project the user was just added
+  // to). Wait for a fresh list instead of falling back to the first channel, which showed an
+  // unrelated, often empty, conversation until the next poll.
+  const selectedKnown = Boolean(
+    selected && channelList.some((c) => c.key === selected),
+  );
+  const waitingForChannel =
+    Boolean(selected) && !selectedKnown && channels.isFetching;
+  const channelKey = selectedKnown
+    ? selected
+    : waitingForChannel
+      ? null
       : (channelList[0]?.key ?? null);
   const listVisible = showList && channelList.length > 1;
   const canGoToList = channelList.length > 1;
@@ -286,7 +306,7 @@ export default function ChatScreen() {
             {!enabled && features.isFetched ? (
               <EmptyState message={t("chat.disabled")} />
             ) : null}
-            {messages.isPending && channelKey ? (
+            {(messages.isPending && channelKey) || waitingForChannel ? (
               <ActivityIndicator className="my-6" color={tokens.ink} />
             ) : null}
             {messages.isError ? (

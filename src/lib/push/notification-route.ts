@@ -139,6 +139,9 @@ export function routeForNotification(
 
 const NOTIFICATIONS_KEY = ["notifications"] as const;
 
+/** `chatKeys` prefix, spelled out for the same reason as `COMPANIES_KEY`. */
+const CHAT_KEY = ["chat"] as const;
+
 /** Pushes that change which projects the user is on: the switcher list must be refetched. */
 const MEMBERSHIP_KINDS = new Set([
   "project_member_added",
@@ -159,12 +162,14 @@ export function pushChangesOwnAccess(
   );
 }
 
-/** Query keys a push makes stale: always the bell, plus the project list on a membership change
- * and the company list when the user's own company access changed. */
+/** Query keys a push makes stale: always the bell, plus the chat channels and threads for a chat
+ * message (so a thread opened afterwards never shows the cache from before it), the project
+ * list on a membership change and the company list when the user's own company access changed. */
 export function staleKeysForPush(
   data: PushData | null | undefined,
 ): (readonly string[])[] {
   const keys: (readonly string[])[] = [NOTIFICATIONS_KEY];
+  if (data?.kind === "chat_message") keys.push(CHAT_KEY);
   if (data?.kind && MEMBERSHIP_KINDS.has(data.kind)) keys.push(projectKeys.all);
   if (pushChangesOwnAccess(data)) keys.push(COMPANIES_KEY);
   return keys;

@@ -44,6 +44,9 @@ export function useChatChannels(enabled: boolean, refetchInterval = 30_000) {
   return useQuery({
     queryKey: chatKeys.channels,
     enabled,
+    // Opening the chat must not trust a list cached up to 30 s ago: the channel a push names
+    // may be newer than it (a project the user was just added to).
+    refetchOnMount: "always",
     refetchInterval: enabled ? refetchInterval : false,
     queryFn: async () =>
       unwrapAs<{ items: ChatChannel[] }>(await api.GET("/api/v1/chat/channels"))
@@ -59,6 +62,11 @@ export function useChatMessages(
   return useQuery({
     queryKey: chatKeys.messages(channelKey ?? ""),
     enabled: Boolean(channelKey),
+    // A thread opened from a push, the bell or the conversation list shows what the server has
+    // now, not the page cached the last time it was open: never fresh, so switching channel
+    // refetches too (not only mounting the screen).
+    staleTime: 0,
+    refetchOnMount: "always",
     refetchInterval: channelKey ? refetchInterval : false,
     queryFn: async () =>
       unwrapAs<{ items: ChatMessage[]; members: ChatMember[] }>(
