@@ -36,10 +36,8 @@ import {
 } from "@/features/analyses/analyses-api";
 import type { Analysis } from "@/features/analyses/analyses-api";
 import {
-  isGestureMessage,
-  newReportNonce,
+  isTapMove,
   prepareReportHtml,
-  reportGestureScript,
   reportNavigation,
 } from "@/features/analyses/report-html";
 import { useProjectCan } from "@/features/projects/use-project-can";
@@ -50,39 +48,54 @@ import { formatInstant } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 /**
- * The report WebView. State is per viewing (the component is keyed on the report): the nonce a real
- * tap is reported with is unknown to the report's own scripts.
+ * The report WebView. Android reports every navigation as `other`, so a scripted redirect cannot be
+ * told from a tapped link by the WebView itself. The only signal the report cannot reach is the
+ * native touch stream: React Native's root view forwards every touch to JS even when the WebView
+ * consumes it, and a touch always starts before the navigation it causes. A scroll or swipe does
+ * not count, and one tap opens at most one link.
  */
 function ReportViewer({ html }: { html: string }) {
-  const [nonce] = useState(newReportNonce);
   const lastTapAt = useRef<number | null>(null);
+  const touchFrom = useRef<{ x: number; y: number } | null>(null);
   return (
-    <WebView
-      // Every request reaches the guard below, which keeps the report in place.
-      originWhitelist={["*"]}
-      source={{ html: prepareReportHtml(html) }}
-      injectedJavaScriptBeforeContentLoaded={
-        Platform.OS === "android" ? reportGestureScript(nonce) : undefined
-      }
-      // Only records that a real tap happened; nothing a report posts can do more.
-      onMessage={(event) => {
-        if (isGestureMessage(event.nativeEvent.data, nonce))
-          lastTapAt.current = Date.now();
-      }}
-      onShouldStartLoadWithRequest={(request) => {
-        const action = reportNavigation(
-          request,
-          Platform.OS,
-          lastTapAt.current,
-        );
-        if (action === "external")
-          Linking.openURL(request.url).catch(() => undefined);
-        return action === "allow";
-      }}
-      setSupportMultipleWindows={false}
-      javaScriptCanOpenWindowsAutomatically={false}
+    <View
+      testID="analysis-report"
       style={{ flex: 1 }}
-    />
+      onTouchStart={(event) => {
+        const { pageX, pageY } = event.nativeEvent;
+        touchFrom.current = { x: pageX, y: pageY };
+        lastTapAt.current = Date.now();
+      }}
+      onTouchEnd={(event) => {
+        const { pageX, pageY } = event.nativeEvent;
+        if (
+          touchFrom.current &&
+          !isTapMove(touchFrom.current, { x: pageX, y: pageY })
+        )
+          lastTapAt.current = null;
+      }}
+    >
+      <WebView
+        // Every request reaches the guard below, which keeps the report in place.
+        originWhitelist={["*"]}
+        source={{ html: prepareReportHtml(html) }}
+        onShouldStartLoadWithRequest={(request) => {
+          const action = reportNavigation(
+            request,
+            Platform.OS,
+            lastTapAt.current,
+          );
+          if (action === "external") {
+            lastTapAt.current = null;
+            Linking.openURL(request.url).catch(() => undefined);
+          }
+          return action === "allow";
+        }}
+        setSupportMultipleWindows={false}
+        javaScriptCanOpenWindowsAutomatically={false}
+        style={{ flex: 1 }}
+      />
+    </View>
   );
 }
 

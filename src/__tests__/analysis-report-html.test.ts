@@ -4,11 +4,11 @@
  */
 import {
   GESTURE_WINDOW_MS,
+  TAP_SLOP_PX,
   REPORT_CSP,
-  isGestureMessage,
   isRecentGesture,
+  isTapMove,
   prepareReportHtml,
-  reportGestureScript,
   reportNavigation,
 } from "@/features/analyses/report-html";
 
@@ -82,63 +82,11 @@ describe("tap signal", () => {
     expect(isRecentGesture(NOW + 1, NOW)).toBe(false);
   });
 
-  it("accepts only the message that carries this viewing's nonce", () => {
-    expect(isGestureMessage(JSON.stringify({ folioTap: "n1" }), "n1")).toBe(
-      true,
-    );
-    expect(isGestureMessage(JSON.stringify({ folioTap: "n2" }), "n1")).toBe(
-      false,
-    );
-    for (const data of ["", "tap", "null", "[]", '{"folioTap":true}', "{}"])
-      expect(isGestureMessage(data, "n1")).toBe(false);
-  });
-
-  describe("injected script", () => {
-    function run(nonce: string) {
-      const posted: string[] = [];
-      let onClick: ((e: { isTrusted: boolean }) => void) | undefined;
-      const win: Record<string, unknown> = {
-        ReactNativeWebView: { postMessage: (m: string) => posted.push(m) },
-        addEventListener: (
-          type: string,
-          fn: (e: { isTrusted: boolean }) => void,
-          capture: boolean,
-        ) => {
-          if (type === "click" && capture) onClick = fn;
-        },
-      };
-      new Function("window", reportGestureScript(nonce))(win);
-      return { posted, click: onClick!, win };
-    }
-
-    it("reports trusted clicks with the nonce, ignores synthetic ones", () => {
-      const { posted, click } = run("n-1");
-      click({ isTrusted: false });
-      expect(posted).toEqual([]);
-      click({ isTrusted: true });
-      expect(posted).toHaveLength(1);
-      expect(isGestureMessage(posted[0], "n-1")).toBe(true);
-    });
-
-    it("takes the bridge off window so the report cannot post the nonce itself", () => {
-      const { win } = run("n-1");
-      expect(win.ReactNativeWebView).toBeUndefined();
-    });
-
-    it("is inert without a bridge and ends with a truthy value for the WebView", () => {
-      const win = { addEventListener: jest.fn() };
-      expect(() =>
-        new Function("window", reportGestureScript("n"))(win),
-      ).not.toThrow();
-      expect(win.addEventListener).not.toHaveBeenCalled();
-      expect(reportGestureScript("n").endsWith("true;")).toBe(true);
-    });
-
-    it("escapes the nonce as a JS string", () => {
-      expect(reportGestureScript('a"b</script>')).toContain(
-        JSON.stringify('a"b</script>'),
-      );
-    });
+  it("tells a tap from a scroll by how far the finger travelled", () => {
+    expect(isTapMove({ x: 10, y: 10 }, { x: 10, y: 10 })).toBe(true);
+    expect(isTapMove({ x: 0, y: 0 }, { x: TAP_SLOP_PX, y: 0 })).toBe(true);
+    expect(isTapMove({ x: 0, y: 0 }, { x: 0, y: TAP_SLOP_PX + 1 })).toBe(false);
+    expect(isTapMove({ x: 0, y: 0 }, { x: 40, y: 40 })).toBe(false);
   });
 });
 
