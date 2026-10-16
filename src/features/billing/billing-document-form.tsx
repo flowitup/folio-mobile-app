@@ -13,7 +13,10 @@ import { statusLabelKey } from "@/lib/billing/billing-status-transitions";
 import { computeBillingTotals } from "@/lib/billing/billing-totals";
 import { parseIsoDate, toIsoDate } from "@/lib/format/date";
 import { formatMoney, formatNumber } from "@/lib/format/money";
-import { projectDisplayName } from "@/lib/projects/project-display-name";
+import {
+  projectDisplayName,
+  projectSecondaryLabel,
+} from "@/lib/projects/project-display-name";
 
 import {
   BillingItemsEditor,
@@ -228,6 +231,7 @@ export function BillingDocumentForm({
     ...(projects.data?.projects ?? []).map((p) => ({
       value: p.id,
       label: projectDisplayName(p),
+      description: projectSecondaryLabel(p) ?? undefined,
     })),
   ];
 

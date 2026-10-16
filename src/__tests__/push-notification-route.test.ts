@@ -208,7 +208,7 @@ describe("routeForNotification", () => {
       ).toEqual({
         projectId: "p6",
         sheet: null,
-        path: "/(app)/(tabs)/planning?taskId=t1&project=p6",
+        path: "/(app)/(tabs)/planning?task=t1&project=p6",
       });
     }
     expect(

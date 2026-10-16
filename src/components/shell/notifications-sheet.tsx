@@ -13,7 +13,6 @@ import {
   useNotifications,
   type ActivityEvent,
 } from "@/features/notes/notes-api";
-import { useProjects } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatDate } from "@/lib/format/date";
 import { unreadActivityCount } from "@/lib/notifications/bell-count";
@@ -37,7 +36,13 @@ export function NotificationsSheet() {
   const tokens = useTokens();
   const router = useRouter();
   const { sheet, closeSheet } = useShell();
-  const { select } = useSelectedProject();
+  const { select, projects } = useSelectedProject();
+  // Reminders span projects, and two projects often carry the same reminder title:
+  // each row names its project so they do not read as duplicates.
+  const projectName = (projectId: string) => {
+    const project = projects.find((p) => p.id === projectId);
+    return project ? projectDisplayName(project) : null;
+  };
   const notifications = useNotifications();
   const dismiss = useDismissNotification();
   const markRead = useMarkActivityRead();
@@ -49,11 +54,6 @@ export function NotificationsSheet() {
   const events = notifications.data?.events ?? [];
   // The server's total: the feed is one page, so counting its rows froze at the page size.
   const unreadEvents = unreadActivityCount(notifications.data);
-  const projects = useProjects();
-  const projectName = (id: string) => {
-    const project = (projects.data?.projects ?? []).find((p) => p.id === id);
-    return project ? projectDisplayName(project) : null;
-  };
 
   function timeLabel(iso: string) {
     const when = eventTime(iso);
@@ -156,9 +156,9 @@ export function NotificationsSheet() {
                 >
                   {note.title}
                 </Text>
-                {/* Same-title reminders of two projects must be told apart. */}
                 {projectName(note.project_id) ? (
                   <Text
+                    testID={`notification-project-${note.id}`}
                     className="font-sans text-[12px] text-muted"
                     numberOfLines={1}
                   >

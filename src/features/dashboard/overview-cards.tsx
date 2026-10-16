@@ -250,9 +250,12 @@ const AGENDA_PILL = {
 export function AgendaCard({
   groups,
   onOpenPlanning,
+  onOpenTask,
 }: {
   groups: AgendaGroup[];
   onOpenPlanning: () => void;
+  /** Opens the tapped task in Planning (as the web agenda does). */
+  onOpenTask?: (task: AgendaGroup["tasks"][number]) => void;
 }) {
   const { t } = useTranslation();
   const count = groups.reduce((sum, group) => sum + group.tasks.length, 0);
@@ -285,9 +288,14 @@ export function AgendaCard({
       ) : null}
       {groups.flatMap((group) =>
         group.tasks.map((task) => (
-          <View
+          <Pressable
             key={task.id}
-            className="flex-row items-center gap-3 border-t border-line py-2.5"
+            testID={`overview-agenda-task-${task.id}`}
+            accessibilityRole="button"
+            accessibilityLabel={task.title}
+            disabled={!onOpenTask}
+            onPress={() => onOpenTask?.(task)}
+            className="flex-row items-center gap-3 border-t border-line py-2.5 active:opacity-70"
           >
             <View
               className={`h-5 w-5 rounded-md border-[1.5px] ${group.key === "overdue" ? "border-negative" : "border-line-2"}`}
@@ -313,7 +321,7 @@ export function AgendaCard({
                 </Text>
               </View>
             )}
-          </View>
+          </Pressable>
         )),
       )}
     </Card>

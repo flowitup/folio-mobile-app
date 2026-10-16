@@ -216,6 +216,10 @@
       "title": "Ẩn mục",
       "intro": "Tắt những mục {{company}} không dùng. Mục bị tắt sẽ biến mất khỏi Menu của mọi thành viên trong công ty.",
       "adminOnly": "Chỉ quản trị viên công ty mới đổi được cài đặt này."
+    },
+    "company": {
+      "label": "Công ty",
+      "single": "Công ty: {{company}}"
     }
   },
   "members": {
@@ -606,6 +610,9 @@
       "openMonth": "Mở tháng này",
       "daysUnit_one": "ngày",
       "daysUnit_other": "ngày"
+    },
+    "errors": {
+      "roleUnavailable": "Vai trò này không còn dùng được cho công ty của công trình. Hãy chọn vai trò khác."
     }
   },
   "documents": {
@@ -864,7 +871,8 @@
       "templates": "Mẫu",
       "refundable": "Chi phí hoàn lại",
       "import": "Nhập",
-      "noResults": "Không có tài liệu nào khớp với tìm kiếm này."
+      "noResults": "Không có tài liệu nào khớp với tìm kiếm này.",
+      "allCompanies": "Tất cả công ty"
     },
     "form": {
       "modes": {
@@ -939,7 +947,10 @@
       "invalidTransition": "Không được phép đổi trạng thái này.",
       "convertedLocked": "Báo giá này đã được chuyển thành hóa đơn nên bị khóa. Hãy hủy hóa đơn để sửa báo giá.",
       "openFacture": "Mở hóa đơn",
-      "deletePaidWarning": "Hóa đơn này đã thanh toán: khoản giải ngân mà nó đã ghi vào công trình cũng sẽ bị xóa theo."
+      "deletePaidWarning": "Hóa đơn này đã thanh toán: khoản giải ngân mà nó đã ghi vào công trình cũng sẽ bị xóa theo.",
+      "cancelConfirm": "Hủy {{number}}?",
+      "cancelWarning": "Hóa đơn đã hủy không thể đổi trạng thái nữa.",
+      "cancelPaidWarning": "Hóa đơn này đã thanh toán: hủy nó sẽ xóa khoản giải ngân mà nó đã ghi vào công trình. Hóa đơn đã hủy không thể đổi trạng thái nữa."
     },
     "toast": {
       "documentCreated": "Đã tạo tài liệu.",
@@ -1565,7 +1576,12 @@
     "none": "Chưa có vai trò.",
     "deleteConfirm": "Xóa vai trò {{name}}?",
     "nameRequired": "Cần nhập tên.",
-    "colorInvalid": "Nhập màu dạng # theo sau là 6 chữ số thập lục phân, ví dụ #E11D48."
+    "colorInvalid": "Nhập màu dạng # theo sau là 6 chữ số thập lục phân, ví dụ #E11D48.",
+    "created": "Đã tạo vai trò.",
+    "deleted": "Đã xoá vai trò.",
+    "deleteWarning": "Những thợ đang có vai trò này sẽ mất vai trò.",
+    "nameTooLong": "Tên không được dài quá {{max}} ký tự.",
+    "noCompany": "Hãy tham gia hoặc tạo một công ty để quản lý vai trò."
   },
   "persons": {
     "title": "Gộp người",
@@ -1810,7 +1826,7 @@
       "menu": "Tùy chọn tin nhắn",
       "report": "Báo cáo tin nhắn",
       "reportTitle": "Báo cáo tin nhắn này?",
-      "reportBody": "Tin nhắn sẽ được gửi cho quản trị viên công ty của bạn và đội ngũ Folio để xem xét.",
+      "reportBody": "Quản trị viên công ty của bạn sẽ được thông báo và có thể gỡ tin nhắn.",
       "reported": "Đã báo cáo. Cảm ơn bạn.",
       "block": "Chặn {{name}}",
       "blockTitle": "Chặn {{name}}?",
@@ -1831,8 +1847,20 @@
       "nobodySeen": "Chưa ai xem",
       "unknownMember": "Thành viên cũ",
       "chip_one": "{{emoji}} {{count}} lượt thả",
-      "chip_other": "{{emoji}} {{count}} lượt thả"
-    }
+      "chip_other": "{{emoji}} {{count}} lượt thả",
+      "formerMember": "{{name}} (thành viên cũ)"
+    },
+    "deletedAccount": "Tài khoản đã xóa",
+    "unnamedMember": "Thành viên chưa đặt tên",
+    "loadOlder": "Tải tin nhắn cũ hơn",
+    "historyStart": "Đầu cuộc trò chuyện",
+    "newMessages": "Tin nhắn mới",
+    "noLongerAvailable": "Bạn không còn quyền truy cập cuộc trò chuyện này.",
+    "channelsError": "Không thể tải các cuộc trò chuyện.",
+    "bodyTooLong": "Tin nhắn quá dài: tối đa {{max}} ký tự.",
+    "attachmentRejected": "Tệp này không phải ảnh hoặc tin nhắn thoại hợp lệ.",
+    "charactersLeft_one": "Còn {{count}} ký tự",
+    "charactersLeft_other": "Còn {{count}} ký tự"
   },
   "signup": {
     "title": "Tạo hồ sơ của bạn",

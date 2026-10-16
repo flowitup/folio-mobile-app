@@ -206,7 +206,7 @@ export function routeForNotification(
       sheet,
       // `project` lets the board wait until the shell has switched to the task's project.
       path: withQuery("/(app)/(tabs)/planning", {
-        taskId: asId(data?.task_id),
+        task: asId(data?.task_id),
         project: asId(data?.task_id) ? projectId : null,
       }),
     };

@@ -216,6 +216,10 @@
       "title": "Sections masquées",
       "intro": "Désactivez les sections que {{company}} n'utilise pas. Une section désactivée disparaît du menu de tous les membres de l'entreprise.",
       "adminOnly": "Seul un administrateur de l'entreprise peut modifier ce réglage."
+    },
+    "company": {
+      "label": "Entreprise",
+      "single": "Entreprise : {{company}}"
     }
   },
   "members": {
@@ -382,7 +386,7 @@
     },
     "tvaShort": "TVA",
     "invoiceCount_zero": "aucune dépense",
-    "invoiceCount_one": "1 dépense",
+    "invoiceCount_one": "{{n}} dépense",
     "invoiceCount_other": "{{n}} dépenses",
     "detail": {
       "pdf": "PDF",
@@ -606,6 +610,9 @@
       "openMonth": "Ouvrir ce mois",
       "daysUnit_one": "jour",
       "daysUnit_other": "jours"
+    },
+    "errors": {
+      "roleUnavailable": "Ce rôle n'est plus disponible pour l'entreprise de ce chantier. Choisissez-en un autre."
     }
   },
   "documents": {
@@ -864,7 +871,8 @@
       "templates": "Modèles",
       "refundable": "Remboursables",
       "import": "Importer",
-      "noResults": "Aucun document ne correspond à cette recherche."
+      "noResults": "Aucun document ne correspond à cette recherche.",
+      "allCompanies": "Toutes les entreprises"
     },
     "form": {
       "modes": {
@@ -939,7 +947,10 @@
       "invalidTransition": "Ce changement de statut n'est pas autorisé.",
       "convertedLocked": "Ce devis a été converti en facture et est verrouillé. Annulez la facture pour le modifier.",
       "openFacture": "Ouvrir la facture",
-      "deletePaidWarning": "Cette facture est payée : le déblocage de fonds qu'elle a enregistré dans son chantier est supprimé avec elle."
+      "deletePaidWarning": "Cette facture est payée : le déblocage de fonds qu'elle a enregistré dans son chantier est supprimé avec elle.",
+      "cancelConfirm": "Annuler {{number}} ?",
+      "cancelWarning": "Une facture annulée ne peut plus changer de statut.",
+      "cancelPaidWarning": "Cette facture est payée : l'annuler supprime le déblocage de fonds qu'elle a enregistré dans son chantier. Une facture annulée ne peut plus changer de statut."
     },
     "toast": {
       "documentCreated": "Document créé.",
@@ -1565,7 +1576,12 @@
     "none": "Aucun rôle.",
     "deleteConfirm": "Supprimer le rôle {{name}} ?",
     "nameRequired": "Le nom est obligatoire.",
-    "colorInvalid": "Saisissez une couleur sous la forme # suivi de 6 chiffres hexadécimaux, par ex. #E11D48."
+    "colorInvalid": "Saisissez une couleur sous la forme # suivi de 6 chiffres hexadécimaux, par ex. #E11D48.",
+    "created": "Rôle créé.",
+    "deleted": "Rôle supprimé.",
+    "deleteWarning": "Les ouvriers qui ont ce rôle le perdront.",
+    "nameTooLong": "Le nom ne doit pas dépasser {{max}} caractères.",
+    "noCompany": "Rejoignez ou créez une entreprise pour gérer ses rôles."
   },
   "persons": {
     "title": "Fusionner des personnes",
@@ -1810,7 +1826,7 @@
       "menu": "Options du message",
       "report": "Signaler le message",
       "reportTitle": "Signaler ce message ?",
-      "reportBody": "Il sera transmis aux modérateurs de votre entreprise et à l'équipe Folio pour examen.",
+      "reportBody": "Les administrateurs de votre entreprise seront prévenus et pourront retirer le message.",
       "reported": "Signalé. Merci.",
       "block": "Bloquer {{name}}",
       "blockTitle": "Bloquer {{name}} ?",
@@ -1831,8 +1847,20 @@
       "nobodySeen": "Personne ne l’a encore vu",
       "unknownMember": "Ancien membre",
       "chip_one": "{{emoji}} {{count}} réaction",
-      "chip_other": "{{emoji}} {{count}} réactions"
-    }
+      "chip_other": "{{emoji}} {{count}} réactions",
+      "formerMember": "{{name}} (ancien membre)"
+    },
+    "deletedAccount": "Compte supprimé",
+    "unnamedMember": "Membre sans nom",
+    "loadOlder": "Charger les messages précédents",
+    "historyStart": "Début de la discussion",
+    "newMessages": "Nouveaux messages",
+    "noLongerAvailable": "Vous n'avez plus accès à cette discussion.",
+    "channelsError": "Impossible de charger les discussions.",
+    "bodyTooLong": "Message trop long : {{max}} caractères au maximum.",
+    "attachmentRejected": "Ce fichier n'est pas une photo ou un message vocal valide.",
+    "charactersLeft_one": "{{count}} caractère restant",
+    "charactersLeft_other": "{{count}} caractères restants"
   },
   "signup": {
     "title": "Créez votre profil",

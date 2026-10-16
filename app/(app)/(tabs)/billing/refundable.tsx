@@ -1,5 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useMemo, useRef, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -83,7 +84,11 @@ export default function RefundableExpensesScreen() {
       (companies.data ?? []).filter((c) => platformOps || c.role === "admin"),
     [companies.data, platformOps],
   );
-  const [companyId, setCompanyId] = useState<string | null>(null);
+  // Opened from a project's overview: that project's company (?company=).
+  const { company: requestedCompany } = useLocalSearchParams<{ company?: string }>();
+  const [companyId, setCompanyId] = useState<string | null>(
+    typeof requestedCompany === "string" && requestedCompany ? requestedCompany : null,
+  );
   const expenses = useRefundableExpenses(companyId, access.allowed);
   // `refetch()` runs even a disabled query, so the focus hook has to respect the gate too.
   useRefetchOnFocus(access.allowed ? expenses.refetch : NOOP_REFETCH);

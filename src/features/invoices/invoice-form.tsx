@@ -27,6 +27,7 @@ import type {
 import { useProjectCan } from "@/features/projects/use-project-can";
 
 import { useInvoices, usePaymentMethods, useWorkers } from "./invoices-api";
+import { workerRoleLabel } from "@/lib/labor/labor-role-label";
 
 export const INVOICE_TYPES: InvoiceType[] = [
   "released_funds",
@@ -293,7 +294,7 @@ export function InvoiceForm({
             options={(workers.data ?? []).map((worker) => ({
               value: worker.id,
               label: worker.name,
-              description: worker.role_name ?? undefined,
+              description: workerRoleLabel(worker, t) ?? undefined,
             }))}
             onChange={setWorkerId}
           />

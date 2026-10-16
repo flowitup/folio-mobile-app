@@ -14,6 +14,8 @@ import { useMyCompanies } from "@/features/companies/companies-api";
 import { useCanManageHiddenSections } from "@/features/companies/hidden-sections";
 import { usePaymentMethods } from "@/features/invoices/invoices-api";
 import { useLaborRoles } from "@/features/labor/labor-api";
+import { pickSettingsCompany } from "@/features/companies/settings-company";
+import { useOptionalSelectedProject } from "@/features/projects/selected-project";
 
 /** Cài đặt hub: list card with a value column (company name, counts) and chevrons; About card; outline sign-out. */
 export default function SettingsHub() {
@@ -27,7 +29,14 @@ export default function SettingsHub() {
   const paymentMethods = usePaymentMethods(primary?.id, {
     includeInactive: true,
   });
-  const roles = useLaborRoles();
+  // The company the labor-roles screen opens on (the selected project's, then the primary).
+  const rolesCompany = pickSettingsCompany(
+    companies.data ?? [],
+    null,
+    useOptionalSelectedProject()?.project?.company_id,
+  );
+  const roles = useLaborRoles(rolesCompany?.id);
+  const multiCompany = (companies.data?.length ?? 0) > 1;
   const appVersion = Constants.expoConfig?.version ?? "—";
   const { preference: themePreference } = useThemePreference();
   const canHideSections = useCanManageHiddenSections();
@@ -50,7 +59,11 @@ export default function SettingsHub() {
     {
       key: "labor-roles",
       label: t("settings.laborRoles"),
-      value: roles.data ? String(roles.data.roles.length) : undefined,
+      value: roles.data
+        ? multiCompany && rolesCompany
+          ? `${rolesCompany.legal_name} · ${roles.data.roles.length}`
+          : String(roles.data.roles.length)
+        : undefined,
       path: "/settings/labor-roles",
     },
     {
@@ -64,12 +77,14 @@ export default function SettingsHub() {
       value: t(`settings.appearance.options.${themePreference}`),
       path: "/settings/appearance",
     },
-    ...(canHideSections && primary
+    ...(canHideSections
       ? [
           {
             key: "hidden-sections",
             label: t("settings.hiddenSections.title"),
-            value: String(primary.hidden_sections?.length ?? 0),
+            value: multiCompany
+              ? undefined
+              : String(primary?.hidden_sections?.length ?? 0),
             path: "/settings/hidden-sections",
           },
         ]

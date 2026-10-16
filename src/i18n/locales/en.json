@@ -216,6 +216,10 @@
       "title": "Hidden sections",
       "intro": "Switch off the sections {{company}} does not use. A switched-off section disappears from the Menu of every member of the company.",
       "adminOnly": "Only a company admin can change this setting."
+    },
+    "company": {
+      "label": "Company",
+      "single": "Company: {{company}}"
     }
   },
   "members": {
@@ -606,6 +610,9 @@
       "openMonth": "Open this month",
       "daysUnit_one": "day",
       "daysUnit_other": "days"
+    },
+    "errors": {
+      "roleUnavailable": "This role is no longer available for this project's company. Pick another one."
     }
   },
   "documents": {
@@ -864,7 +871,8 @@
       "templates": "Templates",
       "refundable": "Refundable",
       "import": "Import",
-      "noResults": "No document matches this search."
+      "noResults": "No document matches this search.",
+      "allCompanies": "All companies"
     },
     "form": {
       "modes": {
@@ -939,7 +947,10 @@
       "invalidTransition": "This status change is not allowed.",
       "convertedLocked": "This quote was converted to an invoice and is locked. Cancel the invoice to change it.",
       "openFacture": "Open the invoice",
-      "deletePaidWarning": "This facture is paid: the funds release it recorded in its project is deleted with it."
+      "deletePaidWarning": "This facture is paid: the funds release it recorded in its project is deleted with it.",
+      "cancelConfirm": "Cancel {{number}}?",
+      "cancelWarning": "A cancelled facture can no longer change status.",
+      "cancelPaidWarning": "This facture is paid: cancelling it deletes the funds release it recorded in its project. A cancelled facture can no longer change status."
     },
     "toast": {
       "documentCreated": "Document created.",
@@ -1565,7 +1576,12 @@
     "none": "No role yet.",
     "deleteConfirm": "Delete role {{name}}?",
     "nameRequired": "Name is required.",
-    "colorInvalid": "Enter a colour as # followed by 6 hexadecimal digits, e.g. #E11D48."
+    "colorInvalid": "Enter a colour as # followed by 6 hexadecimal digits, e.g. #E11D48.",
+    "created": "Role created.",
+    "deleted": "Role deleted.",
+    "deleteWarning": "Workers who have this role will lose it.",
+    "nameTooLong": "The name must not exceed {{max}} characters.",
+    "noCompany": "Join or create a company to manage its roles."
   },
   "persons": {
     "title": "Merge persons",
@@ -1810,7 +1826,7 @@
       "menu": "Message options",
       "report": "Report message",
       "reportTitle": "Report this message?",
-      "reportBody": "It will be sent to the moderators of your company and the Folio team for review.",
+      "reportBody": "Your company's admins will be notified and can remove the message.",
       "reported": "Reported. Thank you.",
       "block": "Block {{name}}",
       "blockTitle": "Block {{name}}?",
@@ -1831,8 +1847,20 @@
       "nobodySeen": "Nobody has seen it yet",
       "unknownMember": "Former member",
       "chip_one": "{{emoji}} {{count}} reaction",
-      "chip_other": "{{emoji}} {{count}} reactions"
-    }
+      "chip_other": "{{emoji}} {{count}} reactions",
+      "formerMember": "{{name}} (former member)"
+    },
+    "deletedAccount": "Deleted account",
+    "unnamedMember": "Unnamed member",
+    "loadOlder": "Load earlier messages",
+    "historyStart": "Start of the conversation",
+    "newMessages": "New messages",
+    "noLongerAvailable": "You no longer have access to this conversation.",
+    "channelsError": "Conversations could not be loaded.",
+    "bodyTooLong": "Message too long: {{max}} characters at most.",
+    "attachmentRejected": "This file is not a valid photo or voice message.",
+    "charactersLeft_one": "{{count}} character left",
+    "charactersLeft_other": "{{count}} characters left"
   },
   "signup": {
     "title": "Create your profile",

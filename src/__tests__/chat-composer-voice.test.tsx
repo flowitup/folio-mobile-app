@@ -383,3 +383,32 @@ describe("ChatComposer voice messages", () => {
     expect(screen.queryByTestId("chat-recording-clock")).toBeNull();
   });
 });
+
+describe("ChatComposer text", () => {
+  it("is multi-line, capped at the API's length, counts down near it and reports the draft", async () => {
+    await i18n.changeLanguage("en");
+    const onDraftChange = jest.fn();
+    await render(
+      <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
+        <ChatComposer
+          disabled={false}
+          sending={false}
+          onSend={jest.fn(async (): Promise<void> => {})}
+          initialDraft="kept"
+          onDraftChange={onDraftChange}
+        />
+      </SafeAreaProvider>,
+    );
+    const input = screen.getByTestId("chat-input");
+    expect(input.props.value).toBe("kept");
+    expect(input.props.multiline).toBe(true);
+    expect(input.props.maxLength).toBe(4000);
+    expect(screen.queryByTestId("chat-characters-left")).toBeNull();
+
+    await fireEvent.changeText(input, "x".repeat(3999));
+    expect(onDraftChange).toHaveBeenLastCalledWith("x".repeat(3999));
+    expect(screen.getByTestId("chat-characters-left").props.children).toBe(
+      "1 character left",
+    );
+  });
+});

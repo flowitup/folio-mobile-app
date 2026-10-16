@@ -63,7 +63,12 @@ export default function BillingHub() {
   const [kind, setKind] = useState<BillingDocumentKind>("devis");
   const [status, setStatus] = useState<BillingDocumentStatus | null>(null);
   const [search, setSearch] = useState("");
-  const list = useBillingDocuments(kind, status, access.allowed);
+  // Two companies can both have a FAC-2026-001: with several, each row names its issuer and the
+  // list can be narrowed to one company.
+  const issuerCompanies = access.companies.filter((c) => c.role === "admin");
+  const multiCompany = issuerCompanies.length > 1;
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const list = useBillingDocuments(kind, status, access.allowed, companyId);
   // `refetch()` fetches even a disabled query, so the focus hook has to respect the gate too —
   // otherwise a refused caller re-issues the company-wide query every time the screen regains
   // focus, which is exactly what `enabled` is there to prevent.
@@ -119,6 +124,23 @@ export default function BillingHub() {
               { value: "facture", label: t("billing.factures") },
             ]}
           />
+          {multiCompany ? (
+            <Select
+              testID="billing-company"
+              compact
+              value={companyId ?? "__all__"}
+              options={[
+                { value: "__all__", label: t("billing.list.allCompanies") },
+                ...issuerCompanies.map((c) => ({
+                  value: c.id,
+                  label: c.legal_name,
+                })),
+              ]}
+              onChange={(value) =>
+                setCompanyId(value === "__all__" ? null : value)
+              }
+            />
+          ) : null}
           <View className="flex-row gap-1.5">
             <View className="h-[38px] flex-1 flex-row items-center gap-2 rounded-[9px] border border-line-2 bg-card px-3">
               <Icon name="search" size={14} color={tokens.muted} />
@@ -193,6 +215,15 @@ export default function BillingHub() {
                       {formatMoney(doc.total_ttc)}
                     </Text>
                   </View>
+                  {multiCompany ? (
+                    <Text
+                      testID={`billing-doc-issuer-${doc.id}`}
+                      className="font-sans text-[12px] text-muted"
+                      numberOfLines={1}
+                    >
+                      {doc.issuer_legal_name}
+                    </Text>
+                  ) : null}
                   <View className="mt-0.5 flex-row items-center justify-between gap-3">
                     <Text className="font-mono-regular text-[11.5px] text-muted">
                       {doc.document_number} · {longDate(doc.issue_date)}

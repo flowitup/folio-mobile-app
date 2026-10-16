@@ -1,6 +1,9 @@
 import i18n from "@/i18n";
 import { ApiError } from "@/lib/query/api-error";
-import { apiErrorMessage } from "@/lib/query/api-error-message";
+import {
+  apiErrorMessage,
+  isInvalidLaborRoleError,
+} from "@/lib/query/api-error-message";
 
 const t = i18n.getFixedT("fr");
 const tEn = i18n.getFixedT("en");
@@ -112,6 +115,21 @@ describe("apiErrorMessage — person already on the project", () => {
     const tVi = i18n.getFixedT("vi");
     expect(apiErrorMessage(twice, tVi, "vi")).toBe(
       tVi("labor.workers.alreadyOnProject"),
+    );
+  });
+});
+
+describe("apiErrorMessage — labor role refused", () => {
+  it("says the role is no longer available, with the new code or an older API's message", () => {
+    const coded = new ApiError(400, "InvalidLaborRole", "Labor role not found");
+    const legacy = new ApiError(400, "ValidationError", "Labor role not found");
+    expect(apiErrorMessage(coded, t, "fr")).toBe(t("labor.errors.roleUnavailable"));
+    expect(apiErrorMessage(legacy, tEn, "en")).toBe(
+      tEn("labor.errors.roleUnavailable"),
+    );
+    expect(isInvalidLaborRoleError(coded)).toBe(true);
+    expect(isInvalidLaborRoleError(new ApiError(400, "ValidationError", "Invalid input"))).toBe(
+      false,
     );
   });
 });

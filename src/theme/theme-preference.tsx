@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { PropsWithChildren } from "react";
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 
 /** What the user picked in Settings — not necessarily what is on screen. */
 export type ThemePreference = "system" | "light" | "dark";
@@ -18,6 +19,20 @@ export const THEME_PREFERENCES: readonly ThemePreference[] = [
   "light",
   "dark",
 ] as const;
+
+/**
+ * The choices this device can honour. iOS builds declare UIUserInterfaceStyle
+ * Light (app.json, #90), which pins the trait the app reads, so "follow the
+ * device" would always render light there; it stays off the iOS menu until
+ * expo-system-ui and a native build make it work.
+ */
+export function availableThemePreferences(
+  os: string = Platform.OS,
+): readonly ThemePreference[] {
+  return os === "ios"
+    ? THEME_PREFERENCES.filter((option) => option !== "system")
+    : THEME_PREFERENCES;
+}
 
 const STORAGE_KEY = "theme_preference";
 
@@ -57,6 +72,7 @@ export function ThemePreferenceProvider({ children }: PropsWithChildren) {
         () => null,
       );
       if (!isThemePreference(stored)) return;
+      if (!availableThemePreferences().includes(stored)) return;
       setPreferenceState(stored);
     })();
   }, []);

@@ -17,6 +17,7 @@ import { Icon } from "@/components/ui/icon";
 import type { IconName } from "@/components/ui/icon";
 import { Eyebrow, RowChevron } from "@/components/ui/typography";
 import {
+  currentCompanyId,
   useBillingAccess,
   useMyCompanies,
 } from "@/features/companies/companies-api";
@@ -105,15 +106,17 @@ export function MenuSheet() {
   const router = useRouter();
   const { height } = useWindowDimensions();
   const { sheet, closeSheet } = useShell();
-  const { projectId } = useSelectedProject();
+  const { projectId, project } = useSelectedProject();
   const canUpdateProject = useProjectCan(projectId, "project:update");
   const { workerMode } = useWorkerMode();
   const { user } = useAuth();
   const billing = useBillingAccess();
   const companyAdmin = isCompanyAdminAnywhere(user);
-  const hidden = useHiddenSections();
+  const hidden = useHiddenSections(project?.company_id);
   const companies = useMyCompanies();
-  const companyId = companies.data?.[0]?.id ?? null;
+  // Counts of the library / inventory the screens open on: the default company (primary,
+  // then oldest attachment — the API's default).
+  const companyId = currentCompanyId(companies.data) ?? null;
   const products = useProducts(companyId, {
     supplier: null,
     category: null,

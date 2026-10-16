@@ -5,8 +5,10 @@ import { ActivityIndicator, View } from "react-native";
 
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
+import { useChatFabReserve } from "@/components/shell/chat-fab";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
-import { useBillingAccess } from "@/features/companies/companies-api";
+import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdmin } from "@/auth/permissions";
 import {
   AgendaCard,
   MonthSpendCard,
@@ -48,7 +50,7 @@ function OverviewTabContent() {
     useSelectedProject();
   const invoices = useInvoices(projectId);
   const tasks = useTasks(projectId);
-  const billing = useBillingAccess();
+  const { user } = useAuth();
   // Financing side of the project: the backend nulls `budget` and zeroes every
   // released-funds total without `project:view_budget`, so the hero drops the
   // figures measured against them instead of drawing them from zeros.
@@ -99,6 +101,8 @@ function OverviewTabContent() {
   );
 
   const ready = Boolean(project && invoices.data);
+  // The last agenda line must clear the floating chat button.
+  const bottomPadding = useChatFabReserve();
   // The labor tab applies `segment` from an effect keyed on the params it receives, so a
   // repeated tap must carry a value that changed — otherwise the second one is a no-op once
   // the user has moved to another segment themselves.
@@ -110,6 +114,7 @@ function OverviewTabContent() {
 
   return (
     <InkSheetScreen
+      bottomPadding={bottomPadding}
       header={<ProjectTopBar tone="ink" />}
       hero={
         ready && project ? (
@@ -180,8 +185,12 @@ function OverviewTabContent() {
                 pendingRefundTotal={metrics.pendingCompany.total}
                 onPayLabor={payLabor}
                 onOpenRefunds={() =>
-                  billing.allowed
-                    ? router.push("/billing/refundable")
+                  // The company refunds page lists only companies the user administers:
+                  // open it on this project's company, else stay on the project's expenses.
+                  project.company_id && isCompanyAdmin(user, project.company_id)
+                    ? router.push(
+                        `/billing/refundable?company=${encodeURIComponent(project.company_id)}`,
+                      )
                     : router.navigate("/(app)/(tabs)/expenses")
                 }
               />
@@ -201,6 +210,12 @@ function OverviewTabContent() {
           <AgendaCard
             groups={agenda}
             onOpenPlanning={() => router.navigate("/(app)/(tabs)/planning")}
+            onOpenTask={(task) =>
+              router.navigate({
+                pathname: "/(app)/(tabs)/planning",
+                params: { task: task.id },
+              })
+            }
           />
           <TodayOnSiteCard
             address={project.address}

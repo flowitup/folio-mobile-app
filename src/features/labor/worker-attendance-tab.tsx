@@ -11,6 +11,7 @@ import {
 import { useAuthConfig } from "@/auth/auth-config";
 import { useAuth } from "@/auth/auth-context";
 import { can } from "@/auth/permissions";
+import { useChatFabReserve } from "@/components/shell/chat-fab";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
@@ -64,6 +65,7 @@ const SHIFTS: ShiftType[] = ["full", "half", "overtime"];
  */
 export function WorkerAttendanceTab() {
   const { t } = useTranslation();
+  const bottomPadding = useChatFabReserve();
   const tokens = useTokens();
   const { user } = useAuth();
   const {
@@ -198,8 +200,9 @@ export function WorkerAttendanceTab() {
       <ProjectTopBar />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-4 pb-6 pt-3.5"
-        contentContainerStyle={{ gap: 16 }}
+        contentContainerClassName="px-4 pt-3.5"
+        // The last row must clear the floating chat button.
+        contentContainerStyle={{ gap: 16, paddingBottom: bottomPadding }}
       >
         <View className="flex-row items-end justify-between">
           <View className="min-w-0 flex-1">
