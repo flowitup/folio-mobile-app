@@ -30,7 +30,7 @@ describe("member display helpers", () => {
         phone: "+33600000000",
         user_id: userId,
       }),
-    ).toBe("+33600000000");
+    ).toBe("+33 6 00 00 00 00");
     expect(
       memberDisplayName({
         display_name: null,
@@ -79,7 +79,7 @@ describe("member display helpers", () => {
         phone: "+33621400002",
         user_id: userId,
       }),
-    ).toBe("+33621400002");
+    ).toBe("+33 6 21 40 00 02");
     expect(
       memberDisplayName({
         display_name: null,
@@ -87,13 +87,13 @@ describe("member display helpers", () => {
         phone: "+33621400002",
         user_id: userId,
       }),
-    ).toBe("+33621400002");
+    ).toBe("+33 6 21 40 00 02");
     // Older payloads without `phone`: the number the address was built from.
     expect(
       memberSecondaryLabel({ email: synthetic, phone: null, user_id: userId }),
-    ).toBe("+33621400002");
+    ).toBe("+33 6 21 40 00 02");
     expect(memberDisplayName({ email: synthetic, user_id: userId })).toBe(
-      "+33621400002",
+      "+33 6 21 40 00 02",
     );
   });
 });

@@ -35,6 +35,7 @@ import {
 
 import type { components } from "@/api/generated/schema";
 import i18n from "@/i18n";
+import { smsLocale } from "@/lib/auth/sms-locale";
 import {
   authErrorKey,
   AuthRequestError,
@@ -126,7 +127,8 @@ function authError(
   // which is more specific than any catch-all we could write. The status travels with the
   // error so a screen can branch on it instead of matching the translated sentence.
   const errorCode = (error as { error?: string } | undefined)?.error;
-  const key = authErrorKey(flow, response?.status, errorCode);
+  const reason = (error as { reason?: string } | undefined)?.reason;
+  const key = authErrorKey(flow, response?.status, errorCode, reason);
   // The hourly code cap names how long to wait (Retry-After), not "wait a minute".
   const minutes = hourlyLimitMinutes(
     errorCode,
@@ -276,7 +278,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const requestOtp = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/otp/request",
-      { body: { phone } },
+      { body: { phone, locale: smsLocale() } },
     );
     if (!data) throw authError("otp", error, response);
     return data.expires_in;
@@ -307,7 +309,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const requestSignupOtp = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/signup/request",
-      { body: { phone } },
+      { body: { phone, locale: smsLocale() } },
     );
     if (!data) throw authError("signup", error, response);
     return data.expires_in;
@@ -328,7 +330,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const requestPhoneChangeCode = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/me/phone/request-code",
-      { body: { phone } },
+      { body: { phone, locale: smsLocale() } },
     );
     if (!data) throw authError("phoneChange", error, response);
     return data.expires_in;

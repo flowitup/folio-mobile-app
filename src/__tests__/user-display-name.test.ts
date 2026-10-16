@@ -54,19 +54,19 @@ describe("accountContact", () => {
     // After a phone change the address still holds the sign-up number.
     expect(
       accountContact("phone-33620150003@no-email.folio.flowitup.com", "+33620150004"),
-    ).toBe("+33620150004");
+    ).toBe("+33 6 20 15 00 04");
   });
 
   it("prefers a real e-mail", () => {
-    expect(accountContact("jean@example.com", "+33620150004")).toBe("jean@example.com");
+    expect(accountContact("jean@example.com", "+33 6 20 15 00 04")).toBe("jean@example.com");
   });
 
   it("falls back to the synthetic address's phone when the payload has none", () => {
     expect(accountContact("phone-33620150003@no-email.folio.flowitup.com", null)).toBe(
-      "+33620150003",
+      "+33 6 20 15 00 03",
     );
     expect(accountContact("phone-33620150003@no-email.folio.flowitup.com", "  ")).toBe(
-      "+33620150003",
+      "+33 6 20 15 00 03",
     );
   });
 });

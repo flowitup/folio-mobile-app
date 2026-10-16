@@ -9,6 +9,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
+      "associatedDomains": ["applinks:folio.flowitup.com"],
       "supportsTablet": true,
       "bundleIdentifier": "com.flowitup.folio",
       "infoPlist": {
@@ -17,6 +18,20 @@
     },
     "android": {
       "package": "com.flowitup.folio",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "folio.flowitup.com",
+              "pathPattern": "/.*/accept-invite/.*"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",

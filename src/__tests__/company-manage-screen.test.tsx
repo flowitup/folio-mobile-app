@@ -104,7 +104,7 @@ describe("company manage screen", () => {
     await renderScreen();
 
     await fireEvent.press(screen.getByTestId("company-tab-users"));
-    expect(screen.getByText(/\+33621400002/)).toBeTruthy();
+    expect(screen.getByText(/\+33 6 21 40 00 02/)).toBeTruthy();
     expect(screen.queryByText(/no-email\.folio\.flowitup\.com/)).toBeNull();
   });
 });

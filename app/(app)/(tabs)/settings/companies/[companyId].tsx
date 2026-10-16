@@ -43,6 +43,7 @@ import {
   memberSecondaryLabel,
 } from "@/lib/companies/member-display";
 import { formatDate } from "@/lib/format/date";
+import { joinCodeShareMessage } from "@/lib/companies/join-code-share";
 
 type Tab = "edit" | "code" | "users" | "payments" | "delete";
 const TABS: Tab[] = ["edit", "code", "users", "payments", "delete"];
@@ -171,10 +172,11 @@ export default function CompanyManageScreen() {
                 accessibilityRole="button"
                 onPress={() =>
                   void Share.share({
-                    message: t("companies.admin.manage.joinCode.shareMessage", {
-                      company: data.legal_name,
-                      code: formatJoinCode(data.join_code ?? ""),
-                    }),
+                    message: joinCodeShareMessage(
+                      t,
+                      data.legal_name,
+                      data.join_code ?? "",
+                    ),
                   })
                 }
                 className="mb-3 items-center rounded-[10px] border border-line-2 bg-paper-2 py-3 active:opacity-70"

@@ -21,6 +21,8 @@ import {
   memberSecondaryLabel,
 } from "@/lib/companies/member-display";
 import { formatDate } from "@/lib/format/date";
+import { formatFrenchPhone } from "@/lib/auth/phone-number";
+import { joinCodeShareMessage } from "@/lib/companies/join-code-share";
 
 const ROLE_OPTIONS: CompanyRole[] = ["admin", "manager", "member"];
 
@@ -56,10 +58,11 @@ export function JoinCodeCard({
           accessibilityRole="button"
           onPress={() =>
             void Share.share({
-              message: t("companies.admin.manage.joinCode.shareMessage", {
-                company: company.legal_name,
-                code: formatJoinCode(company.join_code ?? ""),
-              }),
+              message: joinCodeShareMessage(
+                t,
+                company.legal_name,
+                company.join_code ?? "",
+              ),
             })
           }
           className="mb-3 items-center rounded-[10px] border border-line-2 bg-paper-2 py-3 active:opacity-70"
@@ -231,7 +234,7 @@ export function PendingPersonRow({
       </View>
       {person.phone ? (
         <Text className="mt-0.5 font-sans text-[11.5px] text-muted">
-          {person.phone}
+          {formatFrenchPhone(person.phone)}
         </Text>
       ) : null}
       {person.pending_role ? (

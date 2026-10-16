@@ -59,7 +59,9 @@
       "smsFailed": "The text message could not be sent. Try again in a moment.",
       "throttled": "A code was sent a moment ago. Wait a minute and try again.",
       "hourlyLimit_one": "Too many codes were requested for this number. Try again in {{count}} minute.",
-      "hourlyLimit_other": "Too many codes were requested for this number. Try again in {{count}} minutes."
+      "hourlyLimit_other": "Too many codes were requested for this number. Try again in {{count}} minutes.",
+      "codeLocked": "Too many tries: this code no longer works, even typed correctly. Ask for a new code.",
+      "deactivated": "Access for this number was deactivated. Contact your company’s administrator."
     },
     "codeTitle": "Check your\nmessages",
     "codeDigit": "Digit {{position}} of {{total}}",
@@ -71,7 +73,10 @@
     "unavailable": {
       "title": "Can't reach Folio",
       "body": "You're still signed in. Check your connection, then try again."
-    }
+    },
+    "codeHelp": "No SMS? Check the number. Only Folio accounts receive a code: they are created in the app or through your company’s invitation. Access deactivated? Contact your company’s administrator.",
+    "codeStillValid": "The code already sent to this number is still valid: type it in.",
+    "invalidPhoneHint": "This is not a French number (e.g. 06 12 34 56 78)."
   },
   "updateRequired": {
     "title": "Update required",
@@ -736,6 +741,12 @@
       "yesterday": "Yesterday {{time}}",
       "markRead": "Mark as read",
       "markAllRead": "Mark all read"
+    },
+    "prePrompt": {
+      "title": "Turn on notifications?",
+      "body": "Folio lets you know when a task is assigned to you, a document arrives or someone messages you. You can change this later in your phone settings.",
+      "enable": "Turn on",
+      "later": "Not now"
     }
   },
   "tasks": {
@@ -1344,7 +1355,8 @@
           "tapToShare": "Tap to share",
           "shareMessage": "Join {{company}} on Folio: create your profile in the app, then enter the company code {{code}}.",
           "createdToast": "Company code ready.",
-          "revokedToast": "Company code revoked."
+          "revokedToast": "Company code revoked.",
+          "shareMessageWithLink": "Join {{company}} on Folio: install the app ({{url}}), create your profile, then enter the company code {{code}}."
         }
       }
     },
@@ -1583,7 +1595,8 @@
       "accepted": "This invitation was already used. Try logging in.",
       "notFound": "This invitation link is invalid.",
       "accountExists": "This invitation is for an existing Folio account. Enter that account's phone number.",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "superseded": "A newer invitation was sent to you: use the link in the latest e-mail."
     },
     "loggedInOther": {
       "title": "You're signed in as someone else",
@@ -2021,5 +2034,9 @@
     "title": "PDF",
     "share": "Share",
     "loadError": "Could not display this PDF."
+  },
+  "legal": {
+    "support": "Help and support",
+    "privacy": "Privacy"
   }
 }

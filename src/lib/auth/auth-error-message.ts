@@ -51,6 +51,7 @@ export function authErrorKey(
   flow: AuthFlow,
   status: number | undefined,
   errorCode?: string,
+  reason?: string,
 ): string | null {
   switch (status) {
     case 400:
@@ -70,6 +71,8 @@ export function authErrorKey(
       return "login.errors.smsFailed";
     case 409:
       if (flow === "phoneChange") return "account.phone.errors.phoneTaken";
+      // The number's account exists but was deactivated: "sign in instead" would be a dead end.
+      if (reason === "account_deactivated") return "login.errors.deactivated";
       return flow === "signup" ? "login.errors.phoneTaken" : null;
     case 401:
       return "login.errors.invalidCode";

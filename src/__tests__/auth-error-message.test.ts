@@ -17,6 +17,10 @@ describe("authErrorKey", () => {
 
   it("only calls a 409 a taken phone number while signing up", () => {
     expect(authErrorKey("signup", 409)).toBe("login.errors.phoneTaken");
+    // A deactivated account is not one to "sign in instead" to.
+    expect(authErrorKey("signup", 409, "Conflict", "account_deactivated")).toBe(
+      "login.errors.deactivated",
+    );
     expect(authErrorKey("otp", 409)).toBeNull();
   });
 

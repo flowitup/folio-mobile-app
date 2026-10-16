@@ -68,7 +68,11 @@ export function resolveOnboardingRedirect(
   const memberEverywhere = companyRoles.every((role) => role === "member");
   const noAssignment = projectsReady && !hasProjects;
   if (memberEverywhere && noAssignment) {
-    return pathname === WAITING_PATH ? null : WAITING_PATH;
+    // Joining (another) company stays reachable from the waiting screen: a wrong code or the
+    // wrong company must not be a dead end.
+    return pathname === WAITING_PATH || pathname === "/join-company"
+      ? null
+      : WAITING_PATH;
   }
 
   if (
