@@ -42,9 +42,16 @@ export function OtpCodeBoxes({
   // second would then read `value` from the render before the first — losing a
   // digit. This ref is the authoritative code between renders.
   const typed = useRef(value);
+  // Synced after every commit, not only when `value` changes: a code typed and refused within one
+  // batch (the parent empties the row) never shows `value` changing, and the ref would keep the
+  // refused digits — the next code then counted as an edit of a full row and never signed in.
   useEffect(() => {
+    if (typed.current === value) return;
+    // The parent emptied the row (a refused code): caret back in the first box.
+    const emptied = value === "" && typed.current !== "";
     typed.current = value;
-  }, [value]);
+    if (emptied && !disabled) boxes.current[0]?.focus();
+  });
 
   const focusBox = (index: number) => {
     boxes.current[Math.min(Math.max(index, 0), CODE_LENGTH - 1)]?.focus();

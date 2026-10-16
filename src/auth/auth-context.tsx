@@ -127,7 +127,8 @@ function authError(
   // which is more specific than any catch-all we could write. The status travels with the
   // error so a screen can branch on it instead of matching the translated sentence.
   const errorCode = (error as { error?: string } | undefined)?.error;
-  const key = authErrorKey(flow, response?.status, errorCode);
+  const reason = (error as { reason?: string } | undefined)?.reason;
+  const key = authErrorKey(flow, response?.status, errorCode, reason);
   // The hourly code cap names how long to wait (Retry-After), not "wait a minute".
   const minutes = hourlyLimitMinutes(
     errorCode,

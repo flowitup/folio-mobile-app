@@ -59,7 +59,9 @@
       "smsFailed": "Le SMS n’a pas pu être envoyé. Réessayez dans un instant.",
       "throttled": "Un code vient d’être envoyé. Attendez une minute et réessayez.",
       "hourlyLimit_one": "Trop de codes ont été demandés pour ce numéro. Réessayez dans {{count}} minute.",
-      "hourlyLimit_other": "Trop de codes ont été demandés pour ce numéro. Réessayez dans {{count}} minutes."
+      "hourlyLimit_other": "Trop de codes ont été demandés pour ce numéro. Réessayez dans {{count}} minutes.",
+      "codeLocked": "Trop d’essais : ce code ne fonctionne plus, même correct. Demandez un nouveau code.",
+      "deactivated": "L’accès de ce numéro a été désactivé. Contactez l’administrateur de votre entreprise."
     },
     "codeTitle": "Vérifiez vos\nmessages",
     "codeDigit": "Chiffre {{position}} sur {{total}}",
@@ -71,7 +73,10 @@
     "unavailable": {
       "title": "Impossible de joindre Folio",
       "body": "Vous êtes toujours connecté. Vérifiez votre connexion, puis réessayez."
-    }
+    },
+    "codeHelp": "Pas reçu de SMS ? Vérifiez le numéro. Seuls les comptes Folio reçoivent un code : ils se créent dans l’application ou via l’invitation de votre entreprise. Accès désactivé ? Contactez l’administrateur de votre entreprise.",
+    "codeStillValid": "Le code déjà envoyé à ce numéro reste valable : saisissez-le.",
+    "invalidPhoneHint": "Ce numéro n’est pas un numéro français (ex. 06 12 34 56 78)."
   },
   "updateRequired": {
     "title": "Mise à jour requise",
@@ -1963,5 +1968,9 @@
     "title": "PDF",
     "share": "Partager",
     "loadError": "Impossible d'afficher ce PDF."
+  },
+  "legal": {
+    "support": "Aide et support",
+    "privacy": "Confidentialité"
   }
 }

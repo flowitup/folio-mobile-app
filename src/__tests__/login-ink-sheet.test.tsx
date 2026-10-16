@@ -3,11 +3,13 @@ import {
   render,
   screen,
   userEvent,
+  waitFor,
 } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 
 import i18n from "@/i18n";
+import { AuthRequestError } from "@/lib/auth/auth-error-message";
 import LoginScreen from "../../app/(auth)/index";
 
 const SAFE_AREA_METRICS: Metrics = {
@@ -82,8 +84,52 @@ describe("Login — ink header + paper sheet (design 2c / 2d)", () => {
 
     await user.type(screen.getByTestId("login-phone"), "+84912345678");
 
-    expect(screen.getByTestId("login-send-code")).toBeDisabled();
+    // Said under the field at once, and again on a press — never sent.
+    expect(screen.getByTestId("login-invalid-phone-hint")).toBeTruthy();
+    await user.press(screen.getByTestId("login-send-code"));
+    expect(screen.getByTestId("login-error")).toHaveTextContent(t("login.invalidPhone"), {
+      exact: false,
+    });
     expect(mockRequestOtp).not.toHaveBeenCalled();
+  });
+
+  it("empties the boxes after a wrong code, and locks the code after five", async () => {
+    mockSignInWithOtp.mockRejectedValue(
+      new AuthRequestError(t("login.errors.invalidCode"), 401),
+    );
+    const user = userEvent.setup();
+    await renderLogin();
+    await user.type(screen.getByTestId("login-phone"), "0612345678");
+    await user.press(screen.getByTestId("login-send-code"));
+
+    for (let attempt = 1; attempt <= 5; attempt += 1) {
+      await fireEvent.changeText(
+        screen.getByTestId("login-code-0"),
+        String(attempt).repeat(6),
+      );
+      expect(mockSignInWithOtp).toHaveBeenCalledTimes(attempt);
+      // The row is empty again and editable, ready for the next code.
+      await waitFor(() => {
+        expect(screen.getByTestId("login-code-5")).toHaveDisplayValue("");
+        expect(screen.getByTestId("login-code-0")).toBeEnabled();
+      });
+    }
+    expect(screen.getByTestId("login-error")).toHaveTextContent(
+      t("login.errors.codeLocked"),
+      { exact: false },
+    );
+    await fireEvent.changeText(screen.getByTestId("login-code-0"), "424242");
+    expect(mockSignInWithOtp).toHaveBeenCalledTimes(5);
+  });
+
+  it("tells everyone on the code step what to do when no SMS comes", async () => {
+    const user = userEvent.setup();
+    await renderLogin();
+    await user.type(screen.getByTestId("login-phone"), "0612345678");
+    await user.press(screen.getByTestId("login-send-code"));
+
+    expect(screen.getByTestId("login-code-help")).toHaveTextContent(t("login.codeHelp"));
+    expect(screen.getByTestId("legal-links")).toBeTruthy();
   });
 
   it("shows the six code boxes, the countdown and the expiry after a code is sent", async () => {

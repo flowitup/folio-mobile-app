@@ -14,11 +14,15 @@ import { CODE_LENGTH, OtpCodeBoxes } from "@/components/auth/otp-code-boxes";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Eyebrow } from "@/components/ui/typography";
+import { LegalLinks } from "@/components/legal-links";
+import { AuthRequestError } from "@/lib/auth/auth-error-message";
 import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { useCodeExpiry } from "@/lib/auth/use-code-expiry";
 import { INK_BLOCK } from "@/theme/tokens";
 
 const RESEND_SECONDS = 60;
+// The backend refuses a code after this many wrong tries, even the right one.
+const MAX_CODE_ATTEMPTS = 5;
 
 /** Step 1: phone → "Send code"; step 2: the 6-digit code with a 60 s resend timer. */
 export function PhoneSignIn({ signup }: { signup: boolean }) {
@@ -44,6 +48,11 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
   // state, not a ref, because the sign-in button's own state depends on it.
   const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Not an error: why the code step opened without a new SMS.
+  const [notice, setNotice] = useState<string | null>(null);
+  // Wrong codes refused for the code now in use.
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const codeLocked = failedAttempts >= MAX_CODE_ATTEMPTS;
 
   // Tick once a second while the resend timer runs, and stop when it expires —
   // a live interval would re-render the six code inputs under the user's typing.
@@ -63,8 +72,15 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     resendAt === null ? 0 : Math.max(0, Math.ceil((resendAt - now) / 1000));
   // The backend throttles per number, so the countdown only gates asking again
   // for the SAME number: edit the number and "Send code" is live immediately.
+  // A number that does not read as French keeps the button live: pressing it says why, where a
+  // greyed-out button explained nothing.
   const canSend =
-    phone !== null && !submitting && (secondsLeft === 0 || phone !== sentTo);
+    phoneInput.trim().length > 0 &&
+    !submitting &&
+    (phone === null || secondsLeft === 0 || phone !== sentTo);
+  // Said as soon as a full-length entry cannot be French, before any press.
+  const showInvalidHint =
+    phone === null && phoneInput.replace(/\D/g, "").length >= 10;
   // Changing the number back while that code is still in flight: nothing to ask for.
   const hasCodeInFlight =
     phone !== null && phone === codeSentTo && secondsLeft > 0;
@@ -72,6 +88,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     new RegExp(`^\\d{${CODE_LENGTH}}$`).test(code) &&
     !submitting &&
     !codeExpired &&
+    !codeLocked &&
     code !== lastSubmitted;
 
   async function sendCode() {
@@ -80,11 +97,13 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
       // Reopen the code step with the code already texted; requesting a second one inside the
       // backend's per-number cooldown only answers 429 and strands the user for a minute.
       setError(null);
+      setNotice(t("login.codeStillValid"));
       setSentTo(phone);
       return;
     }
     setSubmitting(true);
     setError(null);
+    setNotice(null);
     try {
       const expiresIn = await requestOtp(phone);
       const sentAt = Date.now();
@@ -94,6 +113,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
       // A new code invalidates whatever is still in the boxes.
       setCode("");
       setLastSubmitted(null);
+      setFailedAttempts(0);
       setResendAt(sentAt + RESEND_SECONDS * 1000);
       setNow(sentAt);
     } catch (caught) {
@@ -110,17 +130,32 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     // The backend counts a wrong code against a 5-attempt limit, so never let an
     // auto sign-in and a button press of the same code both go out. An expired
     // code can only be refused, and would spend an attempt too.
-    if (submitting || !sentTo || codeExpired) return;
+    if (submitting || !sentTo || codeExpired || codeLocked) return;
     if (!new RegExp(`^\\d{${CODE_LENGTH}}$`).test(submitted)) return;
     if (submitted === lastSubmitted) return;
     setLastSubmitted(submitted);
     setSubmitting(true);
     setError(null);
+    setNotice(null);
     try {
       await signInWithOtp(sentTo, submitted);
     } catch (caught) {
-      // Keep the digits: the user needs to see what was rejected.
-      setError((caught as Error).message);
+      if (caught instanceof AuthRequestError && caught.status === 401) {
+        // A wrong code: empty the boxes and put the caret back in the first one, so typing the
+        // right code signs in again (the full, red row used to swallow taps until a resend).
+        const failed = failedAttempts + 1;
+        setFailedAttempts(failed);
+        setCode("");
+        setLastSubmitted(null);
+        setError(
+          failed >= MAX_CODE_ATTEMPTS
+            ? t("login.errors.codeLocked")
+            : (caught as Error).message,
+        );
+      } else {
+        // Keep the digits: the user needs to see what was rejected.
+        setError((caught as Error).message);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -131,6 +166,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     setCode("");
     setLastSubmitted(null);
     setError(null);
+    setNotice(null);
   }
 
   if (sentTo === null) {
@@ -157,9 +193,18 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
           onChangeText={setPhoneInput}
           onSubmitEditing={() => canSend && void sendCode()}
         />
-        <Text className="mb-[18px] font-sans text-[12.5px] leading-[18px] text-muted">
-          {t("login.phoneHint")}
-        </Text>
+        {showInvalidHint ? (
+          <Text
+            testID="login-invalid-phone-hint"
+            className="mb-[18px] font-sans text-[12.5px] leading-[18px] text-negative"
+          >
+            {t("login.invalidPhoneHint")}
+          </Text>
+        ) : (
+          <Text className="mb-[18px] font-sans text-[12.5px] leading-[18px] text-muted">
+            {t("login.phoneHint")}
+          </Text>
+        )}
         <SignInErrorLine error={error} />
         <Button
           testID="login-send-code"
@@ -185,6 +230,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
             </Text>
           </Pressable>
         ) : null}
+        <LegalLinks className="mt-4" />
       </LoginFrame>
     );
   }
@@ -220,6 +266,14 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
       }
     >
       <Eyebrow className="mb-2">{t("login.code")}</Eyebrow>
+      {notice ? (
+        <Text
+          testID="login-code-notice"
+          className="mb-2 font-sans text-[12.5px] text-muted"
+        >
+          {notice}
+        </Text>
+      ) : null}
       <OtpCodeBoxes
         value={code}
         onChange={setCode}
@@ -296,6 +350,28 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
       <Text className="mt-4 text-center font-sans text-[12.5px] text-muted">
         {t("login.autoSubmitHint")}
       </Text>
+      {/* Said to everyone, account or not, so it reveals nothing — but someone who gets no SMS
+          learns why, and where accounts come from. */}
+      <Text
+        testID="login-code-help"
+        className="mt-3 text-center font-sans text-[12px] leading-[17px] text-muted"
+      >
+        {t("login.codeHelp")}
+      </Text>
+      {signup ? (
+        <Pressable
+          testID="login-code-signup"
+          accessibilityRole="button"
+          onPress={() => router.push("/signup")}
+          className="mt-2 items-center"
+          hitSlop={8}
+        >
+          <Text className="font-sans-semibold text-[13px] text-ink underline">
+            {t("login.createAccount")}
+          </Text>
+        </Pressable>
+      ) : null}
+      <LegalLinks className="mt-3" />
     </LoginFrame>
   );
 }

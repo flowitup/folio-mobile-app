@@ -59,7 +59,9 @@
       "smsFailed": "The text message could not be sent. Try again in a moment.",
       "throttled": "A code was sent a moment ago. Wait a minute and try again.",
       "hourlyLimit_one": "Too many codes were requested for this number. Try again in {{count}} minute.",
-      "hourlyLimit_other": "Too many codes were requested for this number. Try again in {{count}} minutes."
+      "hourlyLimit_other": "Too many codes were requested for this number. Try again in {{count}} minutes.",
+      "codeLocked": "Too many tries: this code no longer works, even typed correctly. Ask for a new code.",
+      "deactivated": "Access for this number was deactivated. Contact your company’s administrator."
     },
     "codeTitle": "Check your\nmessages",
     "codeDigit": "Digit {{position}} of {{total}}",
@@ -71,7 +73,10 @@
     "unavailable": {
       "title": "Can't reach Folio",
       "body": "You're still signed in. Check your connection, then try again."
-    }
+    },
+    "codeHelp": "No SMS? Check the number. Only Folio accounts receive a code: they are created in the app or through your company’s invitation. Access deactivated? Contact your company’s administrator.",
+    "codeStillValid": "The code already sent to this number is still valid: type it in.",
+    "invalidPhoneHint": "This is not a French number (e.g. 06 12 34 56 78)."
   },
   "updateRequired": {
     "title": "Update required",
@@ -1963,5 +1968,9 @@
     "title": "PDF",
     "share": "Share",
     "loadError": "Could not display this PDF."
+  },
+  "legal": {
+    "support": "Help and support",
+    "privacy": "Privacy"
   }
 }
