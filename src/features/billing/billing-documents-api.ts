@@ -272,11 +272,16 @@ export function useCreateFromTemplate() {
 
 /** Rendered PDF opens in the in-app viewer; XLSX goes through the OS share sheet. */
 export function openBillingFile(
-  doc: Pick<BillingDocument, "id" | "document_number">,
+  doc: Pick<BillingDocument, "id" | "document_number"> &
+    Partial<Pick<BillingDocument, "updated_at">>,
   format: "pdf" | "xlsx",
 ) {
+  // Opening it again reuses the copy until the document changes (no new download, no
+  // rate-limited request: the owner's "the PDF can't open").
   return openFile(
     `/api/v1/billing-documents/${encodeURIComponent(doc.id)}/${format}`,
     safeFilename(`${doc.document_number}.${format}`),
+    undefined,
+    { version: doc.updated_at ?? null },
   );
 }

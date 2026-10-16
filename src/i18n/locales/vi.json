@@ -32,6 +32,8 @@
       "gone": "Liên kết này đã hết hạn hoặc không còn khả dụng.",
       "tooLarge": "Tệp quá lớn.",
       "tooManyRequests": "Quá nhiều lần thử. Hãy đợi một lát rồi thử lại.",
+      "tooManyRequestsSeconds": "Quá nhiều lần thử. Hãy thử lại sau {{count}} giây.",
+      "tooManyRequestsMinutes": "Quá nhiều lần thử. Hãy thử lại sau {{count}} phút.",
       "keepExtension": "Tên tệp phải giữ phần mở rộng {{ext}}.",
       "fileNameRequired": "Hãy nhập tên tệp."
     }
@@ -1961,6 +1963,15 @@
   "pdfViewer": {
     "title": "PDF",
     "share": "Chia sẻ",
-    "loadError": "Không thể hiển thị tệp PDF này."
+    "loadError": "Không thể hiển thị tệp PDF này.",
+    "passwordPrompt": "PDF này được bảo vệ. Hãy nhập mật khẩu.",
+    "wrongPassword": "Sai mật khẩu. Hãy thử lại.",
+    "open": "Mở",
+    "cannotOpen": "Không thể hiển thị PDF này tại đây (bị hỏng hoặc được bảo vệ). Hãy mở bằng ứng dụng khác.",
+    "openWith": "Mở bằng…"
+  },
+  "imageViewer": {
+    "title": "Hình ảnh",
+    "loadError": "Không thể hiển thị hình ảnh này."
   }
 }

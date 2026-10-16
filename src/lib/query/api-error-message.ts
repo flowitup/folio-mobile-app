@@ -47,7 +47,22 @@ export function apiErrorMessage(
   // Adding a worker for someone already on the roster (the generic 409's "refresh" never helps).
   if (error.code === "WorkerAlreadyOnProject")
     return t("labor.workers.alreadyOnProject");
+  // A rate limit: never the limiter's own text ("5 per 1 minute"), and say how long to wait.
+  if (error.status === 429) return tooManyRequestsMessage(error.retryAfter, t);
   if (language === "en") return error.message;
   const key = STATUS_KEYS[error.status];
   return key ? t(key) : t("common.requestFailed");
+}
+
+/** "Too many attempts. Try again in 40 s / 3 min." — or the plain message when the wait is unknown. */
+export function tooManyRequestsMessage(
+  retryAfter: number | undefined,
+  t: Translate,
+): string {
+  if (!retryAfter) return t("common.errors.tooManyRequests");
+  if (retryAfter < 60)
+    return t("common.errors.tooManyRequestsSeconds", { count: retryAfter });
+  return t("common.errors.tooManyRequestsMinutes", {
+    count: Math.ceil(retryAfter / 60),
+  });
 }

@@ -216,9 +216,11 @@ export function useDeleteDocument(projectId: string) {
 
 /** Downloads through the API (Bearer): a PDF opens in the in-app viewer, the rest in the share sheet. */
 export function openDocument(document: ProjectDocument): Promise<string> {
+  // A document's bytes never change once uploaded; a rename changes the shared file's name.
   return openFile(
     document.download_url,
     document.filename,
     document.content_type,
+    { version: `${document.uploaded_at}|${document.filename}` },
   );
 }

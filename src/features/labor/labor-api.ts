@@ -574,7 +574,10 @@ export function exportLabor(
   const path = workerId
     ? `/api/v1/projects/${encodeURIComponent(projectId)}/workers/${encodeURIComponent(workerId)}/labor-export?${query}`
     : `/api/v1/projects/${encodeURIComponent(projectId)}/labor-export?${query}`;
-  return openFile(path, `labor-${from}-${to}.${format}`);
+  // The server names the file with the project, worker and range, in the app's language.
+  return openFile(path, `labor-${from}-${to}.${format}`, undefined, {
+    preferServerName: true,
+  });
 }
 
 // ---- labor roles management (settings) --------------------------------------------------------

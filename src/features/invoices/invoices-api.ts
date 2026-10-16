@@ -298,10 +298,12 @@ export function useDeleteAttachment(projectId: string, invoiceId: string) {
 export function openAttachment(
   attachment: Pick<InvoiceAttachment, "id" | "filename" | "mime_type">,
 ): Promise<string> {
+  // An attachment's bytes never change; a rename changes the shared file's name.
   return openFile(
     `/api/v1/attachments/${encodeURIComponent(attachment.id)}/download`,
     attachment.filename,
     attachment.mime_type,
+    { version: `immutable|${attachment.filename}` },
   );
 }
 
@@ -326,6 +328,9 @@ export function exportInvoices(
   return openFile(
     `/api/v1/projects/${encodeURIComponent(projectId)}/invoices-export?${query.toString()}`,
     `invoices-${from}-${to}.${format}`,
+    undefined,
+    // The server names the file with the project and range, in the app's language.
+    { preferServerName: true },
   );
 }
 

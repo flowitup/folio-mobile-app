@@ -114,4 +114,26 @@ describe("apiErrorMessage — person already on the project", () => {
       tVi("labor.workers.alreadyOnProject"),
     );
   });
+
+  it("says how long to wait on a 429, in every language, never the limiter's text", () => {
+    const limited = new ApiError(
+      429,
+      "TooManyRequests",
+      "5 per 1 minute",
+      undefined,
+      40,
+    );
+    expect(apiErrorMessage(limited, tEn, "en")).toBe(
+      tEn("common.errors.tooManyRequestsSeconds", { count: 40 }),
+    );
+    expect(apiErrorMessage(limited, tEn, "en")).not.toMatch(/per 1 minute/);
+    const hour = new ApiError(429, "TooManyRequests", "x", undefined, 1800);
+    expect(apiErrorMessage(hour, t, "fr")).toBe(
+      t("common.errors.tooManyRequestsMinutes", { count: 30 }),
+    );
+    const unknown = new ApiError(429, "TooManyRequests", "5 per 1 minute");
+    expect(apiErrorMessage(unknown, tEn, "en")).toBe(
+      tEn("common.errors.tooManyRequests"),
+    );
+  });
 });

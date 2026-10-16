@@ -3,7 +3,11 @@ import * as Sharing from "expo-sharing";
 
 import { authedFetch } from "@/api/authed-fetch";
 import { API_BASE_URL } from "@/config/env";
-import { ApiError } from "@/lib/query/api-error";
+import {
+  ApiError,
+  readEnvelope,
+  retryAfterSeconds,
+} from "@/lib/query/api-error";
 
 /** Keeps only a safe basename so a server-supplied name cannot escape the cache directory. */
 export function safeFilename(filename: string): string {
@@ -17,21 +21,66 @@ export function safeFilename(filename: string): string {
   return cleaned || "download";
 }
 
+/**
+ * The file name a response names in its Content-Disposition header (RFC 6266: the UTF-8
+ * `filename*` first, then the plain `filename`), or undefined.
+ */
+export function contentDispositionFilename(
+  header: string | null | undefined,
+): string | undefined {
+  if (!header) return undefined;
+  const star = /filename\*\s*=\s*(?:UTF-8|utf-8)?'[^']*'([^;]+)/i.exec(header);
+  if (star) {
+    try {
+      const name = decodeURIComponent(star[1].trim().replace(/^"|"$/g, ""));
+      if (name.trim()) return name.trim();
+    } catch {
+      // malformed escape: fall back to the plain parameter
+    }
+  }
+  const plain = /filename\s*=\s*("([^"]*)"|[^;]+)/i.exec(header);
+  const name = (plain?.[2] ?? plain?.[1] ?? "").trim();
+  return name || undefined;
+}
+
 /** Reads an authenticated API resource; a non-2xx answer raises instead of returning its body. */
-async function fetchAuthedBytes(path: string): Promise<Uint8Array> {
+async function fetchAuthedFile(
+  path: string,
+): Promise<{ bytes: Uint8Array; filename?: string }> {
   const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
   const response = await authedFetch(url);
   if (!response.ok) {
     let message = `HTTP ${response.status}`;
+    let envelope: ReturnType<typeof readEnvelope> = {};
     try {
-      const body = (await response.json()) as { message?: string };
-      if (body.message) message = body.message;
+      envelope = readEnvelope(await response.json());
+      if (envelope.message) message = envelope.message;
     } catch {
       // non-JSON error body
     }
-    throw new ApiError(response.status, "DownloadFailed", message);
+    // A rate limit says how long to wait (header, or the body's retry_after).
+    const retryAfter =
+      retryAfterSeconds(response.headers.get("Retry-After")) ??
+      envelope.retryAfter;
+    throw new ApiError(
+      response.status,
+      envelope.code ?? "DownloadFailed",
+      message,
+      envelope.reason,
+      retryAfter,
+    );
   }
-  return new Uint8Array(await response.arrayBuffer());
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  return {
+    bytes,
+    filename: contentDispositionFilename(
+      response.headers.get("Content-Disposition"),
+    ),
+  };
+}
+
+async function fetchAuthedBytes(path: string): Promise<Uint8Array> {
+  return (await fetchAuthedFile(path)).bytes;
 }
 
 /** Folders `downloadToCache` creates; `share-` is the name older builds used. */
@@ -68,14 +117,27 @@ export function sweepStaleDownloads(now = Date.now()): void {
 export async function downloadToCache(
   path: string,
   filename: string,
+  options: { preferServerName?: boolean } = {},
 ): Promise<string> {
-  const bytes = await fetchAuthedBytes(path);
+  const { bytes, filename: serverName } = await fetchAuthedFile(path);
   sweepStaleDownloads();
   const folder = new Directory(Paths.cache, `download-${Date.now()}`);
   folder.create();
-  const target = new File(folder, safeFilename(filename));
+  // Exports are named by the server (project, worker, range, in the user's language), which
+  // tells shared files apart; the caller's name is only the fallback.
+  const name = options.preferServerName && serverName ? serverName : filename;
+  const target = new File(folder, safeFilename(name));
   target.write(bytes);
   return target.uri;
+}
+
+/** Whether a file downloaded earlier is still in the cache (the OS may purge it any time). */
+export function cachedFileExists(uri: string): boolean {
+  try {
+    return new File(uri).exists;
+  } catch {
+    return false;
+  }
 }
 
 /** Opens the OS share sheet on a local file (no-op where sharing is unavailable). */

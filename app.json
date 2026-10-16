@@ -14,7 +14,11 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "en",
+        "CFBundleLocalizations": ["en", "fr", "vi"],
+        "CFBundleAllowMixedLocalizations": true
       }
     },
     "android": {
@@ -45,10 +49,7 @@
           "cameraPermission": "Folio uses the camera to capture invoices and site pictures."
         }
       ],
-      [
-        "@react-native-community/datetimepicker",
-        {}
-      ],
+      ["@react-native-community/datetimepicker", {}],
       "expo-document-picker",
       [
         "expo-notifications",

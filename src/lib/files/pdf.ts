@@ -26,6 +26,22 @@ export const PDFJS_VERSION = "4.10.38";
  */
 export type PdfJsScripts = { lib: string; worker: string };
 
+/** Texts the pdf.js page shows itself (its password form), in the UI language. */
+export type PdfViewerLabels = {
+  password: string;
+  wrongPassword: string;
+  open: string;
+};
+
+const DEFAULT_LABELS: PdfViewerLabels = {
+  password: "This PDF is protected. Enter its password.",
+  wrongPassword: "Wrong password. Try again.",
+  open: "Open",
+};
+
+/** Assets the page asks React Native for: a pdf.js CMap (by name) or a standard font file. */
+export type PdfAssetKind = "cmap" | "font";
+
 /**
  * A JS string literal safe inside an inline <script>, evaluating back to exactly `text`: JSON
  * escaping, then `<` (so the text can never close the script element) and every non-ASCII code
@@ -43,13 +59,51 @@ export function toScriptLiteral(text: string): string {
 export type PdfViewerMessage =
   | { type: "ready" }
   | { type: "loaded"; pages: number }
-  | { type: "error"; message: string };
+  | { type: "password"; retry: boolean }
+  | { type: "asset"; kind: PdfAssetKind; name: string }
+  | { type: "error"; message: string; name?: string };
+
+/**
+ * pdf.js errors a second try cannot fix (a damaged file, a password the user gave up on):
+ * the viewer offers "Open with…" (Share) instead of a Retry that fails the same way.
+ */
+const PERMANENT_PDF_ERRORS = new Set([
+  "InvalidPDFException",
+  "PasswordException",
+  "FormatError",
+]);
+export function isPermanentPdfError(name: string | undefined): boolean {
+  return !!name && PERMANENT_PDF_ERRORS.has(name);
+}
+
+/**
+ * React Native's answer to an `asset` request: the file as base64, or a "missing" marker so
+ * pdf.js falls back (substitute font) instead of waiting forever.
+ */
+export function pdfAssetMessage(
+  kind: PdfAssetKind,
+  name: string,
+  base64: string | undefined,
+): string {
+  return base64 === undefined
+    ? `asset-missing:${kind}:${name}`
+    : `asset:${kind}:${name}:${base64}`;
+}
 
 export function parsePdfViewerMessage(raw: string): PdfViewerMessage | null {
   try {
     const message = JSON.parse(raw) as PdfViewerMessage;
     if (message.type === "ready") return message;
     if (message.type === "loaded" && typeof message.pages === "number")
+      return message;
+    if (message.type === "password" && typeof message.retry === "boolean")
+      return message;
+    if (
+      message.type === "asset" &&
+      (message.kind === "cmap" || message.kind === "font") &&
+      typeof message.name === "string" &&
+      /^[\w.+-]+$/.test(message.name)
+    )
       return message;
     if (message.type === "error" && typeof message.message === "string")
       return message;
@@ -92,7 +146,9 @@ export function pdfTransferMessages(
 export function buildPdfJsHtml(
   background: string,
   pdfjs: PdfJsScripts,
+  labels: PdfViewerLabels = DEFAULT_LABELS,
 ): string {
+  const text = (value: string) => toScriptLiteral(value);
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -103,13 +159,22 @@ export function buildPdfJsHtml(
   #pages { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px 0 24px; }
   .page { position: relative; width: calc(100vw - 16px); background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
   .page canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #password { display: none; flex-direction: column; gap: 12px; padding: 32px 20px; font: 16px sans-serif; color: #2b2b2b; }
+  #password input { font: 16px sans-serif; padding: 10px 12px; border: 1px solid #b9b2a5; border-radius: 8px; }
+  #password button { font: 600 16px sans-serif; padding: 10px 12px; border: 0; border-radius: 8px; background: #5a7a4a; color: #fff; }
 </style>
 </head>
 <body>
+<form id="password" autocomplete="off">
+  <label id="password-label" for="password-input"></label>
+  <input id="password-input" type="password" autocapitalize="off" autocorrect="off">
+  <button id="password-open" type="submit"></button>
+</form>
 <div id="pages"></div>
 <script>
   var post = function (message) { window.ReactNativeWebView.postMessage(JSON.stringify(message)); };
-  var fail = function (error) { post({ type: "error", message: String((error && error.message) || error) }); };
+  var fail = function (error) { post({ type: "error", message: String((error && error.message) || error), name: (error && error.name) || undefined }); };
+  var LABELS = { password: ${text(labels.password)}, wrongPassword: ${text(labels.wrongPassword)}, open: ${text(labels.open)} };
   window.addEventListener("error", function (event) { fail(event.error || event.message); });
   window.addEventListener("unhandledrejection", function (event) { fail(event.reason); });
   // Largest canvas drawn per page: bigger ones cost tens of MB each and can render blank.
@@ -130,13 +195,40 @@ export function buildPdfJsHtml(
   var received = null;
   var filled = 0;
   var lastEvent = null;
+  // CMaps and standard fonts come from React Native on request (see pdfAssetMessage).
+  var assetWaiters = {};
+  var requestAsset = function (kind, name) {
+    return new Promise(function (resolve, reject) {
+      assetWaiters[kind + ":" + name] = { resolve: resolve, reject: reject };
+      post({ type: "asset", kind: kind, name: name });
+    });
+  };
+  var settleAsset = function (data) {
+    var missing = data.indexOf("asset-missing:") === 0;
+    var rest = data.slice(missing ? 14 : 6);
+    var first = rest.indexOf(":");
+    var kind = rest.slice(0, first);
+    rest = rest.slice(first + 1);
+    var second = missing ? rest.length : rest.indexOf(":");
+    var key = kind + ":" + rest.slice(0, second);
+    var waiter = assetWaiters[key];
+    if (!waiter) return;
+    delete assetWaiters[key];
+    if (missing) { waiter.reject(new Error("asset unavailable: " + key)); return; }
+    var binary = atob(rest.slice(second + 1));
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    waiter.resolve(bytes);
+  };
   var documentReady = new Promise(function (resolve) {
     var onMessage = function (event) {
       // React Native may dispatch on document (bubbling to window): take each event once.
       if (event === lastEvent || typeof event.data !== "string") return;
       lastEvent = event;
       var data = event.data;
-      if (data.indexOf("size:") === 0) {
+      if (data.indexOf("asset:") === 0 || data.indexOf("asset-missing:") === 0) {
+        settleAsset(data);
+      } else if (data.indexOf("size:") === 0) {
         received = new Uint8Array(Number(data.slice(5)));
         filled = 0;
       } else if (data.indexOf("chunk:") === 0 && received) {
@@ -158,7 +250,37 @@ export function buildPdfJsHtml(
     pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
     post({ type: "ready" });
     const bytes = await documentReady;
-    const pdf = await pdfjs.getDocument({ data: bytes, isEvalSupported: false }).promise;
+    class CMapReaderFactory {
+      async fetch({ name }) { return { cMapData: await requestAsset("cmap", name + ".bcmap"), isCompressed: true }; }
+    }
+    class StandardFontDataFactory {
+      async fetch({ filename }) { return requestAsset("font", filename); }
+    }
+    const task = pdfjs.getDocument({
+      data: bytes,
+      isEvalSupported: false,
+      // Text in non-embedded CJK/CID fonts and the standard 14 fonts needs these.
+      CMapReaderFactory,
+      StandardFontDataFactory,
+    });
+    // A user-password PDF: ask for it in the page and keep the viewer waiting meanwhile.
+    task.onPassword = (updatePassword, reason) => {
+      const retry = reason === pdfjs.PasswordResponses.INCORRECT_PASSWORD;
+      post({ type: "password", retry });
+      const form = document.getElementById("password");
+      const input = document.getElementById("password-input");
+      document.getElementById("password-label").textContent = retry ? LABELS.wrongPassword : LABELS.password;
+      document.getElementById("password-open").textContent = LABELS.open;
+      form.style.display = "flex";
+      input.value = "";
+      input.focus();
+      form.onsubmit = (event) => {
+        event.preventDefault();
+        form.style.display = "none";
+        updatePassword(input.value);
+      };
+    };
+    const pdf = await task.promise;
     const container = document.getElementById("pages");
     const ratio = Math.min(window.devicePixelRatio || 1, 3);
     const slots = [];

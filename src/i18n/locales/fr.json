@@ -32,6 +32,8 @@
       "gone": "Ce lien a expiré ou n'est plus disponible.",
       "tooLarge": "Le fichier est trop volumineux.",
       "tooManyRequests": "Trop de tentatives. Patientez un instant puis réessayez.",
+      "tooManyRequestsSeconds": "Trop de tentatives. Réessayez dans {{count}} s.",
+      "tooManyRequestsMinutes": "Trop de tentatives. Réessayez dans {{count}} min.",
       "keepExtension": "Le nom du fichier doit conserver l'extension {{ext}}.",
       "fileNameRequired": "Saisissez un nom de fichier."
     }
@@ -1961,6 +1963,15 @@
   "pdfViewer": {
     "title": "PDF",
     "share": "Partager",
-    "loadError": "Impossible d'afficher ce PDF."
+    "loadError": "Impossible d'afficher ce PDF.",
+    "passwordPrompt": "Ce PDF est protégé. Saisissez son mot de passe.",
+    "wrongPassword": "Mot de passe incorrect. Réessayez.",
+    "open": "Ouvrir",
+    "cannotOpen": "Ce PDF ne peut pas être affiché ici (endommagé ou protégé). Ouvrez-le avec une autre application.",
+    "openWith": "Ouvrir avec…"
+  },
+  "imageViewer": {
+    "title": "Image",
+    "loadError": "Impossible d'afficher cette image."
   }
 }
