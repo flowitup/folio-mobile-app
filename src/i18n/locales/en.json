@@ -80,6 +80,9 @@
     "hint": "Your version: {{version}}. Already updated? Reopen the app."
   },
   "home": {
+    "noProjectAdmin": "Create your first project to track its budget, expenses, workers and schedule.",
+    "noProjectMember": "An admin of your company has to add you to a project. It will show up here as soon as they do.",
+    "createProject": "Create a project",
     "welcome": "Signed in as {{email}}",
     "projects": "Projects",
     "noProjects": "No projects yet.",

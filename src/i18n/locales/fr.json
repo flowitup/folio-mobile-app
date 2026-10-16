@@ -80,6 +80,9 @@
     "hint": "Votre version : {{version}}. Déjà à jour ? Rouvrez l’application."
   },
   "home": {
+    "noProjectAdmin": "Créez votre premier chantier pour suivre son budget, ses dépenses, ses ouvriers et son planning.",
+    "noProjectMember": "Un administrateur de votre entreprise doit vous ajouter à un chantier. Il apparaîtra ici dès que ce sera fait.",
+    "createProject": "Créer un chantier",
     "welcome": "Connecté en tant que {{email}}",
     "projects": "Chantiers",
     "noProjects": "Aucun chantier pour le moment.",

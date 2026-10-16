@@ -5,7 +5,7 @@ import { ActivityIndicator, View } from "react-native";
 
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
-import { EmptyState, ErrorState } from "@/components/ui/primitives";
+import { ErrorState } from "@/components/ui/primitives";
 import { useBillingAccess } from "@/features/companies/companies-api";
 import {
   AgendaCard,
@@ -14,6 +14,7 @@ import {
 } from "@/features/dashboard/overview-cards";
 import { OverviewDueTiles } from "@/features/dashboard/overview-due-tiles";
 import { OverviewHero } from "@/features/dashboard/overview-hero";
+import { NoProjectYet } from "@/features/dashboard/no-project-yet";
 import { TodayOnSiteCard } from "@/features/dashboard/today-on-site-card";
 import { useInvoices } from "@/features/invoices/invoices-api";
 import { useLaborEntries } from "@/features/labor/labor-api";
@@ -161,7 +162,7 @@ function OverviewTabContent() {
         />
       ) : null}
       {!isPending && !isError && !project ? (
-        <EmptyState message={t("dashboard.noProjects")} />
+        <NoProjectYet />
       ) : null}
       {project && invoices.isError && !invoices.data ? (
         <ErrorState

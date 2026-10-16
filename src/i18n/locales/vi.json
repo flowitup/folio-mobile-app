@@ -80,6 +80,9 @@
     "hint": "Phiên bản của bạn: {{version}}. Đã cập nhật rồi? Hãy mở lại ứng dụng."
   },
   "home": {
+    "noProjectAdmin": "Tạo công trình đầu tiên để theo dõi ngân sách, chi phí, công nhân và lịch làm việc.",
+    "noProjectMember": "Quản trị viên của công ty cần thêm bạn vào một công trình. Công trình sẽ hiện ở đây ngay khi được thêm.",
+    "createProject": "Tạo công trình",
     "welcome": "Đã đăng nhập: {{email}}",
     "projects": "Công trình",
     "noProjects": "Chưa có công trình nào.",
