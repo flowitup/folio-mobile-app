@@ -93,7 +93,7 @@ describe("ChangePhoneForm", () => {
     expect(mockRequestCode).toHaveBeenCalledWith("+33622222222");
     expect(
       await screen.findByText(
-        t("account.phone.codeSentTo", { phone: "+33622222222" }),
+        t("account.phone.codeSentTo", { phone: "+33 6 22 22 22 22" }),
       ),
     ).toBeTruthy();
 
@@ -202,7 +202,7 @@ describe("AccountSheet — phone number", () => {
     await fireEvent.press(screen.getByTestId("open-account"));
 
     expect(screen.getByTestId("account-phone")).toHaveTextContent(
-      /\+33611111111/,
+      /\+33 6 11 11 11 11/,
     );
     await fireEvent.press(screen.getByTestId("account-phone"));
     expect(mockPush).toHaveBeenCalledWith("/settings/phone");

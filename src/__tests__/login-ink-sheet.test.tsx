@@ -95,7 +95,7 @@ describe("Login — ink header + paper sheet (design 2c / 2d)", () => {
 
     expect(screen.getByText(t("login.codeTitle"))).toBeTruthy();
     expect(screen.getByTestId("login-code-sent")).toHaveTextContent(
-      "+33612345678",
+      "+33 6 12 34 56 78",
     );
     for (let index = 0; index < 6; index += 1) {
       expect(screen.getByTestId(`login-code-${index}`)).toBeTruthy();

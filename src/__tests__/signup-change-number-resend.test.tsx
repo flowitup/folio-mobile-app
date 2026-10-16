@@ -67,7 +67,7 @@ describe("sign-up: change number, then the same number again", () => {
 
     expect(mockRequestSignupOtp).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId("signup-code-sent")).toHaveTextContent(
-      "+33612345678",
+      "+33 6 12 34 56 78",
     );
     expect(screen.queryByTestId("signup-error")).toBeNull();
   });

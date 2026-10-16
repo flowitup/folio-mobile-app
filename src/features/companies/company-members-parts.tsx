@@ -21,6 +21,7 @@ import {
   memberSecondaryLabel,
 } from "@/lib/companies/member-display";
 import { formatDate } from "@/lib/format/date";
+import { formatFrenchPhone } from "@/lib/auth/phone-number";
 
 const ROLE_OPTIONS: CompanyRole[] = ["admin", "manager", "member"];
 
@@ -230,7 +231,7 @@ export function PendingPersonRow({
       </View>
       {person.phone ? (
         <Text className="mt-0.5 font-sans text-[11.5px] text-muted">
-          {person.phone}
+          {formatFrenchPhone(person.phone)}
         </Text>
       ) : null}
       <View className="mt-2 flex-row">

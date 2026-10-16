@@ -19,7 +19,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
 import { useAdminUserSearch, useUpdateUser } from "@/features/admin/admin-api";
 import type { UserSearchItem } from "@/features/admin/admin-api";
-import { normalizePhone } from "@/lib/auth/phone-number";
+import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 
 /** Platform ops: search a user by email/name and edit their identity fields. */
 export default function AdminUsersScreen() {
@@ -100,7 +100,7 @@ export default function AdminUsersScreen() {
                 </Text>
                 <Text className="text-xs text-muted-foreground">
                   {item.email}
-                  {item.phone ? ` · ${item.phone}` : ""}
+                  {item.phone ? ` · ${formatFrenchPhone(item.phone)}` : ""}
                 </Text>
               </Pressable>
             ))

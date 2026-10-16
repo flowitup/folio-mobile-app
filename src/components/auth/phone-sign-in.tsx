@@ -14,7 +14,7 @@ import { CODE_LENGTH, OtpCodeBoxes } from "@/components/auth/otp-code-boxes";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Eyebrow } from "@/components/ui/typography";
-import { normalizePhone } from "@/lib/auth/phone-number";
+import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { useCodeExpiry } from "@/lib/auth/use-code-expiry";
 import { INK_BLOCK } from "@/theme/tokens";
 
@@ -207,7 +207,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
       sub={
         <Trans
           i18nKey="login.codeSentTo"
-          values={{ phone: sentTo }}
+          values={{ phone: formatFrenchPhone(sentTo) }}
           components={{
             mono: (
               <Text

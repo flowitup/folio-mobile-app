@@ -15,7 +15,7 @@ import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/typography";
 import { AuthRequestError } from "@/lib/auth/auth-error-message";
-import { normalizePhone } from "@/lib/auth/phone-number";
+import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { useTokens } from "@/theme/tokens";
 
 type Step = "phone" | "code" | "name";
@@ -150,7 +150,7 @@ export default function SignupScreen() {
             <Text className="mb-4 font-sans text-[14px] text-ink">
               <Trans
                 i18nKey="login.codeSentTo"
-                values={{ phone }}
+                values={{ phone: formatFrenchPhone(phone) }}
                 components={{
                   mono: (
                     <Text

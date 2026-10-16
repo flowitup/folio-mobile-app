@@ -253,7 +253,7 @@ describe("Members · phone sign-ups", () => {
     await renderWithProviders(<ProjectMembersSection />);
 
     expect(await screen.findByText("QA Waiting C")).toBeTruthy();
-    expect(screen.getByText("+33600000097")).toBeTruthy();
+    expect(screen.getByText("+33 6 00 00 00 97")).toBeTruthy();
     expect(screen.queryByText(/no-email\.folio/)).toBeNull();
 
     await fireEvent.press(screen.getByTestId("member-remove-u-phone"));

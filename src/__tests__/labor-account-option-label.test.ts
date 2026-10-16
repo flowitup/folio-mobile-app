@@ -9,7 +9,7 @@ describe("accountOptionLabel", () => {
         display_name: "QA Phone Only",
         phone: "+33621600101",
       }),
-    ).toBe("QA Phone Only · +33621600101");
+    ).toBe("QA Phone Only · +33 6 21 60 01 01");
   });
 
   it("falls back to the number the synthetic address was built from", () => {
@@ -19,7 +19,7 @@ describe("accountOptionLabel", () => {
         email: "phone-33621600101@no-email.folio.flowitup.com",
         display_name: null,
       }),
-    ).toBe("+33621600101");
+    ).toBe("+33 6 21 60 01 01");
   });
 
   it("keeps a real e-mail next to the name", () => {

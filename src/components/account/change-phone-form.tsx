@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { showToast } from "@/components/ui/toast";
 import { Eyebrow } from "@/components/ui/typography";
-import { normalizePhone } from "@/lib/auth/phone-number";
+import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { useCodeExpiry } from "@/lib/auth/use-code-expiry";
 import { useTokens } from "@/theme/tokens";
 
@@ -104,7 +104,7 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
     return (
       <View testID="change-phone-step-number">
         <Text className="mb-5 font-sans text-[14px] leading-5 text-muted">
-          {t("account.phone.intro", { phone: user?.phone ?? "—" })}
+          {t("account.phone.intro", { phone: user?.phone ? formatFrenchPhone(user.phone) : "—" })}
         </Text>
         <Eyebrow className="mb-2">{t("account.phone.newNumber")}</Eyebrow>
         <FrenchPhoneField
@@ -133,7 +133,7 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
   return (
     <View testID="change-phone-step-code">
       <Text className="mb-5 font-sans text-[14px] leading-5 text-muted">
-        {t("account.phone.codeSentTo", { phone: sentTo })}
+        {t("account.phone.codeSentTo", { phone: formatFrenchPhone(sentTo) })}
       </Text>
       <Eyebrow className="mb-2">{t("login.code")}</Eyebrow>
       <OtpCodeBoxes

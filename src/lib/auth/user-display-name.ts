@@ -1,3 +1,5 @@
+import { formatFrenchPhone } from "@/lib/auth/phone-number";
+
 /**
  * How the signed-in user is labelled in the shell (avatar initial, account sheet).
  *
@@ -41,5 +43,7 @@ export function accountContact(
   email: string | null | undefined,
   phone?: string | null,
 ): string | null {
-  return realEmail(email) ?? (phone?.trim() || null) ?? phoneOfSyntheticEmail(email);
+  const number = phone?.trim() || phoneOfSyntheticEmail(email);
+  // Written as everywhere else ("+33 6 12 34 56 78"), not raw E.164.
+  return realEmail(email) ?? (number ? formatFrenchPhone(number) : null);
 }

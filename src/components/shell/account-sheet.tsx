@@ -13,6 +13,7 @@ import { Icon } from "@/components/ui/icon";
 import i18n, { SUPPORTED_LOCALES, setLocale } from "@/i18n";
 import type { SupportedLocale } from "@/i18n";
 import { useTokens } from "@/theme/tokens";
+import { formatFrenchPhone } from "@/lib/auth/phone-number";
 
 function currentLocale(): SupportedLocale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(i18n.language)
@@ -86,7 +87,7 @@ export function AccountSheet() {
             {t("account.phone.title")}
           </Text>
           <Text className="font-mono text-[13px] text-muted">
-            {user?.phone ?? t("account.phone.change")}
+            {user?.phone ? formatFrenchPhone(user.phone) : t("account.phone.change")}
           </Text>
         </Pressable>
         <Pressable

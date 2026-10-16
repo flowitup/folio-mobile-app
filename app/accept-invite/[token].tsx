@@ -24,7 +24,7 @@ import type {
   InviteErrorReason,
   VerifyInviteResponse,
 } from "@/features/invitations/invitations-api";
-import { normalizePhone } from "@/lib/auth/phone-number";
+import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { userDisplayName } from "@/lib/auth/user-display-name";
 
 type State =
@@ -339,7 +339,7 @@ export default function AcceptInviteScreen() {
                 >
                   <Trans
                     i18nKey="login.codeSentTo"
-                    values={{ phone: sentTo }}
+                    values={{ phone: formatFrenchPhone(sentTo) }}
                     components={{
                       mono: <Text className="font-mono text-sm text-primary" />,
                     }}
