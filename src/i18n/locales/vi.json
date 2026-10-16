@@ -569,7 +569,8 @@
       "tho_phu": "Thợ phụ"
     },
     "entry": {
-      "deleteConfirm": "Xóa bản chấm công này?"
+      "deleteConfirm": "Xóa bản chấm công này?",
+      "pendingHint": "Ngày công do nhân công tự chấm, đang chờ duyệt: chỉ được tính sau khi duyệt."
     },
     "overview": {
       "totalCost": "Tổng chi phí nhân công",

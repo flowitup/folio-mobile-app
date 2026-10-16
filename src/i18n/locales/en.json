@@ -569,7 +569,8 @@
       "tho_phu": "Assistant worker"
     },
     "entry": {
-      "deleteConfirm": "Delete this attendance entry?"
+      "deleteConfirm": "Delete this attendance entry?",
+      "pendingHint": "Day logged by the worker, waiting for validation: it only counts once validated."
     },
     "overview": {
       "totalCost": "Total labor cost",

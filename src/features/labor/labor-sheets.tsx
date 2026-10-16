@@ -719,11 +719,20 @@ type EditEntryProps = {
   submitting: boolean;
   onSubmit: (values: UpdateAttendancePayload) => void;
   onDelete: () => void;
+  /**
+   * Settle a worker's self-logged day (status pending) or their change request
+   * from here, as the bell does: true validates/applies, false refuses.
+   */
+  onDecide?: (approve: boolean) => void;
+  deciding?: boolean;
 };
 
 /** Edit one attendance row: shift, supplement, override, note; delete. */
 export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
-  function EditEntrySheet({ entry, submitting, onSubmit, onDelete }, ref) {
+  function EditEntrySheet(
+    { entry, submitting, onSubmit, onDelete, onDecide, deciding = false },
+    ref,
+  ) {
     const { t } = useTranslation();
     const sheet = useRef<BottomSheetModal>(null);
     const [shift, setShift] = useState<ShiftType | "none">("full");
@@ -784,6 +793,13 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
                 })
               : null;
 
+    const decision =
+      entry?.status === "pending"
+        ? "pending"
+        : entry?.change_requested_at
+          ? "change"
+          : null;
+
     return (
       <Sheet
         ref={sheet}
@@ -791,6 +807,39 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
         snapPoints={["80%"]}
       >
         <ScrollView contentContainerClassName="p-4">
+          {onDecide && decision ? (
+            <View
+              testID="entry-decision"
+              className="mb-4 rounded-[14px] bg-warning-tint p-3"
+            >
+              <Text className="mb-2 text-sm text-ink">
+                {decision === "pending"
+                  ? t("labor.entry.pendingHint")
+                  : t("notifications.attendance.changeTitle")}
+              </Text>
+              <View className="flex-row gap-2">
+                <Button
+                  testID="entry-validate"
+                  size="sm"
+                  label={
+                    decision === "pending"
+                      ? t("notifications.attendance.validate")
+                      : t("notifications.attendance.validateChange")
+                  }
+                  loading={deciding}
+                  onPress={() => onDecide(true)}
+                />
+                <Button
+                  testID="entry-reject"
+                  size="sm"
+                  variant="secondary"
+                  label={t("notifications.attendance.reject")}
+                  disabled={deciding}
+                  onPress={() => onDecide(false)}
+                />
+              </View>
+            </View>
+          ) : null}
           <Select<ShiftType | "none">
             testID="entry-shift"
             label={t("labor.log.shiftType")}

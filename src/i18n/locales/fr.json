@@ -569,7 +569,8 @@
       "tho_phu": "Ouvrier auxiliaire"
     },
     "entry": {
-      "deleteConfirm": "Supprimer ce pointage ?"
+      "deleteConfirm": "Supprimer ce pointage ?",
+      "pendingHint": "Journée saisie par l’ouvrier, en attente de validation : elle ne compte qu’une fois validée."
     },
     "overview": {
       "totalCost": "Coût total main-d'œuvre",

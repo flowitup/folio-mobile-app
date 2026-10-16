@@ -16,6 +16,7 @@ import { useChatEnabled } from "@/features/chat/chat-api";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { Segmented } from "@/components/ui/chip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { showToast } from "@/components/ui/toast";
 import { Icon } from "@/components/ui/icon";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { EmptyState } from "@/components/ui/primitives";
@@ -33,11 +34,14 @@ import {
   useBulkLog,
   useCreateWorker,
   useDayDescriptions,
+  useDecideAttendanceChange,
   useDeleteAttendance,
   useDeleteWorker,
   useLaborEntries,
   useLaborSummary,
+  useRejectAttendance,
   useUpdateAttendance,
+  useValidateAttendance,
   useUpdateWorker,
   useWorkers,
 } from "@/features/labor/labor-api";
@@ -157,6 +161,10 @@ function LaborTabContent() {
   const bulkLog = useBulkLog(id);
   const updateEntry = useUpdateAttendance(id);
   const deleteEntry = useDeleteAttendance(id);
+  const validateEntry = useValidateAttendance();
+  const rejectEntry = useRejectAttendance();
+  const decideChange = useDecideAttendanceChange();
+  const [rejectingEntry, setRejectingEntry] = useState<LaborEntry | null>(null);
 
   const [editingWorker, setEditingWorker] = useState<Worker | undefined>(
     undefined,
@@ -581,6 +589,72 @@ function LaborTabContent() {
           )
         }
         onDelete={() => editingEntry && setDeletingEntry(editingEntry)}
+        deciding={validateEntry.isPending || decideChange.isPending}
+        onDecide={(approve) => {
+          if (!editingEntry) return;
+          if (!approve) return setRejectingEntry(editingEntry);
+          const done = (key: string) => () => {
+            entrySheet.current?.close();
+            showToast(t(key), "success");
+          };
+          const ids = { projectId: id, entryId: editingEntry.id };
+          if (editingEntry.status === "pending")
+            validateEntry.mutate(ids, {
+              onSuccess: done("notifications.attendance.validatedToast"),
+            });
+          else
+            decideChange.mutate(
+              { ...ids, approve: true },
+              {
+                onSuccess: done(
+                  "notifications.attendance.validatedChangeToast",
+                ),
+              },
+            );
+        }}
+      />
+      <ConfirmDialog
+        visible={rejectingEntry !== null}
+        title={t("notifications.attendance.reject")}
+        message={
+          rejectingEntry
+            ? t(
+                rejectingEntry.status === "pending"
+                  ? "notifications.attendance.rejectConfirm"
+                  : "notifications.attendance.rejectChangeConfirm",
+                {
+                  worker: rejectingEntry.worker_name,
+                  date: formatDate(rejectingEntry.date),
+                },
+              )
+            : undefined
+        }
+        confirmLabel={t("notifications.attendance.reject")}
+        cancelLabel={t("common.cancel")}
+        destructive
+        loading={rejectEntry.isPending || decideChange.isPending}
+        onCancel={() => setRejectingEntry(null)}
+        onConfirm={() => {
+          if (!rejectingEntry) return;
+          const ids = { projectId: id, entryId: rejectingEntry.id };
+          const settle = {
+            onSuccess: () => {
+              entrySheet.current?.close();
+              showToast(
+                t(
+                  rejectingEntry.status === "pending"
+                    ? "notifications.attendance.rejectedToast"
+                    : "notifications.attendance.rejectedChangeToast",
+                ),
+                "success",
+              );
+            },
+            onSettled: () => setRejectingEntry(null),
+          };
+          if (rejectingEntry.status === "pending")
+            rejectEntry.mutate(ids, settle);
+          else decideChange.mutate({ ...ids, approve: false }, settle);
+        }}
       />
       <DayDetailsSheet
         ref={detailsSheet}
