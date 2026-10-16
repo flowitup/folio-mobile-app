@@ -18,11 +18,16 @@ jest.mock("expo-device", () => ({ isDevice: false }));
 jest.mock("expo-notifications", () => ({
   AndroidImportance: { HIGH: 4 },
   setNotificationChannelAsync: jest.fn(async () => undefined),
-  getPermissionsAsync: jest.fn(async () => ({ granted: false })),
+  getPermissionsAsync: jest.fn(async () => ({ granted: false, canAskAgain: true })),
   requestPermissionsAsync: jest.fn(async () => ({ granted: false })),
 }));
 
 jest.mock("@/api/client", () => ({ api: { POST: jest.fn() } }));
+
+// The app's own explanation comes first (auth-onboarding): the user accepts it here.
+jest.mock("@/features/push/push-pre-prompt", () => ({
+  confirmPushPrePrompt: jest.fn(async () => true),
+}));
 
 describe("registerPushDevice", () => {
   beforeEach(() => jest.clearAllMocks());
