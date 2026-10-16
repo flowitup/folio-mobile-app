@@ -281,3 +281,34 @@ export function monthRateLabel(
     return `${format(start)} → ${format(rate)}`;
   return format(rate);
 }
+
+/**
+ * What each worker was paid beyond their earnings in the months before `month` ("YYYY-MM"),
+ * netted across those months (positive credits only). A worker paid 250 € in September for
+ * 99,99 € of work starts October with 150,01 € in hand, so October is not offered for
+ * payment again. Payments with no month are left out.
+ */
+export function earlierCreditByWorker(
+  rows: readonly MonthlySummaryRow[],
+  payments: LaborPaymentsSummary | null | undefined,
+  month: string,
+): Map<string, number> {
+  const net = new Map<string, number>();
+  const add = (id: string, value: number) =>
+    net.set(id, (net.get(id) ?? 0) + value);
+  for (const row of rows) {
+    if (monthKey(row.year, row.month) >= month) continue;
+    for (const w of row.workers) add(w.worker_id, -w.total_cost);
+  }
+  for (const b of payments?.months ?? []) {
+    if (b.year == null || b.month == null) continue;
+    if (monthKey(b.year, b.month) >= month) continue;
+    for (const w of b.workers) add(w.worker_id, w.paid);
+  }
+  const credits = new Map<string, number>();
+  for (const [id, value] of net) {
+    const rounded = Math.round(value * 100) / 100;
+    if (rounded >= CENT) credits.set(id, rounded);
+  }
+  return credits;
+}

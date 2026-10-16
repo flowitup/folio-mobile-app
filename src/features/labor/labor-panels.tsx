@@ -371,7 +371,14 @@ export type PaymentRow = {
   color: string;
   owed: number;
   paid: number;
+  /** Overpaid in earlier months and deducted from what is due now. */
+  credit?: number;
 };
+
+/** What is still to pay on a row, after this month's payments and any earlier credit. */
+export function rowDue(row: PaymentRow): number {
+  return Math.max(0, row.owed - row.paid - (row.credit ?? 0));
+}
 
 type PaymentsPanelProps = {
   rows: PaymentRow[];
@@ -388,20 +395,18 @@ export function PaymentsPanel({
   canRecord,
 }: PaymentsPanelProps) {
   const { t } = useTranslation();
-  const totalDue = rows.reduce(
-    (sum, row) => sum + Math.max(0, row.owed - row.paid),
-    0,
-  );
+  const totalDue = rows.reduce((sum, row) => sum + rowDue(row), 0);
   return (
     <View className="gap-2">
       {rows.length === 0 ? (
         <EmptyState message={t("labor.payments.none")} />
       ) : null}
       {rows.map((row) => {
-        const due = Math.max(0, row.owed - row.paid);
+        const due = rowDue(row);
+        const covered = row.paid + (row.credit ?? 0);
         const pct =
           row.owed > 0
-            ? Math.min(100, Math.round((row.paid / row.owed) * 100))
+            ? Math.min(100, Math.round((covered / row.owed) * 100))
             : 100;
         return (
           <Pressable
@@ -456,6 +461,16 @@ export function PaymentsPanel({
                   </Text>
                 </Text>
               </View>
+              {(row.credit ?? 0) > 0 ? (
+                <Text
+                  testID={`payment-credit-${row.worker.id}`}
+                  className="mt-1 font-sans text-[11px] text-muted"
+                >
+                  {t("salaries.creditDeducted", {
+                    amount: formatMoney(row.credit ?? 0),
+                  })}
+                </Text>
+              ) : null}
             </Card>
           </Pressable>
         );
