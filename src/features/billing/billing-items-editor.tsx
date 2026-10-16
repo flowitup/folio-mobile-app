@@ -51,23 +51,26 @@ export function itemsFromResponse(items: BillingDocumentItem[]): ItemDraft[] {
  * rest of the app uses, so "1 234,50" and "1.234,50" survive the trip instead of reaching the
  * backend as the unparsable text the old comma → dot swap left behind.
  */
-const decimal = (value: string) => {
+// A quantity of "2,375" m³ is a decimal; for a price or a rate "1.500" is refused as ambiguous.
+const QUANTITY = { ambiguousGrouping: "decimal" } as const;
+
+const decimal = (value: string, options = {}) => {
   // A blank figure is 0, as `validateItems` reads it: an empty unit price is a free line,
   // which the API refused as "" (422) after the form had accepted it.
   if (value.trim() === "") return "0";
-  const parsed = parseMoneyInput(value);
+  const parsed = parseMoneyInput(value, options);
   return parsed === null ? value.trim() : String(parsed);
 };
 
 /** Typed number, or null when the text is not a number at all. Empty reads as 0. */
-const numberOf = (value: string) =>
-  value.trim() === "" ? 0 : parseMoneyInput(value);
+const numberOf = (value: string, options = {}) =>
+  value.trim() === "" ? 0 : parseMoneyInput(value, options);
 
 /** Decimal strings go to the API untouched except for the comma → dot normalisation. */
 export function itemsToPayload(items: ItemDraft[]): BillingDocumentItem[] {
   return items.map((item) => ({
     description: item.description.trim(),
-    quantity: decimal(item.quantity),
+    quantity: decimal(item.quantity, QUANTITY),
     unit_price: decimal(item.unit_price),
     vat_rate: decimal(item.vat_rate),
     category: item.category.trim() || null,
@@ -94,7 +97,7 @@ export function validateItems(
 ): Record<number, ItemErrors> {
   const errors: Record<number, ItemErrors> = {};
   items.forEach((item, index) => {
-    const quantity = numberOf(item.quantity);
+    const quantity = numberOf(item.quantity, QUANTITY);
     const price = numberOf(item.unit_price);
     const vat = numberOf(item.vat_rate);
     const line: ItemErrors = {};

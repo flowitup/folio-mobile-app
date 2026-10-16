@@ -67,6 +67,10 @@ export interface InvoiceMonthGroup {
   expenseSubtotal: number;
   /** Number of rows behind `expenseSubtotal` — same rule, so the two always agree. */
   expenseCount: number;
+  /** How many of `expenseCount` are returns (avoirs), so a count can say "7 expenses · 2 returns". */
+  returnCount: number;
+  /** Net Σ of the month's bank releases (cash advances left out: they are not a draw). */
+  releasedSubtotal: number;
   /** Non-empty category groups, in GROUP_ORDER. */
   categories: MonthCategoryGroup[];
 }
@@ -107,6 +111,12 @@ export function groupInvoicesByMonth(invoices: Invoice[]): InvoiceMonthGroup[] {
       ),
       expenseCount: monthInvoices.filter((inv) => countsTowardSpend(inv.type))
         .length,
+      returnCount: monthInvoices.filter((inv) => inv.type === "return").length,
+      releasedSubtotal: monthInvoices.reduce(
+        (sum, inv) =>
+          ledgerTypeOf(inv) === "released_funds" ? sum + inv.total_amount : sum,
+        0,
+      ),
       categories: GROUP_ORDER.map((type) => {
         const items = monthInvoices
           .filter((inv) => ledgerTypeOf(inv) === type)

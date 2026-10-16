@@ -3,8 +3,10 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import i18n from "@/i18n";
 import OverviewTab from "../../app/(app)/(tabs)/index";
 import { formatMoney } from "@/lib/format/money";
+import type { Invoice } from "@/features/invoices/invoice-types";
 import {
   COMPANY_ID,
+  INVOICE_MATERIALS,
   PROJECT_ID,
   TODAY,
   answerGet,
@@ -72,6 +74,27 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockGet.mockImplementation(answerGet(() => mockPersona));
 });
+
+/** The materials expense waits for its company refund, so the tile offers "View". */
+function withPendingRefund() {
+  const answer = answerGet(() => mockPersona);
+  mockGet.mockImplementation(async (path: string, options?: unknown) => {
+    const result = await answer(path, options as never);
+    if (path !== "/api/v1/projects/{project_id}/invoices") return result;
+    const data = result.data as { invoices: Invoice[] };
+    return {
+      ...result,
+      data: {
+        ...data,
+        invoices: data.invoices.map((row) =>
+          row.id === INVOICE_MATERIALS.id
+            ? { ...row, refundable_status: "refundable" }
+            : row,
+        ),
+      },
+    };
+  });
+}
 
 
 describe("overview tab · manager", () => {
@@ -166,12 +189,28 @@ describe("overview tab · manager", () => {
   });
 
   it("sends a manager (not a company admin) to the expenses tab for pending refunds", async () => {
+    withPendingRefund();
     await renderWithProviders(<OverviewTab />);
     await screen.findByTestId("overview-due-tiles");
 
     await fireEvent.press(screen.getByTestId("overview-pending-refunds"));
     expect(mockRouter.navigate).toHaveBeenCalledWith("/(app)/(tabs)/expenses");
     expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+});
+
+describe("overview tab · nothing due", () => {
+  beforeEach(() => {
+    mockPersona = persona("admin");
+  });
+
+  it("offers no 'pay now' or 'view' over 0,00 €", async () => {
+    await renderWithProviders(<OverviewTab />);
+    await screen.findByTestId("overview-due-tiles");
+    expect(screen.getByTestId("overview-figure-pending")).toHaveTextContent(
+      containing(formatMoney(0)),
+    );
+    expect(screen.queryByTestId("overview-pending-refunds")).toBeNull();
   });
 });
 
@@ -198,6 +237,7 @@ describe("overview tab · admin", () => {
   });
 
   it("opens the refund list of the project's company for pending refunds", async () => {
+    withPendingRefund();
     await renderWithProviders(<OverviewTab />);
     await screen.findByTestId("overview-due-tiles");
 

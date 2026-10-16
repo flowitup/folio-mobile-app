@@ -53,3 +53,14 @@ describe("bank draw series", () => {
     expect(series.totalDrawn).toBe(10000);
   });
 });
+
+describe("month counts and release subtotal", () => {
+  it("counts returns apart and sums the releases, leaving the advance out", () => {
+    const back = inv({ id: "ret", type: "return", total_amount: -15 });
+    const [month] = groupInvoicesByMonth([advance, release, other, back]);
+    expect(month.expenseCount).toBe(2);
+    expect(month.returnCount).toBe(1);
+    expect(month.expenseSubtotal).toBe(25);
+    expect(month.releasedSubtotal).toBe(10000);
+  });
+});

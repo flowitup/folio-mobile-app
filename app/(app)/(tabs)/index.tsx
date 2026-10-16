@@ -36,7 +36,7 @@ import {
   computePendingRefunds,
   computeSpentTotal,
 } from "@/lib/dashboard/overview-metrics";
-import { parseIsoDate, toIsoDate } from "@/lib/format/date";
+import { businessToday, parseIsoDate, toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { INK_BLOCK } from "@/theme/tokens";
 
@@ -71,9 +71,11 @@ function OverviewTabContent() {
 
   // Keyed on the calendar day so an app left open across midnight moves on with it.
   const todayIso = toIsoDate(new Date());
+  // "This month" is the business's (Paris) month, as on the web dashboard.
+  const businessDay = businessToday();
   const referenceDate = useMemo(
-    () => parseIsoDate(todayIso) ?? new Date(),
-    [todayIso],
+    () => parseIsoDate(businessDay) ?? new Date(),
+    [businessDay],
   );
   const todayEntries = useLaborEntries(projectId, todayIso, todayIso);
   useRefetchOnFocus(todayEntries.refetch);
@@ -104,6 +106,12 @@ function OverviewTabContent() {
   const ready = Boolean(project && invoices.data);
   // The last agenda line must clear the floating chat button.
   const bottomPadding = useChatFabReserve();
+  // A chart mark opens the expenses it adds up: its month, and its type when it has one.
+  const openExpenses = (filters: { month?: string; type?: string } = {}) =>
+    router.navigate({
+      pathname: "/(app)/(tabs)/expenses",
+      params: { ...filters, focus: Date.now().toString() },
+    });
   // The labor tab applies `segment` from an effect keyed on the params it receives, so a
   // repeated tap must carry a value that changed — otherwise the second one is a no-op once
   // the user has moved to another segment themselves.
@@ -198,11 +206,11 @@ function OverviewTabContent() {
                 currentMonthKey={metrics.monthDelta.current.key}
                 totalCurrent={metrics.monthDelta.current.total}
                 totalDeltaPct={metrics.monthDelta.deltaPct}
-                onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+                onOpenExpenses={openExpenses}
               />
               <TypeTrendsCard
                 buckets={metrics.buckets}
-                onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+                onOpenExpenses={openExpenses}
               />
             </>
           ) : null}
@@ -212,7 +220,7 @@ function OverviewTabContent() {
             onOpenTask={(task) =>
               router.navigate({
                 pathname: "/(app)/(tabs)/planning",
-                params: { task: task.id },
+                params: { task: task.id, project: projectId ?? undefined },
               })
             }
           />

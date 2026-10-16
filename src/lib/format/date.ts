@@ -141,6 +141,14 @@ export function formatMonth(month: string): string {
   }).format(date);
 }
 
+/**
+ * Upper-cases the first letter only. The `capitalize` text style upper-cases every word, which
+ * turns vi "tháng 9 năm 2026" into "Tháng 9 Năm 2026".
+ */
+export function capitalizeFirst(text: string): string {
+  return text.charAt(0).toLocaleUpperCase() + text.slice(1);
+}
+
 /** `YYYY-MM` shifted by `delta` months. */
 export function shiftMonth(month: string, delta: number): string {
   const [y, m] = month.split("-").map(Number);
@@ -150,4 +158,13 @@ export function shiftMonth(month: string, delta: number): string {
 
 export function currentMonth(): string {
   return toIsoDate(new Date()).slice(0, 7);
+}
+
+/**
+ * `YYYY-MM-DD` of today in Paris: the business's day. The overview and the expenses tab
+ * take "this month" from it, as the web dashboard does, so a phone set to Vietnam time
+ * does not show November on the evening of 31 October.
+ */
+export function businessToday(): string {
+  return parisDayKey(new Date().toISOString());
 }

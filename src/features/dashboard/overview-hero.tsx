@@ -122,9 +122,17 @@ export function OverviewHero({
           {canViewBudget ? (
             <RingGauge
               testID="overview-ring"
+              // The label is the share of ALL spend: spend in neither purse (no company or
+              // personal payment method) gets its own arc so the ring matches it.
               segments={[
                 { pct: share(spentByCredits), color: INK_BLOCK.text },
                 { pct: share(spentPersonal), color: INK_BLOCK.muted },
+                {
+                  pct: share(
+                    Math.max(0, spentTotal - spentByCredits - spentPersonal),
+                  ),
+                  color: INK_BLOCK.warning,
+                },
               ]}
               trackColor={INK_BLOCK.tile}
             >

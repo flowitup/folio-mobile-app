@@ -22,7 +22,15 @@ describe("PurseCard · cash advance", () => {
         tone="company"
       />,
     );
-    expect(screen.getByText(formatMoney(30))).toBeTruthy();
+    expect(screen.getByTestId("purse-figure")).toHaveTextContent(
+      `${formatMoney(30)} ${i18n.t("invoices.summary.left")}`,
+    );
+    expect(screen.getByTestId("purse-line")).toHaveTextContent(
+      i18n.t("invoices.summary.purseLine", {
+        released: formatMoney(1000),
+        spent: formatMoney(970),
+      }),
+    );
     expect(screen.getByTestId("purse-cash-advance").props.children).toBe(
       i18n.t("invoices.summary.cashAdvance", { amount: formatMoney(800) }),
     );
@@ -39,5 +47,41 @@ describe("PurseCard · cash advance", () => {
       />,
     );
     expect(screen.queryByTestId("purse-cash-advance")).toBeNull();
+  });
+});
+
+describe("PurseCard · over and unfunded", () => {
+  it("says a purse spent past its release is over, without capping the share", async () => {
+    await renderWithProviders(
+      <PurseCard
+        testID="purse"
+        label="Company"
+        released={1000}
+        spent={1250}
+        tone="company"
+      />,
+    );
+    expect(screen.getByTestId("purse-pct")).toHaveTextContent("125 %");
+    expect(screen.getByTestId("purse-figure")).toHaveTextContent(
+      `${formatMoney(250)} ${i18n.t("invoices.summary.overLower")}`,
+    );
+  });
+
+  it("calls spend with nothing released 'not funded' instead of 0 %", async () => {
+    await renderWithProviders(
+      <PurseCard
+        testID="purse"
+        label="Personal"
+        released={0}
+        spent={366.12}
+        tone="personal"
+      />,
+    );
+    expect(screen.getByTestId("purse-pct")).toHaveTextContent(
+      i18n.t("invoices.summary.unfunded"),
+    );
+    expect(screen.getByTestId("purse-figure")).toHaveTextContent(
+      `${formatMoney(366.12)} ${i18n.t("invoices.summary.spentLower")}`,
+    );
   });
 });

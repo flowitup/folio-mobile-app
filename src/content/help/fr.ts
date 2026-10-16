@@ -209,7 +209,7 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Renseignez le destinataire, éventuellement son adresse, et choisissez un moyen de paiement.",
       "Pour un retour, liez la facture matériaux & services remboursée, indiquez s'il a été réglé en espèces ou par avoir, et, s'il s'agit d'un avoir, à quelle facture il a été appliqué.",
       "Ajoutez au moins une ligne avec une description, une quantité, un prix unitaire et un taux de TVA.",
-      "Vérifiez les totaux, ajoutez des notes ou une couleur de surlignage, puis touchez « Créer la facture ».",
+      "Vérifiez les totaux, ajoutez des notes ou une couleur de surlignage, puis touchez « Créer la dépense ».",
     ],
     whoCanDoIt:
       "Tout membre du chantier peut ouvrir le formulaire ; c'est le serveur qui décide si la dépense est acceptée. « Fonds débloqués » n'apparaît qu'avec le droit de voir le budget.",

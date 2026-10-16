@@ -1,6 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
@@ -32,7 +32,8 @@ import {
 } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
-import { currentMonth, formatMonth, shiftMonth } from "@/lib/format/date";
+import { businessToday, formatMonth, shiftMonth } from "@/lib/format/date";
+import { formatMoney } from "@/lib/format/money";
 import { buildPursesSummary } from "@/lib/invoices/expense-purses";
 import {
   groupInvoicesByMonth,
@@ -73,7 +74,26 @@ function ExpensesTabContent() {
   const { tabBarHeight } = useShell();
   const { projectId, project } = useSelectedProject();
   const [filter, setFilter] = useState<Filter>("all");
-  const [month, setMonth] = useState(currentMonth());
+  // Opens on the business's (Paris) month, the one the overview calls "this month".
+  const [month, setMonth] = useState(() => businessToday().slice(0, 7));
+  // A bar or a type tapped on the overview opens this tab on its month and type. The link
+  // carries a changing `focus` nonce so the same bar tapped again re-applies them.
+  const params = useLocalSearchParams<{
+    month?: string;
+    type?: string;
+    focus?: string;
+  }>();
+  useEffect(() => {
+    if (!params.focus) return;
+    if (params.month && /^\d{4}-\d{2}$/.test(params.month))
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setMonth(params.month);
+    setFilter(
+      params.type && (FILTERS as string[]).includes(params.type)
+        ? (params.type as Filter)
+        : "all",
+    );
+  }, [params.month, params.type, params.focus]);
   const invoices = useInvoices(projectId);
   const canViewBudget = useProjectCan(projectId, "project:view_budget");
   // Writing an invoice needs `project:manage_invoices`; without it the form would only walk
@@ -95,11 +115,11 @@ function ExpensesTabContent() {
   const rows = useMemo(() => invoices.data?.invoices ?? [], [invoices.data]);
   const allMonths = useMemo(() => groupInvoicesByMonth(rows), [rows]);
   // The stepper cannot go past the newest month that has data (or the current month).
-  const latestMonth = allMonths[0]
-    ? allMonths[0].monthKey > currentMonth()
+  const thisMonth = businessToday().slice(0, 7);
+  const latestMonth =
+    allMonths[0] && allMonths[0].monthKey > thisMonth
       ? allMonths[0].monthKey
-      : currentMonth()
-    : currentMonth();
+      : thisMonth;
   // Type filtering is client-side (README "Chi phí"): one list fetch, chips just narrow it.
   // The list shows the selected month first, then the older months.
   const months = useMemo(() => {
@@ -118,7 +138,15 @@ function ExpensesTabContent() {
           filter === "all"
             ? group.expenseSubtotal
             : group.categories.reduce((sum, c) => sum + c.subtotal, 0),
-        invoices: group.categories.flatMap((category) => category.items),
+        // One date order for the whole card: the type groups have no header here, so
+        // listing them back to back made the dates look shuffled.
+        invoices: group.categories
+          .flatMap((category) => category.items)
+          .sort(
+            (a, b) =>
+              b.issue_date.localeCompare(a.issue_date) ||
+              b.invoice_number.localeCompare(a.invoice_number),
+          ),
       }))
       .filter((group) => group.invoices.length > 0);
   }, [rows, filter, month]);
@@ -127,8 +155,8 @@ function ExpensesTabContent() {
     // The figure above it is the month's SPEND — `expenseSubtotal` leaves the release
     // rows out — so the count beside it has to leave them out too, or a month with one
     // disbursement reads "4 items" next to a total that only adds up three of them.
-    const countOf = (key: string) =>
-      allMonths.find((m) => m.monthKey === key)?.expenseCount ?? 0;
+    // Counts say what they cover, like the web dashboard: "7 dépenses · 2 avoirs".
+    const current = allMonths.find((m) => m.monthKey === month);
     const totalOf = (key: string) =>
       allMonths.find((m) => m.monthKey === key)?.expenseSubtotal ?? 0;
     const previous = shiftMonth(month, -1);
@@ -136,7 +164,9 @@ function ExpensesTabContent() {
     const previousTotal = totalOf(previous);
     return {
       total,
-      count: countOf(month),
+      count: (current?.expenseCount ?? 0) - (current?.returnCount ?? 0),
+      returns: current?.returnCount ?? 0,
+      released: current?.releasedSubtotal ?? 0,
       previous,
       deltaPct:
         previousTotal > 0
@@ -194,20 +224,42 @@ function ExpensesTabContent() {
             {meta ? (
               <>
                 <InkFigure
-                  amount={headline.total}
+                  amount={
+                    filter === "released_funds"
+                      ? headline.released
+                      : headline.total
+                  }
                   size={36}
                   testID="expenses-total"
                 />
-                <Text className="mt-1 font-sans text-[12.5px] leading-[17px] text-ink-block-muted">
-                  {t("expenses.itemsCount", { count: headline.count })} ·{" "}
-                  <Text style={{ color: deltaColor(headline.deltaPct, DARK) }}>
-                    {formatDelta(headline.deltaPct)}
-                  </Text>{" "}
-                  {t("invoices.summary.vsMonth", {
-                    delta: "",
-                    month: shortMonthLabel(headline.previous),
-                  }).trim()}
-                </Text>
+                {filter === "released_funds" ? (
+                  <Text
+                    testID="expenses-total-caption"
+                    className="mt-1 font-sans text-[12.5px] leading-[17px] text-ink-block-muted"
+                  >
+                    {t("invoices.summary.releasedTotal")}
+                  </Text>
+                ) : (
+                  <Text
+                    testID="expenses-total-caption"
+                    className="mt-1 font-sans text-[12.5px] leading-[17px] text-ink-block-muted"
+                  >
+                    {t("expenses.spendCount", { count: headline.count })}
+                    {headline.returns > 0
+                      ? ` · ${t("expenses.returnsCount", { count: headline.returns })}`
+                      : ""}{" "}
+                    ·{" "}
+                    <Text
+                      style={{ color: deltaColor(headline.deltaPct, DARK) }}
+                    >
+                      {formatDelta(headline.deltaPct)}
+                    </Text>{" "}
+                    {t("invoices.summary.vsMonth", {
+                      delta: "",
+                      month: shortMonthLabel(headline.previous),
+                    }).trim()}
+                  </Text>
+                )}
                 {canViewBudget ? (
                   <View className="mt-4 flex-row gap-2.5">
                     <PurseCard
@@ -233,6 +285,21 @@ function ExpensesTabContent() {
                       tone="personal"
                     />
                   </View>
+                ) : null}
+                {canViewBudget && summary.unassigned.count > 0 ? (
+                  // Spend paid with a method flagged neither company nor personal sits in
+                  // no purse; without this line the two cards cannot be squared with the
+                  // project's total spend (the web shows the same note).
+                  <Text
+                    testID="expenses-no-purse"
+                    accessibilityHint={t("invoices.summary.noPurseHint")}
+                    className="mt-2 font-sans text-[12px] leading-[16px] text-ink-block-muted"
+                  >
+                    {t("invoices.summary.noPurseSpend", {
+                      count: summary.unassigned.count,
+                      amount: formatMoney(summary.unassigned.spent),
+                    })}
+                  </Text>
                 ) : null}
               </>
             ) : null}

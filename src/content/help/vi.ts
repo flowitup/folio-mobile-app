@@ -208,7 +208,7 @@ export const helpCatalogueVi: HelpCatalogue = [
       "Điền người nhận, thêm địa chỉ người nhận nếu cần, và chọn phương thức thanh toán.",
       "Với trả hàng, liên kết hoá đơn vật tư & dịch vụ được hoàn, cho biết hoàn bằng tiền mặt hay bằng avoir, và nếu là avoir thì nó được áp dụng cho hoá đơn nào.",
       "Thêm ít nhất một dòng có mô tả, số lượng, đơn giá và mức VAT.",
-      "Kiểm lại các tổng, thêm ghi chú hoặc màu tô, rồi bấm “Tạo hoá đơn”.",
+      "Kiểm lại các tổng, thêm ghi chú hoặc màu tô, rồi bấm “Tạo khoản chi”.",
     ],
     whoCanDoIt:
       "Ai ở trong công trình cũng mở được biểu mẫu; máy chủ quyết định có nhận khoản chi đó không. Loại vốn giải ngân chỉ hiện khi bạn có quyền xem ngân sách.",

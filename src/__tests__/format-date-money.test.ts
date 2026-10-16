@@ -13,6 +13,7 @@ import {
   formatUnitPrice,
   parseCentsInput,
   parseMoneyInput,
+  parseMoneyInputDetailed,
   splitMoney,
 } from "../lib/format/money";
 
@@ -108,6 +109,41 @@ describe("money helpers", () => {
     expect(parseMoneyInput("x")).toBeNull();
   });
 
+  it("never reads a thousands separator as a decimal mark (web rules)", () => {
+    // Several identical separators group: 1.500.000 is a million and a half, not 1 500.
+    expect(parseMoneyInput("1.500.000")).toBe(1500000);
+    expect(parseMoneyInput("1,500,000")).toBe(1500000);
+    expect(parseMoneyInput("12 500,75 €")).toBe(12500.75);
+    expect(parseMoneyInput("12\u202f500,75")).toBe(12500.75);
+    // One separator and three digits: 1 340 or 1,34? Refused, with the grouped reading offered.
+    expect(parseMoneyInput("1.340")).toBeNull();
+    expect(parseMoneyInputDetailed("1.500")).toEqual({
+      value: null,
+      error: "ambiguous",
+      suggestion: 1500,
+    });
+    // A quantity field reads it as a decimal.
+    expect(parseMoneyInput("2,375", { ambiguousGrouping: "decimal" })).toBe(
+      2.375,
+    );
+    // Malformed grouping and garbage.
+    expect(parseMoneyInput("1.23,5")).toBeNull();
+    expect(parseMoneyInput("1.2.3")).toBeNull();
+    expect(parseMoneyInput("1e3")).toBeNull();
+    expect(parseMoneyInput("0150")).toBe(150);
+    // Options: cents only, no minus sign.
+    expect(parseMoneyInputDetailed("1,555", { maxDecimals: 2 }).error).toBe(
+      "ambiguous",
+    );
+    expect(parseMoneyInputDetailed("1,5555", { maxDecimals: 2 }).error).toBe(
+      "tooManyDecimals",
+    );
+    expect(parseMoneyInputDetailed("-5", { allowNegative: false }).error).toBe(
+      "negative",
+    );
+    expect(parseMoneyInput("-5")).toBe(-5);
+  });
+
   it("keeps a unit price's own decimals, at least two", async () => {
     await i18n.changeLanguage("fr");
     const fr = (n: number) =>
@@ -123,7 +159,9 @@ describe("money helpers", () => {
   it("rounds typed amounts to the cent", () => {
     expect(parseCentsInput("0,004")).toBe(0);
     expect(parseCentsInput("0,005")).toBe(0.01);
-    expect(parseCentsInput("150,129")).toBe(150.13);
+    expect(parseCentsInput("150,1294")).toBe(150.13);
+    // "150,129" could be 150 129: refused rather than guessed.
+    expect(parseCentsInput("150,129")).toBeNull();
     expect(parseCentsInput("x")).toBeNull();
   });
 });
