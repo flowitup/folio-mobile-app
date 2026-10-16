@@ -37,6 +37,11 @@ export default function AppLayout() {
           name="pdf-viewer"
           options={{ animation: "slide_from_right" }}
         />
+        {/* In-app picture viewer (receipt photos, scanned documents). */}
+        <Stack.Screen
+          name="image-viewer"
+          options={{ animation: "slide_from_right" }}
+        />
       </Stack>
     </>
   );

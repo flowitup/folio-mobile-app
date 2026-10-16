@@ -32,6 +32,10 @@
       "gone": "This link has expired or is no longer available.",
       "tooLarge": "The file is too large.",
       "tooManyRequests": "Too many attempts. Wait a moment and try again.",
+      "tooManyRequestsSeconds": "Too many attempts. Try again in {{count}} s.",
+      "tooManyRequestsMinutes": "Too many attempts. Try again in {{count}} min.",
+      "waitSeconds": "{{count}} s",
+      "waitMinutes": "{{count}} min",
       "keepExtension": "The file name must keep its {{ext}} extension.",
       "fileNameRequired": "Enter a file name."
     }
@@ -58,6 +62,9 @@
       "phoneTaken": "This number already has an account. Sign in instead.",
       "smsFailed": "The text message could not be sent. Try again in a moment.",
       "throttled": "A code was sent a moment ago. Wait a minute and try again.",
+      "networkThrottled": "Too many sign-ins from this network (site Wi-Fi). Try again in {{wait}}.",
+      "smsBusy": "The text message service is busy. Try again in {{wait}}.",
+      "tooManyTries": "Too many tries. Wait {{wait}} and try again.",
       "hourlyLimit_one": "Too many codes were requested for this number. Try again in {{count}} minute.",
       "hourlyLimit_other": "Too many codes were requested for this number. Try again in {{count}} minutes.",
       "codeLocked": "Too many tries: this code no longer works, even typed correctly. Ask for a new code.",
@@ -72,7 +79,8 @@
     "retry": "Try again",
     "unavailable": {
       "title": "Can't reach Folio",
-      "body": "You're still signed in. Check your connection, then try again."
+      "body": "You're still signed in. Check your connection, then try again.",
+      "busy": "You're still signed in. The server is busy (too many requests from this network). Try again in {{wait}}."
     },
     "codeHelp": "No SMS? Check the number. Only Folio accounts receive a code: they are created in the app or through your company’s invitation. Access deactivated? Contact your company’s administrator.",
     "codeStillValid": "The code already sent to this number is still valid: type it in.",
@@ -263,11 +271,11 @@
     "deleted": "Invoice deleted.",
     "deleteConfirm": "Delete invoice {{number}}?",
     "types": {
-      "released_funds": "Released funds",
+      "released_funds": "Released Funds",
       "labor": "Labor",
-      "materials_services": "Materials & services",
+      "materials_services": "Materials & Services",
       "others": "Others",
-      "return": "Return / avoir"
+      "return": "Return"
     },
     "serviceMonthShort": "for",
     "auto": "auto",
@@ -364,7 +372,7 @@
       "create": "Create expense",
       "quantityPositive": "Every line needs a quantity greater than 0.",
       "settledViaNone": "Not settled yet",
-      "pricePositive": "Unit prices cannot be negative for this type. Record money coming back as a Return / avoir.",
+      "pricePositive": "Unit prices cannot be negative for this type. Record money coming back as a Return.",
       "vatRange": "VAT must be between 0 and 100.",
       "lineTooLarge": "A line cannot exceed a quantity of {{quantity}} or a unit price of {{price}}.",
       "amountInvalid": "Enter a number, e.g. 1500 or 1,500.50.",
@@ -487,7 +495,8 @@
       "deactivate": "Deactivate",
       "rateTooLarge": "The daily rate cannot exceed {{max}}.",
       "alreadyOnProject": "This person is already a worker on this project (possibly deactivated).",
-      "reactivate": "Reactivate"
+      "reactivate": "Reactivate",
+      "alreadyOnProjectReactivate": "This person is already a worker on this project. If they were deactivated, open their card under Workers and tap Reactivate."
     },
     "rates": {
       "link": "Rates",
@@ -1094,6 +1103,8 @@
         "none": "No candidate expense.",
         "confirm": "Add {{count}}",
         "partial": "Some expenses could not be added.",
+        "partialKept": "{{added}} added. {{failed}} could not be added and stay selected: try again.",
+        "waiting": "Server busy: waiting {{count}} s before continuing…",
         "added_one": "{{count}} expense added.",
         "added_other": "{{count}} expenses added.",
         "addFailed": "No expense could be added."
@@ -2079,10 +2090,19 @@
   "pdfViewer": {
     "title": "PDF",
     "share": "Share",
-    "loadError": "Could not display this PDF."
+    "loadError": "Could not display this PDF.",
+    "passwordPrompt": "This PDF is protected. Enter its password.",
+    "wrongPassword": "Wrong password. Try again.",
+    "open": "Open",
+    "cannotOpen": "This PDF cannot be displayed here (damaged or protected). Open it with another app.",
+    "openWith": "Open with…"
   },
   "legal": {
     "support": "Help and support",
     "privacy": "Privacy"
+  },
+  "imageViewer": {
+    "title": "Picture",
+    "loadError": "Could not display this picture."
   }
 }

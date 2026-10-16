@@ -33,6 +33,7 @@ import type {
   BillingDocumentKind,
   BillingDocumentStatus,
 } from "@/features/billing/billing-types";
+import { useCompany } from "@/features/companies/companies-api";
 import {
   allowedTransitions,
   transitionLabelKey,
@@ -63,6 +64,7 @@ export default function BillingDocumentScreen() {
   const convertSheet = useRef<BottomSheetModal>(null);
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [paymentTerms, setPaymentTerms] = useState("");
+  const company = useCompany(query.data?.company_id ?? undefined);
   const queryClient = useQueryClient();
   // A 4xx is final: the document was deleted (or is hidden from this caller, which the API also
   // answers with a 404), so a Retry could never succeed.
@@ -246,6 +248,12 @@ export default function BillingDocumentScreen() {
               size="sm"
               onPress={() => {
                 setDueDate(toIsoDate(new Date(Date.now() + 30 * 86_400_000)));
+                // The facture's PDF prints the company's default terms when left empty:
+                // show them here, so what is printed is what was seen.
+                setPaymentTerms(
+                  (current) =>
+                    current || company.data?.default_payment_terms || "",
+                );
                 convertSheet.current?.present();
               }}
             />

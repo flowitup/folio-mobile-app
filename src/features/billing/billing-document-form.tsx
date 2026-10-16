@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { Text, View } from "react-native";
@@ -35,6 +35,8 @@ import type {
   ImportBillingDocumentPayload,
   UpdateBillingDocumentPayload,
 } from "./billing-types";
+import { useCompany } from "@/features/companies/companies-api";
+
 import { CompanyPicker } from "./company-picker";
 import { IssuerProfileWarning } from "./issuer-profile-warning";
 
@@ -247,6 +249,26 @@ export function BillingDocumentForm({
           : d.payment_due_date,
     }));
   }
+
+  // A new facture starts from the company's default payment terms, as the PDF prints them when
+  // the field is left empty; switching company swaps them unless the user typed their own.
+  const prefillTerms = kind === "facture" && mode !== "edit" && !readOnly;
+  const company = useCompany(
+    prefillTerms ? (draft.company_id ?? undefined) : undefined,
+  );
+  const autoTerms = useRef<string | null>(null);
+  const companyLoaded = company.data !== undefined;
+  const defaultTerms = company.data?.default_payment_terms ?? null;
+  useEffect(() => {
+    if (!prefillTerms || !companyLoaded) return;
+    setDraft((d) => {
+      const current = d.payment_terms.trim();
+      if (current && current !== autoTerms.current) return d;
+      autoTerms.current = defaultTerms;
+      const next = defaultTerms ?? "";
+      return d.payment_terms === next ? d : { ...d, payment_terms: next };
+    });
+  }, [prefillTerms, companyLoaded, defaultTerms]);
 
   function submit() {
     const result = validateDraft(t, draft, mode, kind);

@@ -54,6 +54,7 @@ import { formatInstant } from "@/lib/format/date";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
+import { useOpeningFile } from "@/lib/files/use-opening-file";
 
 const SORTS: DocumentSort[] = ["created_at", "name", "size", "uploader"];
 
@@ -132,13 +133,15 @@ export default function ProjectDocumentsSection() {
   const addSheet = useRef<BottomSheetModal>(null);
   const editSheet = useRef<BottomSheetModal>(null);
   const [editing, setEditing] = useState<ProjectDocument | null>(null);
+  const opener = useOpeningFile();
   const [nameDraft, setNameDraft] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
   const [tagsDraft, setTagsDraft] = useState("");
   const [deleting, setDeleting] = useState<ProjectDocument | null>(null);
   const [viewing, setViewing] = useState<ProjectDocument | null>(null);
+  // The viewer's Share: the OS sheet, reusing the downloaded copy.
   const share = (document: ProjectDocument) =>
-    openDocument(document).catch((e: unknown) =>
+    openDocument(document, { share: true }).catch((e: unknown) =>
       showToast(apiErrorMessage(e, t, i18n.language), "error"),
     );
 
@@ -315,11 +318,20 @@ export default function ProjectDocumentsSection() {
           <Card key={document.id} className="mb-2">
             <Pressable
               testID={`document-open-${document.id}`}
-              // A picture opens full screen in the app (Share from there); other files as before.
+              accessibilityState={{ busy: opener.openingId === document.id }}
+              // A picture opens full screen at once (Share from there); other files download
+              // (or reuse the copy already downloaded) and open in the PDF viewer or share sheet.
               onPress={() =>
                 isViewableImage(document.content_type, document.filename)
                   ? setViewing(document)
-                  : void share(document)
+                  : void opener
+                      .run(document.id, () => openDocument(document))
+                      .catch((e: unknown) =>
+                        showToast(
+                          apiErrorMessage(e, t, i18n.language),
+                          "error",
+                        ),
+                      )
               }
             >
               <View className="flex-row items-center">
@@ -343,6 +355,13 @@ export default function ProjectDocumentsSection() {
                 >
                   {document.filename}
                 </Text>
+                {/* The file downloads before the viewer opens: show the tap was taken. */}
+                {opener.openingId === document.id ? (
+                  <ActivityIndicator
+                    testID={`document-opening-${document.id}`}
+                    size="small"
+                  />
+                ) : null}
               </View>
               <Text className="text-xs text-muted-foreground">
                 {formatFileSize(document.size_bytes)} ·{" "}

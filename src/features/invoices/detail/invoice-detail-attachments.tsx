@@ -2,7 +2,7 @@ import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import type { RefObject } from "react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import { formatInstant } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
+import { useOpeningFile } from "@/lib/files/use-opening-file";
 
 function attachmentPath(attachment: InvoiceAttachment): string {
   return `/api/v1/attachments/${encodeURIComponent(attachment.id)}/download`;
@@ -84,15 +85,24 @@ export function InvoiceAttachmentsCard({
     for (const file of result.files)
       await upload.mutateAsync({ file }).catch(() => undefined);
   }
+  // The viewer's Share: the OS sheet, reusing the downloaded copy.
   const share = (attachment: InvoiceAttachment) =>
-    openAttachment(attachment).catch((e: unknown) =>
+    openAttachment(attachment, { share: true }).catch((e: unknown) =>
       showToast(apiErrorMessage(e, t, i18n.language), "error"),
     );
-  // A receipt photo opens full screen in the app (Share from there); other files as before.
-  const open = async (attachment: InvoiceAttachment) => {
-    if (isViewableImage(attachment.mime_type, attachment.filename))
+  // A receipt photo opens full screen at once (Share from there); other files download first
+  // (or reuse the copy already downloaded), with a spinner on the row meanwhile.
+  const opener = useOpeningFile();
+  const open = (attachment: InvoiceAttachment) => {
+    if (isViewableImage(attachment.mime_type, attachment.filename)) {
       setViewing(attachment);
-    else await share(attachment);
+      return Promise.resolve();
+    }
+    return opener
+      .run(attachment.id, () => openAttachment(attachment))
+      .catch((e: unknown) =>
+        showToast(apiErrorMessage(e, t, i18n.language), "error"),
+      );
   };
   const list = attachments.data ?? [];
 
@@ -133,13 +143,22 @@ export function InvoiceAttachmentsCard({
             <Pressable
               testID={`attachment-open-${attachment.id}`}
               accessibilityRole="button"
+              accessibilityState={{ busy: opener.openingId === attachment.id }}
               onPress={() => void open(attachment)}
               className="min-w-0 flex-1 flex-row items-center gap-3 py-3.5 pl-4 pr-3 active:opacity-70"
             >
               <View className="h-12 w-10 items-center justify-center overflow-hidden rounded-md bg-paper-2">
-                <Text className="font-sans-bold text-[9px] text-muted">
-                  {tileLabel(attachment)}
-                </Text>
+                {opener.openingId === attachment.id ? (
+                  <ActivityIndicator
+                    testID={`attachment-opening-${attachment.id}`}
+                    size="small"
+                    color={tokens.muted}
+                  />
+                ) : (
+                  <Text className="font-sans-bold text-[9px] text-muted">
+                    {tileLabel(attachment)}
+                  </Text>
+                )}
                 {isViewableImage(attachment.mime_type, attachment.filename) ? (
                   // Thumbnail over the extension label, which stays if the picture cannot load.
                   <AuthedImage

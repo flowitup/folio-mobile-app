@@ -40,8 +40,9 @@ import {
   authErrorKey,
   AuthRequestError,
   hourlyLimitMinutes,
+  waitLabel,
 } from "@/lib/auth/auth-error-message";
-import type { AuthFlow } from "@/lib/auth/auth-error-message";
+import type { AuthFlow, AuthStep } from "@/lib/auth/auth-error-message";
 import { clearLocalUserFiles } from "@/lib/files/clear-local-files";
 
 // `is_platform_ops` (D5) is not on the generated `UserResponse` yet — the backend ships it in
@@ -64,6 +65,12 @@ type AuthStatus = "loading" | "signedOut" | "signedIn" | "unavailable";
 type AuthContextValue = {
   status: AuthStatus;
   user: AuthUser | null;
+  /**
+   * While `unavailable` because of a rate limit (429): the seconds to wait (0 when the server
+   * gave none), so the retry screen says "busy, try again in 40 s" instead of blaming the
+   * connection. Null for offline or a server error.
+   */
+  unavailableRetryAfter: number | null;
   /** Checks the stored session again after launch found the server unreachable. */
   retrySession: () => Promise<void>;
   /** Asks the backend to text a 6-digit code; resolves with the code's lifetime in seconds. */
@@ -122,20 +129,29 @@ function authError(
   flow: AuthFlow,
   error: unknown,
   response: Pick<Response, "status" | "headers"> | undefined,
+  step: AuthStep = "request",
 ): AuthRequestError {
   // Recognised failures get a translated string; the rest keep the server's own wording,
   // which is more specific than any catch-all we could write. The status travels with the
   // error so a screen can branch on it instead of matching the translated sentence.
   const errorCode = (error as { error?: string } | undefined)?.error;
   const reason = (error as { reason?: string } | undefined)?.reason;
-  const key = authErrorKey(flow, response?.status, errorCode, reason);
+  const key = authErrorKey(flow, response?.status, errorCode, { step, reason });
   // The hourly code cap names how long to wait (Retry-After), not "wait a minute".
   const minutes = hourlyLimitMinutes(
     errorCode,
     response?.headers?.get("Retry-After"),
   );
+  // The other limits say how long, too ("Try again in 40 s").
+  const retryAfter =
+    Number(response?.headers?.get("Retry-After")) ||
+    Number((error as { retry_after?: unknown } | undefined)?.retry_after) ||
+    null;
+  const wait =
+    waitLabel(retryAfter, (k, o) => i18n.t(k, o)) ??
+    i18n.t("common.errors.waitMinutes", { count: 1 });
   const message = key
-    ? i18n.t(key, minutes === null ? undefined : { count: minutes })
+    ? i18n.t(key, minutes === null ? { wait } : { count: minutes, wait })
     : ((error as { message?: string } | undefined)?.message ??
       `HTTP ${response?.status ?? "?"}`);
   return new AuthRequestError(message, response?.status);
@@ -147,6 +163,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [unavailableRetryAfter, setUnavailableRetryAfter] = useState<
+    number | null
+  >(null);
 
   const signOutLocally = useCallback(async () => {
     await clearStoredTokens();
@@ -200,9 +219,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
       const { refreshToken: kept } = await getStoredTokens();
       if (response.status === 404 || !kept) return await signOutLocally();
+      setUnavailableRetryAfter(
+        response.status === 429
+          ? Number(response.headers?.get("Retry-After")) || 0
+          : null,
+      );
       setStatus("unavailable");
     } catch {
       // Offline: openapi-fetch rethrows the network error.
+      setUnavailableRetryAfter(null);
       setStatus("unavailable");
     } finally {
       restoreInFlight.current = false;
@@ -290,7 +315,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/otp/verify",
         { body: { phone, code } },
       );
-      if (!data) throw authError("otp", error, response);
+      if (!data) throw authError("otp", error, response, "verify");
       await applyLoginPayload(data);
     },
     [applyLoginPayload],
@@ -321,7 +346,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/signup/verify",
         { body: { phone, code, display_name: displayName } },
       );
-      if (!data) throw authError("signup", error, response);
+      if (!data) throw authError("signup", error, response, "verify");
       await applyLoginPayload(data);
     },
     [applyLoginPayload],
@@ -342,7 +367,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/me/phone/confirm",
         { body: { phone, code } },
       );
-      if (!data) throw authError("phoneChange", error, response);
+      if (!data) throw authError("phoneChange", error, response, "verify");
       // The change signs the account out everywhere else and revokes the tokens this
       // session used: keep the fresh pair it answers with, then the updated user.
       const { access_token, refresh_token, ...me } = data;
@@ -398,6 +423,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     () => ({
       status,
       user,
+      unavailableRetryAfter,
       retrySession: restoreSession,
       requestOtp,
       signInWithOtp,
@@ -413,6 +439,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [
       status,
       user,
+      unavailableRetryAfter,
       restoreSession,
       requestOtp,
       signInWithOtp,

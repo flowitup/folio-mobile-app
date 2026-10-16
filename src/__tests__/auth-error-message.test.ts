@@ -2,6 +2,7 @@ import i18n from "@/i18n";
 import {
   authErrorKey,
   hourlyLimitMinutes,
+  waitLabel,
 } from "@/lib/auth/auth-error-message";
 
 describe("authErrorKey", () => {
@@ -18,7 +19,7 @@ describe("authErrorKey", () => {
   it("only calls a 409 a taken phone number while signing up", () => {
     expect(authErrorKey("signup", 409)).toBe("login.errors.phoneTaken");
     // A deactivated account is not one to "sign in instead" to.
-    expect(authErrorKey("signup", 409, "Conflict", "account_deactivated")).toBe(
+    expect(authErrorKey("signup", 409, "Conflict", { reason: "account_deactivated" })).toBe(
       "login.errors.deactivated",
     );
     expect(authErrorKey("otp", 409)).toBeNull();
@@ -92,5 +93,32 @@ describe("hourlyLimitMinutes", () => {
     expect(t("vi", 44)).toBe(
       "Đã yêu cầu quá nhiều mã cho số này. Vui lòng thử lại sau 44 phút.",
     );
+  });
+});
+
+describe("429s that are not the number's own fault (sweep-rate-limits-17/18/19)", () => {
+  it("names the network cap, the SMS service and a code check apart", () => {
+    expect(authErrorKey("otp", 429, "NetworkThrottled")).toBe(
+      "login.errors.networkThrottled",
+    );
+    expect(authErrorKey("otp", 429, "SmsServiceBusy")).toBe(
+      "login.errors.smsBusy",
+    );
+    expect(authErrorKey("otp", 429, "TooManyRequests", { step: "verify" })).toBe(
+      "login.errors.tooManyTries",
+    );
+    expect(authErrorKey("otp", 429, "TooManyRequests", { step: "request" })).toBe(
+      "login.errors.throttled",
+    );
+  });
+
+  it("says how long to wait, in the UI language", () => {
+    const fr = i18n.getFixedT("fr");
+    expect(waitLabel(40, fr)).toBe("40 s");
+    expect(waitLabel(600, fr)).toBe("10 min");
+    expect(waitLabel(null, fr)).toBeNull();
+    expect(
+      fr("login.errors.networkThrottled", { wait: waitLabel(40, fr) }),
+    ).toContain("40 s");
   });
 });

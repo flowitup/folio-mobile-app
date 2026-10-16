@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -13,27 +14,24 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AuthedImage } from "@/components/ui/authed-image";
 import { ToastViewport } from "@/components/ui/toast";
+import { isViewableImage as isViewableImageFile } from "@/lib/files/open-file";
 
 /**
- * Pictures the in-app viewer can draw: what React Native's image loader decodes on both
- * platforms. HEIC and anything else still go to the OS share sheet.
+ * True when the file is a picture the in-app viewer shows (by MIME type, else by name). One
+ * rule for the whole app: the same one `openFile` uses to pick the viewer over the share sheet.
  */
-const VIEWABLE_IMAGE = /^image\/(jpe?g|png|webp|gif)$/i;
-const VIEWABLE_EXTENSION = /\.(jpe?g|png|webp|gif)$/i;
-
-/** True when the file is a picture the in-app viewer shows (by MIME type, else by name). */
 export function isViewableImage(
   mimeType: string | null | undefined,
   filename: string,
 ): boolean {
-  return mimeType && mimeType !== "application/octet-stream"
-    ? VIEWABLE_IMAGE.test(mimeType.trim())
-    : VIEWABLE_EXTENSION.test(filename.trim());
+  return isViewableImageFile({ filename, mimeType });
 }
 
 type Props = {
   /** API path of the picture (authenticated download); null keeps the viewer closed. */
   path: string | null;
+  /** A local copy instead of an API path (a file `openFile` already downloaded). */
+  uri?: string | null;
   filename: string;
   onClose: () => void;
   /** Share / save through the OS sheet (downloads the file). */
@@ -41,24 +39,40 @@ type Props = {
 };
 
 /**
- * Full-screen picture (documents, expense attachments), the way chat pictures open: pinch to
- * zoom on iOS, Share for the OS sheet, close button clear of the status bar and gesture bar.
+ * The app's one full-screen picture viewer (documents, expense attachments, and the
+ * `/image-viewer` route that `openFile` opens for a downloaded picture), the way chat pictures
+ * open: pinch to zoom on iOS, Share for the OS sheet, close button clear of the status bar and
+ * gesture bar.
  */
-export function ImageViewer({ path, filename, onClose, onShare }: Props) {
+export function ImageViewer({
+  path,
+  uri = null,
+  filename,
+  onClose,
+  onShare,
+}: Props) {
   const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [sharing, setSharing] = useState(false);
+  const [failedUri, setFailedUri] = useState<string | null>(null);
+  const imageStyle = { width, height: height - insets.top - insets.bottom };
 
   return (
     <Modal
-      visible={path !== null}
+      visible={path !== null || uri !== null}
       animationType="fade"
       onRequestClose={onClose}
       statusBarTranslucent
     >
       <View testID="image-viewer" className="flex-1 bg-black">
-        {path ? (
+        {uri && failedUri === uri ? (
+          <View className="flex-1 items-center justify-center px-8">
+            <Text className="text-center text-sm text-white">
+              {t("imageViewer.loadError")}
+            </Text>
+          </View>
+        ) : path || uri ? (
           <ScrollView
             maximumZoomScale={4}
             minimumZoomScale={1}
@@ -69,12 +83,23 @@ export function ImageViewer({ path, filename, onClose, onShare }: Props) {
               justifyContent: "center",
             }}
           >
-            <AuthedImage
-              path={path}
-              style={{ width, height: height - insets.top - insets.bottom }}
-              resizeMode="contain"
-              accessibilityLabel={filename}
-            />
+            {uri ? (
+              <Image
+                testID="image-viewer-image"
+                source={{ uri }}
+                style={imageStyle}
+                resizeMode="contain"
+                accessibilityLabel={filename}
+                onError={() => setFailedUri(uri)}
+              />
+            ) : path ? (
+              <AuthedImage
+                path={path}
+                style={imageStyle}
+                resizeMode="contain"
+                accessibilityLabel={filename}
+              />
+            ) : null}
           </ScrollView>
         ) : null}
         <View

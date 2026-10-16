@@ -13,6 +13,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.flowitup.folio",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "en",
+        "CFBundleLocalizations": ["en", "fr", "vi"],
         "CFBundleAllowMixedLocalizations": true
       }
     },
@@ -67,10 +70,7 @@
           "cameraPermission": "Folio uses the camera to capture invoices and site pictures."
         }
       ],
-      [
-        "@react-native-community/datetimepicker",
-        {}
-      ],
+      ["@react-native-community/datetimepicker", {}],
       "expo-document-picker",
       [
         "expo-notifications",

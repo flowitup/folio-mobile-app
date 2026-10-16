@@ -86,5 +86,7 @@ it("opens an expense's attached file from the refundable list", async () => {
     "/api/v1/attachments/att-1/download",
     "ticket.pdf",
     "application/pdf",
+    // Reopening reuses the copy: an attachment's bytes never change.
+    { version: "immutable|ticket.pdf" },
   );
 });

@@ -32,6 +32,10 @@
       "gone": "Ce lien a expiré ou n'est plus disponible.",
       "tooLarge": "Le fichier est trop volumineux.",
       "tooManyRequests": "Trop de tentatives. Patientez un instant puis réessayez.",
+      "tooManyRequestsSeconds": "Trop de tentatives. Réessayez dans {{count}} s.",
+      "tooManyRequestsMinutes": "Trop de tentatives. Réessayez dans {{count}} min.",
+      "waitSeconds": "{{count}} s",
+      "waitMinutes": "{{count}} min",
       "keepExtension": "Le nom du fichier doit conserver l'extension {{ext}}.",
       "fileNameRequired": "Saisissez un nom de fichier."
     }
@@ -58,6 +62,9 @@
       "phoneTaken": "Ce numéro a déjà un compte. Connectez-vous.",
       "smsFailed": "Le SMS n’a pas pu être envoyé. Réessayez dans un instant.",
       "throttled": "Un code vient d’être envoyé. Attendez une minute et réessayez.",
+      "networkThrottled": "Trop de connexions depuis ce réseau (Wi-Fi du chantier). Réessayez dans {{wait}}.",
+      "smsBusy": "Le service SMS est saturé. Réessayez dans {{wait}}.",
+      "tooManyTries": "Trop d'essais. Patientez {{wait}} puis réessayez.",
       "hourlyLimit_one": "Trop de codes ont été demandés pour ce numéro. Réessayez dans {{count}} minute.",
       "hourlyLimit_other": "Trop de codes ont été demandés pour ce numéro. Réessayez dans {{count}} minutes.",
       "codeLocked": "Trop d’essais : ce code ne fonctionne plus, même correct. Demandez un nouveau code.",
@@ -72,7 +79,8 @@
     "retry": "Réessayer",
     "unavailable": {
       "title": "Impossible de joindre Folio",
-      "body": "Vous êtes toujours connecté. Vérifiez votre connexion, puis réessayez."
+      "body": "Vous êtes toujours connecté. Vérifiez votre connexion, puis réessayez.",
+      "busy": "Vous êtes toujours connecté. Le serveur est saturé (trop de requêtes depuis ce réseau). Réessayez dans {{wait}}."
     },
     "codeHelp": "Pas reçu de SMS ? Vérifiez le numéro. Seuls les comptes Folio reçoivent un code : ils se créent dans l’application ou via l’invitation de votre entreprise. Accès désactivé ? Contactez l’administrateur de votre entreprise.",
     "codeStillValid": "Le code déjà envoyé à ce numéro reste valable : saisissez-le.",
@@ -267,7 +275,7 @@
       "labor": "Main-d'œuvre",
       "materials_services": "Achats & prestations",
       "others": "Autres",
-      "return": "Retour / avoir"
+      "return": "Avoir"
     },
     "serviceMonthShort": "pour",
     "auto": "auto",
@@ -364,7 +372,7 @@
       "create": "Créer la dépense",
       "quantityPositive": "Chaque ligne doit avoir une quantité supérieure à 0.",
       "settledViaNone": "Pas encore réglé",
-      "pricePositive": "Les prix unitaires ne peuvent pas être négatifs pour ce type. Enregistrez un remboursement comme Retour / avoir.",
+      "pricePositive": "Les prix unitaires ne peuvent pas être négatifs pour ce type. Enregistrez un remboursement comme Avoir.",
       "vatRange": "La TVA doit être comprise entre 0 et 100.",
       "lineTooLarge": "Une ligne ne peut pas dépasser une quantité de {{quantity}} ni un prix unitaire de {{price}}.",
       "amountInvalid": "Saisissez un nombre, par ex. 1500 ou 1 500,50.",
@@ -487,7 +495,8 @@
       "deactivate": "Désactiver",
       "rateTooLarge": "Le taux journalier ne peut pas dépasser {{max}}.",
       "alreadyOnProject": "Cette personne est déjà ouvrier sur ce chantier (peut-être désactivé).",
-      "reactivate": "Réactiver"
+      "reactivate": "Réactiver",
+      "alreadyOnProjectReactivate": "Cette personne est déjà ouvrier sur ce chantier. Si elle a été désactivée, ouvrez sa fiche dans Ouvriers et touchez Réactiver."
     },
     "rates": {
       "link": "Taux",
@@ -1094,6 +1103,8 @@
         "none": "Aucune dépense candidate.",
         "confirm": "Ajouter {{count}}",
         "partial": "Certaines dépenses n'ont pas pu être ajoutées.",
+        "partialKept": "{{added}} ajoutée(s). {{failed}} n'ont pas pu être ajoutée(s) et restent sélectionnée(s) : réessayez.",
+        "waiting": "Serveur occupé : reprise dans {{count}} s…",
         "added_one": "{{count}} dépense ajoutée.",
         "added_other": "{{count}} dépenses ajoutées.",
         "addFailed": "Aucune dépense n'a pu être ajoutée."
@@ -2079,10 +2090,19 @@
   "pdfViewer": {
     "title": "PDF",
     "share": "Partager",
-    "loadError": "Impossible d'afficher ce PDF."
+    "loadError": "Impossible d'afficher ce PDF.",
+    "passwordPrompt": "Ce PDF est protégé. Saisissez son mot de passe.",
+    "wrongPassword": "Mot de passe incorrect. Réessayez.",
+    "open": "Ouvrir",
+    "cannotOpen": "Ce PDF ne peut pas être affiché ici (endommagé ou protégé). Ouvrez-le avec une autre application.",
+    "openWith": "Ouvrir avec…"
   },
   "legal": {
     "support": "Aide et support",
     "privacy": "Confidentialité"
+  },
+  "imageViewer": {
+    "title": "Image",
+    "loadError": "Impossible d'afficher cette image."
   }
 }

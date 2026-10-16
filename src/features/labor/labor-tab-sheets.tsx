@@ -10,6 +10,7 @@ import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Card } from "@/components/ui/primitives";
+import { Segmented } from "@/components/ui/chip";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
@@ -437,16 +438,20 @@ export const LaborExportSheet = forwardRef<
   return (
     <Sheet ref={ref} title={t("labor.export.title")} snapPoints={["75%"]}>
       <View className="p-4">
-        <Select<InvoiceExportFormat>
-          testID="labor-export-format"
-          label={t("invoices.export.format")}
-          value={format}
-          options={[
-            { value: "xlsx", label: "Excel (.xlsx)" },
-            { value: "pdf", label: "PDF" },
-          ]}
-          onChange={setFormat}
-        />
+        {/* Inline, not a picker sheet: a sheet opened over this one re-snapped it on iOS and
+            swallowed the taps that followed. */}
+        <Eyebrow className="mb-1.5">{t("invoices.export.format")}</Eyebrow>
+        <View className="mb-4">
+          <Segmented<InvoiceExportFormat>
+            testID="labor-export-format"
+            value={format}
+            options={[
+              { value: "xlsx", label: "Excel (.xlsx)" },
+              { value: "pdf", label: "PDF" },
+            ]}
+            onChange={setFormat}
+          />
+        </View>
         <Eyebrow className="mb-1.5">{t("invoices.export.from")}</Eyebrow>
         <MonthPicker
           testID="labor-export-from"

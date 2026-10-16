@@ -32,6 +32,10 @@
       "gone": "Liên kết này đã hết hạn hoặc không còn khả dụng.",
       "tooLarge": "Tệp quá lớn.",
       "tooManyRequests": "Quá nhiều lần thử. Hãy đợi một lát rồi thử lại.",
+      "tooManyRequestsSeconds": "Quá nhiều lần thử. Hãy thử lại sau {{count}} giây.",
+      "tooManyRequestsMinutes": "Quá nhiều lần thử. Hãy thử lại sau {{count}} phút.",
+      "waitSeconds": "{{count}} giây",
+      "waitMinutes": "{{count}} phút",
       "keepExtension": "Tên tệp phải giữ phần mở rộng {{ext}}.",
       "fileNameRequired": "Hãy nhập tên tệp."
     }
@@ -58,6 +62,9 @@
       "phoneTaken": "Số này đã có tài khoản. Hãy đăng nhập.",
       "smsFailed": "Không gửi được tin nhắn. Thử lại sau giây lát.",
       "throttled": "Mã vừa được gửi. Đợi một phút rồi thử lại.",
+      "networkThrottled": "Quá nhiều lượt đăng nhập từ mạng này (Wi-Fi công trường). Hãy thử lại sau {{wait}}.",
+      "smsBusy": "Dịch vụ tin nhắn đang quá tải. Hãy thử lại sau {{wait}}.",
+      "tooManyTries": "Thử quá nhiều lần. Hãy đợi {{wait}} rồi thử lại.",
       "hourlyLimit_one": "Đã yêu cầu quá nhiều mã cho số này. Vui lòng thử lại sau {{count}} phút.",
       "hourlyLimit_other": "Đã yêu cầu quá nhiều mã cho số này. Vui lòng thử lại sau {{count}} phút.",
       "codeLocked": "Nhập sai quá nhiều lần: mã này không còn dùng được, kể cả khi nhập đúng. Hãy yêu cầu mã mới.",
@@ -72,7 +79,8 @@
     "retry": "Thử lại",
     "unavailable": {
       "title": "Không kết nối được với Folio",
-      "body": "Bạn vẫn đang đăng nhập. Hãy kiểm tra kết nối mạng rồi thử lại."
+      "body": "Bạn vẫn đang đăng nhập. Hãy kiểm tra kết nối mạng rồi thử lại.",
+      "busy": "Bạn vẫn đang đăng nhập. Máy chủ đang bận (quá nhiều yêu cầu từ mạng này). Hãy thử lại sau {{wait}}."
     },
     "codeHelp": "Không nhận được SMS? Hãy kiểm tra số điện thoại. Chỉ tài khoản Folio mới nhận được mã: tài khoản được tạo trong ứng dụng hoặc qua lời mời của công ty. Quyền truy cập bị vô hiệu hóa? Hãy liên hệ quản trị viên của công ty.",
     "codeStillValid": "Mã đã gửi tới số này vẫn còn hiệu lực: hãy nhập mã đó.",
@@ -267,7 +275,7 @@
       "labor": "Nhân công",
       "materials_services": "Vật tư & dịch vụ",
       "others": "Khác",
-      "return": "Trả hàng / avoir"
+      "return": "Trả hàng"
     },
     "serviceMonthShort": "cho",
     "auto": "tự động",
@@ -364,7 +372,7 @@
       "create": "Tạo khoản chi",
       "quantityPositive": "Mỗi dòng phải có số lượng lớn hơn 0.",
       "settledViaNone": "Chưa thanh toán",
-      "pricePositive": "Đơn giá không được âm với loại này. Hãy dùng loại Trả hàng / avoir để ghi nhận tiền hoàn lại.",
+      "pricePositive": "Đơn giá không được âm với loại này. Hãy dùng loại Trả hàng để ghi nhận tiền hoàn lại.",
       "vatRange": "VAT phải nằm trong khoảng 0 đến 100.",
       "lineTooLarge": "Mỗi dòng không được vượt quá số lượng {{quantity}} hoặc đơn giá {{price}}.",
       "amountInvalid": "Nhập một số, ví dụ 1500 hoặc 1 500,50.",
@@ -487,7 +495,8 @@
       "deactivate": "Ngừng hoạt động",
       "rateTooLarge": "Đơn giá không được vượt quá {{max}}.",
       "alreadyOnProject": "Người này đã là nhân công của dự án này (có thể đã ngừng hoạt động).",
-      "reactivate": "Kích hoạt lại"
+      "reactivate": "Kích hoạt lại",
+      "alreadyOnProjectReactivate": "Người này đã là nhân công của dự án này. Nếu đã ngừng hoạt động, hãy mở thẻ của họ trong mục Nhân công và chạm Kích hoạt lại."
     },
     "rates": {
       "link": "Đơn giá",
@@ -1094,6 +1103,8 @@
         "none": "Không có chi phí ứng viên.",
         "confirm": "Thêm {{count}}",
         "partial": "Một số chi phí không thể thêm.",
+        "partialKept": "Đã thêm {{added}}. {{failed}} chi phí chưa thêm được và vẫn được chọn: hãy thử lại.",
+        "waiting": "Máy chủ đang bận: tiếp tục sau {{count}} giây…",
         "added_one": "Đã thêm {{count}} chi phí.",
         "added_other": "Đã thêm {{count}} chi phí.",
         "addFailed": "Không thêm được chi phí nào."
@@ -2079,10 +2090,19 @@
   "pdfViewer": {
     "title": "PDF",
     "share": "Chia sẻ",
-    "loadError": "Không thể hiển thị tệp PDF này."
+    "loadError": "Không thể hiển thị tệp PDF này.",
+    "passwordPrompt": "PDF này được bảo vệ. Hãy nhập mật khẩu.",
+    "wrongPassword": "Sai mật khẩu. Hãy thử lại.",
+    "open": "Mở",
+    "cannotOpen": "Không thể hiển thị PDF này tại đây (bị hỏng hoặc được bảo vệ). Hãy mở bằng ứng dụng khác.",
+    "openWith": "Mở bằng…"
   },
   "legal": {
     "support": "Trợ giúp và hỗ trợ",
     "privacy": "Quyền riêng tư"
+  },
+  "imageViewer": {
+    "title": "Hình ảnh",
+    "loadError": "Không thể hiển thị hình ảnh này."
   }
 }

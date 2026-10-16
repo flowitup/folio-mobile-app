@@ -1,4 +1,8 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+} from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
@@ -25,8 +29,11 @@ export const PAGE_SIZE = 25;
 
 export const billingKeys = {
   all: ["billing", "documents"] as const,
-  list: (kind: BillingDocumentKind, status: BillingDocumentStatus | null) =>
-    ["billing", "documents", "list", kind, status ?? "all"] as const,
+  list: (
+    kind: BillingDocumentKind,
+    status: BillingDocumentStatus | null,
+    q = "",
+  ) => ["billing", "documents", "list", kind, status ?? "all", q] as const,
   recent: ["billing", "documents", "recent"] as const,
   detail: (id: string) => ["billing", "documents", "detail", id] as const,
   suggestions: (category: string | null, q: string) =>
@@ -43,7 +50,11 @@ async function fetchPage(query: Record<string, string | number>) {
   );
 }
 
-/** Paged list (25 per page) with optional status filter; pages accumulate like the web "load more". */
+/**
+ * Paged list (25 per page) with optional status filter and server-side search (`q` matches the
+ * number or the recipient on every page, not only the loaded ones); pages accumulate like the
+ * web "load more". The previous result stays on screen while a new search loads.
+ */
 export function useBillingDocuments(
   kind: BillingDocumentKind,
   status: BillingDocumentStatus | null,
@@ -51,16 +62,20 @@ export function useBillingDocuments(
   enabled = true,
   /** Issuing company filter (users of several companies); every company when unset. */
   companyId: string | null = null,
+  q = "",
 ) {
+  const search = q.trim().slice(0, 100);
   return useInfiniteQuery({
     enabled,
-    queryKey: [...billingKeys.list(kind, status), companyId ?? "all"],
+    queryKey: [...billingKeys.list(kind, status, search), companyId ?? "all"],
     initialPageParam: 0,
+    placeholderData: keepPreviousData,
     queryFn: ({ pageParam }) =>
       fetchPage({
         kind,
         ...(status ? { status } : {}),
         ...(companyId ? { company_id: companyId } : {}),
+        ...(search ? { q: search } : {}),
         limit: PAGE_SIZE,
         offset: pageParam,
       }),
@@ -275,11 +290,16 @@ export function useCreateFromTemplate() {
 
 /** Rendered PDF opens in the in-app viewer; XLSX goes through the OS share sheet. */
 export function openBillingFile(
-  doc: Pick<BillingDocument, "id" | "document_number">,
+  doc: Pick<BillingDocument, "id" | "document_number"> &
+    Partial<Pick<BillingDocument, "updated_at">>,
   format: "pdf" | "xlsx",
 ) {
+  // Opening it again reuses the copy until the document changes (no new download, no
+  // rate-limited request: the owner's "the PDF can't open").
   return openFile(
     `/api/v1/billing-documents/${encodeURIComponent(doc.id)}/${format}`,
     safeFilename(`${doc.document_number}.${format}`),
+    undefined,
+    { version: doc.updated_at ?? null },
   );
 }
