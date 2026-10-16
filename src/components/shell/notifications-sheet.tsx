@@ -14,6 +14,7 @@ import {
   type ActivityEvent,
 } from "@/features/notes/notes-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
+import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { formatDate, formatInstant } from "@/lib/format/date";
 import { routeForNotification } from "@/lib/push/notification-route";
 import { useTokens } from "@/theme/tokens";
@@ -29,7 +30,13 @@ export function NotificationsSheet() {
   const tokens = useTokens();
   const router = useRouter();
   const { sheet, closeSheet } = useShell();
-  const { select } = useSelectedProject();
+  const { select, projects } = useSelectedProject();
+  // Reminders span projects, and two projects often carry the same reminder title:
+  // each row names its project so they do not read as duplicates.
+  const projectName = (projectId: string) => {
+    const project = projects.find((p) => p.id === projectId);
+    return project ? projectDisplayName(project) : null;
+  };
   const notifications = useNotifications();
   const dismiss = useDismissNotification();
   const markRead = useMarkActivityRead();
@@ -130,6 +137,15 @@ export function NotificationsSheet() {
                 >
                   {note.title}
                 </Text>
+                {projectName(note.project_id) ? (
+                  <Text
+                    testID={`notification-project-${note.id}`}
+                    className="font-sans text-[12px] text-muted"
+                    numberOfLines={1}
+                  >
+                    {projectName(note.project_id)}
+                  </Text>
+                ) : null}
                 <View className="mt-1 flex-row items-center gap-2">
                   <Badge label={t(`notes.categories.${note.category}`)} />
                   {note.due_date ? (

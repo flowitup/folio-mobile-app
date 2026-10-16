@@ -382,7 +382,7 @@
     },
     "tvaShort": "TVA",
     "invoiceCount_zero": "aucune dépense",
-    "invoiceCount_one": "1 dépense",
+    "invoiceCount_one": "{{n}} dépense",
     "invoiceCount_other": "{{n}} dépenses",
     "detail": {
       "pdf": "PDF",

@@ -32,6 +32,7 @@ import {
 } from "@/features/tasks/tasks-api";
 import type { Task, TaskStatus } from "@/features/tasks/tasks-api";
 import { userDisplayName } from "@/lib/auth/user-display-name";
+import { toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
 
@@ -98,6 +99,13 @@ export default function PlanningTab() {
       ? null
       : (assignees.find((option) => option.value === task.assignee_id)?.label ??
         (members.data ? t("tasks.assigneeOther") : null));
+  // Day/month this year, day/month/year otherwise; an open task past its date
+  // reads in red (and says so to screen readers).
+  const today = toIsoDate(new Date());
+  const dueLabel = (due: string) =>
+    due.slice(0, 4) === today.slice(0, 4)
+      ? shortDayMonth(due)
+      : `${shortDayMonth(due)}/${due.slice(0, 4)}`;
   const indexOf = (task: Task) =>
     (byLane.get(task.status) ?? []).findIndex((x) => x.id === task.id);
 
@@ -226,8 +234,16 @@ export default function PlanningTab() {
                     </Text>
                     <View className="mt-[3px] flex-row items-center gap-2">
                       {task.due_date ? (
-                        <Text className="font-mono-regular text-[11.5px] text-muted">
-                          {shortDayMonth(task.due_date)}
+                        <Text
+                          testID={`task-due-${task.id}`}
+                          accessibilityLabel={
+                            !done && task.due_date.slice(0, 10) < today
+                              ? `${dueLabel(task.due_date)}, ${t("dashboard.agenda.overdue")}`
+                              : undefined
+                          }
+                          className={`font-mono-regular text-[11.5px] ${!done && task.due_date.slice(0, 10) < today ? "text-negative" : "text-muted"}`}
+                        >
+                          {dueLabel(task.due_date)}
                         </Text>
                       ) : null}
                       <Text

@@ -431,3 +431,39 @@ describe("planning tab · manager", () => {
     expect(screen.getByTestId("tab-menu")).toBeTruthy();
   });
 });
+
+describe("planning tab · due dates (Mac #47)", () => {
+  beforeEach(() => {
+    mockScopedPermissions = MANAGER_SCOPED;
+    jest.useFakeTimers({
+      now: new Date("2026-10-16T10:00:00Z"),
+      doNotFake: ["nextTick", "setImmediate"],
+    });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it("shows the year outside the current one and colours an open overdue task", async () => {
+    mockGet.mockImplementation(async (path: string) => {
+      if (path === "/api/v1/projects/{project_id}/tasks")
+        return ok({
+          tasks: [
+            { ...task("t1", "En retard", 1), due_date: "2026-10-10" },
+            { ...task("t2", "L'an prochain", 2), due_date: "2027-01-05" },
+          ],
+        });
+      if (path === "/api/v1/projects/{project_id}/members")
+        return ok({ members: MEMBERS });
+      return ok({ notifications: [], items: [], total: 0 });
+    });
+    await renderWithProviders(<PlanningTab />);
+    await screen.findByTestId("task-list");
+
+    const overdue = screen.getByTestId("task-due-t1");
+    expect(overdue).toHaveTextContent("10/10");
+    expect(overdue.props.className).toContain("text-negative");
+    expect(screen.getByTestId("task-due-t2")).toHaveTextContent("05/01/2027");
+    expect(screen.getByTestId("task-due-t2").props.className).toContain(
+      "text-muted",
+    );
+  });
+});

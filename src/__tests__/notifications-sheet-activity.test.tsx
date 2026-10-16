@@ -26,7 +26,11 @@ jest.mock("@/components/shell/attendance-requests-section", () => ({
   AttendanceRequestsSection: () => null,
 }));
 jest.mock("@/features/projects/selected-project", () => ({
-  useSelectedProject: () => ({ projectId: "p-current", select: mockSelect }),
+  useSelectedProject: () => ({
+    projectId: "p-current",
+    select: mockSelect,
+    projects: [],
+  }),
 }));
 jest.mock("@/features/notes/notes-api", () => ({
   useNotifications: () => ({

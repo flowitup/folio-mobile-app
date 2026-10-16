@@ -214,14 +214,9 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
             hint={t("documents.tagsHint")}
             autoCapitalize="none"
           />
-          <Button
-            testID="task-submit"
-            label={t("common.save")}
-            loading={submitting}
-            onPress={submit}
-          />
+          {/* Reorder / delete first: Save is the sheet's last, primary action. */}
           {editing ? (
-            <View className="mt-3 flex-row gap-2">
+            <View className="mb-3 flex-row gap-2">
               <Button
                 testID={`task-up-${editing.id}`}
                 label={`↑ ${t("planning.moveUp")}`}
@@ -255,6 +250,12 @@ export const TaskFormSheet = forwardRef<TaskFormSheetHandle, Props>(
               ) : null}
             </View>
           ) : null}
+          <Button
+            testID="task-submit"
+            label={t("common.save")}
+            loading={submitting}
+            onPress={submit}
+          />
         </ScrollView>
       </Sheet>
     );
