@@ -54,6 +54,9 @@ export function apiErrorMessage(
   // Leaving, demoting or removing the company's only admin: the generic 409 says "refresh and
   // try again", which never helps — someone else has to be made admin first.
   if (error.reason === "last_admin") return t("companies.errors.lastAdmin");
+  // Logging a worker already logged on another project that day: say so, not "refresh".
+  if (error.reason === "cross_project_conflict")
+    return t("labor.log.conflictGeneric");
   // A worker's phone that is not a phone number ("hello world"): say which field to fix.
   if (error.code === "InvalidPhone") return t("common.errors.invalidPhone");
   // Adding a worker for someone already on the roster (the generic 409's "refresh" never helps).

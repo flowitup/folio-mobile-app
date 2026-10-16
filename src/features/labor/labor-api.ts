@@ -304,7 +304,9 @@ export function useLogAttendance(projectId: string) {
       unwrapAs<LaborEntry>(
         await api.POST("/api/v1/projects/{project_id}/labor-entries", {
           params: { path: { project_id: projectId } },
-          body: body as never,
+          // Cross-site double-booking check: on for this app (the server keeps it opt-in
+          // for older ones). Its 409 reads "already logged on another project that day".
+          body: { check_conflicts: true, ...body } as never,
         }),
       ),
     invalidates: laborInvalidations(projectId),

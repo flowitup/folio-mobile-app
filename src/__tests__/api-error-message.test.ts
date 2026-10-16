@@ -29,6 +29,22 @@ describe("apiErrorMessage", () => {
     expect(apiErrorMessage(forbidden, t, "fr")).not.toMatch(/project managers/);
   });
 
+  it("says a worker is already logged elsewhere on a cross-site 409, in every language", () => {
+    const conflict = new ApiError(
+      409,
+      "Conflict",
+      "Cross-project conflicts exist; resend with acknowledge_conflicts=true to override.",
+      "cross_project_conflict",
+    );
+    expect(apiErrorMessage(conflict, tEn, "en")).toBe(
+      tEn("labor.log.conflictGeneric"),
+    );
+    expect(apiErrorMessage(conflict, t, "fr")).toBe(
+      t("labor.log.conflictGeneric"),
+    );
+    expect(apiErrorMessage(conflict, t, "fr")).not.toMatch(/acknowledge/);
+  });
+
   it("keeps the backend's message when the UI is in English", () => {
     const conflict = new ApiError(409, "Conflict", "Number already in use");
     expect(apiErrorMessage(conflict, tEn, "en")).toBe("Number already in use");
@@ -145,13 +161,17 @@ describe("apiErrorMessage — labor role refused", () => {
   it("says the role is no longer available, with the new code or an older API's message", () => {
     const coded = new ApiError(400, "InvalidLaborRole", "Labor role not found");
     const legacy = new ApiError(400, "ValidationError", "Labor role not found");
-    expect(apiErrorMessage(coded, t, "fr")).toBe(t("labor.errors.roleUnavailable"));
+    expect(apiErrorMessage(coded, t, "fr")).toBe(
+      t("labor.errors.roleUnavailable"),
+    );
     expect(apiErrorMessage(legacy, tEn, "en")).toBe(
       tEn("labor.errors.roleUnavailable"),
     );
     expect(isInvalidLaborRoleError(coded)).toBe(true);
-    expect(isInvalidLaborRoleError(new ApiError(400, "ValidationError", "Invalid input"))).toBe(
-      false,
-    );
+    expect(
+      isInvalidLaborRoleError(
+        new ApiError(400, "ValidationError", "Invalid input"),
+      ),
+    ).toBe(false);
   });
 });

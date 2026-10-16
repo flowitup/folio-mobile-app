@@ -104,6 +104,10 @@ export interface LogAttendancePayload {
   shift_type?: ShiftType | null;
   supplement_hours?: number;
   tag_id?: string | null;
+  /** Refuse (409) a worker already logged on another project that day; useLogAttendance sends true. */
+  check_conflicts?: boolean;
+  /** The user saw that 409 and logs anyway. */
+  acknowledge_conflicts?: boolean;
 }
 
 export interface UpdateAttendancePayload {
