@@ -653,6 +653,13 @@
     "readOnly": "Only members who can edit the project can add, edit or delete photos. Ask a project or company manager if you need to add some.",
     "takenOn": "Taken on"
   },
+  "uploads": {
+    "unsupported": "{{name}}: {{ext}} files are not accepted (accepted: {{allowed}}).",
+    "empty": "{{name}}: the file is empty.",
+    "tooLarge": "{{name}}: the file is too large.",
+    "invalidEncoding": "{{name}}: the file is not readable UTF-8 text. Save it as UTF-8 and try again.",
+    "failed": "{{name}}: {{reason}}"
+  },
   "notes": {
     "create": "New note",
     "edit": "Edit note",
@@ -1964,12 +1971,5 @@
     "title": "PDF",
     "share": "Share",
     "loadError": "Could not display this PDF."
-  },
-  "uploads": {
-    "unsupported": "{{name}}: {{ext}} files are not accepted (accepted: {{allowed}}).",
-    "empty": "{{name}}: the file is empty.",
-    "tooLarge": "{{name}}: the file is too large.",
-    "invalidEncoding": "{{name}}: the file is not readable UTF-8 text. Save it as UTF-8 and try again.",
-    "failed": "{{name}}: {{reason}}"
   }
 }
