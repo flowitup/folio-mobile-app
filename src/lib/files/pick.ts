@@ -24,9 +24,12 @@ export function exifCapturedAt(
   exif: Record<string, unknown> | null | undefined,
   now: Date = new Date(),
 ): string | undefined {
-  const raw = exif?.DateTimeOriginal ?? exif?.DateTimeDigitized ?? exif?.DateTime;
+  const raw =
+    exif?.DateTimeOriginal ?? exif?.DateTimeDigitized ?? exif?.DateTime;
   if (typeof raw !== "string") return undefined;
-  const m = /^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(raw.trim());
+  const m = /^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(
+    raw.trim(),
+  );
   if (!m) return undefined;
   const [, y, mo, d, h, mi, se] = m;
   const offset = exif?.OffsetTimeOriginal ?? exif?.OffsetTime;
