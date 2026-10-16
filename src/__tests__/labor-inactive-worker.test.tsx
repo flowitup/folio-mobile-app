@@ -114,4 +114,17 @@ describe("labor tab · stopped worker", () => {
       body: { is_active: true },
     });
   });
+
+  it("offers the stopped worker in the export, with an inline format choice", async () => {
+    mockParams = { segment: "workers" };
+    await renderWithProviders(<LaborTab />);
+
+    expect(
+      await screen.findByTestId(`labor-export-worker-option-${STOPPED.id}`),
+    ).toBeTruthy();
+    // PDF / Excel is a segmented control in the sheet, not a second sheet stacked on it.
+    await fireEvent.press(screen.getByTestId("labor-export-format-pdf"));
+    expect(screen.getByTestId("labor-export-format-pdf")).toBeSelected();
+    expect(screen.queryByTestId("labor-export-format-option-pdf")).toBeNull();
+  });
 });
