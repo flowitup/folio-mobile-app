@@ -80,6 +80,9 @@
     "hint": "Phiên bản của bạn: {{version}}. Đã cập nhật rồi? Hãy mở lại ứng dụng."
   },
   "home": {
+    "noProjectAdmin": "Tạo công trình đầu tiên để theo dõi ngân sách, chi phí, công nhân và lịch làm việc.",
+    "noProjectMember": "Quản trị viên của công ty cần thêm bạn vào một công trình. Công trình sẽ hiện ở đây ngay khi được thêm.",
+    "createProject": "Tạo công trình",
     "welcome": "Đã đăng nhập: {{email}}",
     "projects": "Công trình",
     "noProjects": "Chưa có công trình nào.",
@@ -223,6 +226,7 @@
     }
   },
   "members": {
+    "allSitesAccess": "Quản trị viên công ty: truy cập mọi công trình",
     "title": "Thành viên ({{count}})",
     "none": "Chưa có thành viên.",
     "inviteSent": "Đã gửi lời mời.",
@@ -432,6 +436,7 @@
       "none": "Không ca"
     },
     "workers": {
+      "deactivateCompanyHint": "Người này sẽ bị ngừng trên tất cả công trình của công ty và không thể chấm công nữa. Ngày công và khoản còn nợ vẫn hiển thị và có thể thanh toán; bạn có thể kích hoạt lại.",
       "add": "Thêm nhân công",
       "edit": "Sửa nhân công",
       "name": "Tên",
@@ -613,6 +618,12 @@
     },
     "errors": {
       "roleUnavailable": "Vai trò này không còn dùng được cho công ty của công trình. Hãy chọn vai trò khác."
+    },
+    "restricted": {
+      "title": "Chỉ dành cho quản lý",
+      "labor": "Công nhân, chấm công và lương của công trình này chỉ quản lý và quản trị viên mới xem được. Để xem ngày công của bạn, hãy nhờ quản lý liên kết tài khoản với hồ sơ công nhân của bạn.",
+      "expenses": "Chi phí và thanh toán của công trình này chỉ quản lý và quản trị viên mới xem được.",
+      "salaries": "Lương của công trình này chỉ quản lý và quản trị viên mới xem được. Để xem lương của bạn, hãy nhờ quản lý liên kết tài khoản với hồ sơ công nhân của bạn."
     }
   },
   "documents": {
@@ -1471,6 +1482,8 @@
         "removeConfirm": "Xoá quyền tuỳ chỉnh \"{{permission}}\"?"
       },
       "pending": {
+        "roleOnSignup": "Vai trò khi đăng ký: {{role}}",
+        "validUntil": "Lời mời có hiệu lực đến {{date}}",
         "title": "Hồ sơ chờ ({{count}})",
         "empty": "Không có hồ sơ chờ — mọi người được thêm bằng số điện thoại đã đăng nhập.",
         "badge": "Chờ",

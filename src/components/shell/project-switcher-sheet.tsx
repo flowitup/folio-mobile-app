@@ -100,6 +100,18 @@ const REMAIN_CLASS = {
   muted: "text-muted",
 } as const;
 
+// The new-project form asked for from outside the sheet (the empty Home's "Create a project"):
+// the sheet opens it as soon as it is shown.
+let newProjectRequested = false;
+
+/** Open the switcher straight on its new-project form. */
+export function openNewProjectForm(
+  openSheet: (sheet: "switcher") => void,
+): void {
+  newProjectRequested = true;
+  openSheet("switcher");
+}
+
 /** "Đổi công trình" sheet: every project with its remaining budget, current row highlighted, "+ new". */
 export function ProjectSwitcherSheet() {
   const { t } = useTranslation();
@@ -121,6 +133,11 @@ export function ProjectSwitcherSheet() {
   // can still create a project (D8 company-scoped grant), hence the `isCompanyAdminAnywhere`
   // fallback.
   const canCreate = can(user, "project:create") || isCompanyAdminAnywhere(user);
+  useEffect(() => {
+    if (!open || !newProjectRequested) return;
+    newProjectRequested = false;
+    if (canCreate) form.current?.open();
+  }, [open, canCreate]);
   // The matrix only grants `project:create` to a company admin — a new project is created
   // inside that company (creator auto-assigned manager, D6). An admin of several companies
   // picks it in the form, which defaults to the primary one.

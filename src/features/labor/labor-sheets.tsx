@@ -239,9 +239,11 @@ export const WorkerFormSheet = forwardRef<WorkerFormHandle, WorkerFormProps>(
               options={[
                 ...offered.map((entry) => ({
                   value: entry.person_id,
-                  label: entry.phone
-                    ? `${entry.name} · ${entry.phone}`
-                    : entry.name,
+                  // Never "phone · phone" for someone added by number alone.
+                  label:
+                    entry.phone && entry.phone !== entry.name
+                      ? `${entry.name} · ${entry.phone}`
+                      : entry.name,
                 })),
                 { value: NEW_PERSON, label: t("labor.workers.fromCompanyNew") },
               ]}

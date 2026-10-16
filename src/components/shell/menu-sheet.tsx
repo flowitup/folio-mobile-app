@@ -23,7 +23,10 @@ import {
 } from "@/features/companies/companies-api";
 import { useHiddenSections } from "@/features/companies/hidden-sections";
 import { useInventoryItems } from "@/features/inventory/inventory-api";
-import { useWorkerMode } from "@/features/labor/use-worker-mode";
+import {
+  useRestrictedMember,
+  useWorkerMode,
+} from "@/features/labor/use-worker-mode";
 import { useProducts, useSuppliers } from "@/features/library/library-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
@@ -39,11 +42,13 @@ const MENU_PROJECT_SECTIONS: {
   key: string;
   icon: IconName;
   requiresUpdate?: boolean;
+  /** Hidden from a member with no labor or pay access: the backend shows them no worker. */
+  requiresLaborView?: boolean;
 }[] = [
   { key: "documents", icon: "folder", requiresUpdate: true },
   { key: "photos", icon: "image" },
   { key: "notes", icon: "edit-3" },
-  { key: "salaries", icon: "credit-card" },
+  { key: "salaries", icon: "credit-card", requiresLaborView: true },
   { key: "chiffrage", icon: "clipboard" },
   { key: "analyses", icon: "bar-chart-2" },
   { key: "members", icon: "user-plus" },
@@ -109,6 +114,7 @@ export function MenuSheet() {
   const { projectId, project } = useSelectedProject();
   const canUpdateProject = useProjectCan(projectId, "project:update");
   const { workerMode } = useWorkerMode();
+  const restrictedMember = useRestrictedMember();
   const { user } = useAuth();
   const billing = useBillingAccess();
   const companyAdmin = isCompanyAdminAnywhere(user);
@@ -134,7 +140,9 @@ export function MenuSheet() {
 
   const projectSections = MENU_PROJECT_SECTIONS.filter(
     (section) =>
-      (!section.requiresUpdate || canUpdateProject) && !hidden.has(section.key),
+      (!section.requiresUpdate || canUpdateProject) &&
+      (!section.requiresLaborView || !restrictedMember) &&
+      !hidden.has(section.key),
   );
 
   const librarySub =

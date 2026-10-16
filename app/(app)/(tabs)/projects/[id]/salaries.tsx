@@ -30,6 +30,7 @@ import {
   usePaymentMethods,
 } from "@/features/invoices/invoices-api";
 import { useLaborMonthlySummary, useWorkers } from "@/features/labor/labor-api";
+import { RestrictedNotice } from "@/features/labor/restricted-area";
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { formatDate, formatMonth, toIsoDate } from "@/lib/format/date";
 import {
@@ -44,6 +45,7 @@ import {
   salaryTotals,
 } from "@/lib/labor/worker-salary-months";
 import type { SalaryMonth } from "@/lib/labor/worker-salary-months";
+import { hasFullLaborView } from "@/lib/labor/worker-mode";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 /** Upper-cases the first letter only (RN's `capitalize` does every word). */
@@ -95,6 +97,7 @@ export default function ProjectSalariesSection({
     "project:manage_invoices",
     user?.permissions,
   );
+  const fullLaborView = hasFullLaborView(project.data, user);
 
   const months = useMemo(
     () =>
@@ -187,7 +190,13 @@ export default function ProjectSalariesSection({
           />
         ) : null}
         {workers.data && workers.data.length === 0 ? (
-          <EmptyState message={t("salaries.noWorkers")} />
+          fullLaborView ? (
+            <EmptyState message={t("salaries.noWorkers")} />
+          ) : (
+            // Without labor or pay access the backend lists only the worker linked to this
+            // account, so an empty roster means "not yours to see", not "no worker".
+            <RestrictedNotice message={t("labor.restricted.salaries")} />
+          )
         ) : null}
         {(workers.data?.length ?? 0) > 0 ? (
           <Select

@@ -4,6 +4,7 @@ import { AppState, Platform } from "react-native";
 
 import { API_BASE_URL } from "@/config/env";
 
+import { fallbackStoreUrl } from "./store-url";
 import { isBelowMinimum } from "./version";
 
 type PlatformPolicy = { min_version?: string; update_url?: string };
@@ -22,7 +23,10 @@ async function fetchGate(): Promise<UpdateGate> {
   const policy = (await response.json()) as Policy;
   const mine = Platform.OS === "ios" ? policy.ios : policy.android;
   if (!mine || !isBelowMinimum(version, mine.min_version ?? "")) return NONE;
-  return { required: true, url: mine.update_url ?? "", version: version ?? "" };
+  const url =
+    mine.update_url ||
+    fallbackStoreUrl(Platform.OS, Constants.expoConfig ?? null);
+  return { required: true, url, version: version ?? "" };
 }
 
 /**

@@ -66,9 +66,12 @@ export default function ProjectMembersSection() {
   );
   // The backend lets a manager unassign only company "member" users; an admin anyone.
   const callerIsAdmin = isCompanyAdmin(user, project.data?.company_id);
+  // A company admin is on every project of the company: the backend refuses (409) to
+  // remove them from one, so their card offers no Remove.
   const canRemove = (member: ProjectMember) =>
     canManage &&
     member.user_id !== user?.id &&
+    member.role_name !== "admin" &&
     (callerIsAdmin || member.role_name === "member");
   const canInvite = projectCan(
     project.data,
@@ -118,6 +121,11 @@ export default function ProjectMembersSection() {
               {memberContact(member) ? (
                 <Text className="text-xs text-muted-foreground">
                   {memberContact(member)}
+                </Text>
+              ) : null}
+              {member.role_name === "admin" ? (
+                <Text className="text-xs text-muted-foreground">
+                  {t("members.allSitesAccess")}
                 </Text>
               ) : null}
               {member.joined_at ? (

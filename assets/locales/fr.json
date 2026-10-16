@@ -1,0 +1,7 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Folio utilise l’appareil photo pour prendre les factures et les photos du chantier.",
+    "NSPhotoLibraryUsageDescription": "Folio utilise vos photos pour joindre des factures, des documents et des photos du chantier.",
+    "NSMicrophoneUsageDescription": "Folio utilise le micro pour enregistrer des messages vocaux dans la discussion d’équipe."
+  }
+}

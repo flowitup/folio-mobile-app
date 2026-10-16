@@ -179,7 +179,8 @@ export function MemberRow({
             }))}
             onChange={(role) => role !== member.role && onChangeRole(role)}
           />
-          <View className="flex-row gap-2">
+          {/* Wraps: the two French labels do not fit side by side on a 375 px phone. */}
+          <View className="flex-row flex-wrap gap-2">
             {member.role !== "admin" ? (
               <Button
                 testID={`member-grants-${member.user_id}`}
@@ -231,6 +232,20 @@ export function PendingPersonRow({
       {person.phone ? (
         <Text className="mt-0.5 font-sans text-[11.5px] text-muted">
           {person.phone}
+        </Text>
+      ) : null}
+      {person.pending_role ? (
+        <Text className="mt-0.5 font-sans text-[11.5px] text-muted">
+          {t("companies.members.pending.roleOnSignup", {
+            role: t(`companies.x.${person.pending_role}`),
+          })}
+        </Text>
+      ) : null}
+      {person.pending_expires_at ? (
+        <Text className="mt-0.5 font-sans text-[11.5px] text-muted">
+          {t("companies.members.pending.validUntil", {
+            date: formatDate(person.pending_expires_at),
+          })}
         </Text>
       ) : null}
       <View className="mt-2 flex-row">

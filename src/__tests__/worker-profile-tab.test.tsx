@@ -366,6 +366,27 @@ describe("worker profile tab", () => {
     expect(screen.getByTestId("worker-profile-rate")).toHaveTextContent("—");
   });
 
+  it("tells a member nobody linked that the labor area is reserved, not that the site is empty", async () => {
+    mockWorkers = [];
+    await renderWithProviders(<LaborTab />);
+
+    expect(await screen.findByTestId("restricted-area")).toBeTruthy();
+    expect(screen.getByText(i18n.t("labor.restricted.labor"))).toBeTruthy();
+    expect(screen.queryByTestId("labor-title")).toBeNull();
+    expect(screen.queryByTestId("worker-profile-title")).toBeNull();
+  });
+
+  it("keeps the full labor screen for an unlinked member granted view_pay", async () => {
+    mockScoped = ["project:read", "project:view_pay"];
+    mockWorkers = [
+      { ...MINH, id: "w-other", user_id: "u-other", name: "Other Worker" },
+    ];
+    await renderWithProviders(<LaborTab />);
+
+    expect(await screen.findByTestId("labor-title")).toBeTruthy();
+    expect(screen.queryByTestId("restricted-area")).toBeNull();
+  });
+
   it("keeps the full labor screen for a manager", async () => {
     mockScoped = ["project:read", "project:manage_labor"];
     await renderWithProviders(<LaborTab />);

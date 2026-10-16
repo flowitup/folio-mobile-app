@@ -6,7 +6,7 @@ import { ActivityIndicator, View } from "react-native";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
 import { useChatFabReserve } from "@/components/shell/chat-fab";
-import { EmptyState, ErrorState } from "@/components/ui/primitives";
+import { ErrorState } from "@/components/ui/primitives";
 import { useAuth } from "@/auth/auth-context";
 import { isCompanyAdmin } from "@/auth/permissions";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/features/dashboard/overview-cards";
 import { OverviewDueTiles } from "@/features/dashboard/overview-due-tiles";
 import { OverviewHero } from "@/features/dashboard/overview-hero";
+import { NoProjectYet } from "@/features/dashboard/no-project-yet";
 import { TodayOnSiteCard } from "@/features/dashboard/today-on-site-card";
 import { useInvoices } from "@/features/invoices/invoices-api";
 import { useLaborEntries } from "@/features/labor/labor-api";
@@ -165,9 +166,7 @@ function OverviewTabContent() {
           onRetry={refetch}
         />
       ) : null}
-      {!isPending && !isError && !project ? (
-        <EmptyState message={t("dashboard.noProjects")} />
-      ) : null}
+      {!isPending && !isError && !project ? <NoProjectYet /> : null}
       {project && invoices.isError && !invoices.data ? (
         <ErrorState
           message={t("dashboard.loadError")}
@@ -219,7 +218,9 @@ function OverviewTabContent() {
           />
           <TodayOnSiteCard
             address={project.address}
-            workersOnSite={workersOnSite}
+            // Attendance is scoped to the caller's own worker without labor or pay access, so
+            // a head count would read "no worker on site" on a busy site.
+            workersOnSite={canPayLabor ? workersOnSite : undefined}
           />
         </>
       ) : null}

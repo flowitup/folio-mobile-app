@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.flowitup.folio"
+      "bundleIdentifier": "com.flowitup.folio",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
+      }
     },
     "android": {
       "package": "com.flowitup.folio",
@@ -68,6 +71,11 @@
         }
       ]
     ],
+    "locales": {
+      "en": "./assets/locales/en.json",
+      "fr": "./assets/locales/fr.json",
+      "vi": "./assets/locales/vi.json"
+    },
     "extra": {
       "router": {},
       "eas": {

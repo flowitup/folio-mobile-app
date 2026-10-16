@@ -80,6 +80,9 @@
     "hint": "Votre version : {{version}}. Déjà à jour ? Rouvrez l’application."
   },
   "home": {
+    "noProjectAdmin": "Créez votre premier chantier pour suivre son budget, ses dépenses, ses ouvriers et son planning.",
+    "noProjectMember": "Un administrateur de votre entreprise doit vous ajouter à un chantier. Il apparaîtra ici dès que ce sera fait.",
+    "createProject": "Créer un chantier",
     "welcome": "Connecté en tant que {{email}}",
     "projects": "Chantiers",
     "noProjects": "Aucun chantier pour le moment.",
@@ -223,6 +226,7 @@
     }
   },
   "members": {
+    "allSitesAccess": "Admin de l’entreprise : accès à tous les chantiers",
     "title": "Membres ({{count}})",
     "none": "Aucun membre.",
     "inviteSent": "Invitation envoyée.",
@@ -432,6 +436,7 @@
       "none": "Sans poste"
     },
     "workers": {
+      "deactivateCompanyHint": "Cette personne sera arrêtée sur tous les chantiers de l’entreprise et ne pourra plus y pointer. Ses journées et ce qui lui reste dû restent visibles et payables ; vous pourrez la réactiver.",
       "add": "Ajouter un ouvrier",
       "edit": "Modifier l'ouvrier",
       "name": "Nom",
@@ -613,6 +618,12 @@
     },
     "errors": {
       "roleUnavailable": "Ce rôle n'est plus disponible pour l'entreprise de ce chantier. Choisissez-en un autre."
+    },
+    "restricted": {
+      "title": "Accès réservé aux responsables",
+      "labor": "Les ouvriers, les pointages et les salaires de ce chantier sont visibles par les responsables et les administrateurs. Pour voir vos propres journées, demandez à un responsable de lier votre compte à votre fiche ouvrier.",
+      "expenses": "Les dépenses et les paiements de ce chantier sont visibles par les responsables et les administrateurs.",
+      "salaries": "Les salaires de ce chantier sont visibles par les responsables et les administrateurs. Pour voir votre propre salaire, demandez à un responsable de lier votre compte à votre fiche ouvrier."
     }
   },
   "documents": {
@@ -1471,6 +1482,8 @@
         "removeConfirm": "Supprimer la permission personnalisée « {{permission}} » ?"
       },
       "pending": {
+        "roleOnSignup": "Rôle à l’inscription : {{role}}",
+        "validUntil": "Invitation valable jusqu’au {{date}}",
         "title": "Profils en attente ({{count}})",
         "empty": "Aucun profil en attente — toutes les personnes ajoutées par téléphone se sont connectées.",
         "badge": "En attente",
