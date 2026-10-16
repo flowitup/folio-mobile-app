@@ -178,6 +178,20 @@ describe("ChangePhoneForm", () => {
 
     expect(screen.getByTestId("change-phone-step-number")).toBeTruthy();
   });
+
+  it("returns to the code already sent when the same number is sent again within a minute", async () => {
+    await renderForm();
+
+    await sendCodeTo("0622222222");
+    await fireEvent.press(
+      await screen.findByTestId("change-phone-other-number"),
+    );
+    // The number is still typed; sending it again must not ask for a new code (429).
+    await fireEvent.press(screen.getByTestId("change-phone-send"));
+
+    expect(await screen.findByTestId("change-phone-code-0")).toBeTruthy();
+    expect(mockRequestCode).toHaveBeenCalledTimes(1);
+  });
 });
 
 function OpenAccount() {

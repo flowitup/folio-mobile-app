@@ -7589,6 +7589,8 @@ export interface components {
       /** Refresh Token */
       refresh_token: string;
       user: components["schemas"]["AcceptedUserResponse"];
+      /** Project Id */
+      project_id?: string | null;
     };
     /**
      * AcceptedUserResponse

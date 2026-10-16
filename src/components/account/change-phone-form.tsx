@@ -27,6 +27,8 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
   const { user, requestPhoneChangeCode, confirmPhoneChange } = useAuth();
   const [phoneInput, setPhoneInput] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
+  // The number the last code went to, kept after "Use another number".
+  const [lastSentTo, setLastSentTo] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
   const [codeExpiresAt, setCodeExpiresAt] = useState<number | null>(null);
@@ -61,6 +63,14 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
     if (target === user?.phone) {
       return setError(t("account.phone.errors.sameNumber"));
     }
+    if (target === lastSentTo && secondsLeft > 0 && !codeExpired) {
+      // "Use another number" then the same one again inside the backend's per-number
+      // cooldown: the code already texted is still valid, and asking for another only
+      // answers 429 and strands the user on this step (the sign-up screen's rule).
+      setError(null);
+      setSentTo(target);
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -68,6 +78,7 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
       const sentAt = Date.now();
       setCodeExpiresAt(sentAt + expiresIn * 1000);
       setSentTo(target);
+      setLastSentTo(target);
       setCode("");
       setLastSubmitted(null);
       setResendAt(sentAt + RESEND_SECONDS * 1000);
