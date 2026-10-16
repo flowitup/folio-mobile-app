@@ -424,7 +424,7 @@
     "shift": {
       "full": "Journée",
       "half": "Demi-journée",
-      "overtime": "Heures sup. (x1,5)",
+      "overtime": "Journée majorée (x1,5)",
       "none": "Sans poste"
     },
     "workers": {
@@ -472,7 +472,7 @@
       "title": "Saisir le {{date}}",
       "sameAsLastDay": "Comme le dernier jour",
       "noWorkers": "Tous les ouvriers actifs sont déjà saisis ce jour.",
-      "supplement": "Heures en plus (non payées)",
+      "supplement": "Heures en banque (cumulées en jours bonus)",
       "submit_one": "Saisir {{count}} ouvrier",
       "submit_other": "Saisir {{count}} ouvriers",
       "saved": "Présences enregistrées.",
@@ -1872,7 +1872,7 @@
     "editSent": "Demande de modification envoyée — en attente d'un responsable.",
     "editUnchanged": "Aucune modification : ce jour a déjà ces valeurs.",
     "editDuplicate": "Cette demande de modification est déjà en attente d'un responsable.",
-    "supplement": "Heures en plus (non payées)",
+    "supplement": "Heures en banque (cumulées en jours bonus)",
     "note": "Note",
     "changeRequested": "Modification demandée",
     "proposedLine": "Demandé : {{value}}",
