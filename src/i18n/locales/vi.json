@@ -605,7 +605,8 @@
       "toggleWorkers": "Hiện hoặc ẩn công nhân của tháng này",
       "openMonth": "Mở tháng này",
       "daysUnit_one": "ngày",
-      "daysUnit_other": "ngày"
+      "daysUnit_other": "ngày",
+      "paidOutsideMonths": "gồm {{amount}} trả không có tháng hoặc ngoài các tháng chấm công"
     }
   },
   "documents": {

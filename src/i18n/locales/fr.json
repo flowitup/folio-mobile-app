@@ -589,7 +589,7 @@
       "titleYear": "Résumé · {{year}}",
       "titleMonth": "Résumé mensuel · {{month}}",
       "unpaid": "{{amount}} impayé",
-      "overpaid": "{{amount}} trop-payé",
+      "overpaid": "{{amount}} trop-perçu",
       "workers_one": "{{count}} ouvrier",
       "workers_other": "{{count}} ouvriers",
       "perDay": "{{rate}} / jour",
@@ -605,7 +605,8 @@
       "toggleWorkers": "Afficher ou masquer les ouvriers de ce mois",
       "openMonth": "Ouvrir ce mois",
       "daysUnit_one": "jour",
-      "daysUnit_other": "jours"
+      "daysUnit_other": "jours",
+      "paidOutsideMonths": "dont {{amount}} payés sans mois ou hors des mois pointés"
     }
   },
   "documents": {

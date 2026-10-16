@@ -7,8 +7,10 @@ import {
   availableYears,
   isPastMonth,
   monthDetail,
+  monthRateLabel,
   monthSettlement,
   overviewMonths,
+  paidOutsideMonths,
   rollupTotals,
   rowsInScope,
   scopeRange,
@@ -155,7 +157,48 @@ describe("labor overview helpers", () => {
       ["b", 0, 150],
     ]);
     expect(detail.paid).toBe(350);
-    expect(detail.balance).toBe(100);
+    // Settled worker by worker: An's 50 overpaid never hides Binh's 150 owed.
+    expect(detail.balance).toBe(150);
+    expect(detail.overpay).toBe(50);
     expect(detail.bonusCost).toBe(150);
+  });
+
+  it("counts payments with no month or outside the visible months in the grand total", () => {
+    const withOrphan = {
+      months: [
+        ...PAYMENTS.months,
+        {
+          year: 2026,
+          month: 5,
+          total_paid: 40,
+          company_paid: 40,
+          personal_paid: 0,
+          unassigned_count: 1,
+          unassigned_paid: 40,
+          workers: [],
+        },
+      ],
+    } as LaborPaymentsSummary;
+    expect(paidOutsideMonths(ROWS, withOrphan, { kind: "all" }).paid).toBe(50);
+    expect(
+      paidOutsideMonths(
+        rowsInScope(ROWS, { kind: "year", year: 2026 }),
+        withOrphan,
+        {
+          kind: "year",
+          year: 2026,
+        },
+      ),
+    ).toEqual({ paid: 40, companyPaid: 40, personalPaid: 0 });
+  });
+
+  it("labels a month with its own rate, or both when it changed mid-month", () => {
+    const fmt = (n: number) => `${n}€`;
+    expect(monthRateLabel({ daily_rate: 180.5 }, 190, fmt)).toBe("180.5€");
+    expect(
+      monthRateLabel({ daily_rate: 190, month_start_rate: 180.5 }, 190, fmt),
+    ).toBe("180.5€ → 190€");
+    expect(monthRateLabel({}, 190, fmt)).toBe("190€");
+    expect(monthRateLabel({}, null, fmt)).toBeNull();
   });
 });

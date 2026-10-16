@@ -605,7 +605,8 @@
       "toggleWorkers": "Show or hide the workers of this month",
       "openMonth": "Open this month",
       "daysUnit_one": "day",
-      "daysUnit_other": "days"
+      "daysUnit_other": "days",
+      "paidOutsideMonths": "incl. {{amount}} paid with no month or outside logged months"
     }
   },
   "documents": {

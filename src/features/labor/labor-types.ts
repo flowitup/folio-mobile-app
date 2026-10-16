@@ -195,6 +195,9 @@ interface MonthlyWorkerSubRow {
   days_worked: number;
   /** EUR */
   total_cost: number;
+  /** Rate on the month's last and first days (differ when it changed mid-month). Older APIs omit them. */
+  daily_rate?: number;
+  month_start_rate?: number;
 }
 
 export interface MonthlySummaryRow {
