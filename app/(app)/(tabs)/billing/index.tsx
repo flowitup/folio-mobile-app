@@ -276,7 +276,6 @@ export default function BillingHub() {
               onPress={() => void list.fetchNextPage()}
             />
           ) : null}
-
         </ScrollView>
       ) : null}
     </View>

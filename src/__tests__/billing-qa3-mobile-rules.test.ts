@@ -56,12 +56,20 @@ describe("billing draft dates", () => {
       issue_date: "2026-11-15",
     };
     expect(
-      validateDraft(t, { ...draft, payment_due_date: "2026-11-15" }, "create", "facture")
-        .errors,
+      validateDraft(
+        t,
+        { ...draft, payment_due_date: "2026-11-15" },
+        "create",
+        "facture",
+      ).errors,
     ).toEqual({});
     expect(
-      validateDraft(t, { ...draft, payment_due_date: null }, "create", "facture")
-        .errors,
+      validateDraft(
+        t,
+        { ...draft, payment_due_date: null },
+        "create",
+        "facture",
+      ).errors,
     ).toEqual({});
   });
 });
@@ -117,7 +125,13 @@ describe("nextRefundableOffset", () => {
     const first = page(50, 212);
     expect(nextRefundableOffset(first, [first])).toBe(50);
     const last = page(12, 212);
-    const pages = [page(50, 212), page(50, 212), page(50, 212), page(50, 212), last];
+    const pages = [
+      page(50, 212),
+      page(50, 212),
+      page(50, 212),
+      page(50, 212),
+      last,
+    ];
     expect(nextRefundableOffset(last, pages)).toBeUndefined();
   });
 
