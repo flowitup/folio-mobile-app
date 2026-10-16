@@ -8,7 +8,6 @@ import { AttendanceRequestsSection } from "@/components/shell/attendance-request
 import { Badge } from "@/components/ui/primitives";
 import { Eyebrow } from "@/components/ui/typography";
 import {
-  unreadActivityCount,
   useDismissNotification,
   useMarkActivityRead,
   useNotifications,
@@ -17,6 +16,7 @@ import {
 import { useProjects } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatDate } from "@/lib/format/date";
+import { unreadActivityCount } from "@/lib/notifications/bell-count";
 import { eventTime } from "@/lib/notifications/event-time";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import {

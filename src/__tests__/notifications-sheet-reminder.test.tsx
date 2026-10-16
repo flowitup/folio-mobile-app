@@ -27,6 +27,14 @@ jest.mock("@/components/shell/attendance-requests-section", () => ({
 jest.mock("@/features/projects/selected-project", () => ({
   useSelectedProject: () => ({ projectId: "p-current", select: mockSelect }),
 }));
+jest.mock("@/features/projects/projects-api", () => ({
+  useProjects: () => ({
+    data: {
+      projects: [{ id: "p-other", name: "Other", address: "12 rue Haute" }],
+      total: 1,
+    },
+  }),
+}));
 jest.mock("@/features/notes/notes-api", () => ({
   useNotifications: () => ({
     isPending: false,
@@ -52,6 +60,11 @@ jest.mock("@/features/notes/notes-api", () => ({
 }));
 
 describe("notifications sheet · reminder", () => {
+  it("names the reminder's project, so same-title notes of two projects differ", async () => {
+    await render(<NotificationsSheet />);
+    expect(screen.getByText("12 rue Haute")).toBeTruthy();
+  });
+
   it("selects the reminder's project before opening its notes", async () => {
     await render(<NotificationsSheet />);
     await fireEvent.press(screen.getByTestId("notification-n1"));
