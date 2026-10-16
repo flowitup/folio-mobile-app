@@ -41,16 +41,19 @@ export function OverviewDueTiles({
         <Text className="mt-0.5 font-sans text-xs text-muted" numberOfLines={1}>
           {t("invoices.types.labor")}
         </Text>
-        <Pressable
-          testID="overview-labor-unpaid"
-          accessibilityRole="button"
-          onPress={onPayLabor}
-          className="mt-3 h-[30px] flex-row items-center self-start rounded-full bg-ink px-3 active:opacity-70"
-        >
-          <Text className="font-sans-semibold text-xs text-on-ink">
-            {t("dashboard.overview.payNow")}
-          </Text>
-        </Pressable>
+        {/* Nothing to pay or to chase: no "pay now" / "view" call to action over 0,00 €. */}
+        {laborUnpaid > 0 ? (
+          <Pressable
+            testID="overview-labor-unpaid"
+            accessibilityRole="button"
+            onPress={onPayLabor}
+            className="mt-3 h-[30px] flex-row items-center self-start rounded-full bg-ink px-3 active:opacity-70"
+          >
+            <Text className="font-sans-semibold text-xs text-on-ink">
+              {t("dashboard.overview.payNow")}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
       <View className="flex-1 rounded-[18px] bg-accent-tint p-3.5">
         <Text className="font-sans text-[11px] uppercase tracking-[1.1px] text-accent-ink">
@@ -67,16 +70,18 @@ export function OverviewDueTiles({
         <Text className="mt-0.5 font-sans text-xs text-muted" numberOfLines={1}>
           {t("dashboard.overview.refundItems", { count: pendingRefundCount })}
         </Text>
-        <Pressable
-          testID="overview-pending-refunds"
-          accessibilityRole="button"
-          onPress={onOpenRefunds}
-          className="mt-3 h-[30px] flex-row items-center self-start rounded-full border-[1.5px] border-ink px-3 active:opacity-70"
-        >
-          <Text className="font-sans-semibold text-xs text-ink">
-            {t("expenses.view")}
-          </Text>
-        </Pressable>
+        {pendingRefundCount > 0 ? (
+          <Pressable
+            testID="overview-pending-refunds"
+            accessibilityRole="button"
+            onPress={onOpenRefunds}
+            className="mt-3 h-[30px] flex-row items-center self-start rounded-full border-[1.5px] border-ink px-3 active:opacity-70"
+          >
+            <Text className="font-sans-semibold text-xs text-ink">
+              {t("expenses.view")}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );

@@ -2,7 +2,9 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import i18n from "@/i18n";
 import ProjectSalariesSection from "../../app/(app)/(tabs)/projects/[id]/salaries";
+import { capitalizeFirst, formatMonth } from "@/lib/format/date";
 import {
+  INVOICE_LABOR_TUAN,
   MONTH,
   WORKER_MINH,
   answerGet,
@@ -23,9 +25,10 @@ import type { Persona } from "./helpers/release-qa-fixtures";
  */
 let mockCurrent: Persona = persona("manager");
 
+const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({
-    push: jest.fn(),
+    push: mockPush,
     navigate: jest.fn(),
     replace: jest.fn(),
   }),
@@ -57,6 +60,7 @@ jest.mock("@/components/ui/toast", () => ({
 const INVOICES_PATH = "/api/v1/projects/{project_id}/invoices";
 
 beforeEach(() => {
+  mockPush.mockReset();
   mockShowToast.mockReset();
   mockGet.mockReset();
   mockPost.mockReset();
@@ -201,5 +205,62 @@ describe("Salaries per role", () => {
       expect(screen.queryByTestId(`salary-pay-${MONTH}`)).toBeNull(),
     );
     expect(screen.getByText(i18n.t("salaries.readOnly"))).toBeTruthy();
+  });
+});
+
+describe("Salaries month rows", () => {
+  beforeEach(() => {
+    mockCurrent = persona("manager");
+  });
+
+  it("says a month has no payment instead of a tap that does nothing", async () => {
+    await renderWithProviders(<ProjectSalariesSection />);
+    const row = await screen.findByTestId(`salary-month-${MONTH}`);
+    expect(row).toHaveTextContent(
+      containing(capitalizeFirst(formatMonth(MONTH))),
+    );
+    expect(row.props.accessibilityState).toMatchObject({ expanded: false });
+
+    await fireEvent.press(row);
+
+    expect(screen.getByTestId(`salary-payments-${MONTH}`)).toHaveTextContent(
+      i18n.t("salaries.noPayments"),
+    );
+    expect(
+      screen.getByTestId(`salary-month-${MONTH}`).props.accessibilityState,
+    ).toMatchObject({ expanded: true });
+  });
+
+  it("counts a month's payments and opens one on tap", async () => {
+    const paid = {
+      ...INVOICE_LABOR_TUAN,
+      id: "labor-minh",
+      invoice_number: "INV-LABOR-MINH",
+      worker_id: WORKER_MINH.id,
+      total_amount: 150,
+    };
+    const answer = answerGet(() => mockCurrent);
+    mockGet.mockImplementation(
+      async (
+        path: string,
+        options?: { params?: { query?: Record<string, unknown> } },
+      ) =>
+        path === INVOICES_PATH &&
+        options?.params?.query?.worker_id === WORKER_MINH.id
+          ? ok({ invoices: [paid], total: 1 })
+          : answer(path, options as never),
+    );
+    await renderWithProviders(<ProjectSalariesSection />);
+    const row = await screen.findByTestId(`salary-month-${MONTH}`);
+    await waitFor(() =>
+      expect(row).toHaveTextContent(
+        containing(i18n.t("salaries.paymentsCount", { count: 1 })),
+      ),
+    );
+
+    await fireEvent.press(row);
+    await fireEvent.press(screen.getByTestId("salary-payment-labor-minh"));
+
+    expect(mockPush).toHaveBeenCalledWith("/projects/p1/invoices/labor-minh");
   });
 });

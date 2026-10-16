@@ -1,5 +1,5 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import {
   Badge,
@@ -31,7 +32,12 @@ import {
 } from "@/features/invoices/invoices-api";
 import { useLaborMonthlySummary, useWorkers } from "@/features/labor/labor-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
-import { formatDate, formatMonth, toIsoDate } from "@/lib/format/date";
+import {
+  capitalizeFirst,
+  formatDate,
+  formatMonth,
+  toIsoDate,
+} from "@/lib/format/date";
 import {
   formatAmountInput,
   formatMoney,
@@ -45,6 +51,7 @@ import {
 } from "@/lib/labor/worker-salary-months";
 import type { SalaryMonth } from "@/lib/labor/worker-salary-months";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { useTokens } from "@/theme/tokens";
 
 const STATUS_TONE = {
   paid: "success",
@@ -111,6 +118,8 @@ export default function ProjectSalariesSection({
   const [methodId, setMethodId] = useState<string | null>(null);
   const [unpaying, setUnpaying] = useState<SalaryMonth | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const router = useRouter();
+  const tokens = useTokens();
 
   function openPay(row: SalaryMonth) {
     setPaying(row);
@@ -243,16 +252,36 @@ export default function ProjectSalariesSection({
           <Card key={row.month || "unassigned"} className="mb-2">
             <Pressable
               testID={`salary-month-${row.month || "unassigned"}`}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: expanded === row.month }}
+              className="active:opacity-70"
               onPress={() =>
                 setExpanded(expanded === row.month ? null : row.month)
               }
             >
               <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold capitalize text-primary">
-                  {row.month === UNASSIGNED_MONTH
-                    ? t("salaries.noMonth")
-                    : formatMonth(row.month)}
-                </Text>
+                <View className="flex-1 flex-row items-center gap-1">
+                  <Icon
+                    name={
+                      expanded === row.month ? "chevron-down" : "chevron-right"
+                    }
+                    size={16}
+                    color={tokens.muted}
+                  />
+                  <Text className="text-base font-semibold text-primary">
+                    {row.month === UNASSIGNED_MONTH
+                      ? t("salaries.noMonth")
+                      : capitalizeFirst(formatMonth(row.month))}
+                  </Text>
+                  {row.invoices.length > 0 ? (
+                    <Text className="text-xs text-muted-foreground">
+                      {" · "}
+                      {t("salaries.paymentsCount", {
+                        count: row.invoices.length,
+                      })}
+                    </Text>
+                  ) : null}
+                </View>
                 <Badge
                   label={t(`salaries.status.${row.status}`)}
                   tone={STATUS_TONE[row.status]}
@@ -270,16 +299,37 @@ export default function ProjectSalariesSection({
                   : ""}
               </Text>
             </Pressable>
-            {expanded === row.month && row.invoices.length > 0 ? (
-              <View className="mt-2 border-t border-border pt-2">
-                <Text className="text-xs text-muted-foreground">
-                  {t("salaries.payments")}
-                </Text>
-                {row.invoices.map((inv) => (
-                  <Text key={inv.id} className="text-xs text-primary">
-                    {inv.invoice_number} · {formatDate(inv.issue_date)} ·{" "}
-                    {formatMoney(inv.total_amount)}
+            {expanded === row.month ? (
+              <View
+                className="mt-2 border-t border-border pt-2"
+                testID={`salary-payments-${row.month || "unassigned"}`}
+              >
+                {row.invoices.length === 0 ? (
+                  <Text className="text-xs text-muted-foreground">
+                    {t("salaries.noPayments")}
                   </Text>
+                ) : (
+                  <Text className="text-xs text-muted-foreground">
+                    {t("salaries.payments")}
+                  </Text>
+                )}
+                {row.invoices.map((inv) => (
+                  <Pressable
+                    key={inv.id}
+                    testID={`salary-payment-${inv.id}`}
+                    accessibilityRole="link"
+                    hitSlop={6}
+                    className="flex-row items-center justify-between py-1 active:opacity-70"
+                    onPress={() =>
+                      router.push(`/projects/${id}/invoices/${inv.id}`)
+                    }
+                  >
+                    <Text className="flex-1 text-xs text-primary underline">
+                      {inv.invoice_number} · {formatDate(inv.issue_date)} ·{" "}
+                      {formatMoney(inv.total_amount)}
+                    </Text>
+                    <Icon name="chevron-right" size={14} color={tokens.muted} />
+                  </Pressable>
                 ))}
               </View>
             ) : null}

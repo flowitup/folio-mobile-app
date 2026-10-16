@@ -1,7 +1,12 @@
 import { Pressable, Text, View } from "react-native";
 
 import { Icon } from "@/components/ui/icon";
-import { formatMonth, localeTag, shiftMonth } from "@/lib/format/date";
+import {
+  capitalizeFirst,
+  formatMonth,
+  localeTag,
+  shiftMonth,
+} from "@/lib/format/date";
 import { INK_BLOCK, useTokens } from "@/theme/tokens";
 
 type Props = {
@@ -56,9 +61,9 @@ export function MonthPicker({
         <Icon name="chevron-left" size={16} color={arrow} />
       </Pressable>
       <Text
-        className={`px-1 font-sans-semibold text-[13px] capitalize ${ink ? "text-on-ink-block" : "text-ink"}`}
+        className={`px-1 font-sans-semibold text-[13px] ${ink ? "text-on-ink-block" : "text-ink"}`}
       >
-        {compact ? shortMonthLabel(value) : formatMonth(value)}
+        {capitalizeFirst(compact ? shortMonthLabel(value) : formatMonth(value))}
       </Text>
       <Pressable
         onPress={() => onChange(shiftMonth(value, 1))}

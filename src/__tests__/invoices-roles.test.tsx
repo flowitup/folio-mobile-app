@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import i18n from "@/i18n";
+import { formatMoney } from "@/lib/format/money";
 import ExpensesTab from "../../app/(app)/(tabs)/expenses";
 import ProjectSalariesSection from "../../app/(app)/(tabs)/projects/[id]/salaries";
 import InvoiceDetailScreen from "../../app/(app)/(tabs)/projects/[id]/invoices/[invoiceId]/index";
@@ -155,6 +156,40 @@ describe("expenses tab · admin", () => {
     expect(
       screen.getByTestId("export-type-option-released_funds"),
     ).toBeTruthy();
+  });
+
+  it("says what its counts cover and what sits in no purse", async () => {
+    await renderWithProviders(<ExpensesTab />);
+    await screen.findByTestId(`invoice-row-${INVOICE_MATERIALS.id}`);
+
+    // Materials 540 (personal) + two labor rows 100 and 80; the release is not an expense.
+    expect(screen.getByTestId("expenses-total-caption")).toHaveTextContent(
+      containing(i18n.t("expenses.spendCount", { count: 3 })),
+    );
+    // The two labor rows have no payment method: in neither purse, as the web says.
+    expect(screen.getByTestId("expenses-no-purse")).toHaveTextContent(
+      i18n.t("invoices.summary.noPurseSpend", {
+        count: 2,
+        amount: formatMoney(180),
+      }),
+    );
+  });
+
+  it("sums the releases under the 'released funds' chip instead of 0,00 €", async () => {
+    await renderWithProviders(<ExpensesTab />);
+    await screen.findByTestId(`invoice-row-${INVOICE_MATERIALS.id}`);
+
+    await fireEvent.press(screen.getByTestId("expenses-filter-released_funds"));
+
+    expect(screen.getByTestId("expenses-total")).toHaveTextContent(
+      formatMoney(20000),
+    );
+    expect(screen.getByTestId("expenses-total-caption")).toHaveTextContent(
+      i18n.t("invoices.summary.releasedTotal"),
+    );
+    expect(
+      screen.queryByTestId(`invoice-row-${INVOICE_MATERIALS.id}`),
+    ).toBeNull();
   });
 });
 
@@ -412,6 +447,34 @@ describe("invoice detail · manager", () => {
     expect(screen.queryByTestId("invoice-edit")).toBeNull();
     expect(screen.queryByTestId("invoice-delete")).toBeNull();
 
+    // No colour set and none can be: the palette is not offered at all.
+    expect(screen.queryByTestId("detail-highlight-row")).toBeNull();
+  });
+
+  it("dims a frozen invoice's colour and says why it cannot change", async () => {
+    const frozen = {
+      ...INVOICE_MATERIALS,
+      is_auto_generated: true,
+      highlight_color: "blue",
+    };
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) =>
+      path === "/api/v1/projects/{project_id}/invoices/{invoice_id}"
+        ? { data: frozen, response: { status: 200, statusText: "OK" } }
+        : answer(path, options as never),
+    );
+
+    await renderWithProviders(<InvoiceDetailScreen />);
+
+    expect(
+      await screen.findByTestId("detail-highlight-locked"),
+    ).toHaveTextContent(i18n.t("invoices.detail.highlightLockedAuto"));
+    expect(screen.getByTestId("detail-highlight-green")).toHaveStyle({
+      opacity: 0.35,
+    });
+    expect(screen.getByTestId("detail-highlight-blue")).toHaveStyle({
+      opacity: 1,
+    });
     await fireEvent.press(screen.getByTestId("detail-highlight-green"));
     expect(mockPut).not.toHaveBeenCalled();
     expect(mockPatch).not.toHaveBeenCalled();
@@ -662,8 +725,8 @@ describe("invoice detail · member (deep link)", () => {
     expect(screen.queryByTestId("invoice-transfer-company")).toBeNull();
     expect(screen.queryByTestId("invoice-mark-refunded")).toBeNull();
 
-    // The highlight palette stays visible but inert (a tap would PUT the invoice).
-    await fireEvent.press(screen.getByTestId("detail-highlight-green"));
+    // No colour to show and none to set: the inert palette is not drawn (a tap would PUT).
+    expect(screen.queryByTestId("detail-highlight-row")).toBeNull();
     expect(mockPut).not.toHaveBeenCalled();
     expect(mockPatch).not.toHaveBeenCalled();
   });

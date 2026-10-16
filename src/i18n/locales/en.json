@@ -101,7 +101,7 @@
     "budget": "Budget",
     "sections": {
       "overview": "Overview",
-      "invoices": "Invoices",
+      "invoices": "Expenses",
       "labor": "Labor",
       "documents": "Documents",
       "photos": "Photos",
@@ -109,7 +109,7 @@
       "planning": "Planning",
       "chiffrage": "Cost planning",
       "analyses": "Analyses",
-      "members": "Project members",
+      "members": "Members",
       "settings": "Settings",
       "salaries": "Salaries"
     },
@@ -386,7 +386,15 @@
       "paidByCompany": "company",
       "paidByPersonal": "personal",
       "sumOfTypes": "Total",
-      "sharedScaleTo": "shared scale to {{amount}}"
+      "sharedScaleTo": "shared scale to {{amount}}",
+      "unfunded": "not funded",
+      "spentLower": "spent",
+      "overLower": "over",
+      "purseLine": "Released {{released}} · Spent {{spent}}",
+      "noPurseSpend_one": "{{count}} expense in no purse · {{amount}}",
+      "noPurseSpend_other": "{{count}} expenses in no purse · {{amount}}",
+      "noPurseHint": "Payment method is neither company nor personal: counted in the total, not in a purse.",
+      "releasedTotal": "Released this month"
     },
     "tvaShort": "VAT",
     "invoiceCount_zero": "no expense",
@@ -402,6 +410,9 @@
       "transferConfirm": "Transfer",
       "info": "Details",
       "noHighlight": "No highlight",
+      "highlightLockedAuto": "Generated from an invoice: the colour cannot be changed.",
+      "highlightLockedRefunded": "Refunded expense: the colour cannot be changed.",
+      "highlightReadOnly": "Only an admin or a manager can change the colour.",
       "attachmentsEmpty": "No attachments yet"
     },
     "highlightColors": {
@@ -1729,7 +1740,10 @@
     "paidToast": "Payment recorded.",
     "unpaidToast": "Payments removed.",
     "readOnly": "Only an admin or manager can change the paid status.",
-    "noMonth": "No month recorded"
+    "noMonth": "No month recorded",
+    "noPayments": "No payment recorded for this month.",
+    "paymentsCount_one": "{{count}} payment",
+    "paymentsCount_other": "{{count}} payments"
   },
   "shell": {
     "switchProject": "Switch project",
@@ -1754,6 +1768,10 @@
     "add": "Add",
     "itemsCount_one": "{{count}} item",
     "itemsCount_other": "{{count}} items",
+    "spendCount_one": "{{count}} expense",
+    "spendCount_other": "{{count}} expenses",
+    "returnsCount_one": "{{count}} return",
+    "returnsCount_other": "{{count}} returns",
     "purseCaption": "left · {{pct}} % used",
     "pendingRefunds_one": "{{count}} expense awaiting company refund",
     "pendingRefunds_other": "{{count}} expenses awaiting company refund",

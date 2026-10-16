@@ -8,6 +8,7 @@ import {
   shortDayMonth,
 } from "@/features/dashboard/overview-cards";
 import type { Invoice, InvoiceType } from "@/features/invoices/invoice-types";
+import { capitalizeFirst } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { ledgerTypeOf } from "@/lib/invoices/group-invoices-by-month";
 import { highlightRowTint, invoiceTotals } from "@/lib/invoices/invoice-totals";
@@ -34,9 +35,12 @@ export function PurseCard({
   cashAdvanced?: number;
 }) {
   const { t } = useTranslation();
-  const pct =
-    released > 0 ? Math.min(100, Math.round((spent / released) * 100)) : 0;
-  const left = released - spent;
+  // The label keeps the real share (a purse can be spent 5× over); only the bar is clamped.
+  const pct = released > 0 ? Math.round((spent / released) * 100) : 0;
+  const barPct = Math.min(100, Math.max(0, pct));
+  const left = Math.round((released - spent) * 100) / 100;
+  // Spent with nothing released: say what was spent, not "−X left".
+  const unfunded = released <= 0 && spent > 0;
   return (
     <View
       className="flex-1 rounded-[14px] border border-ink-block-line p-3"
@@ -49,23 +53,45 @@ export function PurseCard({
         >
           {label}
         </Text>
-        <Text className="font-sans text-[11px] leading-[14px] text-ink-block-muted">
-          {pct} %
+        <Text
+          className={`font-sans text-[11px] leading-[14px] ${pct > 100 || unfunded ? "text-negative" : "text-ink-block-muted"}`}
+          testID={`${testID}-pct`}
+        >
+          {unfunded ? t("invoices.summary.unfunded") : `${pct} %`}
         </Text>
       </View>
       <Text
-        className={`mt-1.5 font-mono text-base leading-5 ${left < 0 ? "text-negative" : "text-on-ink-block"}`}
+        className={`mt-1.5 font-mono text-base leading-5 ${!unfunded && left < 0 ? "text-negative" : "text-on-ink-block"}`}
         numberOfLines={1}
         adjustsFontSizeToFit
+        testID={`${testID}-figure`}
       >
-        {formatMoney(left)}
+        {formatMoney(unfunded ? spent : Math.abs(left))}
+        <Text className="font-sans text-[11px] text-ink-block-muted">
+          {" "}
+          {unfunded
+            ? t("invoices.summary.spentLower")
+            : left < 0
+              ? t("invoices.summary.overLower")
+              : t("invoices.summary.left")}
+        </Text>
       </Text>
       <View className="mt-2 h-[5px] overflow-hidden rounded-[3px] bg-ink-block-tile">
         <View
           className={`h-[5px] rounded-[3px] ${tone === "company" ? "bg-on-ink-block" : "bg-ink-block-accent"}`}
-          style={{ width: `${pct}%` }}
+          style={{ width: `${unfunded ? 100 : barPct}%` }}
         />
       </View>
+      <Text
+        testID={`${testID}-line`}
+        className="mt-1.5 font-sans text-[10.5px] leading-[13px] text-ink-block-muted"
+        numberOfLines={2}
+      >
+        {t("invoices.summary.purseLine", {
+          released: formatMoney(released),
+          spent: formatMoney(spent),
+        })}
+      </Text>
       {cashAdvanced > 0 ? (
         <Text
           testID={`${testID}-cash-advance`}
@@ -223,6 +249,7 @@ export function ExpenseRow({
   );
 }
 
+/** "septembre 2026" → "Septembre 2026", "tháng 9 năm 2026" → "Tháng 9 năm 2026". */
 /** "Tháng 8   31.480,00 €" line above an older month's card. */
 export function MonthSectionHeader({
   label,
@@ -233,8 +260,9 @@ export function MonthSectionHeader({
 }) {
   return (
     <View className="flex-row items-baseline justify-between px-1 pt-1.5">
-      <Text className="font-sans-semibold text-[15px] capitalize leading-[18px] text-ink">
-        {label}
+      {/* First letter only: a capitalize class gave "Tháng 9 Năm 2026". */}
+      <Text className="font-sans-semibold text-[15px] leading-[18px] text-ink">
+        {capitalizeFirst(label)}
       </Text>
       <Text className="font-mono text-[14px] text-muted">
         {formatMoney(total)}

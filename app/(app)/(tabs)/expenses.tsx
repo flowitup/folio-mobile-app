@@ -29,6 +29,7 @@ import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { currentMonth, formatMonth, shiftMonth } from "@/lib/format/date";
+import { formatMoney } from "@/lib/format/money";
 import { buildPursesSummary } from "@/lib/invoices/expense-purses";
 import {
   groupInvoicesByMonth,
@@ -125,8 +126,21 @@ function ExpensesTabContent() {
       .filter((group) => group.monthKey <= month)
       .map((group) => ({
         monthKey: group.monthKey,
-        total: group.expenseSubtotal,
-        invoices: group.categories.flatMap((category) => category.items),
+        // Under "Fonds débloqués" the rows are releases, which the spend subtotal leaves
+        // out: the header sums what is listed instead of reading 0,00 €.
+        total:
+          filter === "released_funds"
+            ? group.releasedSubtotal
+            : group.expenseSubtotal,
+        // One date order for the whole card: the type groups have no header here, so
+        // listing them back to back made the dates look shuffled.
+        invoices: group.categories
+          .flatMap((category) => category.items)
+          .sort(
+            (a, b) =>
+              b.issue_date.localeCompare(a.issue_date) ||
+              b.invoice_number.localeCompare(a.invoice_number),
+          ),
       }))
       .filter((group) => group.invoices.length > 0);
   }, [rows, filter, month]);
@@ -135,8 +149,8 @@ function ExpensesTabContent() {
     // The figure above it is the month's SPEND — `expenseSubtotal` leaves the release
     // rows out — so the count beside it has to leave them out too, or a month with one
     // disbursement reads "4 items" next to a total that only adds up three of them.
-    const countOf = (key: string) =>
-      allMonths.find((m) => m.monthKey === key)?.expenseCount ?? 0;
+    // Counts say what they cover, like the web dashboard: "7 dépenses · 2 avoirs".
+    const current = allMonths.find((m) => m.monthKey === month);
     const totalOf = (key: string) =>
       allMonths.find((m) => m.monthKey === key)?.expenseSubtotal ?? 0;
     const previous = shiftMonth(month, -1);
@@ -144,7 +158,9 @@ function ExpensesTabContent() {
     const previousTotal = totalOf(previous);
     return {
       total,
-      count: countOf(month),
+      count: (current?.expenseCount ?? 0) - (current?.returnCount ?? 0),
+      returns: current?.returnCount ?? 0,
+      released: current?.releasedSubtotal ?? 0,
       previous,
       deltaPct:
         previousTotal > 0
@@ -202,20 +218,42 @@ function ExpensesTabContent() {
             {meta ? (
               <>
                 <InkFigure
-                  amount={headline.total}
+                  amount={
+                    filter === "released_funds"
+                      ? headline.released
+                      : headline.total
+                  }
                   size={36}
                   testID="expenses-total"
                 />
-                <Text className="mt-1 font-sans text-[12.5px] leading-[17px] text-ink-block-muted">
-                  {t("expenses.itemsCount", { count: headline.count })} ·{" "}
-                  <Text style={{ color: deltaColor(headline.deltaPct, DARK) }}>
-                    {formatDelta(headline.deltaPct)}
-                  </Text>{" "}
-                  {t("invoices.summary.vsMonth", {
-                    delta: "",
-                    month: shortMonthLabel(headline.previous),
-                  }).trim()}
-                </Text>
+                {filter === "released_funds" ? (
+                  <Text
+                    testID="expenses-total-caption"
+                    className="mt-1 font-sans text-[12.5px] leading-[17px] text-ink-block-muted"
+                  >
+                    {t("invoices.summary.releasedTotal")}
+                  </Text>
+                ) : (
+                  <Text
+                    testID="expenses-total-caption"
+                    className="mt-1 font-sans text-[12.5px] leading-[17px] text-ink-block-muted"
+                  >
+                    {t("expenses.spendCount", { count: headline.count })}
+                    {headline.returns > 0
+                      ? ` · ${t("expenses.returnsCount", { count: headline.returns })}`
+                      : ""}{" "}
+                    ·{" "}
+                    <Text
+                      style={{ color: deltaColor(headline.deltaPct, DARK) }}
+                    >
+                      {formatDelta(headline.deltaPct)}
+                    </Text>{" "}
+                    {t("invoices.summary.vsMonth", {
+                      delta: "",
+                      month: shortMonthLabel(headline.previous),
+                    }).trim()}
+                  </Text>
+                )}
                 {canViewBudget ? (
                   <View className="mt-4 flex-row gap-2.5">
                     <PurseCard
@@ -241,6 +279,21 @@ function ExpensesTabContent() {
                       tone="personal"
                     />
                   </View>
+                ) : null}
+                {canViewBudget && summary.unassigned.count > 0 ? (
+                  // Spend paid with a method flagged neither company nor personal sits in
+                  // no purse; without this line the two cards cannot be squared with the
+                  // project's total spend (the web shows the same note).
+                  <Text
+                    testID="expenses-no-purse"
+                    accessibilityHint={t("invoices.summary.noPurseHint")}
+                    className="mt-2 font-sans text-[12px] leading-[16px] text-ink-block-muted"
+                  >
+                    {t("invoices.summary.noPurseSpend", {
+                      count: summary.unassigned.count,
+                      amount: formatMoney(summary.unassigned.spent),
+                    })}
+                  </Text>
                 ) : null}
               </>
             ) : null}

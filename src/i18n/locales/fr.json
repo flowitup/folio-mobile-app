@@ -101,7 +101,7 @@
     "budget": "Budget",
     "sections": {
       "overview": "Aperçu",
-      "invoices": "Factures",
+      "invoices": "Dépenses",
       "labor": "Main-d'œuvre",
       "documents": "Documents",
       "photos": "Photos",
@@ -109,8 +109,8 @@
       "planning": "Planning",
       "chiffrage": "Chiffrage",
       "analyses": "Analyses",
-      "members": "Membres du chantier",
-      "settings": "Réglages",
+      "members": "Membres",
+      "settings": "Paramètres",
       "salaries": "Salaires"
     },
     "spent": "Dépensé",
@@ -386,7 +386,15 @@
       "paidByCompany": "entreprise",
       "paidByPersonal": "personnel",
       "sumOfTypes": "Total",
-      "sharedScaleTo": "échelle commune jusqu'à {{amount}}"
+      "sharedScaleTo": "échelle commune jusqu'à {{amount}}",
+      "unfunded": "non financée",
+      "spentLower": "dépensé",
+      "overLower": "de dépassement",
+      "purseLine": "Débloqué {{released}} · Dépensé {{spent}}",
+      "noPurseSpend_one": "{{count}} dépense dans aucune caisse · {{amount}}",
+      "noPurseSpend_other": "{{count}} dépenses dans aucune caisse · {{amount}}",
+      "noPurseHint": "Moyen de paiement ni entreprise ni personnel : à compter dans le total, pas dans une caisse.",
+      "releasedTotal": "Débloqué ce mois-ci"
     },
     "tvaShort": "TVA",
     "invoiceCount_zero": "aucune dépense",
@@ -402,6 +410,9 @@
       "transferConfirm": "Transférer",
       "info": "Détails",
       "noHighlight": "Sans couleur",
+      "highlightLockedAuto": "Générée automatiquement depuis une facture : couleur non modifiable.",
+      "highlightLockedRefunded": "Dépense remboursée : couleur non modifiable.",
+      "highlightReadOnly": "Seul un admin ou un manager peut changer la couleur.",
       "attachmentsEmpty": "Aucune pièce jointe"
     },
     "highlightColors": {
@@ -1729,7 +1740,10 @@
     "paidToast": "Paiement enregistré.",
     "unpaidToast": "Paiements supprimés.",
     "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement.",
-    "noMonth": "Sans mois renseigné"
+    "noMonth": "Sans mois renseigné",
+    "noPayments": "Aucun paiement enregistré pour ce mois.",
+    "paymentsCount_one": "{{count}} paiement",
+    "paymentsCount_other": "{{count}} paiements"
   },
   "shell": {
     "switchProject": "Changer de chantier",
@@ -1754,6 +1768,10 @@
     "add": "Ajouter",
     "itemsCount_one": "{{count}} écriture",
     "itemsCount_other": "{{count}} écritures",
+    "spendCount_one": "{{count}} dépense",
+    "spendCount_other": "{{count}} dépenses",
+    "returnsCount_one": "{{count}} avoir",
+    "returnsCount_other": "{{count}} avoirs",
     "purseCaption": "restant · {{pct}} % utilisés",
     "pendingRefunds_one": "{{count}} dépense en attente de remboursement entreprise",
     "pendingRefunds_other": "{{count}} dépenses en attente de remboursement entreprise",

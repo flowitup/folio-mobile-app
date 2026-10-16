@@ -36,6 +36,7 @@ import { buildInvoicePrintHtml } from "@/lib/invoices/invoice-print-html";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { ApiError } from "@/lib/query/api-error";
 import { INK_BLOCK } from "@/theme/tokens";
+import { useInkStatusBar } from "@/theme/use-ink-status-bar";
 
 /**
  * Chi tiết hoá đơn (design 1b): ink header + hero (total, recipient, status), then the paper
@@ -51,6 +52,8 @@ export default function InvoiceDetailScreen() {
   const { user } = useAuth();
   const project = useProject(id);
   const invoice = useInvoice(id, invoiceId);
+  // Loading and the loaded sheet sit on ink: light glyphs there (the error state is paper).
+  useInkStatusBar(invoice.isPending || Boolean(invoice.data));
   // Every write on this screen needs project:manage_invoices (the backend answers 403 otherwise);
   // a member reaching the detail through a push or a deep link gets a read-only sheet.
   const canManage = projectCan(
@@ -221,6 +224,13 @@ export default function InvoiceDetailScreen() {
         <InvoiceHighlightRow
           value={data.highlight_color}
           disabled={!canEdit}
+          disabledReason={
+            !canManage
+              ? t("invoices.detail.highlightReadOnly")
+              : data.is_auto_generated
+                ? t("invoices.detail.highlightLockedAuto")
+                : t("invoices.detail.highlightLockedRefunded")
+          }
           onChange={(color) => update.mutate({ highlight_color: color })}
         />
       </InkSheetScreen>

@@ -57,6 +57,9 @@ describe("conditionFromWmoCode", () => {
 describe("Open-Meteo parsing", () => {
   it("builds urls and parses responses", () => {
     expect(geocodeUrl("Le Lavandou")).toContain("name=Le%20Lavandou");
+    expect(geocodeUrl("Le Lavandou")).toContain("language=fr");
+    expect(geocodeUrl("Đà Nẵng", "vi")).toContain("language=vi");
+    expect(geocodeUrl("Paris", "x&y")).toContain("language=fr");
     expect(forecastUrl(43.14, 6.37)).toContain("latitude=43.14&longitude=6.37");
     expect(
       parseGeocode({
