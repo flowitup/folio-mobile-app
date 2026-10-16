@@ -54,9 +54,9 @@ import {
   LogDaySheet,
   RateChangesSheet,
   WorkerFormSheet,
+  type SheetHandle,
   type WorkerFormHandle,
 } from "@/features/labor/labor-sheets";
-import type { SheetHandle } from "@/features/labor/labor-sheets";
 import {
   DayDetailsSheet,
   LaborExportSheet,
