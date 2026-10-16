@@ -12,6 +12,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/auth/auth-context";
+import { FrenchPhoneField } from "@/components/auth/french-phone-field";
+import { LegalLinks } from "@/components/legal-links";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/typography";
 import { AuthRequestError } from "@/lib/auth/auth-error-message";
@@ -116,21 +118,14 @@ export default function SignupScreen() {
         {step === "phone" ? (
           <View>
             <Eyebrow className="mb-1.5">{t("login.phone")}</Eyebrow>
-            <View className={`${FIELD} mb-1.5`}>
-              <TextInput
-                testID="signup-phone"
-                className="flex-1 font-sans text-base text-ink"
-                autoComplete="tel"
-                keyboardType="phone-pad"
-                textContentType="telephoneNumber"
-                placeholder="6 12 34 56 78"
-                placeholderTextColor={tokens.muted2}
-                value={phoneInput}
-                onChangeText={setPhoneInput}
-                onSubmitEditing={() => normalized && void sendCode()}
-                autoFocus
-              />
-            </View>
+            {/* The same FR +33 field as sign-in: the dial code is stated, not guessed. */}
+            <FrenchPhoneField
+              testID="signup-phone"
+              value={phoneInput}
+              onChangeText={setPhoneInput}
+              onSubmitEditing={() => void sendCode()}
+              autoFocus
+            />
             <Text className="mb-6 font-sans text-[12px] text-muted">
               {t("login.phoneHint")}
             </Text>
@@ -139,7 +134,8 @@ export default function SignupScreen() {
               testID="signup-send-code"
               label={t("login.sendCode")}
               loading={submitting}
-              disabled={!normalized || submitting}
+              // Live for any entry: pressing says what is wrong with a non-French number.
+              disabled={!phoneInput.trim() || submitting}
               onPress={() => void sendCode()}
             />
           </View>
@@ -265,6 +261,7 @@ export default function SignupScreen() {
             {t("signup.haveAccount")}
           </Text>
         </Pressable>
+        <LegalLinks className="mt-4" />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
