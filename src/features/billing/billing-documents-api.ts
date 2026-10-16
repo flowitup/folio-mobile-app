@@ -1,4 +1,8 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+} from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
@@ -25,8 +29,11 @@ export const PAGE_SIZE = 25;
 
 export const billingKeys = {
   all: ["billing", "documents"] as const,
-  list: (kind: BillingDocumentKind, status: BillingDocumentStatus | null) =>
-    ["billing", "documents", "list", kind, status ?? "all"] as const,
+  list: (
+    kind: BillingDocumentKind,
+    status: BillingDocumentStatus | null,
+    q = "",
+  ) => ["billing", "documents", "list", kind, status ?? "all", q] as const,
   recent: ["billing", "documents", "recent"] as const,
   detail: (id: string) => ["billing", "documents", "detail", id] as const,
   suggestions: (category: string | null, q: string) =>
@@ -43,21 +50,29 @@ async function fetchPage(query: Record<string, string | number>) {
   );
 }
 
-/** Paged list (25 per page) with optional status filter; pages accumulate like the web "load more". */
+/**
+ * Paged list (25 per page) with optional status filter and server-side search (`q` matches the
+ * number or the recipient on every page, not only the loaded ones); pages accumulate like the
+ * web "load more". The previous result stays on screen while a new search loads.
+ */
 export function useBillingDocuments(
   kind: BillingDocumentKind,
   status: BillingDocumentStatus | null,
   /** Billing is company-admin gated; a denied caller must not ask for a list the API refuses. */
   enabled = true,
+  q = "",
 ) {
+  const search = q.trim().slice(0, 100);
   return useInfiniteQuery({
     enabled,
-    queryKey: billingKeys.list(kind, status),
+    queryKey: billingKeys.list(kind, status, search),
     initialPageParam: 0,
+    placeholderData: keepPreviousData,
     queryFn: ({ pageParam }) =>
       fetchPage({
         kind,
         ...(status ? { status } : {}),
+        ...(search ? { q: search } : {}),
         limit: PAGE_SIZE,
         offset: pageParam,
       }),

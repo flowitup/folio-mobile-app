@@ -13,10 +13,8 @@ import {
 import type { Persona } from "./helpers/release-qa-fixtures";
 
 /**
- * The billing API has no search parameter, so the hub filters the pages it has downloaded
- * and keeps pulling the next page while a needle is set. Two invariants: a document that
- * lives on page two is found, and a page that fails to load stops the loop instead of
- * retrying forever — the manual "load more" button then takes over.
+ * The hub sends the search to the API (`q`, after a typing pause), so a document on a page
+ * that was never loaded is found without downloading every page first.
  */
 
 let mockCurrent: Persona = persona("admin");
@@ -48,7 +46,7 @@ const PAGE_TWO_DOC = {
   recipient_name: "Zulu Client",
 };
 
-function answer(pageTwo: () => unknown) {
+function answer() {
   return async (path: string, options?: unknown) => {
     if (path === "/api/v1/companies")
       return ok({
@@ -64,13 +62,20 @@ function answer(pageTwo: () => unknown) {
         ],
       });
     if (path === DOCUMENTS_PATH) {
-      const offset = (options as { params: { query: { offset: number } } })
-        .params.query.offset;
-      if (offset === 0) return ok({ items: PAGE_ONE, total: 26 });
-      return pageTwo();
+      const query = (options as { params: { query: { q?: string } } }).params
+        .query;
+      if (query.q === "zulu") return ok({ items: [PAGE_TWO_DOC], total: 1 });
+      return ok({ items: PAGE_ONE, total: 26 });
     }
     return answerGet(() => mockCurrent)(path, options as never);
   };
+}
+
+function documentQueries() {
+  return callsTo(mockGet, DOCUMENTS_PATH).map(
+    (call) =>
+      (call[1] as { params: { query: Record<string, unknown> } }).params.query,
+  );
 }
 
 beforeEach(() => {
@@ -78,11 +83,9 @@ beforeEach(() => {
   mockGet.mockReset();
 });
 
-describe("Billing hub search across pages", () => {
-  it("keeps paging while a needle is set until the match on page two shows", async () => {
-    mockGet.mockImplementation(
-      answer(() => ok({ items: [PAGE_TWO_DOC], total: 26 })),
-    );
+describe("Billing hub search", () => {
+  it("asks the API once after a typing pause and shows a match from an unloaded page", async () => {
+    mockGet.mockImplementation(answer());
     await renderWithProviders(<BillingHub />);
     await waitFor(() =>
       expect(screen.getByTestId(`billing-doc-${PAGE_ONE[0].id}`)).toBeTruthy(),
@@ -90,39 +93,20 @@ describe("Billing hub search across pages", () => {
     expect(screen.queryByTestId(`billing-doc-${PAGE_TWO_DOC.id}`)).toBeNull();
 
     await act(async () => {
+      fireEvent.changeText(screen.getByTestId("billing-search"), "z");
+      fireEvent.changeText(screen.getByTestId("billing-search"), "zu");
       fireEvent.changeText(screen.getByTestId("billing-search"), "zulu");
     });
 
     await waitFor(() =>
       expect(screen.getByTestId(`billing-doc-${PAGE_TWO_DOC.id}`)).toBeTruthy(),
     );
-    expect(callsTo(mockGet, DOCUMENTS_PATH)).toHaveLength(2);
-  });
-
-  it("stops after a failed page and hands over to the manual button", async () => {
-    mockGet.mockImplementation(
-      answer(() => ({
-        data: undefined,
-        error: { message: "boom" },
-        response: { status: 500, statusText: "Server Error" },
-      })),
-    );
-    await renderWithProviders(<BillingHub />);
-    await waitFor(() =>
-      expect(screen.getByTestId(`billing-doc-${PAGE_ONE[0].id}`)).toBeTruthy(),
-    );
-
-    await act(async () => {
-      fireEvent.changeText(screen.getByTestId("billing-search"), "zulu");
-    });
-
-    await waitFor(() =>
-      expect(screen.getByTestId("billing-load-more")).toBeTruthy(),
-    );
-    // Let any further effect ticks run: a looping effect would keep adding calls.
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    });
-    expect(callsTo(mockGet, DOCUMENTS_PATH)).toHaveLength(2);
+    const queries = documentQueries();
+    expect(queries).toHaveLength(2);
+    expect(queries[0].q).toBeUndefined();
+    expect(queries[1]).toMatchObject({ q: "zulu", offset: 0 });
+    // Never pulls page two of the unfiltered list.
+    expect(queries.some((q) => q.offset !== 0)).toBe(false);
+    expect(screen.queryByTestId(`billing-doc-${PAGE_ONE[0].id}`)).toBeNull();
   });
 });

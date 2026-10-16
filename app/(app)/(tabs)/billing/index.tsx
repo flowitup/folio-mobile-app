@@ -30,6 +30,8 @@ import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 /** Keeps the focus hook's dependency stable while the caller has no access to the list. */
 const NOOP_REFETCH = () => {};
 
@@ -63,33 +65,34 @@ export default function BillingHub() {
   const [kind, setKind] = useState<BillingDocumentKind>("devis");
   const [status, setStatus] = useState<BillingDocumentStatus | null>(null);
   const [search, setSearch] = useState("");
-  const list = useBillingDocuments(kind, status, access.allowed);
+  // The API searches every page (`q`); wait for a typing pause before asking it.
+  const [query, setQuery] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [search]);
+  const list = useBillingDocuments(kind, status, access.allowed, query);
   // `refetch()` fetches even a disabled query, so the focus hook has to respect the gate too —
   // otherwise a refused caller re-issues the company-wide query every time the screen regains
   // focus, which is exactly what `enabled` is there to prevent.
   useRefetchOnFocus(access.allowed ? list.refetch : NOOP_REFETCH);
 
   const needle = search.trim().toLowerCase();
+  // While a new search, kind or status loads, the previous result stays on screen: narrow it
+  // to what the new request will return so typing and switching feel immediate.
+  const stale = list.isPlaceholderData;
   const documents = useMemo(() => {
     const all = list.data?.pages.flatMap((page) => page.items) ?? [];
-    return needle
-      ? all.filter(
-          (d) =>
-            d.document_number.toLowerCase().includes(needle) ||
-            d.recipient_name.toLowerCase().includes(needle),
-        )
-      : all;
-  }, [list.data, needle]);
-  // The API has no search parameter, so the filter only ever sees the pages already
-  // downloaded: a match on page three reads as "no document" until the list is exhausted.
-  // While a needle is set, keep pulling the next page so the empty state means what it says.
-  // A failed page stops the loop (otherwise it would retry forever) and hands control back
-  // to the manual "load more" button below.
-  const { fetchNextPage, isFetchingNextPage, isFetchNextPageError } = list;
-  const searching = needle !== "" && list.hasNextPage && !isFetchNextPageError;
-  useEffect(() => {
-    if (searching && !isFetchingNextPage) void fetchNextPage();
-  }, [searching, isFetchingNextPage, fetchNextPage]);
+    return all.filter(
+      (d) =>
+        (!stale ||
+          (d.kind === kind && (status === null || d.status === status))) &&
+        (!needle ||
+          d.document_number.toLowerCase().includes(needle) ||
+          d.recipient_name.toLowerCase().includes(needle)),
+    );
+  }, [list.data, needle, kind, status, stale]);
+  const searching = needle !== query.toLowerCase() || stale;
 
   return (
     <View className="flex-1 bg-paper">
