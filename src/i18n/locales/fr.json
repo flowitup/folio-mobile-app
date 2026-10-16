@@ -1461,6 +1461,8 @@
         "removeConfirm": "Supprimer la permission personnalisée « {{permission}} » ?"
       },
       "pending": {
+        "roleOnSignup": "Rôle à l’inscription : {{role}}",
+        "validUntil": "Invitation valable jusqu’au {{date}}",
         "title": "Profils en attente ({{count}})",
         "empty": "Aucun profil en attente — toutes les personnes ajoutées par téléphone se sont connectées.",
         "badge": "En attente",

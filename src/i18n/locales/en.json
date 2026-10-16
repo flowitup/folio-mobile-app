@@ -1278,7 +1278,7 @@
           "nameEmail": "Name / Email",
           "attachedAt": "Attached",
           "primaryBadge": "Primary",
-          "boot": "Boot user",
+          "boot": "Remove from company",
           "bootConfirm": "Remove {{name}} from this company? They will lose access immediately.",
           "empty": "No users attached to this company yet.",
           "countSingular": "user",
@@ -1461,6 +1461,8 @@
         "removeConfirm": "Remove the custom permission \"{{permission}}\"?"
       },
       "pending": {
+        "roleOnSignup": "Role once signed up: {{role}}",
+        "validUntil": "Invitation valid until {{date}}",
         "title": "Pending profiles ({{count}})",
         "empty": "No pending profiles — everyone added by phone has signed in.",
         "badge": "Pending",

@@ -1461,6 +1461,8 @@
         "removeConfirm": "Xoá quyền tuỳ chỉnh \"{{permission}}\"?"
       },
       "pending": {
+        "roleOnSignup": "Vai trò khi đăng ký: {{role}}",
+        "validUntil": "Lời mời có hiệu lực đến {{date}}",
         "title": "Hồ sơ chờ ({{count}})",
         "empty": "Không có hồ sơ chờ — mọi người được thêm bằng số điện thoại đã đăng nhập.",
         "badge": "Chờ",

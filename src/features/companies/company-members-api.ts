@@ -31,16 +31,39 @@ export const attachedUserKeys = {
     ["companies", companyId, "attached-users"] as const,
 };
 
+/** Largest page the API serves (`?limit` max); a safety stop bounds the loop. */
+const ATTACHED_USERS_PAGE = 200;
+const ATTACHED_USERS_MAX_PAGES = 50;
+
+/**
+ * Every user attached to the company. The API pages (50 by default): reading only the
+ * first page hid every member past the 50th, so this follows `total` to the end.
+ */
+export async function fetchAllAttachedUsers(companyId: string): Promise<AttachedUser[]> {
+  const all: AttachedUser[] = [];
+  for (let page = 0; page < ATTACHED_USERS_MAX_PAGES; page++) {
+    const data = unwrapAs<{ items?: AttachedUser[]; total?: number }>(
+      await api.GET("/api/v1/companies/{company_id}/attached-users", {
+        params: {
+          path: { company_id: companyId },
+          // The endpoint pages with ?limit/&offset; the generated schema does not list them.
+          query: { limit: ATTACHED_USERS_PAGE, offset: page * ATTACHED_USERS_PAGE } as never,
+        },
+      }),
+    );
+    const items = data.items ?? [];
+    all.push(...items);
+    const total = typeof data.total === "number" ? data.total : all.length;
+    if (items.length === 0 || all.length >= total) break;
+  }
+  return all;
+}
+
 export function useAttachedUsers(companyId: string | undefined) {
   return useQuery({
     queryKey: attachedUserKeys.list(companyId ?? ""),
     enabled: Boolean(companyId),
-    queryFn: async () =>
-      unwrapAs<{ items?: AttachedUser[] }>(
-        await api.GET("/api/v1/companies/{company_id}/attached-users", {
-          params: { path: { company_id: companyId! } },
-        }),
-      ).items ?? [],
+    queryFn: () => fetchAllAttachedUsers(companyId!),
   });
 }
 
@@ -57,6 +80,10 @@ export interface CompanyPersonEntry {
   pending: boolean;
   labor_role_id: string | null;
   default_daily_rate: number | null;
+  /** Pending rows only: the company role granted at sign-up (older APIs omit it). */
+  pending_role?: CompanyRole | null;
+  /** Pending rows only: when the invitation window closes (ISO 8601). */
+  pending_expires_at?: string | null;
 }
 
 export const companyPersonKeys = {
