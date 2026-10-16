@@ -94,6 +94,10 @@ export default function LibraryTab() {
   );
   const total = products.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  // A delete can leave the current page past the end ("Page 2 / 1", no products): fall back to
+  // the last page that still exists once the fresh total is known.
+  if (products.data && !products.isPlaceholderData && page > totalPages)
+    setPage(totalPages);
 
   function toggleSelect(product: LibraryProduct) {
     setSelected((prev) => {

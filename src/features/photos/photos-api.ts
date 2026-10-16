@@ -89,11 +89,17 @@ export function useUploadPhoto(projectId: string) {
         [{ field: "file", file }],
         {
           ...(caption ? { caption } : {}),
-          ...(capturedAt ? { captured_at: capturedAt } : {}),
+          // The picked photo's own date (EXIF) unless one is given; without either the API reads
+          // the file's metadata, then falls back to the upload time.
+          ...((capturedAt ?? file.capturedAt)
+            ? { captured_at: capturedAt ?? file.capturedAt }
+            : {}),
         },
       ),
     invalidates: [photoKeys.all(projectId)],
     successMessage: t("photos.uploaded"),
+    // The screen reports a refused file by name (uploadErrorMessage), one message per file.
+    onError: () => true,
   });
 }
 

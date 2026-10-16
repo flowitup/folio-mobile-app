@@ -144,6 +144,8 @@ export function useUploadDocument(projectId: string) {
       ),
     invalidates: [documentKeys.all(projectId), documentKeys.tags(projectId)],
     successMessage: t("documents.uploaded"),
+    // The screen reports a refused file by name (uploadErrorMessage), one message per file.
+    onError: () => true,
   });
 }
 

@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { WebView } from "react-native-webview";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -43,8 +44,16 @@ import {
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { formatFileSize } from "@/lib/format/file-size";
 import { pickDocuments } from "@/lib/files/pick";
+import {
+  ANALYSIS_EXTENSIONS,
+  ANALYSIS_PICKER_TYPES,
+  uploadErrorMessage,
+  uploadProblem,
+  uploadProblemMessage,
+} from "@/lib/files/upload-rules";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatInstant } from "@/lib/format/date";
+import { useTokens } from "@/theme/tokens";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 /**
@@ -55,6 +64,10 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
  * not count, and one tap opens at most one link.
  */
 function ReportViewer({ html }: { html: string }) {
+  const tokens = useTokens();
+  // The WebView paints white before the report: keep it hidden on the screen's own background,
+  // with the spinner in the same place, until the report has drawn.
+  const [drawn, setDrawn] = useState(false);
   const lastTapAt = useRef<number | null>(null);
   const touchFrom = useRef<{ x: number; y: number } | null>(null);
   return (
@@ -104,8 +117,22 @@ function ReportViewer({ html }: { html: string }) {
         }}
         setSupportMultipleWindows={false}
         javaScriptCanOpenWindowsAutomatically={false}
-        style={{ flex: 1 }}
+        onLoadEnd={() => setDrawn(true)}
+        style={{
+          flex: 1,
+          backgroundColor: tokens.paper,
+          opacity: drawn ? 1 : 0,
+        }}
       />
+      {drawn ? null : (
+        <View
+          pointerEvents="none"
+          className="absolute inset-0 items-center pt-8"
+          style={{ backgroundColor: tokens.paper }}
+        >
+          <ActivityIndicator />
+        </View>
+      )}
     </View>
   );
 }
@@ -115,13 +142,20 @@ function ReportViewer({ html }: { html: string }) {
  * delete. Members read the list and the viewer; upload, edit and delete need `project:update`.
  */
 export default function ProjectAnalysesSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState<string | null>(null);
   const canWrite = useProjectCan(id, "project:update");
-  const analyses = useAnalyses(id, { q: search.trim() || undefined, tag });
   const tags = useAnalysisTags(id);
+  // A tag leaves the picker with its last analysis, which then reads "All tags": stop filtering
+  // on it too, or the list stays empty behind that label.
+  const activeTag = tag && tags.data && !tags.data.includes(tag) ? null : tag;
+  const analyses = useAnalyses(id, {
+    q: search.trim() || undefined,
+    tag: activeTag,
+  });
   const upload = useUploadAnalysis(id);
   const update = useUpdateAnalysis(id);
   const remove = useDeleteAnalysis(id);
@@ -184,7 +218,20 @@ export default function ProjectAnalysesSection() {
           sourceUrl: sourceUrl.trim() || undefined,
           tags: tagList,
         },
-        done,
+        {
+          ...done,
+          // Shown under the file button, naming the file and what is wrong with it.
+          onError: (caught) =>
+            setFileError(
+              uploadErrorMessage(
+                caught,
+                file!,
+                ANALYSIS_EXTENSIONS,
+                t,
+                i18n.language,
+              ),
+            ),
+        },
       );
   }
 
@@ -213,7 +260,7 @@ export default function ProjectAnalysesSection() {
         <Select
           testID="analyses-tag"
           placeholder={t("documents.allTags")}
-          value={tag ?? "__all__"}
+          value={activeTag ?? "__all__"}
           options={[
             { value: "__all__", label: t("documents.allTags") },
             ...(tags.data ?? []).map((value) => ({ value, label: value })),
@@ -299,14 +346,26 @@ export default function ProjectAnalysesSection() {
                 variant="secondary"
                 className="mb-4"
                 onPress={() =>
-                  pickDocuments(false, [
-                    "text/html",
-                    "application/xhtml+xml",
-                    "*/*",
-                  ]).then((result) => {
+                  // HTML only: a PDF or a Word file could be picked before, then failed on save
+                  // with "check the form".
+                  pickDocuments(false, ANALYSIS_PICKER_TYPES).then((result) => {
                     if (result.status === "picked") {
-                      setFile(result.files[0]);
-                      setFileError(null);
+                      const picked = result.files[0];
+                      const problem = uploadProblem(
+                        picked,
+                        ANALYSIS_EXTENSIONS,
+                      );
+                      setFile(problem ? null : picked);
+                      setFileError(
+                        problem
+                          ? uploadProblemMessage(
+                              picked,
+                              problem,
+                              ANALYSIS_EXTENSIONS,
+                              t,
+                            )
+                          : null,
+                      );
                     } else if (result.status === "denied")
                       showToast(
                         t("invoices.attachments.permissionDenied"),
@@ -371,10 +430,16 @@ export default function ProjectAnalysesSection() {
         visible={viewing !== null}
         animationType="slide"
         onRequestClose={() => setViewing(null)}
+        // Same window on both platforms, so the header sits under the status bar by the inset
+        // alone and keeps its height while the report loads.
+        statusBarTranslucent
       >
         {viewing ? (
           <View className="flex-1 bg-paper">
-            <View className="flex-row items-center border-b border-border px-4 pb-3 pt-14">
+            <View
+              className="flex-row items-center border-b border-border px-4 pb-3"
+              style={{ paddingTop: insets.top + 12 }}
+            >
               <Text
                 className="flex-1 text-lg font-semibold text-primary"
                 numberOfLines={1}
@@ -389,13 +454,20 @@ export default function ProjectAnalysesSection() {
                 <Text className="text-lg text-primary">✕</Text>
               </Pressable>
             </View>
-            {content.isPending ? <ActivityIndicator className="mt-8" /> : null}
-            {content.isError ? (
-              <Text className="p-4 text-danger">{t("analyses.loadError")}</Text>
-            ) : null}
-            {content.data ? (
-              <ReportViewer key={viewing.id} html={content.data} />
-            ) : null}
+            {/* One body box for every state: nothing below the header moves when the report arrives */}
+            <View className="flex-1">
+              {content.isPending ? (
+                <ActivityIndicator className="mt-8" />
+              ) : null}
+              {content.isError ? (
+                <Text className="p-4 text-danger">
+                  {t("analyses.loadError")}
+                </Text>
+              ) : null}
+              {content.data ? (
+                <ReportViewer key={viewing.id} html={content.data} />
+              ) : null}
+            </View>
             <ToastViewport />
           </View>
         ) : null}
