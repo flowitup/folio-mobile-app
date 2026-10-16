@@ -866,7 +866,8 @@
       "templates": "Templates",
       "refundable": "Refundable",
       "import": "Import",
-      "noResults": "No document matches this search."
+      "noResults": "No document matches this search.",
+      "allCompanies": "All companies"
     },
     "form": {
       "modes": {

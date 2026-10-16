@@ -866,7 +866,8 @@
       "templates": "Mẫu",
       "refundable": "Chi phí hoàn lại",
       "import": "Nhập",
-      "noResults": "Không có tài liệu nào khớp với tìm kiếm này."
+      "noResults": "Không có tài liệu nào khớp với tìm kiếm này.",
+      "allCompanies": "Tất cả công ty"
     },
     "form": {
       "modes": {

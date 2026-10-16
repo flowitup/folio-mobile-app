@@ -866,7 +866,8 @@
       "templates": "Modèles",
       "refundable": "Remboursables",
       "import": "Importer",
-      "noResults": "Aucun document ne correspond à cette recherche."
+      "noResults": "Aucun document ne correspond à cette recherche.",
+      "allCompanies": "Toutes les entreprises"
     },
     "form": {
       "modes": {
