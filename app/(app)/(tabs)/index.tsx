@@ -6,7 +6,8 @@ import { ActivityIndicator, View } from "react-native";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
-import { useBillingAccess } from "@/features/companies/companies-api";
+import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdmin } from "@/auth/permissions";
 import {
   AgendaCard,
   MonthSpendCard,
@@ -48,7 +49,7 @@ function OverviewTabContent() {
     useSelectedProject();
   const invoices = useInvoices(projectId);
   const tasks = useTasks(projectId);
-  const billing = useBillingAccess();
+  const { user } = useAuth();
   // Financing side of the project: the backend nulls `budget` and zeroes every
   // released-funds total without `project:view_budget`, so the hero drops the
   // figures measured against them instead of drawing them from zeros.
@@ -180,8 +181,12 @@ function OverviewTabContent() {
                 pendingRefundTotal={metrics.pendingCompany.total}
                 onPayLabor={payLabor}
                 onOpenRefunds={() =>
-                  billing.allowed
-                    ? router.push("/billing/refundable")
+                  // The company refunds page lists only companies the user administers:
+                  // open it on this project's company, else stay on the project's expenses.
+                  project.company_id && isCompanyAdmin(user, project.company_id)
+                    ? router.push(
+                        `/billing/refundable?company=${encodeURIComponent(project.company_id)}`,
+                      )
                     : router.navigate("/(app)/(tabs)/expenses")
                 }
               />

@@ -216,6 +216,10 @@
       "title": "Hidden sections",
       "intro": "Switch off the sections {{company}} does not use. A switched-off section disappears from the Menu of every member of the company.",
       "adminOnly": "Only a company admin can change this setting."
+    },
+    "company": {
+      "label": "Company",
+      "single": "Company: {{company}}"
     }
   },
   "members": {
@@ -606,6 +610,9 @@
       "openMonth": "Open this month",
       "daysUnit_one": "day",
       "daysUnit_other": "days"
+    },
+    "errors": {
+      "roleUnavailable": "This role is no longer available for this project's company. Pick another one."
     }
   },
   "documents": {
@@ -1560,7 +1567,12 @@
     "none": "No role yet.",
     "deleteConfirm": "Delete role {{name}}?",
     "nameRequired": "Name is required.",
-    "colorInvalid": "Enter a colour as # followed by 6 hexadecimal digits, e.g. #E11D48."
+    "colorInvalid": "Enter a colour as # followed by 6 hexadecimal digits, e.g. #E11D48.",
+    "created": "Role created.",
+    "deleted": "Role deleted.",
+    "deleteWarning": "Workers who have this role will lose it.",
+    "nameTooLong": "The name must not exceed {{max}} characters.",
+    "noCompany": "Join or create a company to manage its roles."
   },
   "persons": {
     "title": "Merge persons",

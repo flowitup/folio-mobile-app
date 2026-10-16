@@ -178,6 +178,16 @@ export function ProjectSwitcherSheet() {
                         </Text>
                       ) : null}
                     </View>
+                    {(companies.data?.length ?? 0) > 1 && project.company_id ? (
+                      <Text
+                        testID={`switcher-company-${project.id}`}
+                        className="font-sans text-[12px] text-muted"
+                        numberOfLines={1}
+                      >
+                        {companies.data?.find((c) => c.id === project.company_id)
+                          ?.legal_name ?? ""}
+                      </Text>
+                    ) : null}
                     {row.pct !== null ? (
                       <View className="mt-[5px] h-[3px] overflow-hidden rounded-sm bg-paper-2">
                         <View

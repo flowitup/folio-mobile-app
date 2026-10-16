@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
+import { activeLocale } from "@/i18n";
 import { useAuth } from "@/auth/auth-context";
 import { can, isPlatformOps } from "@/auth/permissions";
 import { projectKeys } from "@/features/projects/projects-api";
@@ -190,7 +191,10 @@ export function useCreateCompany() {
   return useApiMutation<CreateCompanyPayload, Company>({
     mutationFn: async (body) =>
       unwrapAs<Company>(
-        await api.POST("/api/v1/companies", { body: body as never }),
+        await api.POST("/api/v1/companies", {
+          // Default labor roles are seeded in the creator's language.
+          body: { locale: activeLocale(), ...body } as never,
+        }),
       ),
     invalidates: [companyKeys.all],
     successMessage: t("companies.toast.created"),
