@@ -26,7 +26,8 @@ export function normalizePhone(raw: string): string | null {
   else if (/^33[1-9]\d{8}$/.test(digits)) candidate = `+${digits}`;
   else return null;
   // "+33 06 …": a trunk 0 kept after the country code.
-  if (/^\+330[1-9]\d{8}$/.test(candidate)) candidate = `+33${candidate.slice(4)}`;
+  if (/^\+330[1-9]\d{8}$/.test(candidate))
+    candidate = `+33${candidate.slice(4)}`;
   return FRENCH_E164.test(candidate) ? candidate : null;
 }
 

@@ -3,12 +3,14 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { useThemePreference } from "@/theme/theme-preference";
-import { ScrollView, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
 import { isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { Card, ListRow } from "@/components/ui/primitives";
+import { LanguageChips } from "@/components/language-chips";
+import { LegalLinks } from "@/components/legal-links";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { useMyCompanies } from "@/features/companies/companies-api";
 import { useCanManageHiddenSections } from "@/features/companies/hidden-sections";
@@ -115,6 +117,15 @@ export default function SettingsHub() {
             />
           ))}
         </Card>
+        {/* Language, here too: the avatar sheet was the only place to change it. */}
+        <Card testID="settings-language">
+          <View className="flex-row items-center justify-between">
+            <Text className="font-sans text-[14px] text-ink">
+              {t("settings.language")}
+            </Text>
+            <LanguageChips />
+          </View>
+        </Card>
         <Card
           padded={false}
           className="overflow-hidden"
@@ -128,6 +139,7 @@ export default function SettingsHub() {
             testID="settings-version"
           />
         </Card>
+        <LegalLinks />
         <Button
           label={t("home.signOut")}
           variant="danger"

@@ -104,7 +104,9 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
     return (
       <View testID="change-phone-step-number">
         <Text className="mb-5 font-sans text-[14px] leading-5 text-muted">
-          {t("account.phone.intro", { phone: user?.phone ? formatFrenchPhone(user.phone) : "—" })}
+          {t("account.phone.intro", {
+            phone: user?.phone ? formatFrenchPhone(user.phone) : "—",
+          })}
         </Text>
         <Eyebrow className="mb-2">{t("account.phone.newNumber")}</Eyebrow>
         <FrenchPhoneField

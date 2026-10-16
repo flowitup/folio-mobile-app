@@ -1310,7 +1310,8 @@
           "tapToShare": "Touchez pour partager",
           "shareMessage": "Rejoignez {{company}} sur Folio : créez votre profil dans l'app puis saisissez le code entreprise {{code}}.",
           "createdToast": "Code entreprise prêt.",
-          "revokedToast": "Code entreprise révoqué."
+          "revokedToast": "Code entreprise révoqué.",
+          "shareMessageWithLink": "Rejoignez {{company}} sur Folio : installez l’app ({{url}}), créez votre profil puis saisissez le code entreprise {{code}}."
         }
       }
     },

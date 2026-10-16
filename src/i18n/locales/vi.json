@@ -1310,7 +1310,8 @@
           "tapToShare": "Chạm để chia sẻ",
           "shareMessage": "Tham gia {{company}} trên Folio: tạo hồ sơ trong app rồi nhập mã công ty {{code}}.",
           "createdToast": "Đã tạo mã công ty.",
-          "revokedToast": "Đã thu hồi mã công ty."
+          "revokedToast": "Đã thu hồi mã công ty.",
+          "shareMessageWithLink": "Tham gia {{company}} trên Folio: cài app ({{url}}), tạo hồ sơ rồi nhập mã công ty {{code}}."
         }
       }
     },

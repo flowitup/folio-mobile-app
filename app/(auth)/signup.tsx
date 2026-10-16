@@ -19,6 +19,7 @@ import { Eyebrow } from "@/components/ui/typography";
 import { AuthRequestError } from "@/lib/auth/auth-error-message";
 import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { useTokens } from "@/theme/tokens";
+import { LanguageChips } from "@/components/language-chips";
 
 type Step = "phone" | "code" | "name";
 
@@ -261,7 +262,8 @@ export default function SignupScreen() {
             {t("signup.haveAccount")}
           </Text>
         </Pressable>
-        <LegalLinks className="mt-4" />
+        <LanguageChips className="mt-4" />
+        <LegalLinks className="mt-3" />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

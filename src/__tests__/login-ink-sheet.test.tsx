@@ -61,7 +61,9 @@ describe("Login — ink header + paper sheet (design 2c / 2d)", () => {
     expect(screen.getByText(t("login.title"))).toBeTruthy();
     expect(screen.getByText(t("login.subtitle"))).toBeTruthy();
     // Codes only leave through a French gateway, so the chip states +33.
-    expect(screen.getByText("FR")).toBeTruthy();
+    // (The language chips below say FR too.)
+    expect(screen.getAllByText("FR").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByTestId("language-chips")).toBeTruthy();
     expect(screen.getByText("+33")).toBeTruthy();
     expect(screen.getByText(t("login.phoneHint"))).toBeTruthy();
     expect(screen.getByTestId("login-send-code")).toBeDisabled();
@@ -87,9 +89,12 @@ describe("Login — ink header + paper sheet (design 2c / 2d)", () => {
     // Said under the field at once, and again on a press — never sent.
     expect(screen.getByTestId("login-invalid-phone-hint")).toBeTruthy();
     await user.press(screen.getByTestId("login-send-code"));
-    expect(screen.getByTestId("login-error")).toHaveTextContent(t("login.invalidPhone"), {
-      exact: false,
-    });
+    expect(screen.getByTestId("login-error")).toHaveTextContent(
+      t("login.invalidPhone"),
+      {
+        exact: false,
+      },
+    );
     expect(mockRequestOtp).not.toHaveBeenCalled();
   });
 
@@ -128,7 +133,9 @@ describe("Login — ink header + paper sheet (design 2c / 2d)", () => {
     await user.type(screen.getByTestId("login-phone"), "0612345678");
     await user.press(screen.getByTestId("login-send-code"));
 
-    expect(screen.getByTestId("login-code-help")).toHaveTextContent(t("login.codeHelp"));
+    expect(screen.getByTestId("login-code-help")).toHaveTextContent(
+      t("login.codeHelp"),
+    );
     expect(screen.getByTestId("legal-links")).toBeTruthy();
   });
 

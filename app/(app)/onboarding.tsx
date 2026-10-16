@@ -7,6 +7,8 @@ import { useAuth } from "@/auth/auth-context";
 import { DeleteAccountAction } from "@/components/account/delete-account-action";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/typography";
+import { LanguageChips } from "@/components/language-chips";
+import { LegalLinks } from "@/components/legal-links";
 
 /**
  * Onboarding hub — a signed-in user attached to no company lands here first (see the gate in
@@ -62,6 +64,9 @@ export default function OnboardingScreen() {
           className="mt-3 self-start"
           textClassName="font-sans text-[13px] text-muted"
         />
+
+        <LanguageChips className="mt-8" />
+        <LegalLinks className="mt-3" />
       </View>
     </SafeAreaView>
   );

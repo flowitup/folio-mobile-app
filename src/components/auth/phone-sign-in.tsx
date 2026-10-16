@@ -19,6 +19,7 @@ import { AuthRequestError } from "@/lib/auth/auth-error-message";
 import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { useCodeExpiry } from "@/lib/auth/use-code-expiry";
 import { INK_BLOCK } from "@/theme/tokens";
+import { LanguageChips } from "@/components/language-chips";
 
 const RESEND_SECONDS = 60;
 // The backend refuses a code after this many wrong tries, even the right one.
@@ -230,7 +231,8 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
             </Text>
           </Pressable>
         ) : null}
-        <LegalLinks className="mt-4" />
+        <LanguageChips className="mt-4" />
+        <LegalLinks className="mt-3" />
       </LoginFrame>
     );
   }

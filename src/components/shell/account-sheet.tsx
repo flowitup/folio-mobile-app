@@ -87,7 +87,9 @@ export function AccountSheet() {
             {t("account.phone.title")}
           </Text>
           <Text className="font-mono text-[13px] text-muted">
-            {user?.phone ? formatFrenchPhone(user.phone) : t("account.phone.change")}
+            {user?.phone
+              ? formatFrenchPhone(user.phone)
+              : t("account.phone.change")}
           </Text>
         </Pressable>
         <Pressable
