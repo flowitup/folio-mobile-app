@@ -30,6 +30,7 @@ import {
   useUploadProductImage,
 } from "@/features/library/library-api";
 import {
+  displayedSupplierReference,
   isHttpUrl,
   localizeCategory,
   sortPurchasesNewestFirst,
@@ -190,12 +191,16 @@ export default function LibraryProductScreen() {
             {supplier?.name ?? product.supplier_id}
             {supplier?.website_url ? ` · ${supplier.website_url}` : ""}
           </Text>
-          <Text className="mt-2 text-xs text-muted-foreground">
-            {t("library.reference")}
-          </Text>
-          <Text className="text-base text-primary">
-            {product.supplier_reference}
-          </Text>
+          {displayedSupplierReference(product.supplier_reference) ? (
+            <>
+              <Text className="mt-2 text-xs text-muted-foreground">
+                {t("library.reference")}
+              </Text>
+              <Text className="text-base text-primary">
+                {displayedSupplierReference(product.supplier_reference)}
+              </Text>
+            </>
+          ) : null}
           <View className="mt-2 flex-row flex-wrap gap-1">
             <Badge
               label={localizeCategory(t, product.category)}

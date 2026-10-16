@@ -12,6 +12,7 @@ import { pickImages } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { TEXT_LIMITS } from "@/lib/format/text-limits";
 
+import { displayedSupplierReference } from "./library-helpers";
 import { LIBRARY_CATEGORY_SLUGS } from "./library-types";
 import type {
   CreateProductPayload,
@@ -173,11 +174,12 @@ export const ProductFormSheet = forwardRef<BottomSheetModal, Props>(
                 </>
               )}
             </>
-          ) : (
+          ) : displayedSupplierReference(initial?.supplier_reference) ? (
             <Text className="mb-3 text-xs text-muted-foreground">
-              {t("library.reference")} {initial?.supplier_reference}
+              {t("library.reference")}{" "}
+              {displayedSupplierReference(initial?.supplier_reference)}
             </Text>
-          )}
+          ) : null}
           <Input
             testID="product-name"
             maxLength={TEXT_LIMITS.product.name}

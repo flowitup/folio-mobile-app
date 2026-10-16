@@ -6,7 +6,7 @@ import vi from "../i18n/locales/vi.json";
 describe("chiffrage section label", () => {
   it("is translated in English and Vietnamese and stays 'Chiffrage' in French", () => {
     expect(en.project.sections.chiffrage).toBe("Cost planning");
-    expect(vi.project.sections.chiffrage).toBe("Hoạch toán");
+    expect(vi.project.sections.chiffrage).toBe("Dự toán");
     expect(fr.project.sections.chiffrage).toBe("Chiffrage");
   });
 });

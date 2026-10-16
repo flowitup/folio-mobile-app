@@ -11,10 +11,13 @@ import { Sheet } from "@/components/ui/sheet";
 import { Eyebrow } from "@/components/ui/typography";
 import {
   defaultSiteId,
+  isQuantityTooLarge,
+  MAX_INVENTORY_QUANTITY,
   parseQuantity,
 } from "@/lib/inventory/inventory-helpers";
 import type { SiteRef } from "@/lib/inventory/inventory-helpers";
 import { TEXT_LIMITS } from "@/lib/format/text-limits";
+import { formatNumber } from "@/lib/format/money";
 
 import {
   INVENTORY_CATEGORY_SLUGS,
@@ -100,7 +103,11 @@ export const InventoryItemFormSheet = forwardRef<BottomSheetModal, Props>(
       const parsedQuantity = parseQuantity(quantity);
       if (!name.trim()) next.name = t("inventory.validation.nameRequired");
       if (parsedQuantity === null)
-        next.quantity = t("inventory.validation.quantityInvalid");
+        next.quantity = isQuantityTooLarge(quantity)
+          ? t("inventory.validation.quantityTooLarge", {
+              max: formatNumber(MAX_INVENTORY_QUANTITY, 0),
+            })
+          : t("inventory.validation.quantityInvalid");
       if (locationType === "warehouse" && !warehouseId)
         next.location = t("inventory.validation.warehouseRequired");
       if (locationType === "site" && !projectId)

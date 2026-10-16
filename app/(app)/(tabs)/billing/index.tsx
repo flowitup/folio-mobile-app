@@ -119,6 +119,63 @@ export default function BillingHub() {
               { value: "facture", label: t("billing.factures") },
             ]}
           />
+          {/* The actions lead the screen: as a list footer, "+ New" sank below the fold and
+              under the floating tab bar once a company had more than a handful of documents. */}
+          <View className="flex-row gap-2">
+            <Pressable
+              testID="billing-templates"
+              accessibilityRole="button"
+              onPress={() => router.push("/billing/templates")}
+              className="h-10 flex-1 items-center justify-center rounded-[9px] border border-line-2 active:opacity-70"
+            >
+              <Text className="font-sans-medium text-[13px] text-ink">
+                {t("billing.list.templates")}
+              </Text>
+            </Pressable>
+            <Pressable
+              testID="billing-refundable"
+              accessibilityRole="button"
+              onPress={() => router.push("/billing/refundable")}
+              className="h-10 flex-1 items-center justify-center rounded-[9px] border border-line-2 active:opacity-70"
+            >
+              <Text
+                className="font-sans-medium text-[13px] text-ink"
+                numberOfLines={1}
+              >
+                {t("billing.list.refundable")}
+              </Text>
+            </Pressable>
+            <Pressable
+              testID="billing-new"
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({
+                  pathname: "/billing/documents/new",
+                  params: { kind },
+                })
+              }
+              className="h-10 flex-1 items-center justify-center rounded-[9px] bg-ink active:opacity-70"
+            >
+              <Text className="font-sans-semibold text-[13px] text-on-ink">
+                + {t("billing.list.new")}
+              </Text>
+            </Pressable>
+          </View>
+          <Pressable
+            testID="billing-import"
+            accessibilityRole="button"
+            onPress={() =>
+              router.push({
+                pathname: "/billing/documents/new",
+                params: { kind, mode: "import" },
+              })
+            }
+            className="items-center active:opacity-70"
+          >
+            <Text className="font-sans text-xs text-accent-ink">
+              {t("billing.list.import")} ›
+            </Text>
+          </Pressable>
           <View className="flex-row gap-1.5">
             <View className="h-[38px] flex-1 flex-row items-center gap-2 rounded-[9px] border border-line-2 bg-card px-3">
               <Icon name="search" size={14} color={tokens.muted} />
@@ -220,61 +277,6 @@ export default function BillingHub() {
             />
           ) : null}
 
-          <View className="flex-row gap-2">
-            <Pressable
-              testID="billing-templates"
-              accessibilityRole="button"
-              onPress={() => router.push("/billing/templates")}
-              className="h-10 flex-1 items-center justify-center rounded-[9px] border border-line-2 active:opacity-70"
-            >
-              <Text className="font-sans-medium text-[13px] text-ink">
-                {t("billing.list.templates")}
-              </Text>
-            </Pressable>
-            <Pressable
-              testID="billing-refundable"
-              accessibilityRole="button"
-              onPress={() => router.push("/billing/refundable")}
-              className="h-10 flex-1 items-center justify-center rounded-[9px] border border-line-2 active:opacity-70"
-            >
-              <Text
-                className="font-sans-medium text-[13px] text-ink"
-                numberOfLines={1}
-              >
-                {t("billing.list.refundable")}
-              </Text>
-            </Pressable>
-            <Pressable
-              testID="billing-new"
-              accessibilityRole="button"
-              onPress={() =>
-                router.push({
-                  pathname: "/billing/documents/new",
-                  params: { kind },
-                })
-              }
-              className="h-10 flex-1 items-center justify-center rounded-[9px] bg-ink active:opacity-70"
-            >
-              <Text className="font-sans-semibold text-[13px] text-on-ink">
-                + {t("billing.list.new")}
-              </Text>
-            </Pressable>
-          </View>
-          <Pressable
-            testID="billing-import"
-            accessibilityRole="button"
-            onPress={() =>
-              router.push({
-                pathname: "/billing/documents/new",
-                params: { kind, mode: "import" },
-              })
-            }
-            className="items-center active:opacity-70"
-          >
-            <Text className="font-sans text-xs text-accent-ink">
-              {t("billing.list.import")} ›
-            </Text>
-          </Pressable>
         </ScrollView>
       ) : null}
     </View>

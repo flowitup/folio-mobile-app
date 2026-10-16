@@ -799,7 +799,10 @@
     "imageFromUrl": "Image depuis une URL",
     "imageUrl": "URL de l'image",
     "takePhoto": "Prendre une photo",
-    "noneReadOnly": "Aucun poste pour le moment."
+    "noneReadOnly": "Aucun poste pour le moment.",
+    "basketPartial": "{{priced}}/{{total}} articles",
+    "moveUp": "Monter « {{name}} »",
+    "moveDown": "Descendre « {{name}} »"
   },
   "analyses": {
     "upload": "Ajouter une analyse",
@@ -919,7 +922,18 @@
         "documentNumberRequired": "Le numéro du document est obligatoire.",
         "itemQuantityMax": "La quantité ne peut pas dépasser {{max}}.",
         "itemUnitPriceMax": "Le prix unitaire ne peut pas dépasser {{max}}.",
-        "emailInvalid": "Saisissez une adresse e-mail valide, par ex. nom@exemple.fr."
+        "emailInvalid": "Saisissez une adresse e-mail valide, par ex. nom@exemple.fr.",
+        "validityBeforeIssue": "La date de validité ne peut pas précéder la date d'émission.",
+        "dueBeforeIssue": "L'échéance de paiement ne peut pas précéder la date d'émission."
+      },
+      "issuerProfile": {
+        "missing": "{{name}} n'a pas encore renseigné : {{fields}}. Ces mentions n'apparaîtront pas sur le document.",
+        "open": "Compléter le profil de l'entreprise",
+        "fields": {
+          "siret": "SIRET",
+          "tva_number": "n° de TVA intracommunautaire",
+          "iban": "IBAN"
+        }
       }
     },
     "actions": {
@@ -1014,7 +1028,8 @@
         "added_one": "{{count}} dépense ajoutée.",
         "added_other": "{{count}} dépenses ajoutées.",
         "addFailed": "Aucune dépense n'a pu être ajoutée."
-      }
+      },
+      "loadMore": "Charger plus"
     }
   },
   "library": {
@@ -1134,7 +1149,9 @@
       "delete": "Supprimer"
     },
     "loadError": "Impossible de charger la bibliothèque.",
-    "imageUrlBlocked": "Cette adresse d'image n'est pas acceptée. Utilisez un lien d'un site fournisseur pris en charge."
+    "imageUrlBlocked": "Cette adresse d'image n'est pas acceptée. Utilisez un lien d'un site fournisseur pris en charge.",
+    "importHelp": "Importez l'historique de vos achats chez un fournisseur (tickets de caisse, commandes) : chaque ligne devient un produit de la bibliothèque avec son dernier prix. Choisissez le fichier JSON exporté, ou collez son contenu ci-dessous.",
+    "importSample": "Voir un exemple"
   },
   "inventory": {
     "title": "Inventaire du matériel",
@@ -1197,7 +1214,8 @@
       "siteRequired": "Choisissez un chantier.",
       "noWarehouseYet": "Aucun dépôt pour l'instant — créez-en un depuis « Dépôts » sur l'écran de l'inventaire, ou laissez le matériel sur un chantier.",
       "warehouseNameRequired": "Donnez un nom au dépôt.",
-      "noSiteYet": "Aucun chantier pour l'instant — cette entreprise n'a aucun projet où poser le matériel, gardez-le dans un dépôt."
+      "noSiteYet": "Aucun chantier pour l'instant — cette entreprise n'a aucun projet où poser le matériel, gardez-le dans un dépôt.",
+      "quantityTooLarge": "La quantité ne peut pas dépasser {{max}}."
     },
     "actions": {
       "create": "Ajouter à l'inventaire"
@@ -1230,8 +1248,10 @@
       },
       "actions": {
         "create": "Ajouter le dépôt"
-      }
-    }
+      },
+      "emptyReadOnly": "Aucun dépôt pour l'instant."
+    },
+    "emptyReadOnly": "Aucun matériel pour l'instant."
   },
   "companies": {
     "masking": {

@@ -155,7 +155,11 @@ export default function WarehousesScreen() {
         ) : null}
         {warehouses.data && warehouses.data.length === 0 ? (
           <EmptyState
-            message={t("inventory.warehouses.empty")}
+            message={t(
+              canManage
+                ? "inventory.warehouses.empty"
+                : "inventory.warehouses.emptyReadOnly",
+            )}
             action={
               canManage ? (
                 <Button

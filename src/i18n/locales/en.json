@@ -799,7 +799,10 @@
     "imageFromUrl": "Image from URL",
     "imageUrl": "Image URL",
     "takePhoto": "Take a photo",
-    "noneReadOnly": "No sections yet."
+    "noneReadOnly": "No sections yet.",
+    "basketPartial": "{{priced}}/{{total}} items",
+    "moveUp": "Move “{{name}}” up",
+    "moveDown": "Move “{{name}}” down"
   },
   "analyses": {
     "upload": "Add analysis",
@@ -919,7 +922,18 @@
         "documentNumberRequired": "Document number is required.",
         "itemQuantityMax": "Quantity cannot exceed {{max}}.",
         "itemUnitPriceMax": "Unit price cannot exceed {{max}}.",
-        "emailInvalid": "Enter a valid email address, e.g. name@example.com."
+        "emailInvalid": "Enter a valid email address, e.g. name@example.com.",
+        "validityBeforeIssue": "The validity date cannot be before the issue date.",
+        "dueBeforeIssue": "The payment due date cannot be before the issue date."
+      },
+      "issuerProfile": {
+        "missing": "{{name}} has not filled in: {{fields}}. These will be missing from the document.",
+        "open": "Complete the company profile",
+        "fields": {
+          "siret": "SIRET",
+          "tva_number": "VAT number",
+          "iban": "IBAN"
+        }
       }
     },
     "actions": {
@@ -1014,7 +1028,8 @@
         "added_one": "{{count}} expense added.",
         "added_other": "{{count}} expenses added.",
         "addFailed": "No expense could be added."
-      }
+      },
+      "loadMore": "Load more"
     }
   },
   "library": {
@@ -1134,7 +1149,9 @@
       "delete": "Delete"
     },
     "loadError": "Could not load the library.",
-    "imageUrlBlocked": "This image address is not accepted. Use a link from a supported supplier site."
+    "imageUrlBlocked": "This image address is not accepted. Use a link from a supported supplier site.",
+    "importHelp": "Import your purchase history from a supplier (receipts, orders): each line becomes a library product with its latest price. Pick the exported JSON file, or paste its content below.",
+    "importSample": "See an example"
   },
   "inventory": {
     "title": "Equipment inventory",
@@ -1197,7 +1214,8 @@
       "siteRequired": "Pick a site.",
       "noWarehouseYet": "No warehouse yet — create one from “Warehouses” on the inventory screen, or keep the equipment on a site.",
       "warehouseNameRequired": "Give the warehouse a name.",
-      "noSiteYet": "No site yet — this company has no project to put the equipment on, so keep it in a warehouse."
+      "noSiteYet": "No site yet — this company has no project to put the equipment on, so keep it in a warehouse.",
+      "quantityTooLarge": "The quantity cannot exceed {{max}}."
     },
     "actions": {
       "create": "Add to inventory"
@@ -1230,8 +1248,10 @@
       },
       "actions": {
         "create": "Add warehouse"
-      }
-    }
+      },
+      "emptyReadOnly": "No warehouses yet."
+    },
+    "emptyReadOnly": "No equipment yet."
   },
   "companies": {
     "masking": {

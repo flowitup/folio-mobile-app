@@ -72,7 +72,8 @@ export function InvoiceDetailHero({ invoice }: { invoice: Invoice }) {
       : null;
   const meta = [
     formatDate(invoice.issue_date),
-    invoice.payment_method_label ?? t("invoices.form.paymentMethodNone"),
+    // No method: say nothing ("· Aucun" alone read as if something else were missing).
+    invoice.payment_method_label,
     purse,
   ]
     .filter(Boolean)
