@@ -33,7 +33,7 @@ import {
   computePendingRefunds,
   computeSpentTotal,
 } from "@/lib/dashboard/overview-metrics";
-import { parseIsoDate, toIsoDate } from "@/lib/format/date";
+import { businessToday, parseIsoDate, toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { INK_BLOCK } from "@/theme/tokens";
 
@@ -68,9 +68,11 @@ function OverviewTabContent() {
 
   // Keyed on the calendar day so an app left open across midnight moves on with it.
   const todayIso = toIsoDate(new Date());
+  // "This month" is the business's (Paris) month, as on the web dashboard.
+  const businessDay = businessToday();
   const referenceDate = useMemo(
-    () => parseIsoDate(todayIso) ?? new Date(),
-    [todayIso],
+    () => parseIsoDate(businessDay) ?? new Date(),
+    [businessDay],
   );
   const todayEntries = useLaborEntries(projectId, todayIso, todayIso);
   useRefetchOnFocus(todayEntries.refetch);

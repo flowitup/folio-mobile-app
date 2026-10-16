@@ -1,5 +1,5 @@
 import { splitDigitGroups } from "@/components/ui/ink-sheet-screen";
-import { capitalizeFirst } from "@/lib/format/date";
+import { businessToday, capitalizeFirst } from "@/lib/format/date";
 
 describe("capitalizeFirst", () => {
   it("upper-cases the first letter only (vi months stay 'Tháng 9 năm 2026')", () => {
@@ -23,5 +23,18 @@ describe("splitDigitGroups", () => {
 
   it("leaves a figure without grouping whole", () => {
     expect(splitDigitGroups("€420")).toEqual([{ text: "€420", gap: false }]);
+  });
+});
+
+describe("businessToday", () => {
+  it("is the Paris calendar day, not the device's", () => {
+    jest.useFakeTimers();
+    // 31 Oct 19:30 in Paris is already 1 Nov 01:30 in Hanoi.
+    jest.setSystemTime(new Date("2026-10-31T18:30:00Z"));
+    try {
+      expect(businessToday()).toBe("2026-10-31");
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

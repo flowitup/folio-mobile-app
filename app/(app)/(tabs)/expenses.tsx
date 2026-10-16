@@ -28,7 +28,7 @@ import { WorkerSalaryTab } from "@/features/labor/worker-salary-tab";
 import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
-import { currentMonth, formatMonth, shiftMonth } from "@/lib/format/date";
+import { businessToday, formatMonth, shiftMonth } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { buildPursesSummary } from "@/lib/invoices/expense-purses";
 import {
@@ -70,7 +70,8 @@ function ExpensesTabContent() {
   const { tabBarHeight } = useShell();
   const { projectId, project } = useSelectedProject();
   const [filter, setFilter] = useState<Filter>("all");
-  const [month, setMonth] = useState(currentMonth());
+  // Opens on the business's (Paris) month, the one the overview calls "this month".
+  const [month, setMonth] = useState(() => businessToday().slice(0, 7));
   // A bar or a type tapped on the overview opens this tab on its month and type. The link
   // carries a changing `focus` nonce so the same bar tapped again re-applies them.
   const params = useLocalSearchParams<{
@@ -110,11 +111,11 @@ function ExpensesTabContent() {
   const rows = useMemo(() => invoices.data?.invoices ?? [], [invoices.data]);
   const allMonths = useMemo(() => groupInvoicesByMonth(rows), [rows]);
   // The stepper cannot go past the newest month that has data (or the current month).
-  const latestMonth = allMonths[0]
-    ? allMonths[0].monthKey > currentMonth()
+  const thisMonth = businessToday().slice(0, 7);
+  const latestMonth =
+    allMonths[0] && allMonths[0].monthKey > thisMonth
       ? allMonths[0].monthKey
-      : currentMonth()
-    : currentMonth();
+      : thisMonth;
   // Type filtering is client-side (README "Chi phí"): one list fetch, chips just narrow it.
   // The list shows the selected month first, then the older months.
   const months = useMemo(() => {

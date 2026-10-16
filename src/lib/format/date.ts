@@ -159,3 +159,12 @@ export function shiftMonth(month: string, delta: number): string {
 export function currentMonth(): string {
   return toIsoDate(new Date()).slice(0, 7);
 }
+
+/**
+ * `YYYY-MM-DD` of today in Paris: the business's day. The overview and the expenses tab
+ * take "this month" from it, as the web dashboard does, so a phone set to Vietnam time
+ * does not show November on the evening of 31 October.
+ */
+export function businessToday(): string {
+  return parisDayKey(new Date().toISOString());
+}
