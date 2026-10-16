@@ -159,15 +159,17 @@ describe("expenses tab · manager without a full project view", () => {
     });
   });
 
-  it("does not offer the invoice export the backend would refuse", async () => {
+  // Linked to no worker, so outside worker mode: the backend answers the ledger with nothing,
+  // and the tab says the area is reserved instead of drawing an empty month.
+  it("says the expenses are reserved and offers no export the backend would refuse", async () => {
     await renderWithProviders(<ExpensesTab />);
 
+    expect(await screen.findByTestId("restricted-area")).toBeTruthy();
+    expect(screen.getByText(i18n.t("labor.restricted.expenses"))).toBeTruthy();
     expect(
-      await screen.findByTestId(`invoice-row-${INVOICE_MATERIALS.id}`),
-    ).toBeTruthy();
-    await waitFor(() =>
-      expect(screen.queryByTestId("invoices-export")).toBeNull(),
-    );
+      screen.queryByTestId(`invoice-row-${INVOICE_MATERIALS.id}`),
+    ).toBeNull();
+    expect(screen.queryByTestId("invoices-export")).toBeNull();
   });
 });
 
