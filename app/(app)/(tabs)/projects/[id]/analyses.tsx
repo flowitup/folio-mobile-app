@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { WebView } from "react-native-webview";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -52,6 +53,7 @@ import {
 } from "@/lib/files/upload-rules";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatInstant } from "@/lib/format/date";
+import { useTokens } from "@/theme/tokens";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
 /**
@@ -62,6 +64,10 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
  * not count, and one tap opens at most one link.
  */
 function ReportViewer({ html }: { html: string }) {
+  const tokens = useTokens();
+  // The WebView paints white before the report: keep it hidden on the screen's own background,
+  // with the spinner in the same place, until the report has drawn.
+  const [drawn, setDrawn] = useState(false);
   const lastTapAt = useRef<number | null>(null);
   const touchFrom = useRef<{ x: number; y: number } | null>(null);
   return (
@@ -111,8 +117,22 @@ function ReportViewer({ html }: { html: string }) {
         }}
         setSupportMultipleWindows={false}
         javaScriptCanOpenWindowsAutomatically={false}
-        style={{ flex: 1 }}
+        onLoadEnd={() => setDrawn(true)}
+        style={{
+          flex: 1,
+          backgroundColor: tokens.paper,
+          opacity: drawn ? 1 : 0,
+        }}
       />
+      {drawn ? null : (
+        <View
+          pointerEvents="none"
+          className="absolute inset-0 items-center pt-8"
+          style={{ backgroundColor: tokens.paper }}
+        >
+          <ActivityIndicator />
+        </View>
+      )}
     </View>
   );
 }
@@ -123,6 +143,7 @@ function ReportViewer({ html }: { html: string }) {
  */
 export default function ProjectAnalysesSection() {
   const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState<string | null>(null);
@@ -409,10 +430,16 @@ export default function ProjectAnalysesSection() {
         visible={viewing !== null}
         animationType="slide"
         onRequestClose={() => setViewing(null)}
+        // Same window on both platforms, so the header sits under the status bar by the inset
+        // alone and keeps its height while the report loads.
+        statusBarTranslucent
       >
         {viewing ? (
           <View className="flex-1 bg-paper">
-            <View className="flex-row items-center border-b border-border px-4 pb-3 pt-14">
+            <View
+              className="flex-row items-center border-b border-border px-4 pb-3"
+              style={{ paddingTop: insets.top + 12 }}
+            >
               <Text
                 className="flex-1 text-lg font-semibold text-primary"
                 numberOfLines={1}
@@ -427,13 +454,20 @@ export default function ProjectAnalysesSection() {
                 <Text className="text-lg text-primary">✕</Text>
               </Pressable>
             </View>
-            {content.isPending ? <ActivityIndicator className="mt-8" /> : null}
-            {content.isError ? (
-              <Text className="p-4 text-danger">{t("analyses.loadError")}</Text>
-            ) : null}
-            {content.data ? (
-              <ReportViewer key={viewing.id} html={content.data} />
-            ) : null}
+            {/* One body box for every state: nothing below the header moves when the report arrives */}
+            <View className="flex-1">
+              {content.isPending ? (
+                <ActivityIndicator className="mt-8" />
+              ) : null}
+              {content.isError ? (
+                <Text className="p-4 text-danger">
+                  {t("analyses.loadError")}
+                </Text>
+              ) : null}
+              {content.data ? (
+                <ReportViewer key={viewing.id} html={content.data} />
+              ) : null}
+            </View>
             <ToastViewport />
           </View>
         ) : null}
