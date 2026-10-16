@@ -461,7 +461,9 @@
       "fromCompanyHint": "from the company directory",
       "deactivate": "Deactivate",
       "rateTooLarge": "The daily rate cannot exceed {{max}}.",
-      "alreadyOnProject": "This person is already a worker on this project (possibly deactivated)."
+      "alreadyOnProject": "This person is already a worker on this project (possibly deactivated).",
+      "alreadyOnProjectReactivate": "This person is already a worker on this project. If they were deactivated, open their card under Workers and tap Reactivate.",
+      "reactivate": "Reactivate"
     },
     "rates": {
       "link": "Rates",

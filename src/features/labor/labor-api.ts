@@ -90,15 +90,29 @@ function ownAttendanceInvalidations(projectId: string) {
 
 // ---- workers ----------------------------------------------------------------
 
-/** `enabled` lets a caller that only sometimes needs the roster skip the request. */
-export function useWorkers(projectId: string, enabled = true) {
+/**
+ * `enabled` lets a caller that only sometimes needs the roster skip the request.
+ * `includeInactive` also returns deactivated workers: a stopped worker can still be owed pay,
+ * so the labor tab, salaries and exports need them (the web loads them the same way). The key
+ * sits under `laborKeys.workers`, so every roster invalidation refreshes both lists.
+ */
+export function useWorkers(
+  projectId: string,
+  enabled = true,
+  includeInactive = false,
+) {
   return useQuery({
-    queryKey: laborKeys.workers(projectId),
+    queryKey: includeInactive
+      ? ([...laborKeys.workers(projectId), "all"] as const)
+      : laborKeys.workers(projectId),
     enabled: Boolean(projectId) && enabled,
     queryFn: async () =>
       unwrapAs<{ workers?: Worker[] }>(
         await api.GET("/api/v1/projects/{project_id}/workers", {
-          params: { path: { project_id: projectId } },
+          params: {
+            path: { project_id: projectId },
+            ...(includeInactive ? { query: { include_inactive: "true" } } : {}),
+          } as never,
         }),
       ).workers ?? [],
   });

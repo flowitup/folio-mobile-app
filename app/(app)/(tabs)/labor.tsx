@@ -141,7 +141,8 @@ function LaborTabContent() {
   }, [params.segment, params.focus]);
 
   const project = useProject(id);
-  const workers = useWorkers(id);
+  // Stopped workers too: they can still be owed pay (Payments, Impayé, export).
+  const workers = useWorkers(id, true, true);
   const entries = useLaborEntries(id, range.from, range.to);
   const activities = useActivities(id);
   const dayDescriptions = useDayDescriptions(id);
@@ -628,6 +629,9 @@ function LaborTabContent() {
           setTimeout(() => rateSheet.current?.open(), 0);
         }}
         onDelete={(worker) => setDeletingWorker(worker)}
+        onReactivate={(worker) =>
+          updateWorker.mutate({ workerId: worker.id, is_active: true })
+        }
       />
       <RateChangesSheet ref={rateSheet} projectId={id} worker={rateWorker} />
       <PaymentSheet

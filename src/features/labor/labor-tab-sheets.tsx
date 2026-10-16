@@ -51,15 +51,19 @@ export const WorkerActionsSheet = forwardRef<
     onEdit: (worker: Worker) => void;
     onRates: (worker: Worker) => void;
     onDelete: (worker: Worker) => void;
+    onReactivate: (worker: Worker) => void;
   }
->(function WorkerActionsSheet({ worker, onEdit, onRates, onDelete }, ref) {
+>(function WorkerActionsSheet(
+  { worker, onEdit, onRates, onDelete, onReactivate },
+  ref,
+) {
   const { t } = useTranslation();
   const tokens = useTokens();
   const close = () => (ref as ModalRef).current?.dismiss();
   const rows: {
     key: string;
     label: string;
-    icon: "edit-3" | "sliders" | "trash-2";
+    icon: "edit-3" | "sliders" | "trash-2" | "rotate-ccw";
     danger?: boolean;
     run: (w: Worker) => void;
   }[] = [
@@ -70,9 +74,16 @@ export const WorkerActionsSheet = forwardRef<
       icon: "sliders",
       run: onRates,
     },
-    // "Remove" deactivates the worker; offering it again on an inactive card does nothing.
+    // "Remove" deactivates the worker; an inactive card offers to bring them back instead.
     ...(worker && !worker.is_active
-      ? []
+      ? [
+          {
+            key: "reactivate",
+            label: t("labor.workers.reactivate"),
+            icon: "rotate-ccw" as const,
+            run: onReactivate,
+          },
+        ]
       : [
           {
             key: "delete",

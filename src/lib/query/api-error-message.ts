@@ -46,7 +46,7 @@ export function apiErrorMessage(
   if (error.code === "InvalidPhone") return t("common.errors.invalidPhone");
   // Adding a worker for someone already on the roster (the generic 409's "refresh" never helps).
   if (error.code === "WorkerAlreadyOnProject")
-    return t("labor.workers.alreadyOnProject");
+    return t("labor.workers.alreadyOnProjectReactivate");
   // A rate limit: never the limiter's own text ("5 per 1 minute"), and say how long to wait.
   if (error.status === 429) return tooManyRequestsMessage(error.retryAfter, t);
   if (language === "en") return error.message;

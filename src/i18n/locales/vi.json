@@ -461,7 +461,9 @@
       "fromCompanyHint": "từ danh bạ công ty",
       "deactivate": "Ngừng hoạt động",
       "rateTooLarge": "Đơn giá không được vượt quá {{max}}.",
-      "alreadyOnProject": "Người này đã là nhân công của dự án này (có thể đã ngừng hoạt động)."
+      "alreadyOnProject": "Người này đã là nhân công của dự án này (có thể đã ngừng hoạt động).",
+      "alreadyOnProjectReactivate": "Người này đã là nhân công của dự án này. Nếu đã ngừng hoạt động, hãy mở thẻ của họ trong mục Nhân công và chạm Kích hoạt lại.",
+      "reactivate": "Kích hoạt lại"
     },
     "rates": {
       "link": "Đơn giá",

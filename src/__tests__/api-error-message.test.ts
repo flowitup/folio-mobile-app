@@ -104,14 +104,14 @@ describe("apiErrorMessage — person already on the project", () => {
       "This person is already a worker on this project",
     );
     expect(apiErrorMessage(twice, t, "fr")).toBe(
-      "Cette personne est déjà ouvrier sur ce chantier (peut-être désactivé).",
+      "Cette personne est déjà ouvrier sur ce chantier. Si elle a été désactivée, ouvrez sa fiche dans Ouvriers et touchez Réactiver.",
     );
     expect(apiErrorMessage(twice, t, "fr")).not.toBe(
       t("common.errors.conflict"),
     );
     const tVi = i18n.getFixedT("vi");
     expect(apiErrorMessage(twice, tVi, "vi")).toBe(
-      tVi("labor.workers.alreadyOnProject"),
+      tVi("labor.workers.alreadyOnProjectReactivate"),
     );
   });
 
