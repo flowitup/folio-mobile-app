@@ -1542,7 +1542,8 @@
       "accepted": "Cette invitation a déjà été utilisée. Essayez de vous connecter.",
       "notFound": "Ce lien d'invitation est invalide.",
       "accountExists": "Cette invitation concerne un compte Folio existant. Saisissez le numéro de téléphone de ce compte.",
-      "generic": "Une erreur s'est produite. Veuillez réessayer."
+      "generic": "Une erreur s'est produite. Veuillez réessayer.",
+      "superseded": "Une invitation plus récente vous a été envoyée : utilisez le lien du dernier e-mail reçu."
     },
     "loggedInOther": {
       "title": "Vous êtes connecté sous un autre compte",

@@ -35,6 +35,7 @@ import {
 
 import type { components } from "@/api/generated/schema";
 import i18n from "@/i18n";
+import { smsLocale } from "@/lib/auth/sms-locale";
 import {
   authErrorKey,
   AuthRequestError,
@@ -276,7 +277,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const requestOtp = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/otp/request",
-      { body: { phone } },
+      { body: { phone, locale: smsLocale() } },
     );
     if (!data) throw authError("otp", error, response);
     return data.expires_in;
@@ -307,7 +308,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const requestSignupOtp = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/signup/request",
-      { body: { phone } },
+      { body: { phone, locale: smsLocale() } },
     );
     if (!data) throw authError("signup", error, response);
     return data.expires_in;
@@ -328,7 +329,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const requestPhoneChangeCode = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/me/phone/request-code",
-      { body: { phone } },
+      { body: { phone, locale: smsLocale() } },
     );
     if (!data) throw authError("phoneChange", error, response);
     return data.expires_in;

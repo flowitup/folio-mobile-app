@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { smsLocale } from "@/lib/auth/sms-locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/primitives";
@@ -38,6 +39,7 @@ type Step = "details" | "code";
 const ERROR_KEY: Record<InviteErrorReason | "generic", string> = {
   expired: "expired",
   revoked: "revoked",
+  superseded: "superseded",
   accepted: "accepted",
   not_found: "notFound",
   generic: "generic",
@@ -57,6 +59,7 @@ function screenErrorReason(
   switch (error.reason) {
     case "expired":
     case "revoked":
+    case "superseded":
     case "accepted":
     case "not_found":
       return error.reason;
@@ -172,7 +175,11 @@ export default function AcceptInviteScreen() {
     setSubmitting(true);
     setError(null);
     try {
-      await requestInviteCode({ token, phone: normalizedPhone });
+      await requestInviteCode({
+        token,
+        phone: normalizedPhone,
+        locale: smsLocale(),
+      });
       setSentTo(normalizedPhone);
       setCode("");
       setResendAt(Date.now() + RESEND_SECONDS * 1000);

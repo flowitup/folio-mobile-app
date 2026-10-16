@@ -1542,7 +1542,8 @@
       "accepted": "This invitation was already used. Try logging in.",
       "notFound": "This invitation link is invalid.",
       "accountExists": "This invitation is for an existing Folio account. Enter that account's phone number.",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "superseded": "A newer invitation was sent to you: use the link in the latest e-mail."
     },
     "loggedInOther": {
       "title": "You're signed in as someone else",

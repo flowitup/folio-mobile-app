@@ -5,6 +5,7 @@ import {
   clearStoredTokens,
   getStoredTokens,
   setAccessToken,
+  setStoredTokens,
 } from "@/auth/token-storage";
 
 import { apiFetch } from "./api-fetch";
@@ -76,9 +77,16 @@ export async function refreshAccessToken(): Promise<RefreshOutcome> {
     });
     if (!response.ok)
       return isRefusedStatus(response.status) ? "rejected" : "unavailable";
-    const body = (await response.json()) as { access_token?: string };
+    const body = (await response.json()) as {
+      access_token?: string;
+      refresh_token?: string | null;
+    };
     if (!body.access_token) return "unavailable";
-    await setAccessToken(body.access_token);
+    // The API rotates an expiring refresh token: keeping the new one is what lets a session
+    // that keeps refreshing (every foreground) slide instead of ending 7 days after sign-in.
+    if (body.refresh_token)
+      await setStoredTokens(body.access_token, body.refresh_token);
+    else await setAccessToken(body.access_token);
     return { accessToken: body.access_token };
   })()
     // A network error, or a body that is not the API's (a captive portal page).

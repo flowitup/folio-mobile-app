@@ -1542,7 +1542,8 @@
       "accepted": "Lời mời này đã được sử dụng. Hãy thử đăng nhập.",
       "notFound": "Đường dẫn mời không hợp lệ.",
       "accountExists": "Lời mời này dành cho một tài khoản Folio đã có. Hãy nhập số điện thoại của tài khoản đó.",
-      "generic": "Đã có lỗi xảy ra. Vui lòng thử lại."
+      "generic": "Đã có lỗi xảy ra. Vui lòng thử lại.",
+      "superseded": "Bạn đã được gửi một lời mời mới hơn: hãy dùng đường dẫn trong email gần nhất."
     },
     "loggedInOther": {
       "title": "Bạn đang đăng nhập bằng tài khoản khác",
