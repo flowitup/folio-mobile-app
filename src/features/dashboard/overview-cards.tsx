@@ -122,7 +122,7 @@ export function MonthSpendCard({
                 />
                 <Text
                   className="min-w-0 flex-1 font-sans text-[11.5px] text-muted"
-                  numberOfLines={1}
+                  numberOfLines={2}
                 >
                   {t(`expenses.filters.${bucket.type}`)}
                 </Text>

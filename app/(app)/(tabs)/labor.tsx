@@ -16,6 +16,7 @@ import { useChatEnabled } from "@/features/chat/chat-api";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { Segmented } from "@/components/ui/chip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { showToast } from "@/components/ui/toast";
 import { Icon } from "@/components/ui/icon";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { EmptyState } from "@/components/ui/primitives";
@@ -33,11 +34,15 @@ import {
   useBulkLog,
   useCreateWorker,
   useDayDescriptions,
+  useDecideAttendanceChange,
   useDeleteAttendance,
   useDeleteWorker,
   useLaborEntries,
+  useLaborMonthlySummary,
   useLaborSummary,
+  useRejectAttendance,
   useUpdateAttendance,
+  useValidateAttendance,
   useUpdateWorker,
   useWorkers,
 } from "@/features/labor/labor-api";
@@ -47,6 +52,7 @@ import {
   PaymentsPanel,
   WorkersPanel,
   dayCardTitle,
+  rowDue,
 } from "@/features/labor/labor-panels";
 import type { PaymentRow } from "@/features/labor/labor-panels";
 import {
@@ -87,6 +93,7 @@ import {
 } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { dayInMonth } from "@/lib/labor/attendance-day";
+import { earlierCreditByWorker } from "@/lib/labor/labor-overview";
 import { monthRange } from "@/lib/labor/month-range";
 import { ApiError } from "@/lib/query/api-error";
 import { frenchHolidayKeyForIso } from "@/lib/labor/french-holidays";
@@ -148,7 +155,9 @@ function LaborTabContent() {
   }, [params.segment, params.focus]);
 
   const project = useProject(id);
-  const workers = useWorkers(id);
+  // Inactive workers included: their unpaid days stay payable and the roster can
+  // reactivate them. Logging pickers keep filtering on is_active.
+  const workers = useWorkers(id, true, true);
   const entries = useLaborEntries(id, range.from, range.to);
   const activities = useActivities(id);
   const dayDescriptions = useDayDescriptions(id);
@@ -164,6 +173,10 @@ function LaborTabContent() {
   const bulkLog = useBulkLog(id);
   const updateEntry = useUpdateAttendance(id);
   const deleteEntry = useDeleteAttendance(id);
+  const validateEntry = useValidateAttendance();
+  const rejectEntry = useRejectAttendance();
+  const decideChange = useDecideAttendanceChange();
+  const [rejectingEntry, setRejectingEntry] = useState<LaborEntry | null>(null);
 
   const [editingWorker, setEditingWorker] = useState<Worker | undefined>(
     undefined,
@@ -238,6 +251,18 @@ function LaborTabContent() {
       ),
     [summary.data],
   );
+  // A worker overpaid in an earlier month has that money in hand: deduct it here so
+  // the same work is not offered for payment twice.
+  const monthlyLedger = useLaborMonthlySummary(id);
+  const creditByWorker = useMemo(
+    () =>
+      earlierCreditByWorker(
+        monthlyLedger.data?.rows ?? [],
+        laborPayments.data,
+        month,
+      ),
+    [monthlyLedger.data, laborPayments.data, month],
+  );
   const paymentRows = useMemo<PaymentRow[]>(
     () =>
       (summary.data?.rows ?? []).flatMap((row) => {
@@ -249,16 +274,14 @@ function LaborTabContent() {
                 color: entry.color,
                 owed: row.total_cost,
                 paid: paidByWorker.get(row.worker_id) ?? 0,
+                credit: creditByWorker.get(row.worker_id) ?? 0,
               },
             ]
           : [];
       }),
-    [summary.data, coloredWorkers, paidByWorker],
+    [summary.data, coloredWorkers, paidByWorker, creditByWorker],
   );
-  const unpaid = paymentRows.reduce(
-    (sum, row) => sum + Math.max(0, row.owed - row.paid),
-    0,
-  );
+  const unpaid = paymentRows.reduce((sum, row) => sum + rowDue(row), 0);
   const unassignedLabor = useMemo(
     () => (laborInvoices.data?.invoices ?? []).filter((inv) => !inv.worker_id),
     [laborInvoices.data],
@@ -442,7 +465,7 @@ function LaborTabContent() {
                         setEditingEntry(entry);
                         setTimeout(() => entrySheet.current?.open(), 0);
                       }
-                    : () => undefined
+                    : undefined
                 }
               />
             ) : (
@@ -525,7 +548,7 @@ function LaborTabContent() {
               }}
               onRecord={() => {
                 setPaymentRow(
-                  paymentRows.find((row) => row.owed - row.paid > 0) ??
+                  paymentRows.find((row) => rowDue(row) > 0) ??
                     paymentRows[0] ??
                     null,
                 );
@@ -590,6 +613,72 @@ function LaborTabContent() {
           )
         }
         onDelete={() => editingEntry && setDeletingEntry(editingEntry)}
+        deciding={validateEntry.isPending || decideChange.isPending}
+        onDecide={(approve) => {
+          if (!editingEntry) return;
+          if (!approve) return setRejectingEntry(editingEntry);
+          const done = (key: string) => () => {
+            entrySheet.current?.close();
+            showToast(t(key), "success");
+          };
+          const ids = { projectId: id, entryId: editingEntry.id };
+          if (editingEntry.status === "pending")
+            validateEntry.mutate(ids, {
+              onSuccess: done("notifications.attendance.validatedToast"),
+            });
+          else
+            decideChange.mutate(
+              { ...ids, approve: true },
+              {
+                onSuccess: done(
+                  "notifications.attendance.validatedChangeToast",
+                ),
+              },
+            );
+        }}
+      />
+      <ConfirmDialog
+        visible={rejectingEntry !== null}
+        title={t("notifications.attendance.reject")}
+        message={
+          rejectingEntry
+            ? t(
+                rejectingEntry.status === "pending"
+                  ? "notifications.attendance.rejectConfirm"
+                  : "notifications.attendance.rejectChangeConfirm",
+                {
+                  worker: rejectingEntry.worker_name,
+                  date: formatDate(rejectingEntry.date),
+                },
+              )
+            : undefined
+        }
+        confirmLabel={t("notifications.attendance.reject")}
+        cancelLabel={t("common.cancel")}
+        destructive
+        loading={rejectEntry.isPending || decideChange.isPending}
+        onCancel={() => setRejectingEntry(null)}
+        onConfirm={() => {
+          if (!rejectingEntry) return;
+          const ids = { projectId: id, entryId: rejectingEntry.id };
+          const settle = {
+            onSuccess: () => {
+              entrySheet.current?.close();
+              showToast(
+                t(
+                  rejectingEntry.status === "pending"
+                    ? "notifications.attendance.rejectedToast"
+                    : "notifications.attendance.rejectedChangeToast",
+                ),
+                "success",
+              );
+            },
+            onSettled: () => setRejectingEntry(null),
+          };
+          if (rejectingEntry.status === "pending")
+            rejectEntry.mutate(ids, settle);
+          else decideChange.mutate({ ...ids, approve: false }, settle);
+        }}
       />
       <DayDetailsSheet
         ref={detailsSheet}
@@ -647,6 +736,9 @@ function LaborTabContent() {
           setTimeout(() => rateSheet.current?.open(), 0);
         }}
         onDelete={(worker) => setDeletingWorker(worker)}
+        onReactivate={(worker) =>
+          updateWorker.mutate({ workerId: worker.id, is_active: true })
+        }
       />
       <RateChangesSheet ref={rateSheet} projectId={id} worker={rateWorker} />
       <PaymentSheet

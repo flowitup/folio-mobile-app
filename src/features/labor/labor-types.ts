@@ -60,6 +60,8 @@ export interface UpdateWorkerPayload {
   role_id?: string | null;
   /** Link (or unlink with null) the app account that may self-log for this worker. */
   user_id?: string | null;
+  /** true reactivates a deactivated worker. */
+  is_active?: boolean;
 }
 
 export interface LaborEntry {
@@ -197,6 +199,9 @@ interface MonthlyWorkerSubRow {
   days_worked: number;
   /** EUR */
   total_cost: number;
+  /** Rate on the month's last and first days (differ when it changed mid-month). Older APIs omit them. */
+  daily_rate?: number;
+  month_start_rate?: number;
 }
 
 export interface MonthlySummaryRow {

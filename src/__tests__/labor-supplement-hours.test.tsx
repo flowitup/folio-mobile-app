@@ -80,3 +80,40 @@ describe("EditEntrySheet extra hours", () => {
     );
   });
 });
+
+describe("EditEntrySheet pending day", () => {
+  it("validates or refuses a worker's self-logged day from the sheet", async () => {
+    const onDecide = jest.fn();
+    await renderWithProviders(
+      <EditEntrySheet
+        ref={createRef<SheetHandle>()}
+        entry={{ ...ENTRY_MINH_PENDING, status: "pending" }}
+        submitting={false}
+        onSubmit={jest.fn()}
+        onDelete={jest.fn()}
+        onDecide={onDecide}
+      />,
+    );
+    await fireEvent.press(screen.getByTestId("entry-validate"));
+    await fireEvent.press(screen.getByTestId("entry-reject"));
+    expect(onDecide.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it("shows no decision for a validated day", async () => {
+    await renderWithProviders(
+      <EditEntrySheet
+        ref={createRef<SheetHandle>()}
+        entry={{
+          ...ENTRY_MINH_PENDING,
+          status: "validated",
+          change_requested_at: null,
+        }}
+        submitting={false}
+        onSubmit={jest.fn()}
+        onDelete={jest.fn()}
+        onDecide={jest.fn()}
+      />,
+    );
+    expect(screen.queryByTestId("entry-decision")).toBeNull();
+  });
+});

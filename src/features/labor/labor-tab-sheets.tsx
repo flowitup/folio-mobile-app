@@ -24,6 +24,7 @@ import {
   useDeleteActivity,
   useSetDayDescription,
 } from "@/features/labor/labor-api";
+import { rowDue } from "@/features/labor/labor-panels";
 import type { PaymentRow } from "@/features/labor/labor-panels";
 import type {
   LaborActivity,
@@ -51,15 +52,20 @@ export const WorkerActionsSheet = forwardRef<
     onEdit: (worker: Worker) => void;
     onRates: (worker: Worker) => void;
     onDelete: (worker: Worker) => void;
+    /** Puts a deactivated worker back on the roster. */
+    onReactivate?: (worker: Worker) => void;
   }
->(function WorkerActionsSheet({ worker, onEdit, onRates, onDelete }, ref) {
+>(function WorkerActionsSheet(
+  { worker, onEdit, onRates, onDelete, onReactivate },
+  ref,
+) {
   const { t } = useTranslation();
   const tokens = useTokens();
   const close = () => (ref as ModalRef).current?.dismiss();
   const rows: {
     key: string;
     label: string;
-    icon: "edit-3" | "sliders" | "trash-2";
+    icon: "edit-3" | "sliders" | "trash-2" | "rotate-ccw";
     danger?: boolean;
     run: (w: Worker) => void;
   }[] = [
@@ -70,9 +76,18 @@ export const WorkerActionsSheet = forwardRef<
       icon: "sliders",
       run: onRates,
     },
-    // "Remove" deactivates the worker; offering it again on an inactive card does nothing.
+    // "Remove" deactivates the worker; an inactive card offers to reactivate instead.
     ...(worker && !worker.is_active
-      ? []
+      ? onReactivate
+        ? [
+            {
+              key: "reactivate",
+              label: t("labor.workers.reactivate"),
+              icon: "rotate-ccw" as const,
+              run: onReactivate,
+            },
+          ]
+        : []
       : [
           {
             key: "delete",
@@ -273,11 +288,7 @@ export const PaymentSheet = forwardRef<
   const [methodId, setMethodId] = useState<string | null>(null);
   useEffect(() => {
     setWorkerId(initial?.worker.id ?? null);
-    setAmount(
-      initial
-        ? formatAmountInput(Math.max(0, initial.owed - initial.paid))
-        : "",
-    );
+    setAmount(initial ? formatAmountInput(rowDue(initial)) : "");
   }, [initial]);
   const row = rows.find((r) => r.worker.id === workerId) ?? null;
 
@@ -337,15 +348,12 @@ export const PaymentSheet = forwardRef<
           options={rows.map((r) => ({
             value: r.worker.id,
             label: r.worker.name,
-            description: `${t("labor.payments.dueShort")} ${formatMoney(Math.max(0, r.owed - r.paid))}`,
+            description: `${t("labor.payments.dueShort")} ${formatMoney(rowDue(r))}`,
           }))}
           onChange={(next) => {
             setWorkerId(next);
             const target = rows.find((r) => r.worker.id === next);
-            if (target)
-              setAmount(
-                formatAmountInput(Math.max(0, target.owed - target.paid)),
-              );
+            if (target) setAmount(formatAmountInput(rowDue(target)));
           }}
         />
         <Input

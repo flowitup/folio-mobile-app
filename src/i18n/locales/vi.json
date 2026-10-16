@@ -462,7 +462,8 @@
       "fromCompanyHint": "từ danh bạ công ty",
       "deactivate": "Ngừng hoạt động",
       "rateTooLarge": "Đơn giá không được vượt quá {{max}}.",
-      "alreadyOnProject": "Người này đã là nhân công của dự án này (có thể đã ngừng hoạt động)."
+      "alreadyOnProject": "Người này đã là nhân công của dự án này (có thể đã ngừng hoạt động).",
+      "reactivate": "Kích hoạt lại"
     },
     "rates": {
       "link": "Đơn giá",
@@ -481,7 +482,7 @@
       "title": "Chấm công {{date}}",
       "sameAsLastDay": "Giống ngày trước",
       "noWorkers": "Tất cả nhân công đã được chấm ngày này.",
-      "supplement": "Giờ thêm (không tính lương)",
+      "supplement": "Giờ thêm (cộng dồn thành ngày công thưởng)",
       "submit_one": "Chấm {{count}} nhân công",
       "submit_other": "Chấm {{count}} nhân công",
       "saved": "Đã lưu chấm công.",
@@ -578,7 +579,8 @@
       "tho_phu": "Thợ phụ"
     },
     "entry": {
-      "deleteConfirm": "Xóa bản chấm công này?"
+      "deleteConfirm": "Xóa bản chấm công này?",
+      "pendingHint": "Ngày công do nhân công tự chấm, đang chờ duyệt: chỉ được tính sau khi duyệt."
     },
     "overview": {
       "totalCost": "Tổng chi phí nhân công",
@@ -614,7 +616,8 @@
       "toggleWorkers": "Hiện hoặc ẩn công nhân của tháng này",
       "openMonth": "Mở tháng này",
       "daysUnit_one": "ngày",
-      "daysUnit_other": "ngày"
+      "daysUnit_other": "ngày",
+      "paidOutsideMonths": "gồm {{amount}} trả không có tháng hoặc ngoài các tháng chấm công"
     },
     "errors": {
       "roleUnavailable": "Vai trò này không còn dùng được cho công ty của công trình. Hãy chọn vai trò khác."
@@ -1759,7 +1762,8 @@
     "paidToast": "Đã ghi nhận thanh toán.",
     "unpaidToast": "Đã xóa thanh toán.",
     "readOnly": "Chỉ admin hoặc quản lý mới đổi được trạng thái thanh toán.",
-    "noMonth": "Chưa gán tháng"
+    "noMonth": "Chưa gán tháng",
+    "creditDeducted": "Đã trừ khoản trả dư từ các tháng trước: {{amount}}"
   },
   "shell": {
     "switchProject": "Đổi công trình",
@@ -1920,7 +1924,7 @@
     "editSent": "Đã gửi yêu cầu sửa, chờ quản lý duyệt.",
     "editUnchanged": "Không có gì thay đổi: ngày này đã có đúng các giá trị đó.",
     "editDuplicate": "Yêu cầu sửa này đã được gửi và đang chờ quản lý duyệt.",
-    "supplement": "Giờ thêm (không tính lương)",
+    "supplement": "Giờ thêm (cộng dồn thành ngày công thưởng)",
     "note": "Ghi chú",
     "changeRequested": "Chờ duyệt sửa",
     "proposedLine": "Yêu cầu: {{value}}",

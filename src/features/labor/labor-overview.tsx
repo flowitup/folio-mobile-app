@@ -20,7 +20,9 @@ import {
   CENT,
   availableYears,
   monthDetail,
+  monthRateLabel,
   overviewMonths,
+  paidOutsideMonths,
   rollupTotals,
   rowsInScope,
   scopeRange,
@@ -127,10 +129,10 @@ function Kpi({
 }) {
   return (
     <Card radius={14} elevated className="flex-1 p-3">
+      {/* Long fr/vi labels wrap instead of shrinking to an unreadable size. */}
       <Text
-        className="font-sans text-[11px] uppercase tracking-[0.8px] text-muted"
-        numberOfLines={1}
-        adjustsFontSizeToFit
+        className="font-sans text-[10.5px] uppercase tracking-[0.4px] text-muted"
+        numberOfLines={2}
       >
         {label}
       </Text>
@@ -139,6 +141,7 @@ function Kpi({
         className={`mt-1 font-mono text-[18px] ${accent ? "text-accent-ink" : "text-ink"}`}
         numberOfLines={1}
         adjustsFontSizeToFit
+        minimumFontScale={0.7}
       >
         {value}
       </Text>
@@ -182,7 +185,21 @@ export function LaborOverview({
     () => overviewMonths(rowsInScope(allRows, scope), payments),
     [allRows, scope, payments],
   );
-  const rollup = useMemo(() => rollupTotals(months), [months]);
+  const rollup = useMemo(() => {
+    const totals = rollupTotals(months);
+    const outside = paidOutsideMonths(
+      rowsInScope(allRows, scope),
+      payments,
+      scope,
+    );
+    return {
+      ...totals,
+      paid: totals.paid + outside.paid,
+      companyPaid: totals.companyPaid + outside.companyPaid,
+      personalPaid: totals.personalPaid + outside.personalPaid,
+      paidOutside: outside.paid,
+    };
+  }, [months, allRows, scope, payments]);
   const maxCost = months.reduce((m, x) => Math.max(m, x.row.total_cost), 1);
   const workerById = useMemo(
     () => new Map(workers.map((w) => [w.id, w])),
@@ -394,6 +411,16 @@ export function LaborOverview({
                 </Text>
               </View>
             </View>
+            {rollup.paidOutside > CENT ? (
+              <Text
+                testID="labor-overview-paid-outside"
+                className="mt-1 font-sans text-[11.5px] text-muted"
+              >
+                {t("labor.overview.paidOutsideMonths", {
+                  amount: formatMoney(rollup.paidOutside),
+                })}
+              </Text>
+            ) : null}
             <PaidSplit
               company={rollup.companyPaid}
               personal={rollup.personalPaid}
@@ -536,7 +563,12 @@ function MonthCard({
       {open ? (
         <View className="gap-2.5 px-3.5 pb-3">
           {row.workers.map((w) => {
-            const rate = rateOf(w.worker_id);
+            // The rate(s) of that month, never today's rate on a past month.
+            const rateLabel = monthRateLabel(
+              w,
+              rateOf(w.worker_id),
+              formatMoney,
+            );
             const paid = month.paidByWorker.get(w.worker_id) ?? 0;
             const color = colorOf(w.worker_id);
             return (
@@ -559,8 +591,8 @@ function MonthCard({
                       {t("labor.overview.daysUnit", {
                         count: dayCount(w.days_worked),
                       })}
-                      {rate != null && rate > 0
-                        ? ` · ${t("labor.overview.perDay", { rate: formatMoney(rate) })}`
+                      {rateLabel
+                        ? ` · ${t("labor.overview.perDay", { rate: rateLabel })}`
                         : ""}
                     </Text>
                   </View>
@@ -710,10 +742,20 @@ function MonthDetailList({
             </Text>
             <Text
               testID="labor-overview-month-balance"
-              className={`mt-0.5 font-mono-regular text-[12px] ${detail.balance < -CENT ? "text-negative" : "text-accent-ink"}`}
+              className="mt-0.5 font-mono-regular text-[12px] text-accent-ink"
             >
               {t("labor.overview.balance")} {formatMoney(detail.balance)}
             </Text>
+            {detail.overpay > CENT ? (
+              <Text
+                testID="labor-overview-month-overpaid"
+                className="mt-0.5 font-mono-regular text-[12px] text-negative"
+              >
+                {t("labor.overview.overpaid", {
+                  amount: formatMoney(detail.overpay),
+                })}
+              </Text>
+            ) : null}
           </View>
         </View>
       </Card>

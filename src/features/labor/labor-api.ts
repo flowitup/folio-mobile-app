@@ -92,14 +92,31 @@ function ownAttendanceInvalidations(projectId: string) {
 // ---- workers ----------------------------------------------------------------
 
 /** `enabled` lets a caller that only sometimes needs the roster skip the request. */
-export function useWorkers(projectId: string, enabled = true) {
+/**
+ * Active workers by default (what logging pickers offer). Screens that show pay pass
+ * `includeInactive`: a deactivated worker can still be owed wages, and the roster needs
+ * them to offer "Reactivate". Its own key under the workers key, so the same
+ * invalidations refresh both lists.
+ */
+export function useWorkers(
+  projectId: string,
+  enabled = true,
+  includeInactive = false,
+) {
   return useQuery({
-    queryKey: laborKeys.workers(projectId),
+    queryKey: includeInactive
+      ? ([...laborKeys.workers(projectId), "all"] as const)
+      : laborKeys.workers(projectId),
     enabled: Boolean(projectId) && enabled,
     queryFn: async () =>
       unwrapAs<{ workers?: Worker[] }>(
         await api.GET("/api/v1/projects/{project_id}/workers", {
-          params: { path: { project_id: projectId } },
+          params: {
+            path: { project_id: projectId },
+            ...(includeInactive
+              ? { query: { include_inactive: "true" } as never }
+              : {}),
+          },
         }),
       ).workers ?? [],
   });

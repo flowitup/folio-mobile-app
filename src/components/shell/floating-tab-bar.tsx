@@ -53,7 +53,7 @@ const WORKER_TAB_LABEL_KEYS: Record<(typeof WORKER_TABS)[number], string> = {
 
 /**
  * 2a floating tab bar: positive pill, 48px items, active item white with icon + 12/600 label
- * (flex 2.4 vs 1). The Menu item toggles the Menu sheet instead of navigating and stays active
+ * (flex 2.8 vs 1, room for 'Main-d'œuvre'). The Menu item toggles the Menu sheet instead of navigating and stays active
  * while the sheet is open or a hidden (Menu-reached) screen is showing.
  */
 export function FloatingTabBar({ state, navigation }: TabBarProps) {
@@ -140,7 +140,7 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
             accessibilityLabel={t(labelOf(item.key))}
             onPress={item.onPress}
             className={`h-12 min-w-0 flex-row items-center justify-center gap-1.5 rounded-full px-1.5 ${item.active ? "bg-white" : ""}`}
-            style={{ flex: item.active ? 2.4 : 1 }}
+            style={{ flex: item.active ? 2.8 : 1 }}
           >
             <Icon
               name={iconOf(item.key)}

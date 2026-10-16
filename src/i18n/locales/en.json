@@ -462,7 +462,8 @@
       "fromCompanyHint": "from the company directory",
       "deactivate": "Deactivate",
       "rateTooLarge": "The daily rate cannot exceed {{max}}.",
-      "alreadyOnProject": "This person is already a worker on this project (possibly deactivated)."
+      "alreadyOnProject": "This person is already a worker on this project (possibly deactivated).",
+      "reactivate": "Reactivate"
     },
     "rates": {
       "link": "Rates",
@@ -481,7 +482,7 @@
       "title": "Log {{date}}",
       "sameAsLastDay": "Same as last day",
       "noWorkers": "Every active worker is already logged for this day.",
-      "supplement": "Extra hours (not paid)",
+      "supplement": "Extra hours (banked into bonus days)",
       "submit_one": "Log {{count}} worker",
       "submit_other": "Log {{count}} workers",
       "saved": "Attendance saved.",
@@ -578,7 +579,8 @@
       "tho_phu": "Assistant worker"
     },
     "entry": {
-      "deleteConfirm": "Delete this attendance entry?"
+      "deleteConfirm": "Delete this attendance entry?",
+      "pendingHint": "Day logged by the worker, waiting for validation: it only counts once validated."
     },
     "overview": {
       "totalCost": "Total labor cost",
@@ -614,7 +616,8 @@
       "toggleWorkers": "Show or hide the workers of this month",
       "openMonth": "Open this month",
       "daysUnit_one": "day",
-      "daysUnit_other": "days"
+      "daysUnit_other": "days",
+      "paidOutsideMonths": "incl. {{amount}} paid with no month or outside logged months"
     },
     "errors": {
       "roleUnavailable": "This role is no longer available for this project's company. Pick another one."
@@ -1759,7 +1762,8 @@
     "paidToast": "Payment recorded.",
     "unpaidToast": "Payments removed.",
     "readOnly": "Only an admin or manager can change the paid status.",
-    "noMonth": "No month recorded"
+    "noMonth": "No month recorded",
+    "creditDeducted": "Overpaid in earlier months, deducted: {{amount}}"
   },
   "shell": {
     "switchProject": "Switch project",
@@ -1920,7 +1924,7 @@
     "editSent": "Change request sent — waiting for a manager.",
     "editUnchanged": "Nothing changed — this day already has these values.",
     "editDuplicate": "This change request is already waiting for a manager.",
-    "supplement": "Extra hours (not paid)",
+    "supplement": "Extra hours (banked into bonus days)",
     "note": "Note",
     "changeRequested": "Change requested",
     "proposedLine": "Requested: {{value}}",

@@ -197,7 +197,10 @@ export type MonthDetail = {
   cost: number;
   /** Paid matched to the listed workers only — unassigned payments belong to nobody here. */
   paid: number;
+  /** Still owed, worker by worker: one worker's overpayment never hides another's debt. */
   balance: number;
+  /** What workers were paid beyond their cost, totalled apart. */
+  overpay: number;
   bonusCost: number;
 };
 
@@ -233,7 +236,79 @@ export function monthDetail(
     days: summary?.total_days ?? 0,
     cost,
     paid,
-    balance: cost - paid,
+    balance: lines.reduce((sum, l) => sum + Math.max(0, l.balance), 0),
+    overpay: lines.reduce((sum, l) => sum + Math.max(0, -l.balance), 0),
     bonusCost: summary?.total_bonus_cost ?? 0,
   };
+}
+
+/**
+ * Labor payments no visible month card shows: the no-month bucket (all history only) and
+ * months paid without any attendance. Counted in the grand total so it matches labor_paid.
+ */
+export function paidOutsideMonths(
+  visibleRows: readonly MonthlySummaryRow[],
+  payments: LaborPaymentsSummary | null | undefined,
+  scope: OverviewScope,
+): { paid: number; companyPaid: number; personalPaid: number } {
+  const visible = new Set(visibleRows.map((r) => monthKey(r.year, r.month)));
+  const acc = { paid: 0, companyPaid: 0, personalPaid: 0 };
+  if (scope.kind === "month") return acc;
+  for (const b of payments?.months ?? []) {
+    if (b.year == null || b.month == null) {
+      if (scope.kind !== "all") continue;
+    } else {
+      if (scope.kind === "year" && b.year !== scope.year) continue;
+      if (visible.has(monthKey(b.year, b.month))) continue;
+    }
+    acc.paid += b.total_paid;
+    acc.companyPaid += b.company_paid ?? 0;
+    acc.personalPaid += b.personal_paid ?? 0;
+  }
+  return acc;
+}
+
+/** Rate label of a month: one rate, or "A → B" when it changed during the month. */
+export function monthRateLabel(
+  sub: { daily_rate?: number; month_start_rate?: number },
+  fallback: number | null,
+  format: (amount: number) => string,
+): string | null {
+  const rate = sub.daily_rate ?? fallback;
+  if (rate == null || rate <= 0) return null;
+  const start = sub.month_start_rate;
+  if (start != null && start > 0 && Math.abs(start - rate) >= 0.005)
+    return `${format(start)} → ${format(rate)}`;
+  return format(rate);
+}
+
+/**
+ * What each worker was paid beyond their earnings in the months before `month` ("YYYY-MM"),
+ * netted across those months (positive credits only). A worker paid 250 € in September for
+ * 99,99 € of work starts October with 150,01 € in hand, so October is not offered for
+ * payment again. Payments with no month are left out.
+ */
+export function earlierCreditByWorker(
+  rows: readonly MonthlySummaryRow[],
+  payments: LaborPaymentsSummary | null | undefined,
+  month: string,
+): Map<string, number> {
+  const net = new Map<string, number>();
+  const add = (id: string, value: number) =>
+    net.set(id, (net.get(id) ?? 0) + value);
+  for (const row of rows) {
+    if (monthKey(row.year, row.month) >= month) continue;
+    for (const w of row.workers) add(w.worker_id, -w.total_cost);
+  }
+  for (const b of payments?.months ?? []) {
+    if (b.year == null || b.month == null) continue;
+    if (monthKey(b.year, b.month) >= month) continue;
+    for (const w of b.workers) add(w.worker_id, w.paid);
+  }
+  const credits = new Map<string, number>();
+  for (const [id, value] of net) {
+    const rounded = Math.round(value * 100) / 100;
+    if (rounded >= CENT) credits.set(id, rounded);
+  }
+  return credits;
 }

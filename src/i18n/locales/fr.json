@@ -432,7 +432,7 @@
     "shift": {
       "full": "Journée",
       "half": "Demi-journée",
-      "overtime": "Heures sup. (x1,5)",
+      "overtime": "Journée majorée (x1,5)",
       "none": "Sans poste"
     },
     "workers": {
@@ -462,7 +462,8 @@
       "fromCompanyHint": "annuaire de l'entreprise",
       "deactivate": "Désactiver",
       "rateTooLarge": "Le taux journalier ne peut pas dépasser {{max}}.",
-      "alreadyOnProject": "Cette personne est déjà ouvrier sur ce chantier (peut-être désactivé)."
+      "alreadyOnProject": "Cette personne est déjà ouvrier sur ce chantier (peut-être désactivé).",
+      "reactivate": "Réactiver"
     },
     "rates": {
       "link": "Taux",
@@ -481,7 +482,7 @@
       "title": "Saisir le {{date}}",
       "sameAsLastDay": "Comme le dernier jour",
       "noWorkers": "Tous les ouvriers actifs sont déjà saisis ce jour.",
-      "supplement": "Heures en plus (non payées)",
+      "supplement": "Heures en banque (cumulées en jours bonus)",
       "submit_one": "Saisir {{count}} ouvrier",
       "submit_other": "Saisir {{count}} ouvriers",
       "saved": "Présences enregistrées.",
@@ -578,7 +579,8 @@
       "tho_phu": "Ouvrier auxiliaire"
     },
     "entry": {
-      "deleteConfirm": "Supprimer ce pointage ?"
+      "deleteConfirm": "Supprimer ce pointage ?",
+      "pendingHint": "Journée saisie par l’ouvrier, en attente de validation : elle ne compte qu’une fois validée."
     },
     "overview": {
       "totalCost": "Coût total main-d'œuvre",
@@ -598,7 +600,7 @@
       "titleYear": "Résumé · {{year}}",
       "titleMonth": "Résumé mensuel · {{month}}",
       "unpaid": "{{amount}} impayé",
-      "overpaid": "{{amount}} trop-payé",
+      "overpaid": "{{amount}} trop-perçu",
       "workers_one": "{{count}} ouvrier",
       "workers_other": "{{count}} ouvriers",
       "perDay": "{{rate}} / jour",
@@ -614,7 +616,8 @@
       "toggleWorkers": "Afficher ou masquer les ouvriers de ce mois",
       "openMonth": "Ouvrir ce mois",
       "daysUnit_one": "jour",
-      "daysUnit_other": "jours"
+      "daysUnit_other": "jours",
+      "paidOutsideMonths": "dont {{amount}} payés sans mois ou hors des mois pointés"
     },
     "errors": {
       "roleUnavailable": "Ce rôle n'est plus disponible pour l'entreprise de ce chantier. Choisissez-en un autre."
@@ -1759,7 +1762,8 @@
     "paidToast": "Paiement enregistré.",
     "unpaidToast": "Paiements supprimés.",
     "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement.",
-    "noMonth": "Sans mois renseigné"
+    "noMonth": "Sans mois renseigné",
+    "creditDeducted": "Avance des mois précédents déduite : {{amount}}"
   },
   "shell": {
     "switchProject": "Changer de chantier",
@@ -1920,7 +1924,7 @@
     "editSent": "Demande de modification envoyée — en attente d'un responsable.",
     "editUnchanged": "Aucune modification : ce jour a déjà ces valeurs.",
     "editDuplicate": "Cette demande de modification est déjà en attente d'un responsable.",
-    "supplement": "Heures en plus (non payées)",
+    "supplement": "Heures en banque (cumulées en jours bonus)",
     "note": "Note",
     "changeRequested": "Modification demandée",
     "proposedLine": "Demandé : {{value}}",
