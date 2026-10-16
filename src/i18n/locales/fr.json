@@ -934,7 +934,10 @@
       "invalidTransition": "Ce changement de statut n'est pas autorisé.",
       "convertedLocked": "Ce devis a été converti en facture et est verrouillé. Annulez la facture pour le modifier.",
       "openFacture": "Ouvrir la facture",
-      "deletePaidWarning": "Cette facture est payée : le déblocage de fonds qu'elle a enregistré dans son chantier est supprimé avec elle."
+      "deletePaidWarning": "Cette facture est payée : le déblocage de fonds qu'elle a enregistré dans son chantier est supprimé avec elle.",
+      "cancelConfirm": "Annuler {{number}} ?",
+      "cancelWarning": "Une facture annulée ne peut plus changer de statut.",
+      "cancelPaidWarning": "Cette facture est payée : l'annuler supprime le déblocage de fonds qu'elle a enregistré dans son chantier. Une facture annulée ne peut plus changer de statut."
     },
     "toast": {
       "documentCreated": "Document créé.",

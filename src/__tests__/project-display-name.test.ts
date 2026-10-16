@@ -49,7 +49,10 @@ describe("search folding", () => {
     expect(searchIncludes("Réunion chantier", "reunion")).toBe(true);
     expect(searchIncludes("anything", "  ")).toBe(true);
     expect(
-      projectMatchesSearch({ name: "Villa", address: "Đường Lê Lợi" }, "le loi"),
+      projectMatchesSearch(
+        { name: "Villa", address: "Đường Lê Lợi" },
+        "le loi",
+      ),
     ).toBe(true);
   });
 });

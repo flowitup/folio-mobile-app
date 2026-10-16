@@ -934,7 +934,10 @@
       "invalidTransition": "Không được phép đổi trạng thái này.",
       "convertedLocked": "Báo giá này đã được chuyển thành hóa đơn nên bị khóa. Hãy hủy hóa đơn để sửa báo giá.",
       "openFacture": "Mở hóa đơn",
-      "deletePaidWarning": "Hóa đơn này đã thanh toán: khoản giải ngân mà nó đã ghi vào công trình cũng sẽ bị xóa theo."
+      "deletePaidWarning": "Hóa đơn này đã thanh toán: khoản giải ngân mà nó đã ghi vào công trình cũng sẽ bị xóa theo.",
+      "cancelConfirm": "Hủy {{number}}?",
+      "cancelWarning": "Hóa đơn đã hủy không thể đổi trạng thái nữa.",
+      "cancelPaidWarning": "Hóa đơn này đã thanh toán: hủy nó sẽ xóa khoản giải ngân mà nó đã ghi vào công trình. Hóa đơn đã hủy không thể đổi trạng thái nữa."
     },
     "toast": {
       "documentCreated": "Đã tạo tài liệu.",

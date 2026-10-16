@@ -46,6 +46,10 @@ import {
 import type { SalaryMonth } from "@/lib/labor/worker-salary-months";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
+/** Upper-cases the first letter only (RN's `capitalize` does every word). */
+const upperFirst = (text: string) =>
+  text.charAt(0).toLocaleUpperCase() + text.slice(1);
+
 const STATUS_TONE = {
   paid: "success",
   partial: "warning",
@@ -248,10 +252,12 @@ export default function ProjectSalariesSection({
               }
             >
               <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold capitalize text-primary">
+                {/* Upper-case the first letter only: RN's `capitalize` upper-cases
+                    every word ("Sans Mois Renseigné"). */}
+                <Text className="text-base font-semibold text-primary">
                   {row.month === UNASSIGNED_MONTH
-                    ? t("salaries.noMonth")
-                    : formatMonth(row.month)}
+                    ? upperFirst(t("salaries.noMonth"))
+                    : upperFirst(formatMonth(row.month))}
                 </Text>
                 <Badge
                   label={t(`salaries.status.${row.status}`)}
