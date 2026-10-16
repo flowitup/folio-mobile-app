@@ -107,7 +107,13 @@ function ExpensesTabContent() {
       .filter((group) => group.monthKey <= month)
       .map((group) => ({
         monthKey: group.monthKey,
-        total: group.expenseSubtotal,
+        // "All" heads the month with its spend (releases left out). With a chip
+        // on, the header adds up exactly the rows listed under it, so the
+        // released-funds chip shows the releases rather than 0.
+        total:
+          filter === "all"
+            ? group.expenseSubtotal
+            : group.categories.reduce((sum, c) => sum + c.subtotal, 0),
         invoices: group.categories.flatMap((category) => category.items),
       }))
       .filter((group) => group.invoices.length > 0);

@@ -934,7 +934,10 @@
       "invalidTransition": "This status change is not allowed.",
       "convertedLocked": "This quote was converted to an invoice and is locked. Cancel the invoice to change it.",
       "openFacture": "Open the invoice",
-      "deletePaidWarning": "This facture is paid: the funds release it recorded in its project is deleted with it."
+      "deletePaidWarning": "This facture is paid: the funds release it recorded in its project is deleted with it.",
+      "cancelConfirm": "Cancel {{number}}?",
+      "cancelWarning": "A cancelled facture can no longer change status.",
+      "cancelPaidWarning": "This facture is paid: cancelling it deletes the funds release it recorded in its project. A cancelled facture can no longer change status."
     },
     "toast": {
       "documentCreated": "Document created.",

@@ -205,6 +205,12 @@ function OverviewTabContent() {
           <AgendaCard
             groups={agenda}
             onOpenPlanning={() => router.navigate("/(app)/(tabs)/planning")}
+            onOpenTask={(task) =>
+              router.navigate({
+                pathname: "/(app)/(tabs)/planning",
+                params: { task: task.id },
+              })
+            }
           />
           <TodayOnSiteCard
             address={project.address}

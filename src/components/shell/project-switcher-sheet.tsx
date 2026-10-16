@@ -15,7 +15,10 @@ import { projectCan, useCreateProject } from "@/features/projects/projects-api";
 import type { Project } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatMoney } from "@/lib/format/money";
-import { projectDisplayName } from "@/lib/projects/project-display-name";
+import {
+  projectDisplayName,
+  projectSecondaryLabel,
+} from "@/lib/projects/project-display-name";
 
 /**
  * Second line of a switcher row: members · budget state (README "Đổi công trình"); the
@@ -178,6 +181,15 @@ export function ProjectSwitcherSheet() {
                         </Text>
                       ) : null}
                     </View>
+                    {projectSecondaryLabel(project) ? (
+                      <Text
+                        testID={`switcher-project-address-${project.id}`}
+                        className="font-sans text-[12px] text-muted"
+                        numberOfLines={1}
+                      >
+                        {projectSecondaryLabel(project)}
+                      </Text>
+                    ) : null}
                     {row.pct !== null ? (
                       <View className="mt-[5px] h-[3px] overflow-hidden rounded-sm bg-paper-2">
                         <View

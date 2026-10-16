@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { useAuth } from "@/auth/auth-context";
 import { useChatFabReserve } from "@/components/shell/chat-fab";
@@ -32,6 +33,7 @@ import {
 } from "@/features/tasks/tasks-api";
 import type { Task, TaskStatus } from "@/features/tasks/tasks-api";
 import { userDisplayName } from "@/lib/auth/user-display-name";
+import { toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
 
@@ -68,6 +70,16 @@ export default function PlanningTab() {
   const [lane, setLane] = useState<TaskStatus>("todo");
   const [deleting, setDeleting] = useState<Task | null>(null);
   const form = useRef<TaskFormSheetHandle>(null);
+  const router = useRouter();
+  // `?task=<id>` (the home agenda's rows): open that task once the list has it.
+  const { task: taskParam } = useLocalSearchParams<{ task?: string }>();
+  useEffect(() => {
+    if (!taskParam || !tasks.data) return;
+    const target = tasks.data.find((x) => x.id === taskParam);
+    router.setParams({ task: undefined });
+    if (!target) return;
+    form.current?.open(target, target.status);
+  }, [taskParam, tasks.data, router]);
 
   const byLane = useMemo(() => {
     const map = new Map<TaskStatus, Task[]>(BOARD_COLUMNS.map((s) => [s, []]));
@@ -89,6 +101,13 @@ export default function PlanningTab() {
       ? null
       : (assignees.find((option) => option.value === task.assignee_id)?.label ??
         (members.data ? t("tasks.assigneeOther") : null));
+  // Day/month this year, day/month/year otherwise; an open task past its date
+  // reads in red (and says so to screen readers).
+  const today = toIsoDate(new Date());
+  const dueLabel = (due: string) =>
+    due.slice(0, 4) === today.slice(0, 4)
+      ? shortDayMonth(due)
+      : `${shortDayMonth(due)}/${due.slice(0, 4)}`;
   const indexOf = (task: Task) =>
     (byLane.get(task.status) ?? []).findIndex((x) => x.id === task.id);
 
@@ -162,7 +181,10 @@ export default function PlanningTab() {
           })}
         </ScrollView>
 
-        {tasks.isPending ? (
+        {!projectId ? <EmptyState message={t("dashboard.noProjects")} /> : null}
+        {/* isLoading, not isPending: without a project the query is disabled and
+            stays pending forever. */}
+        {tasks.isLoading ? (
           <ActivityIndicator className="mt-6" color={tokens.ink} />
         ) : null}
         {tasks.isError ? (
@@ -172,7 +194,10 @@ export default function PlanningTab() {
             onRetry={() => void tasks.refetch()}
           />
         ) : null}
-        {!tasks.isPending && !tasks.isError && laneTasks.length === 0 ? (
+        {projectId &&
+        !tasks.isPending &&
+        !tasks.isError &&
+        laneTasks.length === 0 ? (
           <EmptyState message={t("tasks.none")} />
         ) : null}
         {laneTasks.length > 0 ? (
@@ -212,8 +237,16 @@ export default function PlanningTab() {
                     </Text>
                     <View className="mt-[3px] flex-row items-center gap-2">
                       {task.due_date ? (
-                        <Text className="font-mono-regular text-[11.5px] text-muted">
-                          {shortDayMonth(task.due_date)}
+                        <Text
+                          testID={`task-due-${task.id}`}
+                          accessibilityLabel={
+                            !done && task.due_date.slice(0, 10) < today
+                              ? `${dueLabel(task.due_date)}, ${t("dashboard.agenda.overdue")}`
+                              : undefined
+                          }
+                          className={`font-mono-regular text-[11.5px] ${!done && task.due_date.slice(0, 10) < today ? "text-negative" : "text-muted"}`}
+                        >
+                          {dueLabel(task.due_date)}
                         </Text>
                       ) : null}
                       <Text

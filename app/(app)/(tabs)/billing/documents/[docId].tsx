@@ -29,7 +29,10 @@ import {
   useUpdateBillingDocument,
 } from "@/features/billing/billing-documents-api";
 import { BillingStatusBadge } from "@/features/billing/billing-status-badge";
-import type { BillingDocumentKind } from "@/features/billing/billing-types";
+import type {
+  BillingDocumentKind,
+  BillingDocumentStatus,
+} from "@/features/billing/billing-types";
 import {
   allowedTransitions,
   transitionLabelKey,
@@ -55,6 +58,7 @@ export default function BillingDocumentScreen() {
   const setStatus = useSetBillingStatus();
   const [sharing, setSharing] = useState<"pdf" | "xlsx" | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const cloneSheet = useRef<BottomSheetModal>(null);
   const convertSheet = useRef<BottomSheetModal>(null);
   const [dueDate, setDueDate] = useState<string | null>(null);
@@ -109,6 +113,20 @@ export default function BillingDocumentScreen() {
     } finally {
       setSharing(null);
     }
+  }
+
+  function changeStatus(next: BillingDocumentStatus, onSettled?: () => void) {
+    if (!doc) return;
+    setStatus.mutate(
+      { id: doc.id, new_status: next },
+      {
+        onError: (error) => {
+          if (error instanceof ApiError && error.status === 409)
+            showToast(t("billing.actions.invalidTransition"), "error");
+        },
+        onSettled,
+      },
+    );
   }
 
   const otherKind: BillingDocumentKind =
@@ -184,18 +202,11 @@ export default function BillingDocumentScreen() {
                   variant="secondary"
                   disabled={busy}
                   onPress={() =>
-                    setStatus.mutate(
-                      { id: doc.id, new_status: next },
-                      {
-                        onError: (error) => {
-                          if (error instanceof ApiError && error.status === 409)
-                            showToast(
-                              t("billing.actions.invalidTransition"),
-                              "error",
-                            );
-                        },
-                      },
-                    )
+                    // Cancelling is terminal (and, on a paid facture, deletes its
+                    // funds release), so it asks first; other moves apply at once.
+                    next === "cancelled"
+                      ? setCancelling(true)
+                      : changeStatus(next)
                   }
                 />
               ))}
@@ -359,6 +370,25 @@ export default function BillingDocumentScreen() {
         </View>
       </Sheet>
 
+      <ConfirmDialog
+        visible={cancelling}
+        title={t("billing.actions.cancelConfirm", {
+          number: doc.document_number,
+        })}
+        message={
+          doc.status === "paid"
+            ? t("billing.actions.cancelPaidWarning")
+            : t("billing.actions.cancelWarning")
+        }
+        confirmLabel={t(
+          `billing.transitions.${transitionLabelKey(doc.kind, doc.status, "cancelled")}`,
+        )}
+        cancelLabel={t("common.back")}
+        destructive
+        loading={setStatus.isPending}
+        onCancel={() => setCancelling(false)}
+        onConfirm={() => changeStatus("cancelled", () => setCancelling(false))}
+      />
       <ConfirmDialog
         visible={deleting}
         title={t("billing.actions.deleteConfirm", {
