@@ -1,7 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 
-import type { ChatMember, ChatMessage } from "@/features/chat/chat-api";
+import type {
+  ChatMember,
+  ChatMessage,
+  ChatReaction,
+} from "@/features/chat/chat-api";
 import { REACTION_EMOJIS, ownReaction, whoReacted } from "@/lib/chat/reactions";
 import type { ReactionEmoji } from "@/lib/chat/reactions";
 import { chatPersonName } from "@/lib/chat/person-name";
@@ -27,7 +31,8 @@ export function MessageDetailsSheet({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const reactions = message?.reactions ?? [];
+  // Newer servers add each reactor's name (`user_name`), which the generated type lacks.
+  const reactions: ChatReaction[] = message?.reactions ?? [];
   const mine = ownReaction(reactions, viewerId);
   const reacted = whoReacted(reactions, members);
   // A reactor still in the channel by their member name; someone who left by the name the

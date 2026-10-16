@@ -3,7 +3,7 @@
  * opens its thread, the back arrow of a thread returns to the list, and a deep link goes
  * straight to the thread.
  */
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 
@@ -56,6 +56,23 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
 }));
 
+let mockPreventRemove: { prevent: boolean; callback: () => void } | null = null;
+jest.mock("expo-router/react-navigation", () => ({
+  usePreventRemove: (prevent: boolean, callback: () => void) => {
+    mockPreventRemove = { prevent, callback };
+  },
+}));
+
+jest.mock("@tanstack/react-query", () => ({
+  ...jest.requireActual("@tanstack/react-query"),
+  useQueryClient: () => ({ invalidateQueries: jest.fn() }),
+}));
+
+const mockToast = jest.fn();
+jest.mock("@/components/ui/toast", () => ({
+  showToast: (...args: unknown[]) => mockToast(...args),
+}));
+
 jest.mock("@/auth/auth-context", () => ({
   useAuth: () => ({ user: { id: "u1" } }),
 }));
@@ -81,21 +98,38 @@ const CHANNELS = [
   },
 ];
 
+const mockMessagesKeys: (string | null)[] = [];
+const mockMarkRead = jest.fn();
+const mockRefetchChannels = jest.fn();
 jest.mock("@/features/chat/chat-api", () => ({
+  CHAT_PAGE_SIZE: 100,
+  CHAT_OLDER_PAGE_SIZE: 50,
+  CHAT_MAX_BODY_LENGTH: 4000,
+  chatKeys: { channels: ["chat", "channels"] },
+  fetchChatMessages: jest.fn(),
   useChatEnabled: () => true,
   useFeatures: () => ({
     data: { chat: true },
     isPending: false,
     isFetched: true,
   }),
-  useChatChannels: () => ({ data: CHANNELS }),
-  useChatMessages: () => ({
-    data: { items: [], members: [] },
-    isPending: false,
+  useChatChannels: () => ({
+    data: CHANNELS,
+    isSuccess: true,
     isError: false,
-    refetch: jest.fn(),
+    refetch: mockRefetchChannels,
   }),
-  useMarkChatRead: () => ({ mutate: jest.fn() }),
+  useChatMessages: (key: string | null) => {
+    mockMessagesKeys.push(key);
+    return {
+      data: key ? { items: [], members: [] } : undefined,
+      isPending: !key,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    };
+  },
+  useMarkChatRead: () => ({ mutate: mockMarkRead }),
   useSendChatMessage: () => ({ mutateAsync: jest.fn(), isPending: false }),
   useBlockedUsers: () => ({ data: [] }),
   useReportChatMessage: () => ({ mutate: jest.fn() }),
@@ -120,6 +154,57 @@ async function renderChatScreen() {
 describe("ChatScreen conversation list", () => {
   beforeEach(() => {
     mockParams = {};
+    mockMessagesKeys.length = 0;
+    mockMarkRead.mockClear();
+    mockToast.mockClear();
+    mockPreventRemove = null;
+    mockRefetchChannels.mockReset();
+    mockRefetchChannels.mockResolvedValue({ data: CHANNELS });
+  });
+
+  it("neither fetches nor marks read a conversation while only the list is shown", async () => {
+    await i18n.changeLanguage("fr");
+    await renderChatScreen();
+    expect(screen.getByTestId("chat-list-screen")).toBeTruthy();
+    expect(mockMessagesKeys.every((key) => key === null)).toBe(true);
+    expect(mockMarkRead).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByTestId("chat-channel-project:p1"));
+    expect(mockMarkRead).toHaveBeenCalledWith({ channelKey: "project:p1" });
+
+    // Back on the list, the closed thread is neither polled nor marked read any more.
+    await fireEvent.press(screen.getByTestId("chat-close"));
+    mockMarkRead.mockClear();
+    mockMessagesKeys.length = 0;
+    await fireEvent.press(screen.getByTestId("chat-title"));
+    expect(mockMessagesKeys.every((key) => key === null)).toBe(true);
+    expect(mockMarkRead).not.toHaveBeenCalled();
+  });
+
+  it("turns the system back (Android button, iOS gesture) in a thread into 'back to the list'", async () => {
+    await i18n.changeLanguage("en");
+    await renderChatScreen();
+    expect(mockPreventRemove?.prevent).toBe(false);
+    await fireEvent.press(screen.getByTestId("chat-channel-project:p1"));
+    expect(mockPreventRemove?.prevent).toBe(true);
+    await act(async () => mockPreventRemove?.callback());
+    expect(screen.getByTestId("chat-list-screen")).toBeTruthy();
+    expect(mockPreventRemove?.prevent).toBe(false);
+  });
+
+  it("says a linked conversation is no longer available instead of opening another one", async () => {
+    mockParams = { channel: "project:gone" };
+    await i18n.changeLanguage("en");
+    await renderChatScreen();
+    await waitFor(() =>
+      expect(mockToast).toHaveBeenCalledWith(
+        "You no longer have access to this conversation.",
+        "error",
+      ),
+    );
+    expect(mockRefetchChannels).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("chat-list-screen")).toBeTruthy();
+    expect(mockMessagesKeys).not.toContain("company:c1");
   });
 
   it("opens on the list, opens a thread from a row and comes back with the back arrow", async () => {
