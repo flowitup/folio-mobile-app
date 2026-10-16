@@ -75,6 +75,7 @@ export const helpCatalogueFr: HelpCatalogue = [
       "Choisissez une colonne dans le sélecteur : Backlog, À faire, En cours, Bloqué ou Terminé.",
       "Touchez « Tâche » pour en ajouter une : le titre est obligatoire, puis description, colonne, priorité, échéance et étiquettes. Touchez « Enregistrer ».",
       "Touchez une carte pour la rouvrir et la modifier.",
+      "La personne choisie comme responsable de la tâche est prévenue quand elle lui est attribuée ou change de colonne ; toucher cette notification ouvre la tâche.",
       "Cochez la case d'une carte pour l'envoyer directement dans Terminé, ou la ramener dans À faire.",
       "En modification, « Monter » et « Descendre » déplacent la tâche dans sa colonne.",
       "En modification, « Supprimer » retire la tâche après confirmation.",
@@ -378,7 +379,7 @@ export const helpCatalogueFr: HelpCatalogue = [
     id: "notes",
     title: "Notes et rappels du chantier",
     purpose:
-      "Des notes datées sur le chantier — inspections, livraisons, décisions, appels. Une note avec une échéance devient un rappel dans la cloche.",
+      "Des notes datées sur le chantier — inspections, livraisons, décisions, appels. Les anciennes notes qui portent une échéance apparaissent comme rappels dans la cloche une fois la date arrivée.",
     steps: [
       "Ouvrez Menu → Notes. Filtrez par catégorie ou faites une recherche.",
       "Ajoutez une note : le titre est obligatoire, puis les détails et une catégorie — inspection, livraison, paiement, décision, appel ou général.",
@@ -430,37 +431,37 @@ export const helpCatalogueFr: HelpCatalogue = [
     id: "notifications",
     title: "La cloche",
     purpose:
-      "Un seul endroit pour tout ce qui vous attend : les pointages à valider, les nouveaux membres de l'entreprise à placer, et les notes dont l'échéance est arrivée.",
+      "Un seul endroit pour tout ce qui vous attend ou s'est passé en votre absence : les pointages à valider, les nouveaux membres de l'entreprise à placer, les rappels arrivés à échéance, et l'activité — messages, tâches, dépenses, ouvriers, présences et changements d'équipe.",
     steps: [
-      "Touchez la cloche dans la barre du haut. Un point apparaît dès que quelque chose attend.",
+      "Touchez la cloche dans la barre du haut. Un point apparaît dès que quelque chose attend ; son libellé compte tout, activité non lue comprise.",
       "Le premier bloc, ce sont les pointages à valider — voyez le sujet sur la validation des journées.",
       "Le deuxième liste les nouveaux membres de l'entreprise pas encore affectés à un chantier ; touchez-en un pour aller le placer.",
-      "Le troisième liste les rappels, chacun avec sa catégorie et son échéance ; touchez-le pour ouvrir la note, ou « Ignorer » pour l'effacer.",
-      "Quand rien n'est dû, la feuille le dit simplement.",
+      "Le troisième liste les rappels, chacun avec son chantier, sa catégorie et son échéance ; touchez-le pour ouvrir la note, ou « Ignorer » pour l'effacer.",
+      "Le dernier bloc, Activité, liste ce que les autres ont fait, du plus récent au plus ancien, avec l'heure. Touchez une entrée pour ouvrir ce dont elle parle — la discussion, la tâche, la dépense, le jour dans le calendrier de main-d'œuvre — et elle passe en lu. « Tout marquer comme lu » les efface toutes.",
     ],
     whoCanDoIt:
-      "Tout le monde voit la cloche ; ce qu'elle contient dépend de vous. Les pointages vont à ceux qui gèrent les présences, les nouveaux membres aux administrateurs d'entreprise.",
+      "Tout le monde voit la cloche ; ce qu'elle contient dépend de vous. Les pointages vont à ceux qui gèrent les présences, les nouveaux membres et l'activité de l'entreprise aux administrateurs d'entreprise.",
     gotchas: [
-      "Les nouveaux membres ne sont pas encore comptés dans le point : celui-ci peut donc sous-estimer ce qui attend.",
-      "C'est la cloche des validations. Les notifications push qui arrivent sur votre téléphone se règlent ailleurs, dans Paramètres → Notifications.",
+      "Lire une conversation dans la discussion efface aussi ses messages de l'Activité.",
+      "Une entrée sur quelque chose que vous ne pouvez plus ouvrir (vous avez quitté le chantier, le chantier a été supprimé) n'est pas un bouton : utilisez « Marquer comme lu ». Les notifications push que vous recevez se règlent dans Paramètres → Notifications.",
     ],
   },
   {
     id: "settings",
     title: "Paramètres, moyens de paiement et rôles",
     purpose:
-      "Votre compte, vos entreprises et les listes dont se sert tout le reste de l'application : moyens de paiement, rôles main-d'œuvre et notifications reçues sur ce téléphone.",
+      "Votre compte, vos entreprises et les listes dont se sert tout le reste de l'application : moyens de paiement, rôles main-d'œuvre et notifications que vous recevez.",
     steps: [
       "Touchez vos initiales, puis « Paramètres ».",
       "« Moyens de paiement » nomme les façons de payer les factures d'une entreprise. Saisissez un nom et touchez « Ajouter » ; touchez-en un pour le renommer. « Espèces » est intégré et ne peut pas être supprimé.",
       "« Rôles main-d'œuvre » contient les rôles que vous attribuez aux ouvriers, chacun avec sa couleur. Touchez « Nouveau rôle », nommez-le, choisissez une couleur et enregistrez.",
-      "« Notifications » choisit les notifications push qui arrivent sur ce téléphone : un interrupteur général, puis discussion d'équipe, présences, tâches, équipe et accès, et argent.",
+      "« Notifications » choisit les notifications push que vous recevez, sur tous vos appareils : un interrupteur général, puis discussion d'équipe, présences, tâches, équipe et accès, et argent.",
       "« Mes entreprises » liste les entreprises auxquelles vous êtes rattaché. Les administrateurs peuvent modifier les informations légales, distribuer des codes entreprise et des jetons d'invitation, gérer les utilisateurs rattachés et supprimer l'entreprise.",
       "« Fusionner des personnes » fond un doublon dans la bonne personne et lui transfère ses ouvriers.",
       "Le bas de l'écran porte la version de l'application et « Se déconnecter ».",
     ],
     whoCanDoIt:
-      "Tout le monde accède aux Paramètres. Modifier les moyens de paiement demande d'administrer l'entreprise. Les choix de notification sont propres à ce téléphone.",
+      "Tout le monde accède aux Paramètres. Modifier les moyens de paiement demande d'administrer l'entreprise. Les choix de notification appartiennent à votre compte et valent sur tous vos appareils.",
     gotchas: [
       "Les compteurs et le nom d'entreprise affichés sur les lignes des paramètres viennent de votre première entreprise, pas du chantier sélectionné.",
       "Retirer un moyen de paiement ne change rien aux factures existantes ; cela empêche seulement les nouvelles de l'utiliser.",

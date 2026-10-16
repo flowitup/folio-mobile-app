@@ -112,6 +112,19 @@ describe("summarizeInventory", () => {
     });
   });
 
+  it("does not count a site row whose project was deleted as on site", () => {
+    const orphan = item({
+      id: "orphan",
+      quantity: 5,
+      location_type: "site",
+      warehouse_id: null,
+      project_id: null,
+    });
+    const summary = summarizeInventory([...ITEMS, orphan]);
+    expect(summary.quantity).toBe(12);
+    expect(summary.onSite).toBe(3);
+  });
+
   it("is all zeros on an empty inventory", () => {
     expect(summarizeInventory([])).toEqual({
       entries: 0,

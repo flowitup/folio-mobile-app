@@ -74,6 +74,7 @@ export const helpCatalogueVi: HelpCatalogue = [
       "Chọn cột ở thanh chọn: Việc tồn đọng, Cần làm, Đang làm, Bị chặn hoặc Xong.",
       "Bấm “Công việc” để thêm một việc: bắt buộc có tiêu đề, rồi mô tả, cột, ưu tiên, hạn và nhãn. Bấm “Lưu”.",
       "Bấm vào một thẻ để mở ra sửa lại.",
+      "Người được giao việc sẽ nhận thông báo khi công việc được giao cho họ hoặc chuyển sang cột khác; bấm vào thông báo đó sẽ mở đúng công việc.",
       "Tích ô trên thẻ để đẩy thẳng việc sang Xong, hoặc đưa ngược về Cần làm.",
       "Khi đang sửa, “Lên” và “Xuống” đổi chỗ việc đó trong cột.",
       "Khi đang sửa, “Xoá” bỏ việc đó sau một lần xác nhận.",
@@ -376,7 +377,7 @@ export const helpCatalogueVi: HelpCatalogue = [
     id: "notes",
     title: "Ghi chú và nhắc nhở của công trình",
     purpose:
-      "Những ghi chú có ngày tháng về công trình — kiểm tra, giao hàng, quyết định, cuộc gọi. Ghi chú có ngày đến hạn sẽ thành nhắc nhở trong chuông.",
+      "Những ghi chú có ngày tháng về công trình — kiểm tra, giao hàng, quyết định, cuộc gọi. Những ghi chú cũ có ngày đến hạn sẽ hiện thành nhắc nhở trong chuông khi đến ngày.",
     steps: [
       "Mở Menu → Ghi chú. Lọc theo danh mục hoặc tìm kiếm.",
       "Thêm một ghi chú: bắt buộc có tiêu đề, rồi chi tiết và danh mục — kiểm tra, giao hàng, thanh toán, quyết định, cuộc gọi hoặc chung.",
@@ -428,37 +429,37 @@ export const helpCatalogueVi: HelpCatalogue = [
     id: "notifications",
     title: "Chuông",
     purpose:
-      "Một chỗ gom mọi việc đang chờ bạn: chấm công cần duyệt, thành viên công ty mới cần xếp vào công trình, và ghi chú đã đến hạn.",
+      "Một chỗ gom mọi việc đang chờ bạn hoặc đã xảy ra khi bạn vắng mặt: chấm công cần duyệt, thành viên công ty mới cần xếp vào công trình, nhắc nhở đến hạn, và hoạt động — tin nhắn, công việc, chi phí, công nhân, chấm công và thay đổi trong đội.",
     steps: [
-      "Bấm chuông trên thanh đầu màn hình. Có việc đang chờ là có một chấm hiện lên.",
+      "Bấm chuông trên thanh đầu màn hình. Có việc đang chờ là có một chấm hiện lên; nhãn của chuông đếm tất cả, kể cả hoạt động chưa đọc.",
       "Khối đầu tiên là chấm công chờ duyệt — xem chủ đề về duyệt ngày công.",
       "Khối thứ hai liệt kê thành viên công ty mới chưa được phân công vào công trình nào; bấm vào một người để đi xếp họ vào.",
-      "Khối thứ ba liệt kê nhắc nhở, mỗi cái kèm danh mục và ngày đến hạn; bấm để mở ghi chú, hoặc bấm “Bỏ qua” để dẹp đi.",
-      "Không có gì đến hạn thì bảng chỉ nói đúng như vậy.",
+      "Khối thứ ba liệt kê nhắc nhở, mỗi cái kèm công trình, danh mục và ngày đến hạn; bấm để mở ghi chú, hoặc bấm “Bỏ qua” để dẹp đi.",
+      "Khối cuối, Hoạt động, liệt kê việc người khác đã làm, mới nhất ở trên, kèm giờ. Bấm một mục để mở đúng thứ nó nói tới — cuộc trò chuyện, công việc, chi phí, ngày trên lịch nhân công — và mục đó được đánh dấu đã đọc. “Đánh dấu đã đọc” xoá hết.",
     ],
     whoCanDoIt:
-      "Ai cũng thấy chuông; bên trong có gì thì tuỳ từng người. Chấm công về tay người quản lý chấm công, thành viên mới về tay quản trị viên công ty.",
+      "Ai cũng thấy chuông; bên trong có gì thì tuỳ từng người. Chấm công về tay người quản lý chấm công, thành viên mới và hoạt động của công ty về tay quản trị viên công ty.",
     gotchas: [
-      "Thành viên mới chưa được tính vào cái chấm, nên chấm có thể đếm thiếu.",
-      "Đây là chuông duyệt việc. Còn thông báo đẩy nào được gửi về máy bạn lại là màn hình khác, ở Cài đặt → Thông báo.",
+      "Đọc một cuộc trò chuyện trong mục trò chuyện cũng xoá các mục tin nhắn của nó khỏi Hoạt động.",
+      "Mục về thứ bạn không còn mở được (bạn đã rời công trình, công trình đã bị xoá) không bấm được: hãy dùng “Đánh dấu đã đọc”. Thông báo đẩy bạn nhận được chỉnh ở Cài đặt → Thông báo.",
     ],
   },
   {
     id: "settings",
     title: "Cài đặt, phương thức thanh toán và vai trò",
     purpose:
-      "Tài khoản của bạn, các công ty của bạn, và những danh sách mà phần còn lại của app lấy ra dùng: phương thức thanh toán, vai trò nhân công và những thông báo được gửi về máy này.",
+      "Tài khoản của bạn, các công ty của bạn, và những danh sách mà phần còn lại của app lấy ra dùng: phương thức thanh toán, vai trò nhân công và những thông báo bạn nhận.",
     steps: [
       "Bấm chữ viết tắt tên bạn, rồi bấm “Cài đặt”.",
       "“Phương thức thanh toán” đặt tên cho các cách thanh toán hoá đơn của một công ty. Gõ tên rồi bấm “Thêm”; bấm vào một phương thức để đổi tên. “Tiền mặt” là mặc định, không xoá được.",
       "“Vai trò nhân công” giữ các vai trò bạn gắn cho thợ, mỗi vai trò một màu. Bấm “Vai trò mới”, đặt tên, chọn màu rồi lưu.",
-      "“Thông báo” chọn những thông báo đẩy được gửi về máy này: một công tắc chính, rồi trò chuyện nhóm, chấm công, công việc, nhóm & quyền truy cập, và tiền.",
+      "“Thông báo” chọn những thông báo đẩy bạn nhận, trên mọi thiết bị: một công tắc chính, rồi trò chuyện nhóm, chấm công, công việc, nhóm & quyền truy cập, và tiền.",
       "“Công ty của tôi” liệt kê các công ty bạn thuộc về. Quản trị viên sửa được thông tin pháp lý, phát mã tham gia và mã mời, quản lý người dùng đã liên kết và xoá công ty.",
       "“Gộp người” dồn một người bị trùng vào đúng người kia và chuyển nhân công của họ sang.",
       "Cuối màn hình là phiên bản app và nút “Đăng xuất”.",
     ],
     whoCanDoIt:
-      "Ai cũng vào được Cài đặt. Sửa phương thức thanh toán thì cần quyền quản trị công ty. Lựa chọn thông báo là của riêng máy này.",
+      "Ai cũng vào được Cài đặt. Sửa phương thức thanh toán thì cần quyền quản trị công ty. Lựa chọn thông báo thuộc về tài khoản của bạn và áp dụng trên mọi thiết bị.",
     gotchas: [
       "Các con số và tên công ty trên những dòng trong Cài đặt lấy từ công ty đầu tiên của bạn, không phải từ công trình bạn đang chọn.",
       "Xoá một phương thức thanh toán không đụng gì tới hoá đơn cũ; nó chỉ khiến hoá đơn mới không chọn được phương thức đó nữa.",

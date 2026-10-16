@@ -74,6 +74,7 @@ export const helpCatalogueEn: HelpCatalogue = [
       "Pick a lane from the selector: Backlog, To do, In progress, Blocked or Done.",
       "Tap “Task” to add one: a title is required, then description, lane, priority, due date and labels. Tap “Save”.",
       "Tap a card to reopen it for editing.",
+      "The person you set as assignee is notified when the task is assigned to them or moved to another column; a tap on that notification opens the task.",
       "Tick a card's checkbox to send it straight to Done, or back to To do.",
       "While editing, “Up” and “Down” move the task within its lane.",
       "While editing, “Delete” removes the task after a confirmation.",
@@ -377,7 +378,7 @@ export const helpCatalogueEn: HelpCatalogue = [
     id: "notes",
     title: "Site notes and reminders",
     purpose:
-      "Dated notes about the site — inspections, deliveries, decisions, calls. A note with a due date turns into a reminder in the bell.",
+      "Dated notes about the site — inspections, deliveries, decisions, calls. Older notes that carry a due date show up as reminders in the bell once it arrives.",
     steps: [
       "Open Menu → Notes. Filter by category or search.",
       "Add a note: a title is required, then details and a category — inspection, delivery, payment, decision, call or general.",
@@ -429,37 +430,37 @@ export const helpCatalogueEn: HelpCatalogue = [
     id: "notifications",
     title: "The bell",
     purpose:
-      "One place for everything waiting on you: attendance to approve, new company members to place, and notes whose due date has arrived.",
+      "One place for everything waiting on you or that happened while you were away: attendance to approve, new company members to place, due reminders, and the activity feed — messages, tasks, expenses, workers, attendance and team changes.",
     steps: [
-      "Tap the bell in the top bar. A dot appears whenever something is waiting.",
+      "Tap the bell in the top bar. A dot appears whenever something is waiting; its label counts every item, unread activity included.",
       "The first block is attendance to validate — see the topic on approving days.",
       "The second lists new company members not yet assigned to a site; tap one to go and place them.",
-      "The third lists reminders, each with its category and due date; tap it to open the note, or “Dismiss” to clear it.",
-      "When nothing is due the sheet simply says so.",
+      "The third lists reminders, each with its project, category and due date; tap it to open the note, or “Dismiss” to clear it.",
+      "The last block, Activity, lists what others did, newest first, with the time. Tap an entry to open what it is about — the chat, the task, the expense, the day in the labor calendar — and it is marked read. “Mark all read” clears them all.",
     ],
     whoCanDoIt:
-      "Everyone sees the bell; what it contains depends on you. Attendance goes to the people who manage it, new members to company administrators.",
+      "Everyone sees the bell; what it contains depends on you. Attendance goes to the people who manage it, new members and company activity to company administrators.",
     gotchas: [
-      "New members are not counted in the dot yet, so the dot can under-count.",
-      "This is the approvals bell. Which pushes reach your phone is a separate screen, in Settings → Notifications.",
+      "Reading a conversation in the chat also clears its message entries from Activity.",
+      "An entry about something you can no longer open (you left the site, the project was deleted) is not a button: use “Mark as read” on it. Which pushes reach you is set in Settings → Notifications.",
     ],
   },
   {
     id: "settings",
     title: "Settings, payment methods and roles",
     purpose:
-      "Your account, your companies and the lists the rest of the app draws on: payment methods, labor roles and which notifications reach this phone.",
+      "Your account, your companies and the lists the rest of the app draws on: payment methods, labor roles and which notifications you receive.",
     steps: [
       "Tap your initials, then “Settings”.",
       "“Payment methods” names the ways invoices get paid for a company. Type a name and tap “Add”; tap one to rename it. Cash is built in and cannot be removed.",
       "“Labor roles” holds the roles you attach to workers, each with a colour. Tap “New role”, name it, pick a colour and save.",
-      "“Notifications” chooses which pushes reach this phone: a master switch, then team chat, attendance, tasks, team and access, and money.",
+      "“Notifications” chooses which pushes you receive, on all your devices: a master switch, then team chat, attendance, tasks, team and access, and money.",
       "“My companies” lists the companies you belong to. Administrators can edit the legal details, hand out join codes and invite tokens, manage attached users and delete the company.",
       "“Merge persons” collapses a duplicate person into the right one and moves their workers across.",
       "The bottom of the screen carries the app version and “Sign out”.",
     ],
     whoCanDoIt:
-      "Everyone reaches Settings. Changing payment methods needs company administration. Notification choices are personal to this phone.",
+      "Everyone reaches Settings. Changing payment methods needs company administration. Notification choices belong to your account and apply on every device you use.",
     gotchas: [
       "The counts and the company name on the settings rows come from your first company, not from the site you have selected.",
       "Removing a payment method leaves existing invoices untouched; it only stops new ones using it.",

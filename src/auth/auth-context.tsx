@@ -349,7 +349,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       // The change also removed every push device of the account, this phone's included, and
       // the signed-in area registers only when it mounts: register again now, best effort.
       void Promise.resolve()
-        .then(registerPushDevice)
+        .then(() => registerPushDevice())
         .catch(() => undefined);
     },
     [],

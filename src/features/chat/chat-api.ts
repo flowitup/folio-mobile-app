@@ -155,7 +155,10 @@ export function useSendChatMessage(channelKey: string) {
         (error.status === 400 || error.status === 422) &&
         body.trim().length > CHAT_MAX_BODY_LENGTH
       ) {
-        showToast(t("chat.bodyTooLong", { max: CHAT_MAX_BODY_LENGTH }), "error");
+        showToast(
+          t("chat.bodyTooLong", { max: CHAT_MAX_BODY_LENGTH }),
+          "error",
+        );
         return true;
       }
       if (error.status === 415) {
@@ -178,12 +181,17 @@ export function useMarkChatRead() {
           params: { path: { channel_key: channelKey } },
         }),
       ),
-    onSuccess: (_result, { channelKey }) =>
+    onSuccess: (_result, { channelKey }) => {
       queryClient.setQueryData<ChatChannel[]>(chatKeys.channels, (list) =>
         list?.map((channel) =>
-          channel.key === channelKey ? { ...channel, unread_count: 0 } : channel,
+          channel.key === channelKey
+            ? { ...channel, unread_count: 0 }
+            : channel,
         ),
-      ),
+      );
+      // Reading a channel also marks its bell entries read server-side (`noteKeys.notifications`).
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
     onError: () => true,
   });
 }

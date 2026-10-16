@@ -60,7 +60,19 @@ jest.mock("@/features/notes/notes-api", () => ({
           created_at: "2026-10-10T09:00:00Z",
           read: true,
         },
+        {
+          id: "e-gone",
+          category: "membership",
+          kind: "project_member_removed",
+          title: "Removed from a project",
+          body: "12 rue Basse",
+          data: { kind: "project_member_removed", project_id: "p-gone" },
+          created_at: "2026-10-09T08:00:00Z",
+          read: false,
+        },
       ],
+      // The feed is one page; the server counts every unread entry.
+      events_unread: 84,
     },
   }),
   useDismissNotification: () => ({ mutate: jest.fn() }),
@@ -94,6 +106,25 @@ describe("notifications sheet · activity", () => {
 
     expect(mockMarkRead).not.toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith("/chat?channel=company%3Ac1");
+  });
+
+  it("counts unread activity from the server, beyond the loaded page", async () => {
+    await render(<NotificationsSheet />);
+    expect(screen.getByText(/84/)).toBeTruthy();
+  });
+
+  it("shows an entry with nowhere to go as a plain row with its own mark-read action", async () => {
+    await render(<NotificationsSheet />);
+    await fireEvent.press(screen.getByTestId("notification-event-e-gone"));
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockCloseSheet).not.toHaveBeenCalled();
+    expect(mockMarkRead).not.toHaveBeenCalled();
+
+    await fireEvent.press(
+      screen.getByTestId("notification-event-mark-read-e-gone"),
+    );
+    expect(mockMarkRead).toHaveBeenCalledWith({ ids: ["e-gone"] });
+    expect(mockCloseSheet).not.toHaveBeenCalled();
   });
 
   it("marks everything read without ids", async () => {

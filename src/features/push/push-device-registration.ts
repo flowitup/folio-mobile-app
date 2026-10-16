@@ -14,9 +14,18 @@ const PUSH_TOKEN_KEY = "folio.push.token";
  * Ask for permission and register this device's Expo push token for the signed-in user.
  * Silent no-op wherever a token cannot exist: simulators/emulators, denied permission, or a
  * build without the EAS project / APNs / FCM credentials — the bell polling still works.
+ * `ask: false` never shows the system prompt: it only refreshes an existing registration
+ * (a language change must not ask again someone who declined notifications).
  */
-export async function registerPushDevice(): Promise<string | null> {
+export async function registerPushDevice(options?: {
+  ask?: boolean;
+}): Promise<string | null> {
   try {
+    if (
+      options?.ask === false &&
+      !(await Notifications.getPermissionsAsync()).granted
+    )
+      return null;
     if (Platform.OS === "android")
       await Notifications.setNotificationChannelAsync("default", {
         name: "Folio",

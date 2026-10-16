@@ -71,15 +71,36 @@ export default function PlanningTab() {
   const [deleting, setDeleting] = useState<Task | null>(null);
   const form = useRef<TaskFormSheetHandle>(null);
   const router = useRouter();
-  // `?task=<id>` (the home agenda's rows): open that task once the list has it.
-  const { task: taskParam } = useLocalSearchParams<{ task?: string }>();
+  // `?task=<id>` (the home agenda's rows, a bell entry or a push): open that task on its lane
+  // once the board has it. `project` (bell and push) waits until the shell has switched to the
+  // task's project; a task that no longer exists says so. The parameters are then dropped so
+  // the same entry can open it again.
+  const { task: taskParam, project: projectParam } = useLocalSearchParams<{
+    task?: string;
+    project?: string;
+  }>();
   useEffect(() => {
-    if (!taskParam || !tasks.data) return;
-    const target = tasks.data.find((x) => x.id === taskParam);
-    router.setParams({ task: undefined });
-    if (!target) return;
+    if (!taskParam || !projectId || tasks.isPending || tasks.isFetching) return;
+    if (projectParam && projectParam !== projectId) return;
+    router.setParams({ task: undefined, project: undefined });
+    const target = (tasks.data ?? []).find((x) => x.id === taskParam);
+    if (!target) {
+      showToast(t("tasks.notFound"), "error");
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLane(target.status);
     form.current?.open(target, target.status);
-  }, [taskParam, tasks.data, router]);
+  }, [
+    taskParam,
+    projectParam,
+    projectId,
+    tasks.data,
+    tasks.isPending,
+    tasks.isFetching,
+    router,
+    t,
+  ]);
 
   const byLane = useMemo(() => {
     const map = new Map<TaskStatus, Task[]>(BOARD_COLUMNS.map((s) => [s, []]));

@@ -96,8 +96,10 @@ export type NotificationsResponse = {
   attendance_pending: AttendancePending[];
   /** Derived, not stored (D1) — excluded from `count` until both clients ship (Phase 2). */
   company_events: CompanyEvent[];
-  /** Newest first. Absent on a back end that predates the feed. */
+  /** Newest first, one page (the server caps it). Absent on a back end that predates the feed. */
   events: ActivityEvent[];
+  /** Unread activity entries on the server, beyond the page too; null on an older back end. */
+  events_unread: number | null;
   count: number;
 };
 
@@ -180,6 +182,8 @@ export function useNotifications() {
         attendance_pending: body.attendance_pending ?? [],
         company_events: body.company_events ?? [],
         events: body.events ?? [],
+        events_unread:
+          typeof body.events_unread === "number" ? body.events_unread : null,
         count: body.count ?? 0,
       } satisfies NotificationsResponse;
     },

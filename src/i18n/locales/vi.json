@@ -184,7 +184,7 @@
     "version": "Phiên bản",
     "notificationPrefs": {
       "title": "Thông báo",
-      "intro": "Chọn những thông báo bạn muốn nhận trên điện thoại này.",
+      "intro": "Chọn những thông báo bạn muốn nhận. Cài đặt này áp dụng cho tài khoản của bạn, trên mọi thiết bị.",
       "pushEnabled": "Thông báo đẩy",
       "pushEnabledDesc": "Công tắc chính — tắt sẽ tắt tất cả các mục bên dưới",
       "loadError": "Không tải được cài đặt thông báo của bạn.",
@@ -709,6 +709,7 @@
     "title": "Nhắc nhở ({{count}})",
     "none": "Không có nhắc nhở.",
     "due": "Đến hạn {{date}}",
+    "bellLabel": "Thông báo ({{count}})",
     "dismiss": "Bỏ qua",
     "attendance": {
       "title": "Chấm công chờ duyệt ({{count}})",
@@ -730,7 +731,10 @@
       "unassigned": "Chưa được phân công"
     },
     "activity": {
-      "title": "Hoạt động ({{count}} chưa đọc)",
+      "title_one": "Hoạt động ({{count}} chưa đọc)",
+      "title_other": "Hoạt động ({{count}} chưa đọc)",
+      "yesterday": "Hôm qua {{time}}",
+      "markRead": "Đánh dấu đã đọc",
       "markAllRead": "Đánh dấu đã đọc"
     }
   },
@@ -767,7 +771,8 @@
       "high": "Cao",
       "urgent": "Khẩn"
     },
-    "loadError": "Không tải được công việc."
+    "loadError": "Không tải được công việc.",
+    "notFound": "Công việc này không còn nữa."
   },
   "chiffrage": {
     "totalHt": "Tổng chưa VAT",
