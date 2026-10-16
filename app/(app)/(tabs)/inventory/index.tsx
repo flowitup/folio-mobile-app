@@ -340,7 +340,11 @@ export default function InventoryScreen() {
               <EmptyState
                 message={
                   all.length === 0
-                    ? t("inventory.empty")
+                    ? t(
+                        canManage
+                          ? "inventory.empty"
+                          : "inventory.emptyReadOnly",
+                      )
                     : t("inventory.noResults")
                 }
                 action={

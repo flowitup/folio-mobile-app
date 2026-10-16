@@ -109,3 +109,37 @@ export function parseImportPayload(
     records: records as ImportRecord[],
   };
 }
+
+/**
+ * The supplier reference to show, or null. A product saved without one gets a generated
+ * `manual-<hex>` placeholder server side, which means nothing to the user.
+ */
+export function displayedSupplierReference(
+  reference: string | null | undefined,
+): string | null {
+  const value = (reference ?? "").trim();
+  if (!value || /^manual-[0-9a-f]+$/i.test(value)) return null;
+  return value;
+}
+
+/** A one-line example of the import JSON, to show the expected shape before a real export. */
+export const IMPORT_SAMPLE = JSON.stringify(
+  {
+    supplier_name: "Leroy Merlin",
+    supplier_slug: "leroy-merlin",
+    records: [
+      {
+        supplier_reference: "70188561",
+        product_name: "Sac de ciment 35 kg",
+        quantity: "2",
+        unit_price: "9.90",
+        purchased_at: "2026-09-01",
+        source_document_ref: "TICKET-0001",
+        source_document_type: "ticket",
+        line_index: 0,
+      },
+    ],
+  },
+  null,
+  2,
+);

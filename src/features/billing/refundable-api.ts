@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
@@ -11,55 +11,84 @@ import type {
 import { unwrapAs } from "@/lib/query/api-error";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
+/** One page of the list; more pages load on demand ("Load more"), never a silent cut-off. */
+export const REFUNDABLE_PAGE_SIZE = 50;
+
 export const refundableKeys = {
   all: ["billing", "refundable"] as const,
-  list: (refundable: boolean, companyId: string | null) =>
-    ["billing", "refundable", refundable, companyId ?? "all"] as const,
+  list: (refundable: boolean, companyId: string | null, q = "") =>
+    ["billing", "refundable", refundable, companyId ?? "all", q] as const,
 };
 
-type ListResponse = {
+export type RefundableListResponse = {
   items: RefundableExpense[];
   total: number;
   summary: RefundableSummary | null;
 };
 
-async function fetchExpenses(refundable: boolean, companyId: string | null) {
-  return unwrapAs<ListResponse>(
+async function fetchExpenses(
+  refundable: boolean,
+  companyId: string | null,
+  offset: number,
+  q: string,
+) {
+  return unwrapAs<RefundableListResponse>(
     await api.GET("/api/v1/billing/materials-expenses", {
       params: {
         query: {
           refundable: refundable ? "true" : "false",
-          // 200 is the backend max: large companies must not get a silently truncated list.
-          limit: 200,
+          limit: REFUNDABLE_PAGE_SIZE,
+          offset,
           ...(companyId ? { company_id: companyId } : {}),
+          // Searched server side (number, supplier, project): rows past the first page match too.
+          ...(q ? { q } : {}),
         },
       } as never,
     }),
   );
 }
 
-/** Expenses already tracked for reimbursement (+ aggregated summary). */
+/** Offset of the next page, or undefined once every row is loaded. */
+export function nextRefundableOffset(
+  last: RefundableListResponse,
+  pages: RefundableListResponse[],
+): number | undefined {
+  const loaded = pages.reduce((n, p) => n + p.items.length, 0);
+  return last.items.length > 0 && loaded < last.total ? loaded : undefined;
+}
+
+function useExpensePages(
+  refundable: boolean,
+  companyId: string | null,
+  enabled: boolean,
+  q: string,
+) {
+  const search = q.trim().slice(0, 100);
+  return useInfiniteQuery({
+    queryKey: refundableKeys.list(refundable, companyId, search),
+    enabled,
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) =>
+      fetchExpenses(refundable, companyId, pageParam, search),
+    getNextPageParam: nextRefundableOffset,
+  });
+}
+
+/** Expenses already tracked for reimbursement (+ aggregated summary, on every page). */
 export function useRefundableExpenses(
   companyId: string | null = null,
   enabled = true,
 ) {
-  return useQuery({
-    queryKey: refundableKeys.list(true, companyId),
-    enabled,
-    queryFn: () => fetchExpenses(true, companyId),
-  });
+  return useExpensePages(true, companyId, enabled, "");
 }
 
-/** Materials & services expenses not flagged yet (the "add" picker). */
+/** Materials & services expenses not flagged yet (the "add" picker), searched by `q`. */
 export function useRefundableCandidates(
   companyId: string | null,
   enabled: boolean,
+  q = "",
 ) {
-  return useQuery({
-    queryKey: refundableKeys.list(false, companyId),
-    enabled,
-    queryFn: () => fetchExpenses(false, companyId),
-  });
+  return useExpensePages(false, companyId, enabled, q);
 }
 
 /**

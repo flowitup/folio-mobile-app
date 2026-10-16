@@ -864,7 +864,10 @@
     "imageFromUrl": "Ảnh từ URL",
     "imageUrl": "URL ảnh",
     "takePhoto": "Chụp ảnh",
-    "noneReadOnly": "Chưa có hạng mục."
+    "noneReadOnly": "Chưa có hạng mục.",
+    "basketPartial": "{{priced}}/{{total}} mục",
+    "moveUp": "Chuyển “{{name}}” lên",
+    "moveDown": "Chuyển “{{name}}” xuống"
   },
   "analyses": {
     "upload": "Thêm phân tích",
@@ -985,7 +988,18 @@
         "documentNumberRequired": "Cần nhập số tài liệu.",
         "itemQuantityMax": "Số lượng không được vượt quá {{max}}.",
         "itemUnitPriceMax": "Đơn giá không được vượt quá {{max}}.",
-        "emailInvalid": "Hãy nhập địa chỉ email hợp lệ, ví dụ ten@example.com."
+        "emailInvalid": "Hãy nhập địa chỉ email hợp lệ, ví dụ ten@example.com.",
+        "validityBeforeIssue": "Ngày hiệu lực không được trước ngày phát hành.",
+        "dueBeforeIssue": "Hạn thanh toán không được trước ngày phát hành."
+      },
+      "issuerProfile": {
+        "missing": "{{name}} chưa điền: {{fields}}. Các thông tin này sẽ không có trên tài liệu.",
+        "open": "Bổ sung hồ sơ công ty",
+        "fields": {
+          "siret": "SIRET",
+          "tva_number": "mã số VAT",
+          "iban": "IBAN"
+        }
       }
     },
     "actions": {
@@ -1083,7 +1097,8 @@
         "added_one": "Đã thêm {{count}} chi phí.",
         "added_other": "Đã thêm {{count}} chi phí.",
         "addFailed": "Không thêm được chi phí nào."
-      }
+      },
+      "loadMore": "Tải thêm"
     }
   },
   "library": {
@@ -1203,7 +1218,9 @@
       "delete": "Xóa"
     },
     "loadError": "Không tải được thư viện sản phẩm.",
-    "imageUrlBlocked": "Địa chỉ ảnh này không được chấp nhận. Hãy dùng liên kết từ trang nhà cung cấp được hỗ trợ."
+    "imageUrlBlocked": "Địa chỉ ảnh này không được chấp nhận. Hãy dùng liên kết từ trang nhà cung cấp được hỗ trợ.",
+    "importHelp": "Nhập lịch sử mua hàng từ nhà cung cấp (hóa đơn bán lẻ, đơn hàng): mỗi dòng thành một sản phẩm trong thư viện kèm giá gần nhất. Chọn tệp JSON đã xuất, hoặc dán nội dung vào ô bên dưới.",
+    "importSample": "Xem ví dụ"
   },
   "inventory": {
     "title": "Kho thiết bị",
@@ -1266,7 +1283,8 @@
       "siteRequired": "Hãy chọn một công trường.",
       "noWarehouseYet": "Chưa có kho nào — tạo kho từ mục “Kho hàng” trên màn hình kho thiết bị, hoặc để đồ ở công trường.",
       "warehouseNameRequired": "Hãy đặt tên cho kho.",
-      "noSiteYet": "Chưa có công trường nào — công ty này chưa có dự án để đặt thiết bị, hãy để đồ ở kho."
+      "noSiteYet": "Chưa có công trường nào — công ty này chưa có dự án để đặt thiết bị, hãy để đồ ở kho.",
+      "quantityTooLarge": "Số lượng không được vượt quá {{max}}."
     },
     "actions": {
       "create": "Thêm vào kho"
@@ -1299,8 +1317,10 @@
       },
       "actions": {
         "create": "Thêm kho"
-      }
-    }
+      },
+      "emptyReadOnly": "Chưa có kho nào."
+    },
+    "emptyReadOnly": "Chưa có thiết bị nào."
   },
   "companies": {
     "masking": {

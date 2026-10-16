@@ -47,6 +47,7 @@ import { formatMoney } from "@/lib/format/money";
 import { refundSplit } from "@/lib/invoices/refund-split";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 
 const STATUSES: RefundableStatus[] = [
   "refundable",
@@ -102,26 +103,25 @@ export default function RefundableExpensesScreen() {
   const refundedBySheet = useRef<BottomSheetModal>(null);
   const addSheet = useRef<BottomSheetModal>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  // The search runs on the server, so an expense past the first page is found too.
+  const searchQuery = useDebouncedValue(search.trim());
   const candidates = useRefundableCandidates(
     companyId,
     addOpen && access.allowed,
+    searchQuery,
   );
-  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
 
-  const filteredCandidates = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-    const all = candidates.data?.items ?? [];
-    return needle
-      ? all.filter((x) =>
-          [x.project_name, x.invoice_number, x.recipient_name]
-            .join(" ")
-            .toLowerCase()
-            .includes(needle),
-        )
-      : all;
-  }, [candidates.data, search]);
+  const filteredCandidates = useMemo(
+    () => (candidates.data?.pages ?? []).flatMap((page) => page.items),
+    [candidates.data],
+  );
+  const expenseRows = useMemo(
+    () => (expenses.data?.pages ?? []).flatMap((page) => page.items),
+    [expenses.data],
+  );
 
   function changeStatus(expense: RefundableExpense, status: RefundableStatus) {
     if (status === expense.refundable_status) return;
@@ -160,7 +160,7 @@ export default function RefundableExpensesScreen() {
     addSheet.current?.dismiss();
   }
 
-  const summary = expenses.data?.summary;
+  const summary = expenses.data?.pages[0]?.summary;
   const split = summary ? refundSplit(summary) : null;
 
   if (access.loading)
@@ -283,15 +283,15 @@ export default function RefundableExpensesScreen() {
             onRetry={() => void expenses.refetch()}
           />
         ) : null}
-        {expenses.data && expenses.data.items.length === 0 ? (
+        {expenses.data && expenseRows.length === 0 ? (
           <EmptyState message={t("billing.refundable.none")} />
         ) : null}
-        {(expenses.data?.items ?? []).map((expense) => (
+        {expenseRows.map((expense) => (
           <Card key={expense.id} className="mb-2">
             <View className="flex-row items-center justify-between">
               <Text
                 className="flex-1 pr-2 text-base font-medium text-primary"
-                numberOfLines={1}
+                numberOfLines={2}
               >
                 {expense.invoice_number} · {expense.recipient_name}
               </Text>
@@ -360,6 +360,16 @@ export default function RefundableExpensesScreen() {
             </View>
           </Card>
         ))}
+        {expenses.hasNextPage ? (
+          <Button
+            testID="refundable-load-more"
+            label={t("billing.refundable.loadMore")}
+            variant="secondary"
+            size="sm"
+            loading={expenses.isFetchingNextPage}
+            onPress={() => void expenses.fetchNextPage()}
+          />
+        ) : null}
       </ScrollView>
 
       <Sheet
@@ -395,6 +405,17 @@ export default function RefundableExpensesScreen() {
               }
             />
           ))}
+          {candidates.hasNextPage ? (
+            <Button
+              testID="refundable-candidates-more"
+              label={t("billing.refundable.loadMore")}
+              variant="ghost"
+              size="sm"
+              className="mb-2"
+              loading={candidates.isFetchingNextPage}
+              onPress={() => void candidates.fetchNextPage()}
+            />
+          ) : null}
           <Button
             testID="refundable-confirm"
             label={t("billing.refundable.dialog.confirm", {

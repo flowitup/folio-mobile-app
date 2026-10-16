@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Keyboard,
   Pressable,
   ScrollView,
   Text,
@@ -29,6 +30,7 @@ import type {
   ChiffragePoste,
   ChiffrageQuote,
   ChiffrageStore,
+  ChiffrageStoreBasket,
 } from "@/features/chiffrage/chiffrage-types";
 import { LibraryProductPickerSheet } from "@/features/chiffrage/library-product-picker-sheet";
 import type { PickedProduct } from "@/features/chiffrage/library-product-picker-sheet";
@@ -39,6 +41,10 @@ import { captureImage, pickImages } from "@/lib/files/pick";
 import { formatMoney, formatNumber, parseMoneyInput } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { TEXT_LIMITS } from "@/lib/format/text-limits";
+
+/** Shops with at least one price: a shop that prices nothing is not a "0,00 €" basket. */
+const pricedBaskets = (baskets: ChiffrageStoreBasket[]) =>
+  baskets.filter((b) => b.priced_article_count > 0);
 
 type SheetKind =
   "poste" | "article" | "quote" | "store" | "room" | "unit" | null;
@@ -108,7 +114,10 @@ export default function ProjectChiffrageSection() {
     setDraft(initial);
     sheet.current?.present();
   }
-  const close = () => sheet.current?.dismiss();
+  const close = () => {
+    Keyboard.dismiss();
+    sheet.current?.dismiss();
+  };
   const done = { onSuccess: close };
 
   function submit() {
@@ -191,12 +200,7 @@ export default function ProjectChiffrageSection() {
             { storeId: editingId, ...payload },
             done,
           );
-        return parentId
-          ? actions.createStoreForPoste.mutate(
-              { posteId: parentId, ...payload },
-              done,
-            )
-          : actions.createStore.mutate(payload, done);
+        return actions.createStore.mutate(payload, done);
       }
       case "room":
         if (!name) return showToast(t("chiffrage.nameRequired"), "error");
@@ -207,6 +211,24 @@ export default function ProjectChiffrageSection() {
         if (!name) return showToast(t("chiffrage.nameRequired"), "error");
         return actions.createUnit.mutate({ symbol: name }, done);
     }
+  }
+
+  /** The shop / room sheet offers its own delete (the chip long-press is not discoverable). */
+  function askDeleteFromSheet() {
+    const id = editingId;
+    const name = (draft.name ?? "").trim();
+    if (!id) return;
+    close();
+    if (kind === "store")
+      setConfirm({
+        title: t("chiffrage.deleteStore", { name }),
+        run: () => actions.deleteStore.mutate({ storeId: id }),
+      });
+    else if (kind === "room")
+      setConfirm({
+        title: t("chiffrage.deleteRoom", { name }),
+        run: () => actions.deleteRoom.mutate({ roomId: id }),
+      });
   }
 
   async function pickArticleImage(
@@ -363,18 +385,16 @@ export default function ProjectChiffrageSection() {
           <View className="mt-2">
             {article.quotes.map((quote) => renderQuote(article, quote))}
             {canManage ? (
-              <View className="mt-2 flex-row flex-wrap gap-3">
-                <Pressable
+              <View className="mt-1 flex-row flex-wrap items-center gap-x-1">
+                <RowAction
                   testID={`article-add-quote-${article.id}`}
+                  label={t("chiffrage.addQuote")}
                   onPress={() =>
                     open("quote", null, article.id, { tva_rate: "20" })
                   }
-                >
-                  <Text className="text-sm text-primary">
-                    {t("chiffrage.addQuote")}
-                  </Text>
-                </Pressable>
-                <Pressable
+                />
+                <RowAction
+                  label={t("common.edit")}
                   onPress={() =>
                     open("article", article.id, poste.id, {
                       name: article.name,
@@ -384,52 +404,39 @@ export default function ProjectChiffrageSection() {
                       note: article.note ?? "",
                     })
                   }
-                >
-                  <Text className="text-sm text-primary">
-                    {t("common.edit")}
-                  </Text>
-                </Pressable>
-                <Pressable
+                />
+                <RowAction
+                  label={t("chiffrage.image")}
                   onPress={() => void pickArticleImage(article, "library")}
-                >
-                  <Text className="text-sm text-primary">
-                    {t("chiffrage.image")}
-                  </Text>
-                </Pressable>
-                <Pressable
+                />
+                <RowAction
                   testID={`article-camera-${article.id}`}
+                  label={t("chiffrage.takePhoto")}
                   onPress={() => void pickArticleImage(article, "camera")}
-                >
-                  <Text className="text-sm text-primary">
-                    {t("chiffrage.takePhoto")}
-                  </Text>
-                </Pressable>
-                <Pressable
+                />
+                <RowAction
                   testID={`article-image-url-${article.id}`}
+                  label={t("chiffrage.imageFromUrl")}
                   onPress={() => {
                     setImageArticle(article);
                     setImageUrl("");
                     urlSheet.current?.present();
                   }}
-                >
-                  <Text className="text-sm text-primary">
-                    {t("chiffrage.imageFromUrl")}
-                  </Text>
-                </Pressable>
+                />
                 {image ? (
-                  <Pressable
+                  <RowAction
+                    tone="muted"
+                    label={t("chiffrage.removeImage")}
                     onPress={() =>
                       actions.deleteArticleImage.mutate({
                         articleId: article.id,
                       })
                     }
-                  >
-                    <Text className="text-sm text-muted-foreground">
-                      {t("chiffrage.removeImage")}
-                    </Text>
-                  </Pressable>
+                  />
                 ) : null}
-                <Pressable
+                <RowAction
+                  tone="danger"
+                  label={t("common.delete")}
                   onPress={() =>
                     setConfirm({
                       title: t("chiffrage.deleteArticle", {
@@ -439,11 +446,7 @@ export default function ProjectChiffrageSection() {
                         actions.deleteArticle.mutate({ articleId: article.id }),
                     })
                   }
-                >
-                  <Text className="text-sm text-danger">
-                    {t("common.delete")}
-                  </Text>
-                </Pressable>
+                />
               </View>
             ) : null}
           </View>
@@ -479,7 +482,7 @@ export default function ProjectChiffrageSection() {
               })}
             </Text>
           ) : null}
-          {data.store_baskets.slice(0, 3).map((basket) => (
+          {pricedBaskets(data.store_baskets).map((basket) => (
             <Text
               key={basket.store_id}
               className="mt-1 text-xs text-muted-foreground"
@@ -615,23 +618,19 @@ export default function ProjectChiffrageSection() {
               </Text>
             </View>
             {canManage ? (
-              <View className="my-2 flex-row flex-wrap gap-3">
-                <Pressable
+              <View className="my-1 flex-row flex-wrap items-center gap-x-1">
+                <RowAction
                   testID={`poste-add-article-${poste.id}`}
+                  label={t("chiffrage.addArticle")}
                   onPress={() =>
                     open("article", null, poste.id, { quantity: "1" })
                   }
-                >
-                  <Text className="text-sm text-primary">
-                    {t("chiffrage.addArticle")}
-                  </Text>
-                </Pressable>
-                <Pressable onPress={() => open("store", null, poste.id)}>
-                  <Text className="text-sm text-primary">
-                    {t("chiffrage.addStoreToPoste")}
-                  </Text>
-                </Pressable>
-                <Pressable
+                />
+                <RowAction
+                  label="↑"
+                  accessibilityLabel={t("chiffrage.moveUp", {
+                    name: poste.name,
+                  })}
                   disabled={index === 0}
                   onPress={() => {
                     const move = stepMove(data.postes, index, "up");
@@ -641,16 +640,12 @@ export default function ProjectChiffrageSection() {
                         ...move,
                       });
                   }}
-                >
-                  <Text
-                    className={
-                      index === 0 ? "text-muted-foreground" : "text-primary"
-                    }
-                  >
-                    ↑
-                  </Text>
-                </Pressable>
-                <Pressable
+                />
+                <RowAction
+                  label="↓"
+                  accessibilityLabel={t("chiffrage.moveDown", {
+                    name: poste.name,
+                  })}
                   disabled={index === data.postes.length - 1}
                   onPress={() => {
                     const move = stepMove(data.postes, index, "down");
@@ -660,18 +655,12 @@ export default function ProjectChiffrageSection() {
                         ...move,
                       });
                   }}
-                >
-                  <Text
-                    className={
-                      index === data.postes.length - 1
-                        ? "text-muted-foreground"
-                        : "text-primary"
-                    }
-                  >
-                    ↓
-                  </Text>
-                </Pressable>
-                <Pressable
+                />
+                {/* Delete sits apart from the arrows so a missed ↓ never lands on it. */}
+                <View className="flex-1" />
+                <RowAction
+                  tone="danger"
+                  label={t("common.delete")}
                   onPress={() =>
                     setConfirm({
                       title: t("chiffrage.deletePoste", { name: poste.name }),
@@ -679,20 +668,26 @@ export default function ProjectChiffrageSection() {
                         actions.deletePoste.mutate({ posteId: poste.id }),
                     })
                   }
-                >
-                  <Text className="text-sm text-danger">
-                    {t("common.delete")}
-                  </Text>
-                </Pressable>
+                />
               </View>
             ) : null}
             {poste.articles.map((article) => renderArticle(poste, article))}
-            {poste.store_baskets.length > 0 ? (
-              <Text className="text-xs text-muted-foreground">
-                {poste.store_baskets
+            {pricedBaskets(poste.store_baskets).length > 0 ? (
+              <Text
+                testID={`poste-baskets-${poste.id}`}
+                className="text-xs text-muted-foreground"
+              >
+                {pricedBaskets(poste.store_baskets)
                   .map(
                     (b) =>
-                      `${storeName.get(b.store_id) ?? ""} ${formatMoney(b.basket_ttc)}${b.covers_all ? " ✓" : ""}`,
+                      `${storeName.get(b.store_id) ?? ""} ${formatMoney(b.basket_ttc)}${
+                        b.covers_all
+                          ? " ✓"
+                          : ` (${t("chiffrage.basketPartial", {
+                              priced: b.priced_article_count,
+                              total: b.total_article_count,
+                            })})`
+                      }`,
                   )
                   .join(" · ")}
               </Text>
@@ -852,6 +847,15 @@ export default function ProjectChiffrageSection() {
                 loading={busy}
                 onPress={submit}
               />
+              {editingId && (kind === "store" || kind === "room") ? (
+                <Button
+                  testID="chiffrage-sheet-delete"
+                  label={t("common.delete")}
+                  variant="danger"
+                  className="mt-3"
+                  onPress={() => askDeleteFromSheet()}
+                />
+              ) : null}
             </ScrollView>
           </Sheet>
           <LibraryProductPickerSheet
@@ -905,5 +909,44 @@ export default function ProjectChiffrageSection() {
         </>
       ) : null}
     </View>
+  );
+}
+
+/** A row action with a 44 pt tap target (the bare 12–14 px text links were hard to hit). */
+function RowAction({
+  label,
+  onPress,
+  tone = "primary",
+  disabled = false,
+  testID,
+  accessibilityLabel,
+}: {
+  label: string;
+  onPress: () => void;
+  tone?: "primary" | "muted" | "danger";
+  disabled?: boolean;
+  testID?: string;
+  accessibilityLabel?: string;
+}) {
+  const color = disabled
+    ? "text-muted-foreground"
+    : tone === "danger"
+      ? "text-danger"
+      : tone === "muted"
+        ? "text-muted-foreground"
+        : "text-primary";
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      hitSlop={4}
+      className="min-h-[44px] min-w-[44px] items-center justify-center px-2"
+    >
+      <Text className={`text-sm ${color}`}>{label}</Text>
+    </Pressable>
   );
 }
