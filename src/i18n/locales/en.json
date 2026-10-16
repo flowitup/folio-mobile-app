@@ -181,7 +181,7 @@
     "version": "Version",
     "notificationPrefs": {
       "title": "Notifications",
-      "intro": "Choose which pushes reach this phone.",
+      "intro": "Choose which notifications you get. These settings apply to your account, on all your devices.",
       "pushEnabled": "Push notifications",
       "pushEnabledDesc": "Master switch — off silences everything below",
       "loadError": "Could not load your notification settings.",
@@ -679,6 +679,7 @@
     "title": "Reminders ({{count}})",
     "none": "No reminders due.",
     "due": "Due {{date}}",
+    "bellLabel": "Notifications ({{count}})",
     "dismiss": "Dismiss",
     "attendance": {
       "title": "Attendance to validate ({{count}})",
@@ -700,7 +701,10 @@
       "unassigned": "Not assigned yet"
     },
     "activity": {
-      "title": "Activity ({{count}} unread)",
+      "title_one": "Activity ({{count}} unread)",
+      "title_other": "Activity ({{count}} unread)",
+      "yesterday": "Yesterday {{time}}",
+      "markRead": "Mark as read",
       "markAllRead": "Mark all read"
     }
   },

@@ -127,8 +127,11 @@ export function useMarkChatRead() {
           params: { path: { channel_key: channelKey } },
         }),
       ),
-    onSuccess: () =>
-      void queryClient.invalidateQueries({ queryKey: chatKeys.channels }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: chatKeys.channels });
+      // Reading a channel also marks its bell entries read server-side (`noteKeys.notifications`).
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
     onError: () => true,
   });
 }

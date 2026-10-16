@@ -7,7 +7,7 @@ import { userDisplayName } from "@/lib/auth/user-display-name";
 import { useShell } from "@/components/shell/shell-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
-import { useNotifications } from "@/features/notes/notes-api";
+import { bellCount, useNotifications } from "@/features/notes/notes-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { INK_BLOCK, useTokens } from "@/theme/tokens";
@@ -31,10 +31,7 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
   const { project, isPending, isError } = useSelectedProject();
   const { openSheet } = useShell();
   const notifications = useNotifications();
-  const pendingCount =
-    (notifications.data?.items ?? []).filter((item) => !item.dismissed).length +
-    (notifications.data?.attendance_pending.length ?? 0) +
-    (notifications.data?.events ?? []).filter((event) => !event.read).length;
+  const pendingCount = bellCount(notifications.data);
   const ink = tone === "ink";
   useInkStatusBar(ink);
 
@@ -109,7 +106,9 @@ export function ProjectTopBar({ tone = "paper" }: Props) {
       <Pressable
         testID="top-bar-bell"
         accessibilityRole="button"
-        accessibilityLabel={t("notifications.title", { count: pendingCount })}
+        accessibilityLabel={t("notifications.bellLabel", {
+          count: pendingCount,
+        })}
         onPress={() => openSheet("notifications")}
         className="h-10 w-10 items-center justify-center active:opacity-70"
       >

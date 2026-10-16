@@ -181,7 +181,7 @@
     "version": "Version",
     "notificationPrefs": {
       "title": "Notifications",
-      "intro": "Choisissez les notifications qui arrivent sur ce téléphone.",
+      "intro": "Choisissez les notifications que vous recevez. Ces réglages valent pour votre compte, sur tous vos appareils.",
       "pushEnabled": "Notifications push",
       "pushEnabledDesc": "Interrupteur général — désactivé, tout ce qui suit est silencieux",
       "loadError": "Impossible de charger vos réglages de notification.",
@@ -679,6 +679,7 @@
     "title": "Rappels ({{count}})",
     "none": "Aucun rappel en attente.",
     "due": "Échéance {{date}}",
+    "bellLabel": "Notifications ({{count}})",
     "dismiss": "Ignorer",
     "attendance": {
       "title": "Pointages à valider ({{count}})",
@@ -700,7 +701,10 @@
       "unassigned": "Pas encore affecté"
     },
     "activity": {
-      "title": "Activité ({{count}} non lus)",
+      "title_one": "Activité ({{count}} non lu)",
+      "title_other": "Activité ({{count}} non lus)",
+      "yesterday": "Hier {{time}}",
+      "markRead": "Marquer comme lu",
       "markAllRead": "Tout marquer comme lu"
     }
   },
@@ -1392,7 +1396,7 @@
       "member": "Membre",
       "admin": "Admin",
       "deleteConfirm": "Supprimer l'entreprise {{name}} ? Irréversible.",
-      "manager": "Responsable"
+      "manager": "Manager"
     },
     "toast": {
       "created": "Entreprise créée.",
