@@ -68,6 +68,11 @@ function monthKeyOf(inv: Invoice): string {
   return (inv.service_month ?? inv.issue_date).slice(0, 7);
 }
 
+/** Day of the month the invoice was issued (1–31), for month-to-date comparisons. */
+function dayOf(inv: Invoice): number {
+  return Number(inv.issue_date.slice(8, 10)) || 1;
+}
+
 function ymKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -80,6 +85,8 @@ export function monthKeyToDate(key: string): Date {
 export interface ReturnCredit {
   type: ExpenseType;
   monthKey: string;
+  /** Day of the month it was issued (1–31), for month-to-date comparisons. */
+  day: number;
   /** Negative, straight from the return invoice. */
   amount: number;
 }
@@ -95,6 +102,7 @@ export function buildReturnCredits(invoices: Invoice[]): ReturnCredit[] {
     credits.push({
       type: isExpenseType(sourceType) ? sourceType : "materials_services",
       monthKey: monthKeyOf(inv),
+      day: dayOf(inv),
       amount: inv.total_amount,
     });
   }
@@ -179,6 +187,46 @@ export function computeMonthDelta(series: MonthlySpendPoint[]): MonthDelta {
       ? Math.round(((current.total - previous.total) / previous.total) * 100)
       : null;
   return { current, previous, deltaPct };
+}
+
+/**
+ * Current month vs the previous one, both cut at the reference day while the
+ * current month is still running ("1–15 oct." vs "1–15 sept."), the same rule as
+ * the web dashboard: comparing a half month with a whole one read as a −43 % drop
+ * on the 15th, and web and mobile showed different percentages for one project.
+ * `credits` are the returns to net (already narrowed to the same type, if any).
+ */
+export function computeMonthToDateDelta(
+  invoices: Invoice[],
+  referenceDate: Date,
+  credits: ReturnCredit[] = buildReturnCredits(invoices),
+): { deltaPct: number | null; toDay: number | null } {
+  const year = referenceDate.getFullYear();
+  const month = referenceDate.getMonth();
+  const today = referenceDate.getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const running = today < daysInMonth;
+  const currentKey = ymKey(new Date(year, month, 1));
+  const previousKey = ymKey(new Date(year, month - 1, 1));
+  const lastDay = running ? today : 31;
+  let current = 0;
+  let previous = 0;
+  const add = (key: string, day: number, amount: number) => {
+    if (day > lastDay) return;
+    if (key === currentKey) current += amount;
+    else if (key === previousKey) previous += amount;
+  };
+  for (const inv of invoices) {
+    if (isSpendInvoice(inv)) add(monthKeyOf(inv), dayOf(inv), inv.total_amount);
+  }
+  for (const c of credits) add(c.monthKey, c.day, c.amount);
+  previous = roundCents(previous);
+  current = roundCents(current);
+  return {
+    deltaPct:
+      previous > 0 ? Math.round(((current - previous) / previous) * 100) : null,
+    toDay: running ? today : null,
+  };
 }
 
 export interface BudgetMetrics {
@@ -323,7 +371,11 @@ export function buildTypeMonthlyBuckets(
     );
     const total = monthly.reduce((s, m) => s + m.total, 0);
     const count = monthly.reduce((s, m) => s + m.count, 0);
-    const { deltaPct } = computeMonthDelta(monthly);
+    const { deltaPct } = computeMonthToDateDelta(
+      invoices.filter((i) => i.type === type),
+      referenceDate,
+      credits.filter((c) => c.type === type),
+    );
     return { type, monthly, total, count, deltaPct };
   });
 }

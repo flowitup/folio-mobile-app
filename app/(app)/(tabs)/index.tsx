@@ -33,6 +33,7 @@ import {
   buildTypeMonthlyBuckets,
   computeBudgetMetrics,
   computeMonthDelta,
+  computeMonthToDateDelta,
   computePendingRefunds,
   computeSpentTotal,
 } from "@/lib/dashboard/overview-metrics";
@@ -96,7 +97,11 @@ function OverviewTabContent() {
     return {
       spentTotal,
       budget: computeBudgetMetrics(budgetValue, spentTotal, fundsReleased),
-      monthDelta: computeMonthDelta(series),
+      // The percentage compares days 1–today of both months, like the web.
+      monthDelta: {
+        ...computeMonthDelta(series),
+        deltaPct: computeMonthToDateDelta(rows, referenceDate).deltaPct,
+      },
       pendingCompany: computePendingRefunds(rows),
       bank: computeBankReleaseMetrics(budgetValue, fundsReleased),
       buckets: buildTypeMonthlyBuckets(rows, 6, referenceDate),

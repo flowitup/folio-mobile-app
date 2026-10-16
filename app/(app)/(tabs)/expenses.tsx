@@ -32,13 +32,19 @@ import {
 } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
-import { businessToday, formatMonth, shiftMonth } from "@/lib/format/date";
+import {
+  businessToday,
+  formatMonth,
+  parseIsoDate,
+  shiftMonth,
+} from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { buildPursesSummary } from "@/lib/invoices/expense-purses";
 import {
   groupInvoicesByMonth,
   ledgerTypeOf,
 } from "@/lib/invoices/group-invoices-by-month";
+import { computeMonthToDateDelta } from "@/lib/dashboard/overview-metrics";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { DARK, INK_BLOCK, useTokens } from "@/theme/tokens";
 import { useInkStatusBar } from "@/theme/use-ink-status-bar";
@@ -172,12 +178,19 @@ function ExpensesTabContent() {
       returns: current?.returnCount ?? 0,
       released: current?.releasedSubtotal ?? 0,
       previous,
+      // The running month compares days 1–today of both months, like the overview
+      // and the web; a finished month compares whole months.
       deltaPct:
-        previousTotal > 0
-          ? Math.round(((total - previousTotal) / previousTotal) * 100)
-          : null,
+        month === thisMonth
+          ? computeMonthToDateDelta(
+              rows,
+              parseIsoDate(businessToday()) ?? new Date(),
+            ).deltaPct
+          : previousTotal > 0
+            ? Math.round(((total - previousTotal) / previousTotal) * 100)
+            : null,
     };
-  }, [allMonths, month]);
+  }, [allMonths, month, rows, thisMonth]);
   const meta = invoices.data;
   // Without `project:view_budget` the backend strips the release rows and
   // zeroes these totals, so the purse cards — spend as a share of what was
