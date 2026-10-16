@@ -20,6 +20,7 @@ import { showToast } from "@/components/ui/toast";
 import { useAdminUserSearch, useUpdateUser } from "@/features/admin/admin-api";
 import type { UserSearchItem } from "@/features/admin/admin-api";
 import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
+import { accountContact, realEmail } from "@/lib/auth/user-display-name";
 
 /** Platform ops: search a user by email/name and edit their identity fields. */
 export default function AdminUsersScreen() {
@@ -96,11 +97,16 @@ export default function AdminUsersScreen() {
                 className="mb-1 rounded-lg border border-border px-3 py-2"
               >
                 <Text className="text-base text-primary">
-                  {item.display_name ?? item.email}
+                  {item.display_name ?? accountContact(item.email, item.phone)}
                 </Text>
                 <Text className="text-xs text-muted-foreground">
-                  {item.email}
-                  {item.phone ? ` · ${formatFrenchPhone(item.phone)}` : ""}
+                  {/* A phone sign-up's synthetic phone-…@no-email address is never shown. */}
+                  {[
+                    realEmail(item.email),
+                    item.phone ? formatFrenchPhone(item.phone) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || accountContact(item.email, item.phone)}
                 </Text>
               </Pressable>
             ))
@@ -109,7 +115,9 @@ export default function AdminUsersScreen() {
           <Card className="mb-3">
             <Text className="text-sm text-primary">
               {t("admin.bulkAdd.userSearch.selected", {
-                email: selected.email,
+                email:
+                  selected.display_name ??
+                  accountContact(selected.email, selected.phone),
               })}
             </Text>
             <View className="mt-2 flex-row gap-2">
@@ -119,7 +127,8 @@ export default function AdminUsersScreen() {
                 size="sm"
                 variant="secondary"
                 onPress={() => {
-                  setEditEmail(selected.email);
+                  // Left empty for a phone sign-up rather than pre-filled with its synthetic address.
+                  setEditEmail(realEmail(selected.email) ?? "");
                   setEditName(selected.display_name ?? "");
                   setEditPhone(selected.phone ?? "");
                   editSheet.current?.present();
@@ -179,7 +188,8 @@ export default function AdminUsersScreen() {
               updateUser.mutate(
                 {
                   userId: selected.id,
-                  email: editEmail.trim(),
+                  // Empty keeps the account's current address (a phone sign-up's synthetic one).
+                  email: editEmail.trim() || selected.email,
                   display_name: editName.trim() || null,
                   phone,
                 },
