@@ -32,6 +32,7 @@ import { UpdateRequired } from "@/components/auth/update-required";
 import { DismissSheetsOnRouteChange } from "@/components/shell/dismiss-sheets-on-route-change";
 import { ToastProvider } from "@/components/ui/toast";
 import { useUpdateGate } from "@/lib/app-update/use-update-gate";
+import { usePendingDeepLink } from "@/lib/auth/pending-deep-link";
 import { shouldRetryQuery } from "@/lib/query/api-error";
 import { ThemePreferenceProvider } from "@/theme/theme-preference";
 import { useTokens } from "@/theme/tokens";
@@ -75,6 +76,7 @@ function Splash() {
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const { status } = useAuth();
   const updateGate = useUpdateGate();
+  usePendingDeepLink(status);
 
   // A build below the server's minimum version can't be used, signed in or not.
   if (updateGate.required)

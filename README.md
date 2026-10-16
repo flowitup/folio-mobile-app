@@ -153,6 +153,13 @@ it to the `api` service's environment when using its Docker setup (its `docker-c
 pass it through). Production API:
 `https://folio.flowitup.com`.
 
+Invitation e-mails link to `https://folio.flowitup.com/<locale>/accept-invite/<token>`. `app.json`
+claims that path for the app (iOS `associatedDomains`, Android `intentFilters` with `autoVerify`),
+and `app/+native-intent.tsx` maps it to the `accept-invite/[token]` screen. The web serves the
+matching `/.well-known/apple-app-site-association` and `assetlinks.json` once its `IOS_APP_ID` and
+`ANDROID_SHA256_CERT_FINGERPRINTS` are set; another web domain needs both files edited. A join-code
+share message includes an install link when `EXPO_PUBLIC_APP_INSTALL_URL` is set.
+
 `expo-dev-client` is not a dependency, so there is no dev-client launcher or
 `folio://expo-development-client` deep link. `npm run ios` / `npm run android` build a plain debug
 build that loads its JS from Metro on port 8081 at launch; after the first build, later runs only need
