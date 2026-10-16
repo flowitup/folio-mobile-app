@@ -207,7 +207,7 @@ export const helpCatalogueEn: HelpCatalogue = [
       "Fill in the recipient, optionally their address, and choose a payment method.",
       "For a return, link the materials-and-services invoice it refunds, say whether it was settled in cash or as a credit note, and if it is a credit note, which invoice it was applied to.",
       "Add at least one item line with a description, quantity, unit price and VAT rate.",
-      "Check the totals, add notes or a highlight colour, then tap “Create invoice”.",
+      "Check the totals, add notes or a highlight colour, then tap “Create expense”.",
     ],
     whoCanDoIt:
       "Anyone on the project can open the form; the server decides whether the expense is accepted. Released funds only appears with budget-viewing rights.",

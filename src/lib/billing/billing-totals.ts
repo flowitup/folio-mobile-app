@@ -33,10 +33,13 @@ export function round2(value: number): number {
 }
 // Same parser as the editor's validation, so an amount the form accepts ("1 234,50") is the
 // amount the live totals show rather than a silent zero.
-const num = (value: string) => parseMoneyInput(String(value)) ?? 0;
+const num = (value: string, options = {}) =>
+  parseMoneyInput(String(value), options) ?? 0;
 
 export function lineTotalHt(item: TotalsItem): number {
-  return round2(num(item.quantity) * num(item.unit_price));
+  return round2(
+    num(item.quantity, { ambiguousGrouping: "decimal" }) * num(item.unit_price),
+  );
 }
 
 export function computeBillingTotals(items: TotalsItem[]): BillingTotals {

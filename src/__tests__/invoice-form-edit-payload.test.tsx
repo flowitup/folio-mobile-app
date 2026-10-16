@@ -1,6 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 
-import "@/i18n";
+import i18n from "@/i18n";
 import { InvoiceForm } from "@/features/invoices/invoice-form";
 import type { Invoice } from "@/features/invoices/invoice-types";
 import { currentMonth } from "@/lib/format/date";
@@ -156,5 +156,52 @@ describe("InvoiceForm edit payload", () => {
     expect(payload.service_month).toBe(`${currentMonth()}-01`);
     expect(payload.notes).toBeUndefined();
     expect(payload.recipient_address).toBeUndefined();
+  });
+});
+
+describe("InvoiceForm prefill and cash advance", () => {
+  it("prefills figures in the reader's notation and reads them back unchanged", async () => {
+    await i18n.changeLanguage("fr");
+    const onSubmit = await renderForm(
+      invoice({
+        items: [
+          {
+            description: "Sable",
+            quantity: 2.375,
+            unit_price: 8.45,
+            vat_rate: 5.5,
+            total: 21.17,
+          },
+        ],
+      }),
+    );
+    expect(screen.getByTestId("invoice-item-0-quantity").props.value).toBe(
+      "2,375",
+    );
+    expect(screen.getByTestId("invoice-item-0-price").props.value).toBe("8,45");
+    expect(screen.getByTestId("invoice-item-0-vat").props.value).toBe("5,5");
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+    expect(onSubmit.mock.calls[0][0].items[0]).toMatchObject({
+      quantity: 2.375,
+      unit_price: 8.45,
+      vat_rate: 5.5,
+    });
+    await i18n.changeLanguage("en");
+  });
+
+  it("records a release as a company cash advance", async () => {
+    const onSubmit = await renderForm(
+      invoice({ type: "released_funds", is_cash_advance: false }),
+    );
+    await fireEvent(
+      screen.getByTestId("invoice-cash-advance"),
+      "valueChange",
+      true,
+    );
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({
+      type: "released_funds",
+      is_cash_advance: true,
+    });
   });
 });

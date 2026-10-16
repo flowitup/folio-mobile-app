@@ -128,7 +128,9 @@ export default function ProjectChiffrageSection() {
       case "article": {
         if (!name) return showToast(t("chiffrage.nameRequired"), "error");
         // A cleared or garbled field is an error, never a silent 1.
-        const quantity = parseMoneyInput(draft.quantity ?? "1");
+        const quantity = parseMoneyInput(draft.quantity ?? "1", {
+          ambiguousGrouping: "decimal",
+        });
         if (quantity == null || quantity < 0)
           return showToast(t("chiffrage.quantityInvalid"), "error");
         const payload = {

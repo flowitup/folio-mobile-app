@@ -14,7 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/auth/auth-context";
 import { Sheet } from "@/components/ui/sheet";
-import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import {
+  formatMoney,
+  formatNumberInput,
+  parseMoneyInput,
+} from "@/lib/format/money";
 import { MAX_BUDGET } from "@/lib/format/numeric-bounds";
 
 import { projectCan } from "./projects-api";
@@ -103,7 +107,11 @@ function toDraft(project?: Project) {
   return {
     address: project?.address ?? "",
     name: project ? customLabel(project) : "",
-    budget: project?.budget != null ? String(project.budget) : "",
+    // In the reader's notation ("150000,50" in French), never "150000.5".
+    budget: formatNumberInput(project?.budget, {
+      minDecimals: 2,
+      maxDecimals: 2,
+    }),
     budgetSource: project?.budget_source ?? "",
     invoicePrefix: project?.invoice_prefix ?? "",
   };

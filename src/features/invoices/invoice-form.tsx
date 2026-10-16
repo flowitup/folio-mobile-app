@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -10,7 +10,13 @@ import { Card } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { currentMonth, localeTag, toIsoDate } from "@/lib/format/date";
 import { MAX_BUSINESS_DATE, MIN_BUSINESS_DATE } from "@/lib/format/date-bounds";
-import { formatMoney, parseMoneyInput } from "@/lib/format/money";
+import {
+  formatMoney,
+  formatNumberInput,
+  parseMoneyInput,
+  parseMoneyInputDetailed,
+  type ParseMoneyInputOptions,
+} from "@/lib/format/money";
 import {
   MAX_LINE_QUANTITY,
   MAX_LINE_UNIT_PRICE,
@@ -50,15 +56,32 @@ const emptyLine = (): LineDraft => ({
   vat_rate: "0",
 });
 
+// Same precision as the API: 4 decimals on a quantity or a unit price, 2 on a VAT rate.
+// A quantity of "2,375" m³ is a decimal; a price of "1.500" is refused as ambiguous.
+const QUANTITY_INPUT: ParseMoneyInputOptions = {
+  maxDecimals: 4,
+  allowNegative: false,
+  ambiguousGrouping: "decimal",
+};
+const VAT_INPUT: ParseMoneyInputOptions = {
+  maxDecimals: 2,
+  allowNegative: false,
+};
+
 function toLineDrafts(invoice?: Invoice): LineDraft[] {
   if (!invoice || invoice.items.length === 0) return [emptyLine()];
+  // In the reader's notation ("8,45", "5,5" in French), never "8.45".
   return invoice.items.map((item) => ({
     description: item.description,
-    quantity: String(item.quantity),
-    unit_price: String(item.unit_price),
-    vat_rate: String(item.vat_rate ?? 0),
+    quantity: formatNumberInput(item.quantity, { padAmbiguous: false }),
+    unit_price: formatNumberInput(item.unit_price, { minDecimals: 2 }),
+    vat_rate: formatNumberInput(item.vat_rate ?? 0, { maxDecimals: 2 }),
   }));
 }
+
+/** Field keys of the inline errors, in screen order (the first one is scrolled to). */
+type FieldKey =
+  "issueDate" | "serviceMonth" | "recipient" | "items" | `items.${number}`;
 
 type Props = {
   projectId: string;
@@ -129,7 +152,26 @@ export function InvoiceForm({
     initial?.highlight_color ?? null,
   );
   const [lines, setLines] = useState<LineDraft[]>(() => toLineDrafts(initial));
+  const [isCashAdvance, setIsCashAdvance] = useState(
+    initial?.is_cash_advance ?? false,
+  );
   const [error, setError] = useState<string | null>(null);
+  // Errors next to their field, and where each field sits, to scroll to the first one.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const scrollRef = useRef<ScrollView>(null);
+  // Plain mutable map (layout positions are not rendered, so they need no state updates).
+  const [fieldY] = useState<Record<string, number>>(() => ({}));
+  const trackY =
+    (key: FieldKey) => (e: { nativeEvent: { layout: { y: number } } }) => {
+      fieldY[key] = e.nativeEvent.layout.y;
+    };
+  const clearFieldError = (key: string) =>
+    setFieldErrors((current) => {
+      if (!(key in current)) return current;
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
 
   const paymentMethods = usePaymentMethods(companyId);
   const workers = useWorkers(projectId);
@@ -143,7 +185,7 @@ export function InvoiceForm({
     () =>
       lines.map((line) => ({
         description: line.description.trim(),
-        quantity: parseMoneyInput(line.quantity) ?? 0,
+        quantity: parseMoneyInput(line.quantity, QUANTITY_INPUT) ?? 0,
         unit_price: parseMoneyInput(line.unit_price) ?? 0,
         vat_rate: parseMoneyInput(line.vat_rate) ?? 0,
       })),
@@ -181,43 +223,119 @@ export function InvoiceForm({
     setLines((current) =>
       current.map((line, i) => (i === index ? { ...line, ...patch } : line)),
     );
+    for (const field of Object.keys(patch))
+      clearFieldError(`items.${index}.${field}`);
+    clearFieldError("items");
+  }
+
+  /** Why a typed figure cannot be saved, in words, or null when it reads. */
+  function figureError(
+    text: string,
+    options: ParseMoneyInputOptions,
+  ): string | null {
+    const parsed = parseMoneyInputDetailed(text, options);
+    switch (parsed.error) {
+      case null:
+        return null;
+      case "ambiguous":
+        return t("invoices.form.amountAmbiguous", {
+          typed: text.trim(),
+          grouped: String(parsed.suggestion ?? ""),
+        });
+      case "tooManyDecimals":
+        return t("invoices.form.tooManyDecimals", {
+          max: options.maxDecimals ?? 2,
+        });
+      case "negative":
+        return t("invoices.form.negative");
+      default:
+        return t("invoices.form.amountInvalid");
+    }
   }
 
   function submit() {
-    if (!issueDate) return setError(t("invoices.form.issueDateRequired"));
+    const errors: Record<string, string> = {};
+    if (!issueDate) errors.issueDate = t("invoices.form.issueDateRequired");
+    if (type === "labor" && !editing && !serviceMonth)
+      errors.serviceMonth = t("invoices.form.serviceMonthRequired");
     const recipient =
       laborWithWorker && !recipientName.trim()
         ? (selectedWorker?.name ?? "")
         : recipientName.trim();
-    if (!recipient) return setError(t("invoices.form.recipientRequired"));
-    if (type === "labor" && !editing && !serviceMonth)
-      return setError(t("invoices.form.serviceMonthRequired"));
-    const items = numericLines.filter((line) => line.description);
-    if (items.length === 0) return setError(t("invoices.form.itemsRequired"));
-    // The backend answers 422 on a quantity of zero or less; an unparsable one already
-    // reads as 0 above, so a described line with a typo in its quantity is caught here too.
-    if (items.some((line) => !(line.quantity > 0)))
-      return setError(t("invoices.form.quantityPositive"));
-    // Same limits as the backend: a price below zero only on mixed-sign types, and no
-    // amount past the API caps (an oversized one used to overflow the project's totals).
-    if (!allowsNegativePrice && items.some((line) => line.unit_price < 0))
-      return setError(t("invoices.form.pricePositive"));
-    if (items.some((line) => !(line.vat_rate >= 0 && line.vat_rate <= 100)))
-      return setError(t("invoices.form.vatRange"));
-    if (
-      items.some(
-        (line) =>
-          line.quantity > MAX_LINE_QUANTITY ||
-          Math.abs(line.unit_price) > MAX_LINE_UNIT_PRICE,
-      )
-    )
-      return setError(
-        t("invoices.form.lineTooLarge", {
+    if (!recipient) errors.recipient = t("invoices.form.recipientRequired");
+
+    // Each described line, checked field by field with the same limits as the backend: a
+    // price below zero only on mixed-sign types, no amount past the API caps.
+    const priceInput: ParseMoneyInputOptions = {
+      maxDecimals: 4,
+      allowNegative: allowsNegativePrice,
+    };
+    lines.forEach((line, index) => {
+      if (!line.description.trim()) return;
+      const at = (field: string) => `items.${index}.${field}`;
+      const quantity = numericLines[index].quantity;
+      const quantityError = figureError(line.quantity, QUANTITY_INPUT);
+      if (quantityError) errors[at("quantity")] = quantityError;
+      else if (!(quantity > 0))
+        errors[at("quantity")] = t("invoices.form.quantityPositive");
+      else if (quantity > MAX_LINE_QUANTITY)
+        errors[at("quantity")] = t("invoices.form.lineTooLarge", {
           quantity: MAX_LINE_QUANTITY.toLocaleString(localeTag()),
           price: formatMoney(MAX_LINE_UNIT_PRICE),
-        }),
-      );
+        });
+      const priceError =
+        line.unit_price.trim() === ""
+          ? t("invoices.form.amountInvalid")
+          : figureError(line.unit_price, priceInput);
+      if (priceError)
+        errors[at("unit_price")] =
+          priceError === t("invoices.form.negative")
+            ? t("invoices.form.pricePositive")
+            : priceError;
+      else if (Math.abs(numericLines[index].unit_price) > MAX_LINE_UNIT_PRICE)
+        errors[at("unit_price")] = t("invoices.form.lineTooLarge", {
+          quantity: MAX_LINE_QUANTITY.toLocaleString(localeTag()),
+          price: formatMoney(MAX_LINE_UNIT_PRICE),
+        });
+      // "0150" reads as 150: out of range, said next to the field.
+      const vatError =
+        line.vat_rate.trim() === ""
+          ? null
+          : figureError(line.vat_rate, VAT_INPUT);
+      const vat = numericLines[index].vat_rate;
+      if (vatError || !(vat >= 0 && vat <= 100))
+        errors[at("vat_rate")] = t("invoices.form.vatRange");
+    });
+    const items = numericLines.filter((line) => line.description);
+    if (items.length === 0) errors.items = t("invoices.form.itemsRequired");
+
+    const keys = Object.keys(errors);
+    setFieldErrors(errors);
+    if (keys.length > 0) {
+      setError(t("invoices.form.fixFields", { count: keys.length }));
+      // Scroll to the first field in screen order (a line error scrolls to its line).
+      const order: string[] = [
+        "issueDate",
+        "serviceMonth",
+        "recipient",
+        "items",
+      ];
+      const first =
+        order.find((key) => key in errors) ??
+        keys
+          .filter((key) => key.startsWith("items."))
+          .map((key) => key.split(".").slice(0, 2).join("."))
+          .sort((a, b) => Number(a.split(".")[1]) - Number(b.split(".")[1]))[0];
+      const firstY = first ? fieldY[first] : undefined;
+      if (firstY !== undefined)
+        scrollRef.current?.scrollTo({
+          y: Math.max(firstY - 16, 0),
+          animated: true,
+        });
+      return;
+    }
     setError(null);
+    if (!issueDate) return; // reported above; narrows the type
 
     const payload: CreateInvoicePayload = {
       type,
@@ -229,6 +347,8 @@ export function InvoiceForm({
       items,
       payment_method_id: paymentMethodId,
       highlight_color: highlight,
+      // Only a release can be a cash advance (the API refuses the flag elsewhere).
+      ...(type === "released_funds" ? { is_cash_advance: isCashAdvance } : {}),
       ...(type === "return"
         ? {
             refunds_invoice_id: refundsInvoiceId,
@@ -261,6 +381,7 @@ export function InvoiceForm({
 
   return (
     <ScrollView
+      ref={scrollRef}
       className="flex-1 bg-paper"
       contentContainerClassName="p-4 pb-12"
       keyboardShouldPersistTaps="handled"
@@ -272,15 +393,46 @@ export function InvoiceForm({
         options={typeOptions}
         onChange={setType}
       />
-      <DatePicker
-        testID="invoice-issue-date"
-        label={t("invoices.form.issueDate")}
-        value={issueDate}
-        onChange={setIssueDate}
-        doneLabel={t("common.ok")}
-        minimumDate={MIN_BUSINESS_DATE}
-        maximumDate={MAX_BUSINESS_DATE}
-      />
+      {type === "released_funds" ? (
+        <View className="mb-4 flex-row items-center gap-3">
+          <View className="flex-1">
+            <Text className="text-sm font-medium text-ink">
+              {t("invoices.form.cashAdvance")}
+            </Text>
+            <Text className="mt-0.5 text-xs text-muted-foreground">
+              {t("invoices.form.cashAdvanceHint")}
+            </Text>
+          </View>
+          <Switch
+            testID="invoice-cash-advance"
+            accessibilityLabel={t("invoices.form.cashAdvance")}
+            value={isCashAdvance}
+            onValueChange={setIsCashAdvance}
+          />
+        </View>
+      ) : null}
+      <View onLayout={trackY("issueDate")}>
+        <DatePicker
+          testID="invoice-issue-date"
+          label={t("invoices.form.issueDate")}
+          value={issueDate}
+          onChange={(value) => {
+            setIssueDate(value);
+            clearFieldError("issueDate");
+          }}
+          doneLabel={t("common.ok")}
+          minimumDate={MIN_BUSINESS_DATE}
+          maximumDate={MAX_BUSINESS_DATE}
+        />
+        {fieldErrors.issueDate ? (
+          <Text
+            className="-mt-2 mb-3 text-xs text-negative"
+            testID="invoice-issue-date-error"
+          >
+            {fieldErrors.issueDate}
+          </Text>
+        ) : null}
+      </View>
 
       {type === "labor" ? (
         <>
@@ -297,9 +449,20 @@ export function InvoiceForm({
             }))}
             onChange={setWorkerId}
           />
-          <Text className="mb-1 text-sm text-muted-foreground">
+          <Text
+            className="mb-1 text-sm text-muted-foreground"
+            onLayout={trackY("serviceMonth")}
+          >
             {t("invoices.form.serviceMonth")}
           </Text>
+          {fieldErrors.serviceMonth ? (
+            <Text
+              className="mb-1 text-xs text-negative"
+              testID="invoice-service-month-error"
+            >
+              {fieldErrors.serviceMonth}
+            </Text>
+          ) : null}
           {serviceMonth ? (
             <>
               <MonthPicker
@@ -334,20 +497,30 @@ export function InvoiceForm({
                 label={t("invoices.form.serviceMonthSet")}
                 variant="secondary"
                 size="sm"
-                onPress={() => setServiceMonth(currentMonth())}
+                onPress={() => {
+                  setServiceMonth(currentMonth());
+                  clearFieldError("serviceMonth");
+                }}
               />
             </View>
           )}
         </>
       ) : null}
 
-      <Input
-        testID="invoice-recipient"
-        label={t("invoices.form.recipient")}
-        value={recipientName}
-        onChangeText={setRecipientName}
-        placeholder={laborWithWorker ? selectedWorker?.name : undefined}
-      />
+      <View onLayout={trackY("recipient")}>
+        <Input
+          testID="invoice-recipient"
+          label={t("invoices.form.recipient")}
+          value={recipientName}
+          onChangeText={(value) => {
+            setRecipientName(value);
+            clearFieldError("recipient");
+          }}
+          placeholder={laborWithWorker ? selectedWorker?.name : undefined}
+          error={fieldErrors.recipient}
+          maxLength={255}
+        />
+      </View>
       <Input
         testID="invoice-recipient-address"
         label={t("invoices.form.recipientAddress")}
@@ -415,76 +588,93 @@ export function InvoiceForm({
         </Card>
       ) : null}
 
-      <Text className="mb-2 text-sm font-medium text-muted-foreground">
+      <Text
+        className="mb-2 text-sm font-medium text-muted-foreground"
+        onLayout={trackY("items")}
+      >
         {t("invoices.form.items")}
       </Text>
+      {fieldErrors.items ? (
+        <Text
+          className="mb-2 text-xs text-negative"
+          testID="invoice-items-error"
+        >
+          {fieldErrors.items}
+        </Text>
+      ) : null}
       {lines.map((line, index) => (
-        <Card key={index} className="mb-3">
-          <Input
-            testID={`invoice-item-${index}-description`}
-            label={t("invoices.form.description")}
-            value={line.description}
-            onChangeText={(v) => updateLine(index, { description: v })}
-          />
-          <View className="flex-row gap-2">
-            <View className="flex-1">
-              <Input
-                testID={`invoice-item-${index}-quantity`}
-                label={t("invoices.form.quantity")}
-                value={line.quantity}
-                keyboardType="decimal-pad"
-                onChangeText={(v) => updateLine(index, { quantity: v })}
-              />
+        <View key={index} onLayout={trackY(`items.${index}`)}>
+          <Card className="mb-3">
+            <Input
+              testID={`invoice-item-${index}-description`}
+              label={t("invoices.form.description")}
+              value={line.description}
+              onChangeText={(v) => updateLine(index, { description: v })}
+              maxLength={500}
+            />
+            <View className="flex-row gap-2">
+              <View className="flex-1">
+                <Input
+                  testID={`invoice-item-${index}-quantity`}
+                  label={t("invoices.form.quantity")}
+                  value={line.quantity}
+                  keyboardType="decimal-pad"
+                  onChangeText={(v) => updateLine(index, { quantity: v })}
+                  error={fieldErrors[`items.${index}.quantity`]}
+                />
+              </View>
+              <View className="flex-1">
+                <Input
+                  testID={`invoice-item-${index}-price`}
+                  label={t("invoices.form.unitPrice")}
+                  value={line.unit_price}
+                  // A return nets spend back down, so its lines carry a NEGATIVE unit price
+                  // (same mixed-sign rule as the web form). `decimal-pad` has no minus key,
+                  // which left an avoir recorded as extra spend; this keyboard has one.
+                  keyboardType={
+                    allowsNegativePrice
+                      ? "numbers-and-punctuation"
+                      : "decimal-pad"
+                  }
+                  onChangeText={(v) => updateLine(index, { unit_price: v })}
+                  error={fieldErrors[`items.${index}.unit_price`]}
+                />
+              </View>
+              <View className="w-20">
+                <Input
+                  testID={`invoice-item-${index}-vat`}
+                  label={t("invoices.form.vatRate")}
+                  value={line.vat_rate}
+                  keyboardType="decimal-pad"
+                  onChangeText={(v) => updateLine(index, { vat_rate: v })}
+                  error={fieldErrors[`items.${index}.vat_rate`]}
+                />
+              </View>
             </View>
-            <View className="flex-1">
-              <Input
-                testID={`invoice-item-${index}-price`}
-                label={t("invoices.form.unitPrice")}
-                value={line.unit_price}
-                // A return nets spend back down, so its lines carry a NEGATIVE unit price
-                // (same mixed-sign rule as the web form). `decimal-pad` has no minus key,
-                // which left an avoir recorded as extra spend; this keyboard has one.
-                keyboardType={
-                  allowsNegativePrice
-                    ? "numbers-and-punctuation"
-                    : "decimal-pad"
-                }
-                onChangeText={(v) => updateLine(index, { unit_price: v })}
-              />
+            <View className="flex-row items-center justify-between">
+              <Text className="text-sm text-muted-foreground">
+                {t("invoices.form.lineTotal")}:{" "}
+                {formatMoney(
+                  (numericLines[index]?.quantity ?? 0) *
+                    (numericLines[index]?.unit_price ?? 0) *
+                    (1 + (numericLines[index]?.vat_rate ?? 0) / 100),
+                )}
+              </Text>
+              {lines.length > 1 ? (
+                <Pressable
+                  testID={`invoice-item-${index}-remove`}
+                  onPress={() =>
+                    setLines((current) => current.filter((_, i) => i !== index))
+                  }
+                >
+                  <Text className="text-sm text-danger">
+                    {t("common.delete")}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
-            <View className="w-20">
-              <Input
-                testID={`invoice-item-${index}-vat`}
-                label={t("invoices.form.vatRate")}
-                value={line.vat_rate}
-                keyboardType="decimal-pad"
-                onChangeText={(v) => updateLine(index, { vat_rate: v })}
-              />
-            </View>
-          </View>
-          <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-muted-foreground">
-              {t("invoices.form.lineTotal")}:{" "}
-              {formatMoney(
-                (numericLines[index]?.quantity ?? 0) *
-                  (numericLines[index]?.unit_price ?? 0) *
-                  (1 + (numericLines[index]?.vat_rate ?? 0) / 100),
-              )}
-            </Text>
-            {lines.length > 1 ? (
-              <Pressable
-                testID={`invoice-item-${index}-remove`}
-                onPress={() =>
-                  setLines((current) => current.filter((_, i) => i !== index))
-                }
-              >
-                <Text className="text-sm text-danger">
-                  {t("common.delete")}
-                </Text>
-              </Pressable>
-            ) : null}
-          </View>
-        </Card>
+          </Card>
+        </View>
       ))}
       <Button
         testID="invoice-add-item"

@@ -552,8 +552,12 @@ describe("new invoice · quantity", () => {
     );
     await fireEvent.press(screen.getByTestId("invoice-submit"));
 
+    // Said next to the field, and counted in the banner by the button.
+    expect(
+      screen.getByText(i18n.t("invoices.form.quantityPositive")),
+    ).toBeTruthy();
     expect(screen.getByTestId("invoice-form-error")).toHaveTextContent(
-      containing(i18n.t("invoices.form.quantityPositive")),
+      containing(i18n.t("invoices.form.fixFields", { count: 1 })),
     );
     expect(mockPost).not.toHaveBeenCalled();
 
@@ -620,8 +624,12 @@ describe("new invoice · amount limits", () => {
     await fillLine("1", "-5");
     await fireEvent.press(screen.getByTestId("invoice-submit"));
 
+    // Said next to the field, and counted in the banner by the button.
+    expect(
+      screen.getByText(i18n.t("invoices.form.pricePositive")),
+    ).toBeTruthy();
     expect(screen.getByTestId("invoice-form-error")).toHaveTextContent(
-      containing(i18n.t("invoices.form.pricePositive")),
+      containing(i18n.t("invoices.form.fixFields", { count: 1 })),
     );
     expect(mockPost).not.toHaveBeenCalled();
   });
@@ -652,5 +660,46 @@ describe("invoice detail · member (deep link)", () => {
     await fireEvent.press(screen.getByTestId("detail-highlight-green"));
     expect(mockPut).not.toHaveBeenCalled();
     expect(mockPatch).not.toHaveBeenCalled();
+  });
+});
+
+describe("new invoice · inline field errors", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager");
+    mockParams = { id: PROJECT_ID };
+  });
+
+  it("flags an empty recipient, an ambiguous price and a 0150 VAT at their fields", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+    await fireEvent.changeText(
+      await screen.findByTestId("invoice-item-0-description"),
+      "Carrelage",
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-price"),
+      "1.500",
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-vat"),
+      "0150",
+    );
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+
+    expect(
+      screen.getByText(i18n.t("invoices.form.recipientRequired")),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        i18n.t("invoices.form.amountAmbiguous", {
+          typed: "1.500",
+          grouped: "1500",
+        }),
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText(i18n.t("invoices.form.vatRange"))).toBeTruthy();
+    expect(screen.getByTestId("invoice-form-error")).toHaveTextContent(
+      containing(i18n.t("invoices.form.fixFields", { count: 3 })),
+    );
+    expect(mockPost).not.toHaveBeenCalled();
   });
 });
