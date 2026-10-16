@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import {
   clearOpenedFiles,
+  isViewableImage,
   openFile,
   openPdfViewer,
   resolveViewerFile,
@@ -305,6 +306,37 @@ describe("openFile", () => {
       "file:///cache/download-1/x",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
+  });
+
+  it("shares a picture from the viewer, reusing the copy already downloaded", async () => {
+    await openFile("/att/3/download", "ticket.jpg", "image/jpeg", {
+      version: "immutable",
+    });
+    await openFile("/att/3/download", "ticket.jpg", "image/jpeg", {
+      version: "immutable",
+      share: true,
+    });
+    expect(mockDownloadToCache).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(mockShareLocalFile).toHaveBeenCalledWith(
+      "file:///cache/download-1/x",
+      "image/jpeg",
+    );
+  });
+
+  it("reads a picture's name when its type is generic", () => {
+    expect(
+      isViewableImage({
+        filename: "photo.jpg",
+        mimeType: "application/octet-stream",
+      }),
+    ).toBe(true);
+    expect(
+      isViewableImage({
+        filename: "plan.dwg",
+        mimeType: "application/octet-stream",
+      }),
+    ).toBe(false);
   });
 
   it("does not navigate when the download fails", async () => {
