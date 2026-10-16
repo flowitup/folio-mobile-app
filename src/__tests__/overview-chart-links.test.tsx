@@ -102,7 +102,7 @@ describe("overview chart links", () => {
       />,
     );
     await fireEvent.press(screen.getByTestId("overview-agenda-task-t1"));
-    expect(openTask).toHaveBeenCalledWith("t1");
+    expect(openTask).toHaveBeenCalledWith(expect.objectContaining({ id: "t1" }));
   });
 
   it("writes bar values in a few characters", async () => {
