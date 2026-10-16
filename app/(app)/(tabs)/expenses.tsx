@@ -25,7 +25,11 @@ import { InvoiceExportSheet } from "@/features/invoices/invoice-export-sheet";
 import type { InvoiceType } from "@/features/invoices/invoice-types";
 import { useInvoices } from "@/features/invoices/invoices-api";
 import { WorkerSalaryTab } from "@/features/labor/worker-salary-tab";
-import { useWorkerMode } from "@/features/labor/use-worker-mode";
+import { RestrictedArea } from "@/features/labor/restricted-area";
+import {
+  useRestrictedMember,
+  useWorkerMode,
+} from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { currentMonth, formatMonth, shiftMonth } from "@/lib/format/date";
@@ -326,6 +330,17 @@ function ExpensesTabContent() {
 
 /** Worker mode (no project:manage_labor) replaces this tab with the worker's own view. */
 export default function ExpensesTab() {
+  const { t } = useTranslation();
   const { workerMode } = useWorkerMode();
-  return workerMode ? <WorkerSalaryTab /> : <ExpensesTabContent />;
+  const restricted = useRestrictedMember();
+  if (workerMode) return <WorkerSalaryTab />;
+  // An unlinked member without labor or pay access gets an empty ledger and zero totals.
+  if (restricted)
+    return (
+      <RestrictedArea
+        title={t("tabs.expenses")}
+        message={t("labor.restricted.expenses")}
+      />
+    );
+  return <ExpensesTabContent />;
 }

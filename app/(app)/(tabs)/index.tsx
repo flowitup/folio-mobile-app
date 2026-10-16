@@ -204,7 +204,9 @@ function OverviewTabContent() {
           />
           <TodayOnSiteCard
             address={project.address}
-            workersOnSite={workersOnSite}
+            // Attendance is scoped to the caller's own worker without labor or pay access, so
+            // a head count would read "no worker on site" on a busy site.
+            workersOnSite={canPayLabor ? workersOnSite : undefined}
           />
         </>
       ) : null}

@@ -607,6 +607,12 @@
       "openMonth": "Open this month",
       "daysUnit_one": "day",
       "daysUnit_other": "days"
+    },
+    "restricted": {
+      "title": "Managers only",
+      "labor": "This site's workers, attendance and pay are visible to managers and admins. To see your own days, ask a manager to link your account to your worker profile.",
+      "expenses": "This site's expenses and payments are visible to managers and admins.",
+      "salaries": "This site's salaries are visible to managers and admins. To see your own pay, ask a manager to link your account to your worker profile."
     }
   },
   "documents": {

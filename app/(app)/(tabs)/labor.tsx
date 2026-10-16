@@ -71,7 +71,11 @@ import type {
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { LaborOverview } from "@/features/labor/labor-overview";
 import { WorkerProfileTab } from "@/features/labor/worker-profile-tab";
-import { useWorkerMode } from "@/features/labor/use-worker-mode";
+import { RestrictedArea } from "@/features/labor/restricted-area";
+import {
+  useRestrictedMember,
+  useWorkerMode,
+} from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import {
   currentMonth,
@@ -715,6 +719,17 @@ function LaborTabContent() {
 
 /** Worker mode (no project:manage_labor): this tab becomes the worker's own profile (rate + history). */
 export default function LaborTab() {
+  const { t } = useTranslation();
   const { workerMode } = useWorkerMode();
-  return workerMode ? <WorkerProfileTab /> : <LaborTabContent />;
+  const restricted = useRestrictedMember();
+  if (workerMode) return <WorkerProfileTab />;
+  // An unlinked member without labor or pay access gets empty lists from every labor endpoint.
+  if (restricted)
+    return (
+      <RestrictedArea
+        title={t("tabs.labor")}
+        message={t("labor.restricted.labor")}
+      />
+    );
+  return <LaborTabContent />;
 }

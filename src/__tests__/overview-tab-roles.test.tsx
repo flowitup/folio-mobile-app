@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
-import "@/i18n";
+import i18n from "@/i18n";
 import OverviewTab from "../../app/(app)/(tabs)/index";
 import { companyKeys } from "@/features/companies/companies-api";
 import { formatMoney } from "@/lib/format/money";
@@ -164,6 +164,12 @@ describe("overview tab · manager", () => {
       expect(screen.queryByTestId("overview-pay-labor")).toBeNull(),
     );
     expect(screen.getByTestId("overview-add-invoice")).toBeTruthy();
+    // Their attendance view is their own worker only, so no head count of the site.
+    const location = screen.getByTestId("overview-today-location");
+    for (const count of [0, 1, 2, 3])
+      expect(location).not.toHaveTextContent(
+        containing(i18n.t("dashboard.today.workers", { count })),
+      );
   });
 
   it("sends a manager (not a company admin) to the expenses tab for pending refunds", async () => {

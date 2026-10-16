@@ -607,6 +607,12 @@
       "openMonth": "Mở tháng này",
       "daysUnit_one": "ngày",
       "daysUnit_other": "ngày"
+    },
+    "restricted": {
+      "title": "Chỉ dành cho quản lý",
+      "labor": "Công nhân, chấm công và lương của công trình này chỉ quản lý và quản trị viên mới xem được. Để xem ngày công của bạn, hãy nhờ quản lý liên kết tài khoản với hồ sơ công nhân của bạn.",
+      "expenses": "Chi phí và thanh toán của công trình này chỉ quản lý và quản trị viên mới xem được.",
+      "salaries": "Lương của công trình này chỉ quản lý và quản trị viên mới xem được. Để xem lương của bạn, hãy nhờ quản lý liên kết tài khoản với hồ sơ công nhân của bạn."
     }
   },
   "documents": {

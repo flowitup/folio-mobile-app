@@ -607,6 +607,12 @@
       "openMonth": "Ouvrir ce mois",
       "daysUnit_one": "jour",
       "daysUnit_other": "jours"
+    },
+    "restricted": {
+      "title": "Accès réservé aux responsables",
+      "labor": "Les ouvriers, les pointages et les salaires de ce chantier sont visibles par les responsables et les administrateurs. Pour voir vos propres journées, demandez à un responsable de lier votre compte à votre fiche ouvrier.",
+      "expenses": "Les dépenses et les paiements de ce chantier sont visibles par les responsables et les administrateurs.",
+      "salaries": "Les salaires de ce chantier sont visibles par les responsables et les administrateurs. Pour voir votre propre salaire, demandez à un responsable de lier votre compte à votre fiche ouvrier."
     }
   },
   "documents": {

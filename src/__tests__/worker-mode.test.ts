@@ -1,4 +1,9 @@
-import { isWorkerMode, needsWorkerLink } from "@/lib/labor/worker-mode";
+import {
+  hasFullLaborView,
+  isRestrictedMember,
+  isWorkerMode,
+  needsWorkerLink,
+} from "@/lib/labor/worker-mode";
 
 const project = { my_permissions: ["project:read"] };
 const managerProject = {
@@ -91,5 +96,34 @@ describe("needsWorkerLink", () => {
     ).toBe(true);
     expect(needsWorkerLink(undefined, { id: "u" })).toBe(false);
     expect(needsWorkerLink(project, null)).toBe(false);
+  });
+});
+
+describe("isRestrictedMember", () => {
+  const member = { id: "u", permissions: ["project:read"] };
+
+  it("closes the labor screens to an unlinked member without labor or pay access", () => {
+    expect(isRestrictedMember(project, member, false, false)).toBe(true);
+  });
+
+  it("decides nothing while the worker-mode answer is pending or in worker mode", () => {
+    expect(isRestrictedMember(project, member, true, false)).toBe(false);
+    expect(isRestrictedMember(project, member, false, true)).toBe(false);
+    expect(isRestrictedMember(undefined, member, false, false)).toBe(false);
+  });
+
+  it("keeps the screens open for manage_labor or view_pay", () => {
+    expect(
+      isRestrictedMember(
+        { my_permissions: ["project:view_pay"] },
+        member,
+        false,
+        false,
+      ),
+    ).toBe(false);
+    expect(
+      hasFullLaborView({ my_permissions: ["project:manage_labor"] }, member),
+    ).toBe(true);
+    expect(hasFullLaborView(project, member)).toBe(false);
   });
 });
