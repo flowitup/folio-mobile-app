@@ -5,6 +5,7 @@ import { ActivityIndicator, View } from "react-native";
 
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
+import { useChatFabReserve } from "@/components/shell/chat-fab";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { useBillingAccess } from "@/features/companies/companies-api";
 import {
@@ -99,6 +100,8 @@ function OverviewTabContent() {
   );
 
   const ready = Boolean(project && invoices.data);
+  // The last agenda line must clear the floating chat button.
+  const bottomPadding = useChatFabReserve();
   // The labor tab applies `segment` from an effect keyed on the params it receives, so a
   // repeated tap must carry a value that changed — otherwise the second one is a no-op once
   // the user has moved to another segment themselves.
@@ -110,6 +113,7 @@ function OverviewTabContent() {
 
   return (
     <InkSheetScreen
+      bottomPadding={bottomPadding}
       header={<ProjectTopBar tone="ink" />}
       hero={
         ready && project ? (

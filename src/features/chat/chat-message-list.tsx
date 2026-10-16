@@ -29,6 +29,7 @@ import {
   reactionCounts,
 } from "@/lib/chat/reactions";
 import type { ReactionEmoji } from "@/lib/chat/reactions";
+import { chatPersonName } from "@/lib/chat/person-name";
 import { isVoiceNote } from "@/lib/chat/voice-note";
 import { useTokens, workerColor } from "@/theme/tokens";
 
@@ -53,7 +54,7 @@ function SeenBy({ members, mine }: { members: ChatMember[]; mine: boolean }) {
     <View
       testID="chat-seen-by"
       accessibilityLabel={t("chat.seenBy", {
-        names: members.map((m) => m.name).join(", "),
+        names: members.map((m) => chatPersonName(m.name, m.state, t)).join(", "),
       })}
       className={`flex-row items-center px-1 ${mine ? "justify-end" : "justify-start"}`}
     >
@@ -203,10 +204,13 @@ function MessageRow({
   const mine = message.mine;
   // Someone else's message can be reported or its sender blocked (App Store 1.2).
   const senderId = message.sender_id;
+  const senderName = chatPersonName(message.sender_name, message.sender_state, t);
+  // An erased account can neither be reported nor blocked: nobody is behind it any more.
   const canModerate =
     !mine &&
     senderId !== null &&
     senderId !== undefined &&
+    message.sender_state !== "deleted" &&
     onReport !== undefined &&
     onBlock !== undefined;
   // Only people's messages open the details sheet and carry reactions, not legacy bot rows.
@@ -216,7 +220,7 @@ function MessageRow({
       : undefined;
   const openMenu = () => {
     if (!canModerate) return;
-    Alert.alert(message.sender_name, undefined, [
+    Alert.alert(senderName, undefined, [
       {
         text: t("chat.moderation.report"),
         onPress: () =>
@@ -234,11 +238,11 @@ function MessageRow({
           ),
       },
       {
-        text: t("chat.moderation.block", { name: message.sender_name }),
+        text: t("chat.moderation.block", { name: senderName }),
         style: "destructive",
         onPress: () =>
           Alert.alert(
-            t("chat.moderation.blockTitle", { name: message.sender_name }),
+            t("chat.moderation.blockTitle", { name: senderName }),
             t("chat.moderation.blockBody"),
             [
               { text: t("common.cancel"), style: "cancel" },
@@ -270,7 +274,7 @@ function MessageRow({
         <View className="w-7">
           {lastOfRun ? (
             <Avatar
-              name={message.sender_name}
+              name={senderName}
               size={28}
               color={senderColor(message.sender_id, tokens)}
             />
@@ -282,7 +286,7 @@ function MessageRow({
       >
         {showSender ? (
           <Text className="pl-3 font-sans text-[11px] text-muted">
-            {message.sender_name}
+            {senderName}
           </Text>
         ) : null}
         {message.body ? (

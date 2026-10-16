@@ -21,6 +21,7 @@ import {
 import { captureImage, pickImages } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { useChatColors } from "@/features/chat/chat-colors";
+import { CHAT_MAX_BODY_LENGTH } from "@/features/chat/chat-api";
 import { useTokens } from "@/theme/tokens";
 
 type Props = {
@@ -32,7 +33,14 @@ type Props = {
   /** Leads with the camera (filled, left) and follows with the library picker; the default is
    * library-first. */
   primaryCamera?: boolean;
+  /** Text typed earlier in this conversation and not sent (kept per channel by the screen). */
+  initialDraft?: string;
+  /** Called on every keystroke so the screen can keep the unsent text of each conversation. */
+  onDraftChange?: (text: string) => void;
 };
+
+/** Below this many characters left, the composer shows how many remain. */
+const COUNTER_FROM = 200;
 
 /**
  * Chat composer: attachment preview, text field, photo library / camera, microphone and send.
@@ -47,12 +55,22 @@ export function ChatComposer({
   sending,
   onSend,
   primaryCamera = false,
+  initialDraft = "",
+  onDraftChange,
 }: Props) {
   const { t } = useTranslation();
   const tokens = useTokens();
   const colors = useChatColors();
   const insets = useSafeAreaInsets();
-  const [draft, setDraft] = useState("");
+  const [draft, setDraftState] = useState(initialDraft);
+  const setDraft = (next: string | ((current: string) => string)) => {
+    setDraftState((current) => {
+      const value = typeof next === "function" ? next(current) : next;
+      if (value !== current) onDraftChange?.(value);
+      return value;
+    });
+  };
+  const remaining = CHAT_MAX_BODY_LENGTH - draft.length;
   const [file, setFile] = useState<PickedFile | null>(null);
   // The cap ends a long recording on its own; say why rather than letting it stop silently.
   const voice = useVoiceRecorder(() =>
@@ -165,8 +183,16 @@ export function ChatComposer({
         </View>
       ) : null}
 
+      {remaining <= COUNTER_FROM && !voice.recording ? (
+        <Text
+          testID="chat-characters-left"
+          className={`bg-card px-4 pt-1.5 text-right font-sans text-[11.5px] ${remaining === 0 ? "text-negative" : "text-muted"}`}
+        >
+          {t("chat.charactersLeft", { count: remaining })}
+        </Text>
+      ) : null}
       <View
-        className="flex-row items-center gap-1 border-t border-line bg-card px-2 pt-2"
+        className="flex-row items-end gap-1 border-t border-line bg-card px-2 pt-2"
         style={{ paddingBottom: Math.max(insets.bottom, 12) }}
       >
         {voice.recording ? (
@@ -209,18 +235,28 @@ export function ChatComposer({
             >
               <Icon name="plus" size={24} color={colors.blue} />
             </Pressable>
+            {/* Multi-line (the return key adds a line; the send button sends), growing up to
+                about five lines, capped at the API's length. */}
             <TextInput
               testID="chat-input"
-              className="h-[38px] flex-1 rounded-full px-3.5 font-sans text-[14.5px] text-ink"
-              style={{ backgroundColor: colors.input }}
+              className="min-h-[38px] flex-1 rounded-[19px] px-3.5 py-2 font-sans text-[14.5px] text-ink"
+              style={{
+                backgroundColor: colors.input,
+                maxHeight: 120,
+                textAlignVertical: "center",
+              }}
               placeholder={t("chat.placeholder")}
               placeholderTextColor={tokens.muted}
               value={draft}
               onChangeText={setDraft}
               editable={!disabled}
-              multiline={false}
-              returnKeyType="send"
-              onSubmitEditing={() => void submit()}
+              multiline
+              maxLength={CHAT_MAX_BODY_LENGTH}
+              accessibilityHint={
+                remaining <= COUNTER_FROM
+                  ? t("chat.charactersLeft", { count: remaining })
+                  : undefined
+              }
             />
             {!primaryCamera ? (
               <Pressable

@@ -1805,7 +1805,7 @@
       "menu": "Tùy chọn tin nhắn",
       "report": "Báo cáo tin nhắn",
       "reportTitle": "Báo cáo tin nhắn này?",
-      "reportBody": "Tin nhắn sẽ được gửi cho quản trị viên công ty của bạn và đội ngũ Folio để xem xét.",
+      "reportBody": "Quản trị viên công ty của bạn sẽ được thông báo và có thể gỡ tin nhắn.",
       "reported": "Đã báo cáo. Cảm ơn bạn.",
       "block": "Chặn {{name}}",
       "blockTitle": "Chặn {{name}}?",
@@ -1826,8 +1826,20 @@
       "nobodySeen": "Chưa ai xem",
       "unknownMember": "Thành viên cũ",
       "chip_one": "{{emoji}} {{count}} lượt thả",
-      "chip_other": "{{emoji}} {{count}} lượt thả"
-    }
+      "chip_other": "{{emoji}} {{count}} lượt thả",
+      "formerMember": "{{name}} (thành viên cũ)"
+    },
+    "deletedAccount": "Tài khoản đã xóa",
+    "unnamedMember": "Thành viên chưa đặt tên",
+    "loadOlder": "Tải tin nhắn cũ hơn",
+    "historyStart": "Đầu cuộc trò chuyện",
+    "newMessages": "Tin nhắn mới",
+    "noLongerAvailable": "Bạn không còn quyền truy cập cuộc trò chuyện này.",
+    "channelsError": "Không thể tải các cuộc trò chuyện.",
+    "bodyTooLong": "Tin nhắn quá dài: tối đa {{max}} ký tự.",
+    "attachmentRejected": "Tệp này không phải ảnh hoặc tin nhắn thoại hợp lệ.",
+    "charactersLeft_one": "Còn {{count}} ký tự",
+    "charactersLeft_other": "Còn {{count}} ký tự"
   },
   "signup": {
     "title": "Tạo hồ sơ của bạn",
