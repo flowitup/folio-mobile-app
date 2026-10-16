@@ -61,6 +61,9 @@ import type {
 
 export type SheetHandle = { open: () => void; close: () => void };
 
+/** The worker form also hears when the API refused its role (deleted, or another company's). */
+export type WorkerFormHandle = SheetHandle & { rejectRole: () => void };
+
 export const SHIFT_TYPES: ShiftType[] = ["full", "half", "overtime"];
 
 // ---- worker form -----------------------------------------------------------
@@ -81,7 +84,7 @@ type WorkerFormProps = {
 const NO_ACCOUNT = "__none__";
 
 /** Add / edit worker — name, daily rate (create only; later via rate changes), phone, role, linked account. */
-export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
+export const WorkerFormSheet = forwardRef<WorkerFormHandle, WorkerFormProps>(
   function WorkerFormSheet(
     { worker, submitting, onSubmit, projectId, companyId },
     ref,
@@ -125,6 +128,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     // One message per field, so the rate error is shown under the rate and not under the name.
     const [nameError, setNameError] = useState<string | null>(null);
     const [rateError, setRateError] = useState<string | null>(null);
+    const [roleError, setRoleError] = useState<string | null>(null);
 
     const picked =
       personId === NEW_PERSON
@@ -141,9 +145,16 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         setUserId(worker?.user_id ?? null);
         setNameError(null);
         setRateError(null);
+        setRoleError(null);
+        // Roles created or deleted elsewhere since the last open.
+        if (companyId) void roles.refetch();
         sheet.current?.present();
       },
       close: () => sheet.current?.dismiss(),
+      rejectRole: () => {
+        setRoleId(null);
+        setRoleError(t("labor.errors.roleUnavailable"));
+      },
     }));
 
     /** Company profile supplies identity, rate, role and account — each still editable below. */
@@ -292,11 +303,15 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
             label={t("labor.workers.role")}
             placeholder={t("labor.workers.roleNone")}
             value={roleId}
+            error={roleError}
             options={(roles.data?.roles ?? []).map((role) => ({
               value: role.id,
               label: laborRoleLabel(role, t),
             }))}
-            onChange={setRoleId}
+            onChange={(value) => {
+              setRoleError(null);
+              setRoleId(value);
+            }}
           />
           {projectId ? (
             <Select

@@ -332,7 +332,8 @@ export function exportInvoices(
 export function useLaborPaymentsSummary(projectId: string, enabled = true) {
   return useQuery({
     queryKey: invoiceKeys.laborPayments(projectId),
-    enabled,
+    // No request for an empty id (".../projects//labor-payments-summary") while no project is selected.
+    enabled: enabled && Boolean(projectId),
     queryFn: async () =>
       unwrapAs<LaborPaymentsSummary>(
         await api.GET("/api/v1/projects/{project_id}/labor-payments-summary", {

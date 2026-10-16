@@ -2,6 +2,18 @@ import { ApiError } from "@/lib/query/api-error";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
+/**
+ * The API refused a worker's role: deleted meanwhile, or of another company than the
+ * project's. Older APIs send it as a plain 400 "Labor role not found".
+ */
+export function isInvalidLaborRoleError(error: unknown): boolean {
+  return (
+    error instanceof ApiError &&
+    (error.code === "InvalidLaborRole" ||
+      (error.status === 400 && /labor role not found/i.test(error.message)))
+  );
+}
+
 /** A framework dump (5xx, or a Pydantic "N validation errors for …" report) is not user copy. */
 function isUnreadable(error: ApiError): boolean {
   return (
@@ -47,6 +59,8 @@ export function apiErrorMessage(
   // Adding a worker for someone already on the roster (the generic 409's "refresh" never helps).
   if (error.code === "WorkerAlreadyOnProject")
     return t("labor.workers.alreadyOnProject");
+  // A worker saved with a role deleted meanwhile, or of another company.
+  if (isInvalidLaborRoleError(error)) return t("labor.errors.roleUnavailable");
   if (language === "en") return error.message;
   const key = STATUS_KEYS[error.status];
   return key ? t(key) : t("common.requestFailed");

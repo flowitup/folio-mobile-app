@@ -60,34 +60,32 @@ export const companyKeys = {
 };
 
 /**
- * Primary first, then most recently attached. `attached_at` is RFC-1123 text
+ * Primary first, then the oldest attachment: the order of GET /companies and of the web, so
+ * every client and the API default to the same company. `attached_at` is RFC-1123 text
  * (`Fri, 09 Oct 2026 18:00:33 GMT`), so compare instants, not strings (those sort by weekday).
  */
-export function byPrimaryThenRecent(
+export function byPrimaryThenOldest(
   a: Pick<MyCompany, "is_primary" | "attached_at">,
   b: Pick<MyCompany, "is_primary" | "attached_at">,
 ): number {
   return (
     Number(b.is_primary) - Number(a.is_primary) ||
-    (Date.parse(b.attached_at) || 0) - (Date.parse(a.attached_at) || 0)
+    (Date.parse(a.attached_at) || 0) - (Date.parse(b.attached_at) || 0)
   );
 }
 
 /**
- * The company the account acts in when none is picked: the primary one, else the only one.
- * Companies an admin attached the user to are never primary, and the backend then falls back to
- * the account's single company; with several and no primary there is none to assume.
+ * The company the account acts in when none is picked: the primary one, else the oldest
+ * attachment — the API's own default (companies an admin attached the user to are never
+ * primary). Expects the list in `byPrimaryThenOldest` order, as `useMyCompanies` returns it.
  */
 export function currentCompanyId(
   companies: readonly Pick<MyCompany, "id" | "is_primary">[] | undefined,
 ): string | undefined {
-  return (
-    companies?.find((c) => c.is_primary)?.id ??
-    (companies?.length === 1 ? companies[0].id : undefined)
-  );
+  return companies?.find((c) => c.is_primary)?.id ?? companies?.[0]?.id;
 }
 
-/** Companies the caller is attached to, primary first then most recently attached. */
+/** Companies the caller is attached to, primary first then oldest attachment (the API order). */
 export function useMyCompanies() {
   return useQuery({
     queryKey: companyKeys.mine,
@@ -101,7 +99,7 @@ export function useMyCompanies() {
           ...access,
           permissions,
         }))
-        .sort(byPrimaryThenRecent);
+        .sort(byPrimaryThenOldest);
     },
   });
 }

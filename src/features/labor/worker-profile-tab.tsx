@@ -21,6 +21,7 @@ import { buildRateHistory, currentDailyRate } from "@/lib/labor/rate-history";
 import type { RateHistoryRow } from "@/lib/labor/rate-history";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
+import { workerRoleLabel } from "@/lib/labor/labor-role-label";
 
 /**
  * Worker mode · Hồ sơ: the signed-in worker's own profile on the selected project — identity
@@ -74,7 +75,7 @@ export function WorkerProfileTab() {
       ? null
       : currentDailyRate(myWorker, changes.data ?? [], today)
     : null;
-  const roleName = myWorker?.role_name ?? null;
+  const roleName = myWorker ? workerRoleLabel(myWorker, t) : null;
   const phone = myWorker?.person_phone ?? myWorker?.phone ?? null;
 
   if (!projectPending && !project)

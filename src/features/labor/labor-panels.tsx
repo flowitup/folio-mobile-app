@@ -8,6 +8,7 @@ import type { LaborEntry, Worker } from "@/features/labor/labor-types";
 import { formatMoney, formatNumber } from "@/lib/format/money";
 import { dayCount } from "@/lib/labor/day-count";
 import { useTokens } from "@/theme/tokens";
+import { workerRoleLabel } from "@/lib/labor/labor-role-label";
 
 /** Colored worker used by every panel: the worker plus its avatar color. */
 export type ColoredWorker = { worker: Worker; color: string };
@@ -311,7 +312,7 @@ export function WorkersPanel({
                 ) : null}
               </View>
               <Text className="font-sans text-xs text-muted" numberOfLines={1}>
-                {[worker.role_name ?? "—", worker.phone]
+                {[workerRoleLabel(worker, t) ?? "—", worker.phone]
                   .filter(Boolean)
                   .join(" · ")}
               </Text>

@@ -18,9 +18,9 @@ import { EmptyState, ErrorState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
 import {
-  currentCompanyId,
-  useMyCompanies,
-} from "@/features/companies/companies-api";
+  SettingsCompanyPicker,
+  useSettingsCompany,
+} from "@/features/companies/settings-company";
 import {
   useCreateLaborRole,
   useDeleteLaborRole,
@@ -31,25 +31,29 @@ import type { LaborRole } from "@/features/labor/labor-api";
 import { isHexColor, laborRoleLabel } from "@/lib/labor/labor-role-label";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 
+/** The API's limit on a role name. */
+const NAME_MAX = 100;
+
+/** Every company the user belongs to shows its roles; writing needs admin or manager there. */
+const anyCompany = () => true;
+
 /**
- * Labor roles: list with colour swatches, create from the suggested palette, rename / recolour,
- * delete. Writing is reserved to an admin or manager of the primary company — the backend
- * answers 403 to anyone else, so the list stays readable but the controls are hidden.
+ * Labor roles of one company — the one picked here, by default the selected project's, then the
+ * primary, then the oldest attachment: list with colour swatches, create from the suggested
+ * palette, rename / recolour, delete. Writing is reserved to an admin or manager of that company
+ * — the backend answers 403 to anyone else, so the list stays readable but the controls are
+ * hidden.
  */
 export default function LaborRolesScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const companies = useMyCompanies();
-  // The backend scopes labor-role writes to the caller's primary company, or their only one
-  // when an admin attached them (never primary); several and no primary means none, whatever
-  // the list order.
-  const mayManage = isCompanyAdminOrManager(
-    user,
-    currentCompanyId(companies.data),
-  );
-  const roles = useLaborRoles();
+  const { companies, eligible, selected, setCompanyId } =
+    useSettingsCompany(anyCompany);
+  const companyId = selected?.id;
+  const mayManage = isCompanyAdminOrManager(user, companyId);
+  const roles = useLaborRoles(companyId);
   useRefetchOnFocus(roles.refetch);
-  const create = useCreateLaborRole();
+  const create = useCreateLaborRole(companyId);
   const update = useUpdateLaborRole();
   const remove = useDeleteLaborRole();
   const sheet = useRef<BottomSheetModal>(null);
@@ -63,7 +67,9 @@ export default function LaborRolesScreen() {
 
   function open(role: LaborRole | null) {
     setEditing(role);
-    setName(role?.name ?? "");
+    // A seed role reads in the viewer's language; saving that label unchanged keeps the seed
+    // name (and its translation for everyone else).
+    setName(role ? laborRoleLabel(role, t) : "");
     setColor(role?.color ?? palette[0] ?? "#4B5563");
     setError(null);
     setColorError(null);
@@ -73,11 +79,17 @@ export default function LaborRolesScreen() {
   function submit() {
     const trimmed = name.trim();
     if (!trimmed) return setError(t("laborRoles.nameRequired"));
+    if (trimmed.length > NAME_MAX)
+      return setError(t("laborRoles.nameTooLong", { max: NAME_MAX }));
     if (!isHexColor(color)) return setColorError(t("laborRoles.colorInvalid"));
     const done = { onSuccess: () => sheet.current?.dismiss() };
-    if (editing)
-      update.mutate({ roleId: editing.id, name: trimmed, color }, done);
-    else create.mutate({ name: trimmed, color }, done);
+    if (editing) {
+      const renamed = trimmed !== laborRoleLabel(editing, t);
+      update.mutate(
+        { roleId: editing.id, ...(renamed ? { name: trimmed } : {}), color },
+        done,
+      );
+    } else create.mutate({ name: trimmed, color }, done);
   }
 
   return (
@@ -97,7 +109,18 @@ export default function LaborRolesScreen() {
         }
       />
       <ScrollView contentContainerClassName="p-4 pb-12">
-        {roles.isPending ? <ActivityIndicator className="mt-8" /> : null}
+        <SettingsCompanyPicker
+          testID="roles-company"
+          eligible={eligible}
+          selected={selected}
+          onChange={setCompanyId}
+        />
+        {companies.data && companies.data.length === 0 ? (
+          <EmptyState message={t("laborRoles.noCompany")} />
+        ) : null}
+        {companyId && roles.isPending ? (
+          <ActivityIndicator className="mt-8" />
+        ) : null}
         {roles.isError && !roles.data ? (
           <ErrorState
             message={t("common.loadError")}
@@ -143,7 +166,11 @@ export default function LaborRolesScreen() {
             testID="role-name"
             label={t("laborRoles.name")}
             value={name}
-            onChangeText={setName}
+            onChangeText={(value) => {
+              setError(null);
+              setName(value);
+            }}
+            maxLength={NAME_MAX}
             error={error}
           />
           <Text className="mb-1 text-sm text-muted-foreground">
@@ -208,6 +235,7 @@ export default function LaborRolesScreen() {
         title={t("laborRoles.deleteConfirm", {
           name: deleting ? laborRoleLabel(deleting, t) : "",
         })}
+        message={t("laborRoles.deleteWarning")}
         confirmLabel={t("common.delete")}
         cancelLabel={t("common.cancel")}
         destructive
