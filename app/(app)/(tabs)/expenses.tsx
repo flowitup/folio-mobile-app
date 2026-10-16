@@ -1,6 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
@@ -70,6 +70,24 @@ function ExpensesTabContent() {
   const { projectId, project } = useSelectedProject();
   const [filter, setFilter] = useState<Filter>("all");
   const [month, setMonth] = useState(currentMonth());
+  // A bar or a type tapped on the overview opens this tab on its month and type. The link
+  // carries a changing `focus` nonce so the same bar tapped again re-applies them.
+  const params = useLocalSearchParams<{
+    month?: string;
+    type?: string;
+    focus?: string;
+  }>();
+  useEffect(() => {
+    if (!params.focus) return;
+    if (params.month && /^\d{4}-\d{2}$/.test(params.month))
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setMonth(params.month);
+    setFilter(
+      params.type && (FILTERS as string[]).includes(params.type)
+        ? (params.type as Filter)
+        : "all",
+    );
+  }, [params.month, params.type, params.focus]);
   const invoices = useInvoices(projectId);
   const canViewBudget = useProjectCan(projectId, "project:view_budget");
   // Writing an invoice needs `project:manage_invoices`; without it the form would only walk

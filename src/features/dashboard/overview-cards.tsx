@@ -1,15 +1,17 @@
+import i18n from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
 import { shortMonthLabel } from "@/components/ui/month-picker";
 import { Card } from "@/components/ui/primitives";
+import { localeTag } from "@/lib/format/date";
 import { SectionLink } from "@/components/ui/typography";
 import type { AgendaGroup } from "@/lib/dashboard/overview-agenda";
 import {
   sharedMonthlyMax,
   type TypeMonthlyBucket,
 } from "@/lib/dashboard/overview-metrics";
-import { formatMoney } from "@/lib/format/money";
+import { formatMoney, formatNumber } from "@/lib/format/money";
 import { useTokens } from "@/theme/tokens";
 import type { Tokens } from "@/theme/tokens";
 
@@ -28,11 +30,30 @@ export function formatDelta(deltaPct: number | null): string {
   return "0 %";
 }
 
-/** Spend going up is bad (negative), going down is good (positive), flat is muted. */
-export function deltaColor(deltaPct: number | null, tokens: Tokens): string {
-  if (deltaPct == null || deltaPct === 0) return tokens.muted;
-  return deltaPct > 0 ? tokens.negative : tokens.positive;
+/**
+ * Neutral, whatever the sign: spending less is not good news by itself (labor accrued but not
+ * yet paid reads −100 %), and a month still running compares with a whole one.
+ */
+export function deltaColor(_deltaPct: number | null, tokens: Tokens): string {
+  return tokens.muted;
 }
+
+/** Axis tick for a "YYYY-MM" month: the short month name ("mai", "sept."), "T9" in Vietnamese. */
+export function monthTick(key: string): string {
+  const m = Number(key.slice(5, 7));
+  return i18n.language === "vi" ? `T${m}` : shortMonthLabel(key);
+}
+
+/** A bar's value in a few characters: "850", "1,2 k", "12 k", "1,5 M". */
+export function compactAmount(value: number): string {
+  const abs = Math.abs(value);
+  if (abs < 1000) return formatNumber(Math.round(value), 0);
+  if (abs < 1_000_000)
+    return `${formatNumber(value / 1000, abs < 10_000 ? 1 : 0)} k`;
+  return `${formatNumber(value / 1_000_000, 1)} M`;
+}
+
+type ExpenseFilters = { month?: string; type?: string };
 
 /** Expense type colors shared by the 1b bars and rows: materials ink, labor accent, others muted-2. */
 export function expenseTypeColor(tokens: Tokens): Record<string, string> {
@@ -60,7 +81,7 @@ export function MonthSpendCard({
   currentMonthKey: string;
   totalCurrent: number;
   totalDeltaPct: number | null;
-  onOpenExpenses: () => void;
+  onOpenExpenses: (filters?: ExpenseFilters) => void;
 }) {
   const { t } = useTranslation();
   const tokens = useTokens();
@@ -74,7 +95,7 @@ export function MonthSpendCard({
     <Pressable
       testID="overview-spend-by-type"
       accessibilityRole="button"
-      onPress={onOpenExpenses}
+      onPress={() => onOpenExpenses({ month: currentMonthKey })}
       className="active:opacity-80"
     >
       <Card radius={20} elevated>
@@ -114,7 +135,16 @@ export function MonthSpendCard({
         </View>
         <View className="mt-3 flex-row gap-2">
           {current.map((bucket) => (
-            <View key={bucket.type} className="min-w-0 flex-1">
+            <Pressable
+              key={bucket.type}
+              testID={`overview-type-open-${bucket.type}`}
+              accessibilityRole="button"
+              accessibilityLabel={`${t(`expenses.filters.${bucket.type}`)} · ${formatMoney(bucket.value)}`}
+              onPress={() =>
+                onOpenExpenses({ month: currentMonthKey, type: bucket.type })
+              }
+              className="min-w-0 flex-1 active:opacity-60"
+            >
               <View className="flex-row items-center gap-[5px]">
                 <View
                   className="h-2 w-2 rounded-sm"
@@ -141,7 +171,7 @@ export function MonthSpendCard({
               >
                 {formatDelta(bucket.deltaPct)}
               </Text>
-            </View>
+            </Pressable>
           ))}
         </View>
       </Card>
@@ -150,6 +180,16 @@ export function MonthSpendCard({
 }
 
 const TREND_BAR_AREA = 56;
+/** Room above the tallest bar for its value label. */
+const TREND_VALUE_H = 14;
+
+function formatMonthLong(key: string): string {
+  const [y, m] = key.split("-").map(Number);
+  return new Intl.DateTimeFormat(localeTag(), {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(y, m - 1, 1));
+}
 
 /**
  * Web "Monthly spend by type": one small multiple per expense type, six month bars on one shared
@@ -160,18 +200,19 @@ export function TypeTrendsCard({
   onOpenExpenses,
 }: {
   buckets: TypeMonthlyBucket[];
-  onOpenExpenses: () => void;
+  onOpenExpenses: (filters?: ExpenseFilters) => void;
 }) {
   const { t } = useTranslation();
   const tokens = useTokens();
   const colors = expenseTypeColor(tokens);
+  // One scale for the three types, so their bars compare.
   const sharedMax = sharedMonthlyMax(buckets);
   const sixMonthTotal = buckets.reduce((acc, bucket) => acc + bucket.total, 0);
   return (
     <Pressable
       testID="overview-type-trends"
       accessibilityRole="button"
-      onPress={onOpenExpenses}
+      onPress={() => onOpenExpenses()}
       className="active:opacity-80"
     >
       <Card radius={20} elevated>
@@ -187,7 +228,12 @@ export function TypeTrendsCard({
           const lastIdx = bucket.monthly.length - 1;
           return (
             <View key={bucket.type} className="mt-4">
-              <View className="flex-row items-center justify-between">
+              <Pressable
+                testID={`overview-trend-type-${bucket.type}`}
+                accessibilityRole="button"
+                onPress={() => onOpenExpenses({ type: bucket.type })}
+                className="flex-row items-center justify-between active:opacity-60"
+              >
                 <View className="flex-row items-center gap-[5px]">
                   <View
                     className="h-2 w-2 rounded-sm"
@@ -200,33 +246,56 @@ export function TypeTrendsCard({
                 <Text className="font-mono text-[13px] text-ink">
                   {formatMoney(bucket.total)}
                 </Text>
-              </View>
+              </Pressable>
+              {/* Each column opens that type's expenses of that month; its value sits on top. */}
               <View
                 className="mt-2 flex-row items-end gap-1.5 border-b border-line"
-                style={{ height: TREND_BAR_AREA }}
+                style={{ height: TREND_BAR_AREA + TREND_VALUE_H }}
               >
                 {bucket.monthly.map((point, i) => (
-                  <View
+                  <Pressable
                     key={point.key}
-                    className="flex-1 rounded-t-[3px]"
-                    style={{
-                      height: Math.max(
-                        (Math.max(point.total, 0) / sharedMax) * TREND_BAR_AREA,
-                        2,
-                      ),
-                      backgroundColor: colors[bucket.type],
-                      opacity: i === lastIdx ? 1 : 0.55,
-                    }}
-                  />
+                    testID={`overview-trend-bar-${bucket.type}-${point.key}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t(`expenses.filters.${bucket.type}`)} · ${formatMonthLong(point.key)} · ${formatMoney(point.total)}`}
+                    onPress={() =>
+                      onOpenExpenses({ type: bucket.type, month: point.key })
+                    }
+                    className="h-full flex-1 justify-end active:opacity-60"
+                  >
+                    {point.total !== 0 ? (
+                      <Text
+                        className="text-center font-mono-regular text-[9px] text-muted"
+                        numberOfLines={1}
+                        testID={`overview-trend-value-${bucket.type}-${point.key}`}
+                      >
+                        {compactAmount(point.total)}
+                      </Text>
+                    ) : null}
+                    <View
+                      className="rounded-t-[3px]"
+                      style={{
+                        height: Math.max(
+                          (Math.max(point.total, 0) / sharedMax) *
+                            TREND_BAR_AREA,
+                          2,
+                        ),
+                        backgroundColor: colors[bucket.type],
+                        opacity: i === lastIdx ? 1 : 0.55,
+                      }}
+                    />
+                  </Pressable>
                 ))}
               </View>
               <View className="mt-1 flex-row gap-1.5">
                 {bucket.monthly.map((point) => (
                   <Text
                     key={point.key}
-                    className="flex-1 text-center font-sans text-[10px] text-muted-2"
+                    className="flex-1 text-center font-sans text-[10px] text-muted"
+                    numberOfLines={1}
+                    testID={`overview-trend-tick-${bucket.type}-${point.key}`}
                   >
-                    {Number(point.key.slice(5, 7))}
+                    {monthTick(point.key)}
                   </Text>
                 ))}
               </View>
@@ -250,9 +319,12 @@ const AGENDA_PILL = {
 export function AgendaCard({
   groups,
   onOpenPlanning,
+  onOpenTask,
 }: {
   groups: AgendaGroup[];
   onOpenPlanning: () => void;
+  /** Opens one task on the board, as on the web. */
+  onOpenTask?: (taskId: string) => void;
 }) {
   const { t } = useTranslation();
   const count = groups.reduce((sum, group) => sum + group.tasks.length, 0);
@@ -285,9 +357,15 @@ export function AgendaCard({
       ) : null}
       {groups.flatMap((group) =>
         group.tasks.map((task) => (
-          <View
+          <Pressable
             key={task.id}
-            className="flex-row items-center gap-3 border-t border-line py-2.5"
+            testID={`overview-agenda-task-${task.id}`}
+            accessibilityRole="button"
+            accessibilityLabel={task.title}
+            onPress={() =>
+              onOpenTask ? onOpenTask(task.id) : onOpenPlanning()
+            }
+            className="flex-row items-center gap-3 border-t border-line py-2.5 active:opacity-60"
           >
             <View
               className={`h-5 w-5 rounded-md border-[1.5px] ${group.key === "overdue" ? "border-negative" : "border-line-2"}`}
@@ -313,7 +391,7 @@ export function AgendaCard({
                 </Text>
               </View>
             )}
-          </View>
+          </Pressable>
         )),
       )}
     </Card>

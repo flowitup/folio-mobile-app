@@ -25,7 +25,13 @@ import type { Persona } from "./helpers/release-qa-fixtures";
  * only), and the salaries section that toggles a month paid only with `project:manage_invoices`.
  */
 let mockPersona: Persona = persona("manager");
-let mockParams: { id?: string; invoiceId?: string; type?: string } = {};
+let mockParams: {
+  id?: string;
+  invoiceId?: string;
+  type?: string;
+  month?: string;
+  focus?: string;
+} = {};
 const mockRouter = {
   push: jest.fn(),
   navigate: jest.fn(),
@@ -701,5 +707,23 @@ describe("new invoice · inline field errors", () => {
       containing(i18n.t("invoices.form.fixFields", { count: 3 })),
     );
     expect(mockPost).not.toHaveBeenCalled();
+  });
+});
+
+describe("expenses tab · opened from an overview chart", () => {
+  beforeEach(() => {
+    mockPersona = persona("admin");
+  });
+
+  it("opens on the tapped type, leaving the other types out", async () => {
+    mockParams = { id: PROJECT_ID, type: "labor", focus: "1" };
+    await renderWithProviders(<ExpensesTab />);
+    expect(await screen.findByTestId("expenses-filter-labor")).toHaveProp(
+      "accessibilityState",
+      { selected: true },
+    );
+    expect(
+      screen.queryByTestId(`invoice-row-${INVOICE_MATERIALS.id}`),
+    ).toBeNull();
   });
 });

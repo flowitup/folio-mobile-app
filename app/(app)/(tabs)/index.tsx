@@ -99,6 +99,12 @@ function OverviewTabContent() {
   );
 
   const ready = Boolean(project && invoices.data);
+  // A chart mark opens the expenses it adds up: its month, and its type when it has one.
+  const openExpenses = (filters: { month?: string; type?: string } = {}) =>
+    router.navigate({
+      pathname: "/(app)/(tabs)/expenses",
+      params: { ...filters, focus: Date.now().toString() },
+    });
   // The labor tab applies `segment` from an effect keyed on the params it receives, so a
   // repeated tap must carry a value that changed — otherwise the second one is a no-op once
   // the user has moved to another segment themselves.
@@ -190,17 +196,23 @@ function OverviewTabContent() {
                 currentMonthKey={metrics.monthDelta.current.key}
                 totalCurrent={metrics.monthDelta.current.total}
                 totalDeltaPct={metrics.monthDelta.deltaPct}
-                onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+                onOpenExpenses={openExpenses}
               />
               <TypeTrendsCard
                 buckets={metrics.buckets}
-                onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+                onOpenExpenses={openExpenses}
               />
             </>
           ) : null}
           <AgendaCard
             groups={agenda}
             onOpenPlanning={() => router.navigate("/(app)/(tabs)/planning")}
+            onOpenTask={(taskId) =>
+              router.navigate({
+                pathname: "/(app)/(tabs)/planning",
+                params: { taskId, project: projectId ?? undefined },
+              })
+            }
           />
           <TodayOnSiteCard
             address={project.address}
