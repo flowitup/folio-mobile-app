@@ -649,7 +649,9 @@
     "share": "Share",
     "videoHint": "Video — use Share to open it.",
     "loadMore": "Load more",
-    "loadError": "Could not load the photos."
+    "loadError": "Could not load the photos.",
+    "readOnly": "Only members who can edit the project can add, edit or delete photos. Ask a project or company manager if you need to add some.",
+    "takenOn": "Taken on"
   },
   "notes": {
     "create": "New note",

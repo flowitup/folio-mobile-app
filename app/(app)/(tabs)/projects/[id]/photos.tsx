@@ -11,10 +11,12 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
@@ -31,9 +33,15 @@ import type { ProjectPhoto } from "@/features/photos/photos-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
-import { formatDate, parisDayKey } from "@/lib/format/date";
+import { formatDate, localDayKey, toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
+
+/** Noon on that device-local day: a corrected date stays on its day in any nearby time zone. */
+function capturedAtOnDay(day: string): string {
+  const [year, month, date] = day.split("-").map(Number);
+  return new Date(year, month - 1, date, 12, 0, 0).toISOString();
+}
 
 /**
  * Site photos: date-grouped thumbnail grid, camera / library upload, lightbox with caption edit,
@@ -44,6 +52,7 @@ export default function ProjectPhotosSection() {
   const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const canWrite = useProjectCan(id, "project:update");
   const photos = useProjectPhotosInfinite(id);
   const upload = useUploadPhoto(id);
@@ -54,14 +63,16 @@ export default function ProjectPhotosSection() {
   const addSheet = useRef<BottomSheetModal>(null);
   const [open, setOpen] = useState<ProjectPhoto | null>(null);
   const [captionDraft, setCaptionDraft] = useState("");
+  const [dayDraft, setDayDraft] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const groups = useMemo(() => {
     const map = new Map<string, ProjectPhoto[]>();
     for (const photo of photos.data?.pages.flatMap((page) => page.items) ??
       []) {
-      // The Paris day, as the web gallery groups it (not the UTC day of the timestamp).
-      const key = parisDayKey(photo.captured_at);
+      // The device's calendar day, like every other "today" in the app (not the UTC day of the
+      // timestamp): a photo taken in the evening in Vietnam sits under the day it was taken.
+      const key = localDayKey(photo.captured_at);
       map.set(key, [...(map.get(key) ?? []), photo]);
     }
     return Array.from(map.entries()).sort(([a], [b]) => b.localeCompare(a));
@@ -89,7 +100,16 @@ export default function ProjectPhotosSection() {
             loading={upload.isPending}
             onPress={() => addSheet.current?.present()}
           />
-        ) : null}
+        ) : (
+          // Adding, editing and deleting photos need the project edit right: say so instead of
+          // leaving a bare "No photos yet." with no button.
+          <Text
+            testID="photos-read-only"
+            className="mb-4 text-sm text-muted-foreground"
+          >
+            {t("photos.readOnly")}
+          </Text>
+        )}
         {photos.isPending ? <ActivityIndicator className="mt-8" /> : null}
         {photos.isError ? (
           <ErrorState
@@ -114,6 +134,7 @@ export default function ProjectPhotosSection() {
                   onPress={() => {
                     setOpen(photo);
                     setCaptionDraft(photo.caption ?? "");
+                    setDayDraft(localDayKey(photo.captured_at));
                   }}
                   style={{ width: cell, height: cell }}
                   className="overflow-hidden rounded bg-paper-2"
@@ -174,7 +195,8 @@ export default function ProjectPhotosSection() {
             <Pressable
               testID="lightbox-close"
               onPress={() => setOpen(null)}
-              className="absolute right-4 top-12 z-10 rounded-full bg-black/60 px-3 py-1"
+              style={{ top: insets.top + 12 }}
+              className="absolute right-4 z-10 rounded-full bg-black/60 px-3 py-1"
             >
               <Text className="text-lg text-white">✕</Text>
             </Pressable>
@@ -188,10 +210,23 @@ export default function ProjectPhotosSection() {
                 <Text className="mt-2 text-white">{t("photos.videoHint")}</Text>
               ) : null}
             </View>
-            <View className="bg-card p-4">
+            {/* Clear of the Android gesture bar / iOS home indicator */}
+            <View
+              className="bg-card p-4"
+              style={{ paddingBottom: 16 + insets.bottom }}
+            >
               <Text className="mb-2 text-xs text-muted-foreground">
-                {formatDate(parisDayKey(open.captured_at))} · {open.filename}
+                {formatDate(localDayKey(open.captured_at))} · {open.filename}
               </Text>
+              {canWrite ? (
+                <DatePicker
+                  testID="photo-date"
+                  label={t("photos.takenOn")}
+                  value={dayDraft || null}
+                  onChange={(day) => setDayDraft(day ?? dayDraft)}
+                  maximumDate={toIsoDate(new Date())}
+                />
+              ) : null}
               {canWrite ? (
                 <Input
                   testID="photo-caption"
@@ -213,14 +248,26 @@ export default function ProjectPhotosSection() {
                     label={t("common.save")}
                     size="sm"
                     loading={update.isPending}
-                    disabled={captionDraft === (open.caption ?? "")}
+                    disabled={
+                      captionDraft === (open.caption ?? "") &&
+                      dayDraft === localDayKey(open.captured_at)
+                    }
                     onPress={() =>
                       update.mutate(
                         {
                           photoId: open.id,
                           caption: captionDraft.trim() || null,
+                          ...(dayDraft &&
+                          dayDraft !== localDayKey(open.captured_at)
+                            ? { capturedAt: capturedAtOnDay(dayDraft) }
+                            : {}),
                         },
-                        { onSuccess: (updated) => setOpen(updated) },
+                        {
+                          onSuccess: (updated) => {
+                            setOpen(updated);
+                            setDayDraft(localDayKey(updated.captured_at));
+                          },
+                        },
                       )
                     }
                   />

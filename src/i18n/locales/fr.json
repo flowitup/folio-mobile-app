@@ -649,7 +649,9 @@
     "share": "Partager",
     "videoHint": "Vidéo — utilisez Partager pour l'ouvrir.",
     "loadMore": "Charger plus",
-    "loadError": "Impossible de charger les photos."
+    "loadError": "Impossible de charger les photos.",
+    "readOnly": "Seuls les membres qui peuvent modifier le projet ajoutent, modifient ou suppriment des photos. Demandez à un responsable du projet ou de l'entreprise si vous devez en ajouter.",
+    "takenOn": "Prise le"
   },
   "notes": {
     "create": "Nouvelle note",

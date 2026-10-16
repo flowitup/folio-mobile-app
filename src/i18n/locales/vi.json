@@ -649,7 +649,9 @@
     "share": "Chia sẻ",
     "videoHint": "Video — dùng Chia sẻ để mở.",
     "loadMore": "Tải thêm",
-    "loadError": "Không tải được ảnh."
+    "loadError": "Không tải được ảnh.",
+    "readOnly": "Chỉ thành viên có quyền chỉnh sửa dự án mới thêm, sửa hoặc xoá ảnh. Hãy hỏi người quản lý dự án hoặc công ty nếu bạn cần thêm ảnh.",
+    "takenOn": "Chụp ngày"
   },
   "notes": {
     "create": "Ghi chú mới",
