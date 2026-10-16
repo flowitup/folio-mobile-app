@@ -83,7 +83,9 @@ export function summarizeInventory(
     if (item.condition === "damaged") summary.damaged += quantity;
     else summary.working += quantity;
     if (item.location_type === "warehouse") summary.inWarehouse += quantity;
-    else summary.onSite += quantity;
+    // A site row whose project was deleted has no site any more: it is listed under
+    // "unknown place", so it is not counted as on site either.
+    else if (item.project_id) summary.onSite += quantity;
   }
   return summary;
 }
