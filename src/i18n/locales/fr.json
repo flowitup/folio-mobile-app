@@ -219,6 +219,7 @@
     }
   },
   "members": {
+    "allSitesAccess": "Admin de l’entreprise : accès à tous les chantiers",
     "title": "Membres ({{count}})",
     "none": "Aucun membre.",
     "inviteSent": "Invitation envoyée.",

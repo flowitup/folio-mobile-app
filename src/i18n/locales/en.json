@@ -219,6 +219,7 @@
     }
   },
   "members": {
+    "allSitesAccess": "Company admin: access to every project",
     "title": "Members ({{count}})",
     "none": "No members yet.",
     "inviteSent": "Invitation sent.",

@@ -219,6 +219,7 @@
     }
   },
   "members": {
+    "allSitesAccess": "Quản trị viên công ty: truy cập mọi công trình",
     "title": "Thành viên ({{count}})",
     "none": "Chưa có thành viên.",
     "inviteSent": "Đã gửi lời mời.",
