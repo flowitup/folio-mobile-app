@@ -143,6 +143,17 @@ export function routeForNotification(
   if (kind && OWN_COMPANY_ACCESS_KINDS.has(kind)) {
     return { projectId: null, sheet: null, path: "/settings/companies" };
   }
+  if (kind === "chat_report") {
+    // A chat message was reported to the company admins: the company's settings screen.
+    const companyId = asId(data?.company_id);
+    return {
+      projectId: null,
+      sheet: null,
+      path: companyId
+        ? `/settings/companies/${companyId}`
+        : "/settings/companies",
+    };
+  }
   if (kind && COMPANY_MEMBER_KINDS.has(kind)) {
     return { projectId: null, sheet: null, path: "/company/members" };
   }

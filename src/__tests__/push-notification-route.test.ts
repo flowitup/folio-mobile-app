@@ -104,6 +104,21 @@ describe("routeForNotification", () => {
     }
   });
 
+  it("opens the company's settings for a reported chat message", () => {
+    expect(
+      routeForNotification({ kind: "chat_report", company_id: "c3" }),
+    ).toEqual({
+      projectId: null,
+      sheet: null,
+      path: "/settings/companies/c3",
+    });
+    expect(routeForNotification({ kind: "chat_report" })).toEqual({
+      projectId: null,
+      sheet: null,
+      path: "/settings/companies",
+    });
+  });
+
   it("never selects a deleted project", () => {
     expect(
       routeForNotification({ kind: "project_deleted", project_id: "p0" }),
