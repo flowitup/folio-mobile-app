@@ -145,7 +145,9 @@ function LaborTabContent() {
   }, [params.segment, params.focus]);
 
   const project = useProject(id);
-  const workers = useWorkers(id);
+  // Inactive workers included: their unpaid days stay payable and the roster can
+  // reactivate them. Logging pickers keep filtering on is_active.
+  const workers = useWorkers(id, true, true);
   const entries = useLaborEntries(id, range.from, range.to);
   const activities = useActivities(id);
   const dayDescriptions = useDayDescriptions(id);
@@ -702,6 +704,9 @@ function LaborTabContent() {
           setTimeout(() => rateSheet.current?.open(), 0);
         }}
         onDelete={(worker) => setDeletingWorker(worker)}
+        onReactivate={(worker) =>
+          updateWorker.mutate({ workerId: worker.id, is_active: true })
+        }
       />
       <RateChangesSheet ref={rateSheet} projectId={id} worker={rateWorker} />
       <PaymentSheet

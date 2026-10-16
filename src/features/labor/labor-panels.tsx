@@ -294,54 +294,62 @@ export function WorkersPanel({
       {workers.length === 0 ? (
         <EmptyState message={t("labor.workers.none")} />
       ) : null}
-      {workers.map(({ worker, color }) => (
-        <Pressable
-          key={worker.id}
-          testID={`worker-card-${worker.id}`}
-          // Edit, rates and deactivate all need project:manage_labor.
-          accessibilityRole={canManage ? "button" : undefined}
-          disabled={!canManage}
-          onPress={() => onWorker(worker)}
-          className="active:opacity-70"
-        >
-          <Card
-            radius={14}
-            elevated
-            className="flex-row items-center gap-3 px-3.5 py-3"
+      {/* Deactivated workers last: still listed, as they can be owed wages or reactivated. */}
+      {[...workers]
+        .sort(
+          (a, b) => Number(!a.worker.is_active) - Number(!b.worker.is_active),
+        )
+        .map(({ worker, color }) => (
+          <Pressable
+            key={worker.id}
+            testID={`worker-card-${worker.id}`}
+            // Edit, rates and deactivate all need project:manage_labor.
+            accessibilityRole={canManage ? "button" : undefined}
+            disabled={!canManage}
+            onPress={() => onWorker(worker)}
+            className="active:opacity-70"
           >
-            <Avatar name={worker.name} size={40} color={color} />
-            <View className="min-w-0 flex-1">
-              <View className="flex-row items-center gap-2">
+            <Card
+              radius={14}
+              elevated
+              className="flex-row items-center gap-3 px-3.5 py-3"
+            >
+              <Avatar name={worker.name} size={40} color={color} />
+              <View className="min-w-0 flex-1">
+                <View className="flex-row items-center gap-2">
+                  <Text
+                    className="font-sans-medium text-[15px] text-ink"
+                    numberOfLines={1}
+                  >
+                    {worker.name}
+                  </Text>
+                  {!worker.is_active ? (
+                    <Badge label={t("labor.workers.inactive")} tone="warning" />
+                  ) : null}
+                </View>
                 <Text
-                  className="font-sans-medium text-[15px] text-ink"
+                  className="font-sans text-xs text-muted"
                   numberOfLines={1}
                 >
-                  {worker.name}
+                  {[worker.role_name ?? "—", worker.phone]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </Text>
-                {!worker.is_active ? (
-                  <Badge label={t("labor.workers.inactive")} tone="warning" />
-                ) : null}
               </View>
-              <Text className="font-sans text-xs text-muted" numberOfLines={1}>
-                {[worker.role_name ?? "—", worker.phone]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </Text>
-            </View>
-            <View className="items-end">
-              <Text className="font-mono text-[14px] text-ink">
-                {formatMoney(worker.current_daily_rate ?? worker.daily_rate)}
-              </Text>
-              <Text className="font-sans text-[10.5px] text-muted">
-                {t("labor.workers.perDay", {
-                  count: dayCount(daysOf(worker.id)),
-                  value: formatNumber(daysOf(worker.id), 2) || "0",
-                })}
-              </Text>
-            </View>
-          </Card>
-        </Pressable>
-      ))}
+              <View className="items-end">
+                <Text className="font-mono text-[14px] text-ink">
+                  {formatMoney(worker.current_daily_rate ?? worker.daily_rate)}
+                </Text>
+                <Text className="font-sans text-[10.5px] text-muted">
+                  {t("labor.workers.perDay", {
+                    count: dayCount(daysOf(worker.id)),
+                    value: formatNumber(daysOf(worker.id), 2) || "0",
+                  })}
+                </Text>
+              </View>
+            </Card>
+          </Pressable>
+        ))}
       {canManage ? (
         <Pressable
           testID="worker-add"
@@ -413,6 +421,9 @@ export function PaymentsPanel({
                 >
                   {row.worker.name}
                 </Text>
+                {!row.worker.is_active ? (
+                  <Badge label={t("labor.workers.inactive")} tone="neutral" />
+                ) : null}
                 <Badge
                   label={
                     due > 0

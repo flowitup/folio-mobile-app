@@ -58,6 +58,8 @@ export interface UpdateWorkerPayload {
   role_id?: string | null;
   /** Link (or unlink with null) the app account that may self-log for this worker. */
   user_id?: string | null;
+  /** true reactivates a deactivated worker. */
+  is_active?: boolean;
 }
 
 export interface LaborEntry {

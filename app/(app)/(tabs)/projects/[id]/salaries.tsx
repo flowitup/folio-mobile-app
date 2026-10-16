@@ -69,7 +69,8 @@ export default function ProjectSalariesSection({
   const id = projectId ?? params.id;
   const { user } = useAuth();
   const project = useProject(id);
-  const workers = useWorkers(id);
+  // Deactivated workers can still be owed wages.
+  const workers = useWorkers(id, true, true);
   const [workerId, setWorkerId] = useState<string | null>(null);
   const worker =
     (workers.data ?? []).find((w) => w.id === workerId) ??

@@ -453,7 +453,8 @@
       "fromCompanyHint": "from the company directory",
       "deactivate": "Deactivate",
       "rateTooLarge": "The daily rate cannot exceed {{max}}.",
-      "alreadyOnProject": "This person is already a worker on this project (possibly deactivated)."
+      "alreadyOnProject": "This person is already a worker on this project (possibly deactivated).",
+      "reactivate": "Reactivate"
     },
     "rates": {
       "link": "Rates",

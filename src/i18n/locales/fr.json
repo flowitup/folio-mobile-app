@@ -453,7 +453,8 @@
       "fromCompanyHint": "annuaire de l'entreprise",
       "deactivate": "Désactiver",
       "rateTooLarge": "Le taux journalier ne peut pas dépasser {{max}}.",
-      "alreadyOnProject": "Cette personne est déjà ouvrier sur ce chantier (peut-être désactivé)."
+      "alreadyOnProject": "Cette personne est déjà ouvrier sur ce chantier (peut-être désactivé).",
+      "reactivate": "Réactiver"
     },
     "rates": {
       "link": "Taux",

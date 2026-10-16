@@ -102,7 +102,9 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     const directory = useCompanyPersons(
       mayReadDirectory ? (companyId ?? undefined) : undefined,
     );
-    const projectWorkers = useWorkers(projectId ?? "");
+    // Deactivated workers too: adding them again is refused (one row per person), they
+    // are reactivated from the roster instead.
+    const projectWorkers = useWorkers(projectId ?? "", true, true);
     const candidates = useMemo(
       () => directoryCandidates(directory.data, projectWorkers.data),
       [directory.data, projectWorkers.data],

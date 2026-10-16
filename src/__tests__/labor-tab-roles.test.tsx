@@ -187,6 +187,43 @@ describe("labor tab · manager", () => {
   });
 });
 
+describe("labor tab · manager with a deactivated worker", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager");
+    mockWorkers = [WORKER_MINH, { ...WORKER_TUAN, is_active: false }];
+  });
+
+  it("keeps the deactivated worker's wages payable", async () => {
+    mockParams = { segment: "payments" };
+    await renderWithProviders(<LaborTab />);
+
+    expect(await screen.findByTestId("payment-record-all")).toHaveTextContent(
+      containing(formatMoney(230)),
+    );
+    expect(screen.getByTestId(`payment-record-${WORKER_TUAN.id}`)).toBeTruthy();
+    expect(
+      callsTo(mockGet, "/api/v1/projects/{project_id}/workers").some(
+        ([, options]) =>
+          (options as { params?: { query?: Record<string, string> } })?.params
+            ?.query?.include_inactive === "true",
+      ),
+    ).toBe(true);
+  });
+
+  it("offers to reactivate them from the roster", async () => {
+    await renderWithProviders(<LaborTab />);
+
+    await fireEvent.press(await screen.findByTestId("labor-tab-workers"));
+    await fireEvent.press(
+      await screen.findByTestId(`worker-card-${WORKER_TUAN.id}`),
+    );
+    expect(
+      await screen.findByTestId(`worker-reactivate-${WORKER_TUAN.id}`),
+    ).toBeTruthy();
+    expect(screen.queryByTestId(`worker-delete-${WORKER_TUAN.id}`)).toBeNull();
+  });
+});
+
 describe("labor tab · manager denied project:manage_invoices (D8)", () => {
   beforeEach(() => {
     mockPersona = persona("manager", { deny: ["project:manage_invoices"] });
