@@ -47,6 +47,7 @@ import { formatInstant } from "@/lib/format/date";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
+import { useOpeningFile } from "@/lib/files/use-opening-file";
 
 const SORTS: DocumentSort[] = ["created_at", "name", "size", "uploader"];
 
@@ -113,6 +114,7 @@ export default function ProjectDocumentsSection() {
   const addSheet = useRef<BottomSheetModal>(null);
   const editSheet = useRef<BottomSheetModal>(null);
   const [editing, setEditing] = useState<ProjectDocument | null>(null);
+  const opener = useOpeningFile();
   const [nameDraft, setNameDraft] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
   const [tagsDraft, setTagsDraft] = useState("");
@@ -280,10 +282,13 @@ export default function ProjectDocumentsSection() {
           <Card key={document.id} className="mb-2">
             <Pressable
               testID={`document-open-${document.id}`}
+              accessibilityState={{ busy: opener.openingId === document.id }}
               onPress={() =>
-                openDocument(document).catch((e: unknown) =>
-                  showToast(apiErrorMessage(e, t, i18n.language), "error"),
-                )
+                void opener
+                  .run(document.id, () => openDocument(document))
+                  .catch((e: unknown) =>
+                    showToast(apiErrorMessage(e, t, i18n.language), "error"),
+                  )
               }
             >
               <View className="flex-row items-center">
@@ -294,6 +299,13 @@ export default function ProjectDocumentsSection() {
                 >
                   {document.filename}
                 </Text>
+                {/* The file downloads before the viewer opens: show the tap was taken. */}
+                {opener.openingId === document.id ? (
+                  <ActivityIndicator
+                    testID={`document-opening-${document.id}`}
+                    size="small"
+                  />
+                ) : null}
               </View>
               <Text className="text-xs text-muted-foreground">
                 {formatFileSize(document.size_bytes)} ·{" "}

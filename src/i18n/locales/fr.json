@@ -34,6 +34,8 @@
       "tooManyRequests": "Trop de tentatives. Patientez un instant puis réessayez.",
       "tooManyRequestsSeconds": "Trop de tentatives. Réessayez dans {{count}} s.",
       "tooManyRequestsMinutes": "Trop de tentatives. Réessayez dans {{count}} min.",
+      "waitSeconds": "{{count}} s",
+      "waitMinutes": "{{count}} min",
       "keepExtension": "Le nom du fichier doit conserver l'extension {{ext}}.",
       "fileNameRequired": "Saisissez un nom de fichier."
     }
@@ -60,6 +62,9 @@
       "phoneTaken": "Ce numéro a déjà un compte. Connectez-vous.",
       "smsFailed": "Le SMS n’a pas pu être envoyé. Réessayez dans un instant.",
       "throttled": "Un code vient d’être envoyé. Attendez une minute et réessayez.",
+      "networkThrottled": "Trop de connexions depuis ce réseau (Wi-Fi du chantier). Réessayez dans {{wait}}.",
+      "smsBusy": "Le service SMS est saturé. Réessayez dans {{wait}}.",
+      "tooManyTries": "Trop d'essais. Patientez {{wait}} puis réessayez.",
       "hourlyLimit_one": "Trop de codes ont été demandés pour ce numéro. Réessayez dans {{count}} minute.",
       "hourlyLimit_other": "Trop de codes ont été demandés pour ce numéro. Réessayez dans {{count}} minutes."
     },
@@ -72,7 +77,8 @@
     "retry": "Réessayer",
     "unavailable": {
       "title": "Impossible de joindre Folio",
-      "body": "Vous êtes toujours connecté. Vérifiez votre connexion, puis réessayez."
+      "body": "Vous êtes toujours connecté. Vérifiez votre connexion, puis réessayez.",
+      "busy": "Vous êtes toujours connecté. Le serveur est saturé (trop de requêtes depuis ce réseau). Réessayez dans {{wait}}."
     }
   },
   "updateRequired": {
@@ -1013,6 +1019,8 @@
         "none": "Aucune dépense candidate.",
         "confirm": "Ajouter {{count}}",
         "partial": "Certaines dépenses n'ont pas pu être ajoutées.",
+        "partialKept": "{{added}} ajoutée(s). {{failed}} n'ont pas pu être ajoutée(s) et restent sélectionnée(s) : réessayez.",
+        "waiting": "Serveur occupé : reprise dans {{count}} s…",
         "added_one": "{{count}} dépense ajoutée.",
         "added_other": "{{count}} dépenses ajoutées.",
         "addFailed": "Aucune dépense n'a pu être ajoutée."

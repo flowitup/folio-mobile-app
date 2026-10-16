@@ -46,11 +46,28 @@ export function hourlyLimitMinutes(
   return Math.ceil(seconds / 60);
 }
 
+/**
+ * "40 s" / "3 min" for a wait in seconds (Retry-After), in the UI language; null when unknown.
+ */
+export function waitLabel(
+  seconds: number | null | undefined,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string | null {
+  if (!seconds || !Number.isFinite(seconds) || seconds <= 0) return null;
+  return seconds < 90
+    ? t("common.errors.waitSeconds", { count: Math.ceil(seconds) })
+    : t("common.errors.waitMinutes", { count: Math.ceil(seconds / 60) });
+}
+
+/** Which request of a code flow failed: asking for a code, or checking the one typed. */
+export type AuthStep = "request" | "verify";
+
 /** i18n key for a recognised failure, or null to show the server's message unchanged. */
 export function authErrorKey(
   flow: AuthFlow,
   status: number | undefined,
   errorCode?: string,
+  step: AuthStep = "request",
 ): string | null {
   switch (status) {
     case 400:
@@ -63,9 +80,16 @@ export function authErrorKey(
         : "login.invalidPhone";
     case 429:
       // The hourly cap takes `count` (minutes): see `hourlyLimitMinutes`.
-      return errorCode === "OtpHourlyLimit"
-        ? "login.errors.hourlyLimit"
-        : "login.errors.throttled";
+      if (errorCode === "OtpHourlyLimit") return "login.errors.hourlyLimit";
+      // The others take `wait` ("40 s"): see `waitLabel`. A crew signing in on one site Wi-Fi
+      // hits the network's cap, not their own number's: never tell them a code was sent.
+      if (errorCode === "NetworkThrottled")
+        return "login.errors.networkThrottled";
+      // The platform's SMS budget ran out: nothing the user's number did.
+      if (errorCode === "SmsServiceBusy") return "login.errors.smsBusy";
+      // Checking a code sends nothing: "a code was sent a moment ago" would be wrong there.
+      if (step === "verify") return "login.errors.tooManyTries";
+      return "login.errors.throttled";
     case 503:
       return "login.errors.smsFailed";
     case 409:

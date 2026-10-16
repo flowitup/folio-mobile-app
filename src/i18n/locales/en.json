@@ -34,6 +34,8 @@
       "tooManyRequests": "Too many attempts. Wait a moment and try again.",
       "tooManyRequestsSeconds": "Too many attempts. Try again in {{count}} s.",
       "tooManyRequestsMinutes": "Too many attempts. Try again in {{count}} min.",
+      "waitSeconds": "{{count}} s",
+      "waitMinutes": "{{count}} min",
       "keepExtension": "The file name must keep its {{ext}} extension.",
       "fileNameRequired": "Enter a file name."
     }
@@ -60,6 +62,9 @@
       "phoneTaken": "This number already has an account. Sign in instead.",
       "smsFailed": "The text message could not be sent. Try again in a moment.",
       "throttled": "A code was sent a moment ago. Wait a minute and try again.",
+      "networkThrottled": "Too many sign-ins from this network (site Wi-Fi). Try again in {{wait}}.",
+      "smsBusy": "The text message service is busy. Try again in {{wait}}.",
+      "tooManyTries": "Too many tries. Wait {{wait}} and try again.",
       "hourlyLimit_one": "Too many codes were requested for this number. Try again in {{count}} minute.",
       "hourlyLimit_other": "Too many codes were requested for this number. Try again in {{count}} minutes."
     },
@@ -72,7 +77,8 @@
     "retry": "Try again",
     "unavailable": {
       "title": "Can't reach Folio",
-      "body": "You're still signed in. Check your connection, then try again."
+      "body": "You're still signed in. Check your connection, then try again.",
+      "busy": "You're still signed in. The server is busy (too many requests from this network). Try again in {{wait}}."
     }
   },
   "updateRequired": {
@@ -1013,6 +1019,8 @@
         "none": "No candidate expense.",
         "confirm": "Add {{count}}",
         "partial": "Some expenses could not be added.",
+        "partialKept": "{{added}} added. {{failed}} could not be added and stay selected: try again.",
+        "waiting": "Server busy: waiting {{count}} s before continuing…",
         "added_one": "{{count}} expense added.",
         "added_other": "{{count}} expenses added.",
         "addFailed": "No expense could be added."

@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
+import { waitLabel } from "@/lib/auth/auth-error-message";
 
 /**
  * Launch could not confirm the stored session: offline, a server error or a rate limit. The
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button";
  */
 export function SessionUnavailable() {
   const { t } = useTranslation();
-  const { retrySession, signOut } = useAuth();
+  const { retrySession, signOut, unavailableRetryAfter } = useAuth();
   const [busy, setBusy] = useState<"retry" | "signOut" | null>(null);
 
   async function run(action: "retry" | "signOut") {
@@ -35,7 +36,14 @@ export function SessionUnavailable() {
           {t("login.unavailable.title")}
         </Text>
         <Text className="mb-8 font-sans text-base text-muted">
-          {t("login.unavailable.body")}
+          {unavailableRetryAfter === null
+            ? t("login.unavailable.body")
+            : // A rate limit, not the connection: say so, and how long to wait.
+              t("login.unavailable.busy", {
+                wait:
+                  waitLabel(unavailableRetryAfter, t) ??
+                  t("common.errors.waitMinutes", { count: 1 }),
+              })}
         </Text>
         <Button
           label={t("login.retry")}

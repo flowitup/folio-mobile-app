@@ -34,6 +34,8 @@
       "tooManyRequests": "Quá nhiều lần thử. Hãy đợi một lát rồi thử lại.",
       "tooManyRequestsSeconds": "Quá nhiều lần thử. Hãy thử lại sau {{count}} giây.",
       "tooManyRequestsMinutes": "Quá nhiều lần thử. Hãy thử lại sau {{count}} phút.",
+      "waitSeconds": "{{count}} giây",
+      "waitMinutes": "{{count}} phút",
       "keepExtension": "Tên tệp phải giữ phần mở rộng {{ext}}.",
       "fileNameRequired": "Hãy nhập tên tệp."
     }
@@ -60,6 +62,9 @@
       "phoneTaken": "Số này đã có tài khoản. Hãy đăng nhập.",
       "smsFailed": "Không gửi được tin nhắn. Thử lại sau giây lát.",
       "throttled": "Mã vừa được gửi. Đợi một phút rồi thử lại.",
+      "networkThrottled": "Quá nhiều lượt đăng nhập từ mạng này (Wi-Fi công trường). Hãy thử lại sau {{wait}}.",
+      "smsBusy": "Dịch vụ tin nhắn đang quá tải. Hãy thử lại sau {{wait}}.",
+      "tooManyTries": "Thử quá nhiều lần. Hãy đợi {{wait}} rồi thử lại.",
       "hourlyLimit_one": "Đã yêu cầu quá nhiều mã cho số này. Vui lòng thử lại sau {{count}} phút.",
       "hourlyLimit_other": "Đã yêu cầu quá nhiều mã cho số này. Vui lòng thử lại sau {{count}} phút."
     },
@@ -72,7 +77,8 @@
     "retry": "Thử lại",
     "unavailable": {
       "title": "Không kết nối được với Folio",
-      "body": "Bạn vẫn đang đăng nhập. Hãy kiểm tra kết nối mạng rồi thử lại."
+      "body": "Bạn vẫn đang đăng nhập. Hãy kiểm tra kết nối mạng rồi thử lại.",
+      "busy": "Bạn vẫn đang đăng nhập. Máy chủ đang bận (quá nhiều yêu cầu từ mạng này). Hãy thử lại sau {{wait}}."
     }
   },
   "updateRequired": {
@@ -1013,6 +1019,8 @@
         "none": "Không có chi phí ứng viên.",
         "confirm": "Thêm {{count}}",
         "partial": "Một số chi phí không thể thêm.",
+        "partialKept": "Đã thêm {{added}}. {{failed}} chi phí chưa thêm được và vẫn được chọn: hãy thử lại.",
+        "waiting": "Máy chủ đang bận: tiếp tục sau {{count}} giây…",
         "added_one": "Đã thêm {{count}} chi phí.",
         "added_other": "Đã thêm {{count}} chi phí.",
         "addFailed": "Không thêm được chi phí nào."
