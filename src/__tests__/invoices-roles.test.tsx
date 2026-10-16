@@ -375,7 +375,8 @@ describe("invoice detail · manager", () => {
     // The refund workflow writes through the company-scoped billing endpoint, which answers
     // 403 to anyone who is not a company admin — a manager is not, so the prompt stays away.
     await waitFor(() =>
-      expect(callsTo(mockGet, "/api/v1/companies").length).toBeGreaterThan(0),
+      // The gate reads the project's company against the session's companies.
+      expect(callsTo(mockGet, "/api/v1/projects/{project_id}").length).toBeGreaterThan(0),
     );
     expect(screen.queryByTestId("invoice-transfer-company")).toBeNull();
 
@@ -509,7 +510,8 @@ describe("invoice detail · company admin", () => {
 
     expect(await screen.findByTestId("invoice-actions")).toBeTruthy();
     await waitFor(() =>
-      expect(callsTo(mockGet, "/api/v1/companies").length).toBeGreaterThan(0),
+      // The gate reads the project's company against the session's companies.
+      expect(callsTo(mockGet, "/api/v1/projects/{project_id}").length).toBeGreaterThan(0),
     );
     expect(screen.queryByTestId("invoice-transfer-company")).toBeNull();
   });
