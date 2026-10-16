@@ -30,13 +30,18 @@ import {
   useSetRefundableStatus,
   useUpdateInvoice,
 } from "@/features/invoices/invoices-api";
-import { projectCan, useProject } from "@/features/projects/projects-api";
+import {
+  projectCan,
+  useProject,
+  projectKeys,
+} from "@/features/projects/projects-api";
 import { openPdfViewer } from "@/lib/files/open-file";
 import { buildInvoicePrintHtml } from "@/lib/invoices/invoice-print-html";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { ApiError } from "@/lib/query/api-error";
 import { INK_BLOCK } from "@/theme/tokens";
 import { useInkStatusBar } from "@/theme/use-ink-status-bar";
+import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Chi tiết hoá đơn (design 1b): ink header + hero (total, recipient, status), then the paper
@@ -52,6 +57,7 @@ export default function InvoiceDetailScreen() {
   const { user } = useAuth();
   const project = useProject(id);
   const invoice = useInvoice(id, invoiceId);
+  const pullToRefresh = usePullToRefresh([projectKeys.all], { onInk: true });
   // Loading and the loaded sheet sit on ink: light glyphs there (the error state is paper).
   useInkStatusBar(invoice.isPending || Boolean(invoice.data));
   // Every write on this screen needs project:manage_invoices (the backend answers 403 otherwise);
@@ -173,6 +179,7 @@ export default function InvoiceDetailScreen() {
   return (
     <>
       <InkSheetScreen
+        refreshControl={pullToRefresh}
         header={<InvoiceDetailHeader invoice={data} onBack={goBack} />}
         hero={<InvoiceDetailHero invoice={data} />}
       >

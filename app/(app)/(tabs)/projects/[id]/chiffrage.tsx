@@ -35,12 +35,13 @@ import type {
 import { LibraryProductPickerSheet } from "@/features/chiffrage/library-product-picker-sheet";
 import type { PickedProduct } from "@/features/chiffrage/library-product-picker-sheet";
 import { stepMove } from "@/features/chiffrage/reorder";
-import { useProject } from "@/features/projects/projects-api";
+import { useProject, projectKeys } from "@/features/projects/projects-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import { formatMoney, formatNumber, parseMoneyInput } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { TEXT_LIMITS } from "@/lib/format/text-limits";
+import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** Shops with at least one price: a shop that prices nothing is not a "0,00 €" basket. */
 const pricedBaskets = (baskets: ChiffrageStoreBasket[]) =>
@@ -72,6 +73,7 @@ export default function ProjectChiffrageSection() {
   const units = useChiffrageUnits(id);
   const actions = useChiffrageActions(id);
   useRefetchOnFocus(tree.refetch);
+  const pullToRefresh = usePullToRefresh([projectKeys.all]);
 
   const sheet = useRef<BottomSheetModal>(null);
   const pickerSheet = useRef<BottomSheetModal>(null);
@@ -457,7 +459,10 @@ export default function ProjectChiffrageSection() {
 
   return (
     <View className="flex-1 bg-paper">
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         <Card className="mb-3">
           <View className="flex-row justify-between">
             <Text className="text-sm text-muted-foreground">

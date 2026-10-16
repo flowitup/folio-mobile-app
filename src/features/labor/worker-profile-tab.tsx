@@ -12,7 +12,11 @@ import {
   ErrorState,
 } from "@/components/ui/primitives";
 import { ScreenTitle } from "@/components/ui/typography";
-import { useRateChanges, useWorkers } from "@/features/labor/labor-api";
+import {
+  useRateChanges,
+  useWorkers,
+  laborKeys,
+} from "@/features/labor/labor-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { formatDate, toIsoDate } from "@/lib/format/date";
@@ -22,6 +26,8 @@ import type { RateHistoryRow } from "@/lib/labor/rate-history";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
 import { workerRoleLabel } from "@/lib/labor/labor-role-label";
+import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
+import { projectKeys } from "@/features/projects/projects-api";
 
 /**
  * Worker mode · Hồ sơ: the signed-in worker's own profile on the selected project — identity
@@ -55,6 +61,7 @@ export function WorkerProfileTab() {
   const refetchChanges = changes.refetch;
   const hasWorker = Boolean(myWorker);
   useRefetchOnFocus(workers.refetch);
+  const pullToRefresh = usePullToRefresh([projectKeys.all, laborKeys.roles]);
   useRefetchOnFocus(
     useCallback(() => {
       if (hasWorker) void refetchChanges();
@@ -90,6 +97,7 @@ export function WorkerProfileTab() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        refreshControl={pullToRefresh}
         className="flex-1"
         contentContainerClassName="px-4 pb-6 pt-3.5"
         contentContainerStyle={{ gap: 16 }}

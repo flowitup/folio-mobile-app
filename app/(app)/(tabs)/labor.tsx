@@ -45,6 +45,7 @@ import {
   useValidateAttendance,
   useUpdateWorker,
   useWorkers,
+  laborKeys,
 } from "@/features/labor/labor-api";
 import {
   LaborDayCard,
@@ -75,7 +76,11 @@ import type {
   LaborEntry,
   Worker,
 } from "@/features/labor/labor-types";
-import { projectCan, useProject } from "@/features/projects/projects-api";
+import {
+  projectCan,
+  useProject,
+  projectKeys,
+} from "@/features/projects/projects-api";
 import { LaborOverview } from "@/features/labor/labor-overview";
 import { WorkerProfileTab } from "@/features/labor/worker-profile-tab";
 import { RestrictedArea } from "@/features/labor/restricted-area";
@@ -101,6 +106,7 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
 import { workerRoleLabel } from "@/lib/labor/labor-role-label";
 import { isInvalidLaborRoleError } from "@/lib/query/api-error-message";
+import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 type Segment = "overview" | "calendar" | "workers" | "payments";
 const SEGMENTS: Segment[] = ["overview", "calendar", "workers", "payments"];
@@ -181,6 +187,7 @@ function LaborTabContent() {
   const laborInvoices = useInvoices(id, { type: "labor" });
   useRefetchOnFocus(entries.refetch);
   useRefetchOnFocus(summary.refetch);
+  const pullToRefresh = usePullToRefresh([projectKeys.all, laborKeys.roles]);
 
   const createWorker = useCreateWorker(id);
   const updateWorker = useUpdateWorker(id);
@@ -382,6 +389,7 @@ function LaborTabContent() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        refreshControl={pullToRefresh}
         ref={scrollRef}
         testID="labor-scroll"
         className="flex-1"

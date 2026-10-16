@@ -42,6 +42,8 @@ import {
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { DARK, INK_BLOCK, useTokens } from "@/theme/tokens";
 import { useInkStatusBar } from "@/theme/use-ink-status-bar";
+import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
+import { projectKeys } from "@/features/projects/projects-api";
 
 type Filter = "all" | Exclude<InvoiceType, "return">;
 /** Diameter of the floating add button below — keep in step with its `h-14 w-14`. */
@@ -110,6 +112,7 @@ function ExpensesTabContent() {
   // last row (the export button) sits under it and its right end cannot be tapped.
   const fabOffset = tabBarHeight + 12 + (chatEnabled ? 64 : 0);
   useRefetchOnFocus(invoices.refetch);
+  const pullToRefresh = usePullToRefresh([projectKeys.all], { onInk: true });
   const exportSheet = useRef<BottomSheetModal>(null);
 
   const rows = useMemo(() => invoices.data?.invoices ?? [], [invoices.data]);
@@ -190,6 +193,7 @@ function ExpensesTabContent() {
   return (
     <View className="flex-1">
       <InkSheetScreen
+        refreshControl={pullToRefresh}
         gap={14}
         bottomPadding={fabOffset + FAB_SIZE + 12}
         header={
