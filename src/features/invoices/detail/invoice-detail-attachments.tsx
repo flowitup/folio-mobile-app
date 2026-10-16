@@ -4,9 +4,11 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
+import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
+import { ImageViewer, isViewableImage } from "@/components/ui/image-viewer";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
@@ -27,6 +29,10 @@ import { formatInstant } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
+
+function attachmentPath(attachment: InvoiceAttachment): string {
+  return `/api/v1/attachments/${encodeURIComponent(attachment.id)}/download`;
+}
 
 /** Short tile label: file extension (`PDF`, `JPG`) or the mime subtype. */
 function tileLabel(attachment: InvoiceAttachment): string {
@@ -68,6 +74,7 @@ export function InvoiceAttachmentsCard({
   const [renameValue, setRenameValue] = useState("");
   const [renameError, setRenameError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<InvoiceAttachment | null>(null);
+  const [viewing, setViewing] = useState<InvoiceAttachment | null>(null);
 
   async function handlePick(result: PickResult) {
     addSheet.current?.dismiss();
@@ -77,10 +84,16 @@ export function InvoiceAttachmentsCard({
     for (const file of result.files)
       await upload.mutateAsync({ file }).catch(() => undefined);
   }
-  const open = (attachment: InvoiceAttachment) =>
+  const share = (attachment: InvoiceAttachment) =>
     openAttachment(attachment).catch((e: unknown) =>
       showToast(apiErrorMessage(e, t, i18n.language), "error"),
     );
+  // A receipt photo opens full screen in the app (Share from there); other files as before.
+  const open = async (attachment: InvoiceAttachment) => {
+    if (isViewableImage(attachment.mime_type, attachment.filename))
+      setViewing(attachment);
+    else await share(attachment);
+  };
   const list = attachments.data ?? [];
 
   return (
@@ -123,10 +136,19 @@ export function InvoiceAttachmentsCard({
               onPress={() => void open(attachment)}
               className="min-w-0 flex-1 flex-row items-center gap-3 py-3.5 pl-4 pr-3 active:opacity-70"
             >
-              <View className="h-12 w-10 items-center justify-center rounded-md bg-paper-2">
+              <View className="h-12 w-10 items-center justify-center overflow-hidden rounded-md bg-paper-2">
                 <Text className="font-sans-bold text-[9px] text-muted">
                   {tileLabel(attachment)}
                 </Text>
+                {isViewableImage(attachment.mime_type, attachment.filename) ? (
+                  // Thumbnail over the extension label, which stays if the picture cannot load.
+                  <AuthedImage
+                    testID={`attachment-thumb-${attachment.id}`}
+                    path={attachmentPath(attachment)}
+                    style={{ position: "absolute", width: 40, height: 48 }}
+                    resizeMode="cover"
+                  />
+                ) : null}
               </View>
               <View className="min-w-0 flex-1">
                 <Text
@@ -279,6 +301,12 @@ export function InvoiceAttachmentsCard({
             { onSettled: () => setDeleting(null) },
           )
         }
+      />
+      <ImageViewer
+        path={viewing ? attachmentPath(viewing) : null}
+        filename={viewing?.filename ?? ""}
+        onClose={() => setViewing(null)}
+        onShare={() => (viewing ? share(viewing) : Promise.resolve())}
       />
     </View>
   );

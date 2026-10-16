@@ -1964,5 +1964,12 @@
     "title": "PDF",
     "share": "Chia sẻ",
     "loadError": "Không thể hiển thị tệp PDF này."
+  },
+  "uploads": {
+    "unsupported": "{{name}}: không chấp nhận định dạng {{ext}} (định dạng được chấp nhận: {{allowed}}).",
+    "empty": "{{name}}: tệp trống.",
+    "tooLarge": "{{name}}: tệp quá lớn.",
+    "invalidEncoding": "{{name}}: tệp không phải văn bản UTF-8 đọc được. Hãy lưu lại dạng UTF-8 rồi thử lại.",
+    "failed": "{{name}}: {{reason}}"
   }
 }

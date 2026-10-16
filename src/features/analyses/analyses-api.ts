@@ -126,6 +126,8 @@ export function useUploadAnalysis(projectId: string) {
       ),
     invalidates: [analysisKeys.all(projectId), analysisKeys.tags(projectId)],
     successMessage: t("analyses.uploaded"),
+    // The form shows a refused file under the file button, by name (uploadErrorMessage).
+    onError: () => true,
   });
 }
 

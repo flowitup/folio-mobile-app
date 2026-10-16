@@ -43,6 +43,13 @@ import {
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { formatFileSize } from "@/lib/format/file-size";
 import { pickDocuments } from "@/lib/files/pick";
+import {
+  ANALYSIS_EXTENSIONS,
+  ANALYSIS_PICKER_TYPES,
+  uploadErrorMessage,
+  uploadProblem,
+  uploadProblemMessage,
+} from "@/lib/files/upload-rules";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatInstant } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -115,13 +122,19 @@ function ReportViewer({ html }: { html: string }) {
  * delete. Members read the list and the viewer; upload, edit and delete need `project:update`.
  */
 export default function ProjectAnalysesSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState<string | null>(null);
   const canWrite = useProjectCan(id, "project:update");
-  const analyses = useAnalyses(id, { q: search.trim() || undefined, tag });
   const tags = useAnalysisTags(id);
+  // A tag leaves the picker with its last analysis, which then reads "All tags": stop filtering
+  // on it too, or the list stays empty behind that label.
+  const activeTag = tag && tags.data && !tags.data.includes(tag) ? null : tag;
+  const analyses = useAnalyses(id, {
+    q: search.trim() || undefined,
+    tag: activeTag,
+  });
   const upload = useUploadAnalysis(id);
   const update = useUpdateAnalysis(id);
   const remove = useDeleteAnalysis(id);
@@ -184,7 +197,20 @@ export default function ProjectAnalysesSection() {
           sourceUrl: sourceUrl.trim() || undefined,
           tags: tagList,
         },
-        done,
+        {
+          ...done,
+          // Shown under the file button, naming the file and what is wrong with it.
+          onError: (caught) =>
+            setFileError(
+              uploadErrorMessage(
+                caught,
+                file!,
+                ANALYSIS_EXTENSIONS,
+                t,
+                i18n.language,
+              ),
+            ),
+        },
       );
   }
 
@@ -213,7 +239,7 @@ export default function ProjectAnalysesSection() {
         <Select
           testID="analyses-tag"
           placeholder={t("documents.allTags")}
-          value={tag ?? "__all__"}
+          value={activeTag ?? "__all__"}
           options={[
             { value: "__all__", label: t("documents.allTags") },
             ...(tags.data ?? []).map((value) => ({ value, label: value })),
@@ -299,14 +325,26 @@ export default function ProjectAnalysesSection() {
                 variant="secondary"
                 className="mb-4"
                 onPress={() =>
-                  pickDocuments(false, [
-                    "text/html",
-                    "application/xhtml+xml",
-                    "*/*",
-                  ]).then((result) => {
+                  // HTML only: a PDF or a Word file could be picked before, then failed on save
+                  // with "check the form".
+                  pickDocuments(false, ANALYSIS_PICKER_TYPES).then((result) => {
                     if (result.status === "picked") {
-                      setFile(result.files[0]);
-                      setFileError(null);
+                      const picked = result.files[0];
+                      const problem = uploadProblem(
+                        picked,
+                        ANALYSIS_EXTENSIONS,
+                      );
+                      setFile(problem ? null : picked);
+                      setFileError(
+                        problem
+                          ? uploadProblemMessage(
+                              picked,
+                              problem,
+                              ANALYSIS_EXTENSIONS,
+                              t,
+                            )
+                          : null,
+                      );
                     } else if (result.status === "denied")
                       showToast(
                         t("invoices.attachments.permissionDenied"),

@@ -10,8 +10,10 @@ import {
   View,
 } from "react-native";
 
+import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ImageViewer, isViewableImage } from "@/components/ui/image-viewer";
 import { Input } from "@/components/ui/input";
 import {
   Badge,
@@ -43,6 +45,11 @@ import { formatFileSize } from "@/lib/format/file-size";
 import { captureImage, pickDocuments, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
 import { fileExtension, renameProblem } from "@/lib/files/rename-rules";
+import {
+  DOCUMENT_EXTENSIONS,
+  DOCUMENT_PICKER_TYPES,
+  uploadEach,
+} from "@/lib/files/upload-rules";
 import { formatInstant } from "@/lib/format/date";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -80,24 +87,36 @@ export default function ProjectDocumentsSection() {
         : selectedTags,
     [selectedTags, knownTags],
   );
+  // Built from the documents themselves: an unassigned company admin who uploaded is listed too.
+  const uploaders = useDocumentUploaders(id, canAccess);
+  // Same for the author: once their last document is gone they leave the picker, which then
+  // reads "All authors"; still sending their id would list nothing behind that label.
+  const activeUploader =
+    uploader &&
+    uploaders.data &&
+    !uploaders.data.some((who) => who.user_id === uploader)
+      ? null
+      : uploader;
   const documents = useDocuments(
     id,
     {
       kinds: kinds.length ? kinds : undefined,
       tags: activeTags.length ? activeTags : undefined,
-      uploaderId: uploader,
+      uploaderId: activeUploader,
       sort,
       order,
       page,
     },
     canAccess,
   );
-  // Built from the documents themselves: an unassigned company admin who uploaded is listed too.
-  const uploaders = useDocumentUploaders(id, canAccess);
   const totalPages = Math.max(
     1,
     Math.ceil((documents.data?.total ?? 0) / (documents.data?.per_page ?? 25)),
   );
+  // Deleting the only document of the last page leaves the page past the end, with the pager
+  // hidden: fall back to the last page that still exists once the fresh total is known.
+  if (documents.data && !documents.isPlaceholderData && page > totalPages)
+    setPage(totalPages);
   const toggleTag = (value: string) => {
     setPage(1);
     setSelectedTags((prev) =>
@@ -117,14 +136,26 @@ export default function ProjectDocumentsSection() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [tagsDraft, setTagsDraft] = useState("");
   const [deleting, setDeleting] = useState<ProjectDocument | null>(null);
+  const [viewing, setViewing] = useState<ProjectDocument | null>(null);
+  const share = (document: ProjectDocument) =>
+    openDocument(document).catch((e: unknown) =>
+      showToast(apiErrorMessage(e, t, i18n.language), "error"),
+    );
 
   async function handlePick(result: PickResult) {
     addSheet.current?.dismiss();
     if (result.status === "denied")
       return showToast(t("invoices.attachments.permissionDenied"), "error");
     if (result.status === "canceled") return;
-    for (const file of result.files)
-      await upload.mutateAsync({ file }).catch(() => undefined);
+    // A .doc, a .zip or an empty file is refused here, by name, without a doomed upload.
+    const problems = await uploadEach(
+      result.files,
+      DOCUMENT_EXTENSIONS,
+      (file) => upload.mutateAsync({ file }),
+      t,
+      i18n.language,
+    );
+    if (problems.length) showToast(problems.join("\n"), "error");
   }
 
   function openEdit(document: ProjectDocument) {
@@ -164,16 +195,18 @@ export default function ProjectDocumentsSection() {
 
   return (
     <View className="flex-1 bg-paper">
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="max-h-11 border-b border-border"
-        contentContainerClassName="px-2 items-center"
+      {/* The kinds wrap onto a second line: in a scrolling row the last chip was cut ("Khá…")
+          with nothing saying the row scrolls. */}
+      <View
+        testID="documents-kinds"
+        className="flex-row flex-wrap gap-y-2 border-b border-border px-2 py-2"
       >
         {DOCUMENT_KINDS.map((kind) => (
           <Pressable
             key={kind}
             testID={`documents-kind-${kind}`}
+            accessibilityRole="button"
+            accessibilityState={{ selected: kinds.includes(kind) }}
             onPress={() => toggleKind(kind)}
             className={`mr-2 rounded-full border px-3 py-1 ${kinds.includes(kind) ? "border-primary bg-primary" : "border-border"}`}
           >
@@ -188,13 +221,15 @@ export default function ProjectDocumentsSection() {
             </Text>
           </Pressable>
         ))}
-      </ScrollView>
+      </View>
       {(tags.data?.length ?? 0) > 0 ? (
         <ScrollView
           horizontal
-          showsHorizontalScrollIndicator={false}
+          // Many tags overflow the row: the indicator says it scrolls.
+          showsHorizontalScrollIndicator
+          persistentScrollbar
           className="max-h-11 border-b border-border"
-          contentContainerClassName="px-2 items-center"
+          contentContainerClassName="pl-2 pr-6 items-center"
         >
           {(tags.data ?? []).map((value) => (
             <Pressable
@@ -222,7 +257,7 @@ export default function ProjectDocumentsSection() {
             <Select
               testID="documents-uploader"
               placeholder={t("documents.allUploaders")}
-              value={uploader ?? "__all__"}
+              value={activeUploader ?? "__all__"}
               options={[
                 { value: "__all__", label: t("documents.allUploaders") },
                 ...(uploaders.data ?? []).map((who) => ({
@@ -280,13 +315,27 @@ export default function ProjectDocumentsSection() {
           <Card key={document.id} className="mb-2">
             <Pressable
               testID={`document-open-${document.id}`}
+              // A picture opens full screen in the app (Share from there); other files as before.
               onPress={() =>
-                openDocument(document).catch((e: unknown) =>
-                  showToast(apiErrorMessage(e, t, i18n.language), "error"),
-                )
+                isViewableImage(document.content_type, document.filename)
+                  ? setViewing(document)
+                  : void share(document)
               }
             >
               <View className="flex-row items-center">
+                {isViewableImage(document.content_type, document.filename) ? (
+                  <AuthedImage
+                    testID={`document-thumb-${document.id}`}
+                    path={document.download_url}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 6,
+                      marginRight: 8,
+                    }}
+                    resizeMode="cover"
+                  />
+                ) : null}
                 <Badge label={t(`documents.kinds.${document.kind}`)} />
                 <Text
                   className="ml-2 flex-1 text-base text-primary"
@@ -369,7 +418,9 @@ export default function ProjectDocumentsSection() {
             testID="documents-file"
             label={t("invoices.attachments.document")}
             variant="secondary"
-            onPress={() => pickDocuments(true).then(handlePick)}
+            onPress={() =>
+              pickDocuments(true, DOCUMENT_PICKER_TYPES).then(handlePick)
+            }
           />
         </View>
       </Sheet>
@@ -464,6 +515,12 @@ export default function ProjectDocumentsSection() {
             { onSettled: () => setDeleting(null) },
           )
         }
+      />
+      <ImageViewer
+        path={viewing?.download_url ?? null}
+        filename={viewing?.filename ?? ""}
+        onClose={() => setViewing(null)}
+        onShare={() => (viewing ? share(viewing) : Promise.resolve())}
       />
     </View>
   );

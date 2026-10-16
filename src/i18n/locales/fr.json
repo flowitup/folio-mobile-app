@@ -1964,5 +1964,12 @@
     "title": "PDF",
     "share": "Partager",
     "loadError": "Impossible d'afficher ce PDF."
+  },
+  "uploads": {
+    "unsupported": "{{name}} : format {{ext}} non accepté (formats acceptés : {{allowed}}).",
+    "empty": "{{name}} : le fichier est vide.",
+    "tooLarge": "{{name}} : le fichier est trop volumineux.",
+    "invalidEncoding": "{{name}} : le fichier n'est pas un texte UTF-8 lisible. Enregistrez-le en UTF-8 puis réessayez.",
+    "failed": "{{name}} : {{reason}}"
   }
 }

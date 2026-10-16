@@ -98,6 +98,8 @@ export function useUploadPhoto(projectId: string) {
       ),
     invalidates: [photoKeys.all(projectId)],
     successMessage: t("photos.uploaded"),
+    // The screen reports a refused file by name (uploadErrorMessage), one message per file.
+    onError: () => true,
   });
 }
 

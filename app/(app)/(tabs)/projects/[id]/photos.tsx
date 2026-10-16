@@ -33,6 +33,7 @@ import type { ProjectPhoto } from "@/features/photos/photos-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import type { PickResult } from "@/lib/files/pick";
+import { PHOTO_EXTENSIONS, uploadEach } from "@/lib/files/upload-rules";
 import { formatDate, localDayKey, toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
@@ -83,8 +84,16 @@ export default function ProjectPhotosSection() {
     if (result.status === "denied")
       return showToast(t("invoices.attachments.permissionDenied"), "error");
     if (result.status === "canceled") return;
-    for (const file of result.files)
-      await upload.mutateAsync({ file }).catch(() => undefined);
+    // The picker names photos itself, so only the server's answer is checked, file by file.
+    const problems = await uploadEach(
+      result.files,
+      PHOTO_EXTENSIONS,
+      (file) => upload.mutateAsync({ file }),
+      t,
+      i18n.language,
+      false,
+    );
+    if (problems.length) showToast(problems.join("\n"), "error");
   }
 
   const cell = Math.floor((width - 32 - 8) / 3);
