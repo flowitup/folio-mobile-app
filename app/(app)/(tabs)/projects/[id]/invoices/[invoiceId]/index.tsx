@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdmin } from "@/auth/permissions";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
@@ -29,13 +30,14 @@ import {
   useSetRefundableStatus,
   useUpdateInvoice,
 } from "@/features/invoices/invoices-api";
-import { useBillingAccess } from "@/features/companies/companies-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { openPdfViewer } from "@/lib/files/open-file";
 import { buildInvoicePrintHtml } from "@/lib/invoices/invoice-print-html";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { ApiError } from "@/lib/query/api-error";
 import { INK_BLOCK } from "@/theme/tokens";
+import { useInkStatusBar } from "@/theme/use-ink-status-bar";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Chi tiết hoá đơn (design 1b): ink header + hero (total, recipient, status), then the paper
@@ -51,6 +53,11 @@ export default function InvoiceDetailScreen() {
   const { user } = useAuth();
   const project = useProject(id);
   const invoice = useInvoice(id, invoiceId);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects], {
+    onInk: true,
+  });
+  // Loading and the loaded sheet sit on ink: light glyphs there (the error state is paper).
+  useInkStatusBar(invoice.isPending || Boolean(invoice.data));
   // Every write on this screen needs project:manage_invoices (the backend answers 403 otherwise);
   // a member reaching the detail through a push or a deep link gets a read-only sheet.
   const canManage = projectCan(
@@ -58,9 +65,10 @@ export default function InvoiceDetailScreen() {
     "project:manage_invoices",
     user?.permissions,
   );
-  // The refund workflow writes through the company-scoped billing endpoint, which only a
-  // company admin may call: `project:manage_invoices` alone earns a 403 there.
-  const billing = useBillingAccess();
+  // The refund workflow writes through the company-scoped billing endpoint, which only an
+  // admin of the PROJECT's company may call: `project:manage_invoices`, or admin of another
+  // company, earns a 403 there.
+  const adminOfProjectCompany = isCompanyAdmin(user, project.data?.company_id);
   const update = useUpdateInvoice(id, invoiceId);
   const remove = useDeleteInvoice(id);
   const setRefundable = useSetRefundableStatus(id);
@@ -155,20 +163,21 @@ export default function InvoiceDetailScreen() {
     (canManage && orphanedRelease && data.refundable_status !== "refunded");
   const canTransferToCompany =
     canManage &&
-    billing.allowed &&
+    adminOfProjectCompany &&
     data.type === "materials_services" &&
     !data.refundable_status &&
     !data.paid_by_company &&
     Boolean(project.data?.company_id);
   const awaitingRefund =
     canManage &&
-    billing.allowed &&
+    adminOfProjectCompany &&
     Boolean(data.refundable_status) &&
     data.refundable_status !== "refunded";
 
   return (
     <>
       <InkSheetScreen
+        refreshControl={pullToRefresh}
         header={<InvoiceDetailHeader invoice={data} onBack={goBack} />}
         hero={<InvoiceDetailHero invoice={data} />}
       >
@@ -221,6 +230,13 @@ export default function InvoiceDetailScreen() {
         <InvoiceHighlightRow
           value={data.highlight_color}
           disabled={!canEdit}
+          disabledReason={
+            !canManage
+              ? t("invoices.detail.highlightReadOnly")
+              : data.is_auto_generated
+                ? t("invoices.detail.highlightLockedAuto")
+                : t("invoices.detail.highlightLockedRefunded")
+          }
           onChange={(color) => update.mutate({ highlight_color: color })}
         />
       </InkSheetScreen>

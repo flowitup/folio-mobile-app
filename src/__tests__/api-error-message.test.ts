@@ -1,6 +1,9 @@
 import i18n from "@/i18n";
 import { ApiError } from "@/lib/query/api-error";
-import { apiErrorMessage } from "@/lib/query/api-error-message";
+import {
+  apiErrorMessage,
+  isInvalidLaborRoleError,
+} from "@/lib/query/api-error-message";
 
 const t = i18n.getFixedT("fr");
 const tEn = i18n.getFixedT("en");
@@ -24,6 +27,22 @@ describe("apiErrorMessage", () => {
       t("common.errors.forbidden"),
     );
     expect(apiErrorMessage(forbidden, t, "fr")).not.toMatch(/project managers/);
+  });
+
+  it("says a worker is already logged elsewhere on a cross-site 409, in every language", () => {
+    const conflict = new ApiError(
+      409,
+      "Conflict",
+      "Cross-project conflicts exist; resend with acknowledge_conflicts=true to override.",
+      "cross_project_conflict",
+    );
+    expect(apiErrorMessage(conflict, tEn, "en")).toBe(
+      tEn("labor.log.conflictGeneric"),
+    );
+    expect(apiErrorMessage(conflict, t, "fr")).toBe(
+      t("labor.log.conflictGeneric"),
+    );
+    expect(apiErrorMessage(conflict, t, "fr")).not.toMatch(/acknowledge/);
   });
 
   it("keeps the backend's message when the UI is in English", () => {
@@ -104,14 +123,55 @@ describe("apiErrorMessage — person already on the project", () => {
       "This person is already a worker on this project",
     );
     expect(apiErrorMessage(twice, t, "fr")).toBe(
-      "Cette personne est déjà ouvrier sur ce chantier (peut-être désactivé).",
+      "Cette personne est déjà ouvrier sur ce chantier. Si elle a été désactivée, ouvrez sa fiche dans Ouvriers et touchez Réactiver.",
     );
     expect(apiErrorMessage(twice, t, "fr")).not.toBe(
       t("common.errors.conflict"),
     );
     const tVi = i18n.getFixedT("vi");
     expect(apiErrorMessage(twice, tVi, "vi")).toBe(
-      tVi("labor.workers.alreadyOnProject"),
+      tVi("labor.workers.alreadyOnProjectReactivate"),
     );
+  });
+
+  it("says how long to wait on a 429, in every language, never the limiter's text", () => {
+    const limited = new ApiError(
+      429,
+      "TooManyRequests",
+      "5 per 1 minute",
+      undefined,
+      40,
+    );
+    expect(apiErrorMessage(limited, tEn, "en")).toBe(
+      tEn("common.errors.tooManyRequestsSeconds", { count: 40 }),
+    );
+    expect(apiErrorMessage(limited, tEn, "en")).not.toMatch(/per 1 minute/);
+    const hour = new ApiError(429, "TooManyRequests", "x", undefined, 1800);
+    expect(apiErrorMessage(hour, t, "fr")).toBe(
+      t("common.errors.tooManyRequestsMinutes", { count: 30 }),
+    );
+    const unknown = new ApiError(429, "TooManyRequests", "5 per 1 minute");
+    expect(apiErrorMessage(unknown, tEn, "en")).toBe(
+      tEn("common.errors.tooManyRequests"),
+    );
+  });
+});
+
+describe("apiErrorMessage — labor role refused", () => {
+  it("says the role is no longer available, with the new code or an older API's message", () => {
+    const coded = new ApiError(400, "InvalidLaborRole", "Labor role not found");
+    const legacy = new ApiError(400, "ValidationError", "Labor role not found");
+    expect(apiErrorMessage(coded, t, "fr")).toBe(
+      t("labor.errors.roleUnavailable"),
+    );
+    expect(apiErrorMessage(legacy, tEn, "en")).toBe(
+      tEn("labor.errors.roleUnavailable"),
+    );
+    expect(isInvalidLaborRoleError(coded)).toBe(true);
+    expect(
+      isInvalidLaborRoleError(
+        new ApiError(400, "ValidationError", "Invalid input"),
+      ),
+    ).toBe(false);
   });
 });

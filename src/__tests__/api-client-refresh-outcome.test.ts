@@ -24,6 +24,8 @@ jest.mock("expo-secure-store", () => {
 
 type Refresh = number | "offline";
 let refresh: Refresh = 200;
+// A refresh token the API rotates in, when set.
+let rotated: string | null = null;
 const fetched: { url: string; auth: string | null }[] = [];
 
 function json(status: number, body: unknown): Response {
@@ -45,7 +47,10 @@ globalThis.fetch = jest.fn(
     if (url.endsWith("/api/v1/auth/refresh")) {
       if (refresh === "offline") throw new TypeError("Network request failed");
       return refresh === 200
-        ? json(200, { access_token: "access-2" })
+        ? json(200, {
+            access_token: "access-2",
+            ...(rotated ? { refresh_token: rotated } : {}),
+          })
         : json(refresh, { error: "Refused" });
     }
     return auth === "Bearer access-2"
@@ -65,6 +70,7 @@ const onExpired = jest.fn();
 
 beforeEach(async () => {
   fetched.length = 0;
+  rotated = null;
   onExpired.mockClear();
   setSessionExpiredHandler(onExpired);
   await SecureStore.setItemAsync("folio.access_token", "access-1");
@@ -106,6 +112,16 @@ describe("API client: refresh failures", () => {
 
     expect(data).toEqual({ ok: true });
     expect(onExpired).not.toHaveBeenCalled();
+    // No rotation offered: the refresh token stays.
+    expect(await refreshToken()).toBe("refresh-1");
+  });
+
+  it("keeps the rotated refresh token the API hands back", async () => {
+    refresh = 200;
+    rotated = "refresh-2";
+    await api.GET("/api/v1/projects");
+
+    expect(await refreshToken()).toBe("refresh-2");
   });
 });
 

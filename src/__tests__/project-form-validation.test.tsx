@@ -56,6 +56,9 @@ describe("budgetProblem", () => {
     expect(budgetProblem("abc")).toBe("invalid");
     expect(budgetProblem("-500")).toBe("invalid");
     expect(budgetProblem("10000000000")).toBe("tooLarge");
+    // "1.500.000" is a million and a half, never 1 500; "1.500" alone is refused, not guessed.
+    expect(budgetProblem("1.500.000")).toBeNull();
+    expect(budgetProblem("1.500")).toBe("invalid");
   });
 });
 

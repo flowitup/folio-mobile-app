@@ -1,19 +1,20 @@
 /**
- * "My companies" lists the primary company first, then the most recently attached. The API sends
+ * "My companies" lists the primary company first, then the oldest attachment — the API and web
+ * order, so all of them default to the same company. The API sends
  * `attached_at` as RFC-1123 text, so comparing the strings sorted by weekday name ("Thu, 08 Oct"
  * came before "Mon, 12 Oct") instead of by date.
  */
 
 import {
-  byPrimaryThenRecent,
+  byPrimaryThenOldest,
   currentCompanyId,
 } from "@/features/companies/companies-api";
 
 jest.mock("@/api/client", () => ({ api: {} }));
 jest.mock("@/auth/auth-context", () => ({ useAuth: () => ({ user: null }) }));
 
-describe("byPrimaryThenRecent", () => {
-  it("keeps the primary first, then the newest attachment first", () => {
+describe("byPrimaryThenOldest", () => {
+  it("keeps the primary first, then the oldest attachment first", () => {
     const companies = [
       {
         name: "Older",
@@ -37,8 +38,8 @@ describe("byPrimaryThenRecent", () => {
       },
     ];
 
-    expect([...companies].sort(byPrimaryThenRecent).map((c) => c.name)).toEqual(
-      ["Primary", "Newest", "Newer", "Older"],
+    expect([...companies].sort(byPrimaryThenOldest).map((c) => c.name)).toEqual(
+      ["Primary", "Older", "Newer", "Newest"],
     );
   });
 
@@ -56,8 +57,8 @@ describe("byPrimaryThenRecent", () => {
       },
     ];
 
-    expect([...companies].sort(byPrimaryThenRecent).map((c) => c.name)).toEqual(
-      ["Evening", "Morning"],
+    expect([...companies].sort(byPrimaryThenOldest).map((c) => c.name)).toEqual(
+      ["Morning", "Evening"],
     );
   });
 });
@@ -75,10 +76,13 @@ describe("currentCompanyId", () => {
     expect(currentCompanyId([company("a", false)])).toBe("a");
   });
 
-  it("has none to assume with several companies and no primary, or no data", () => {
+  it("takes the oldest attachment with several companies and no primary, as the API does", () => {
     expect(currentCompanyId([company("a", false), company("b", false)])).toBe(
-      undefined,
+      "a",
     );
+  });
+
+  it("has none without data", () => {
     expect(currentCompanyId([])).toBe(undefined);
     expect(currentCompanyId(undefined)).toBe(undefined);
   });

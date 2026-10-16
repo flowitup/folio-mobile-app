@@ -96,24 +96,106 @@ export function splitMoney(
   return { main: full.slice(0, common), rest: full.slice(common) };
 }
 
-/** Parses user-typed amounts accepting both `,` and `.` decimals and spaces as thousands separators. */
-export function parseMoneyInput(text: string): number | null {
-  // Last separator is the decimal mark; every earlier "." or "," is a thousands separator.
-  const compact = text.replace(/\s/g, "");
-  const lastSeparator = Math.max(
-    compact.lastIndexOf(","),
-    compact.lastIndexOf("."),
-  );
-  const normalized =
-    lastSeparator === -1
-      ? compact
-      : compact.slice(0, lastSeparator).replace(/[.,]/g, "") +
-        "." +
-        compact.slice(lastSeparator + 1);
-  if (normalized === "" || normalized === "-" || normalized === ".")
-    return null;
-  const value = Number(normalized);
-  return Number.isFinite(value) ? value : null;
+/**
+ * Parses an amount typed in any of the app's locales: "12 500,75", "12.500,75", "12,500.75".
+ * Same rules as the web's parseMoneyInput (folio-front-end src/lib/utils/parse-money-input.ts):
+ * - spaces (also no-break and narrow no-break) and a trailing "€" are dropped;
+ * - with both "," and ".", the right-most one is the decimal mark, the other is grouping
+ *   and must group by three ("1.234,5" yes, "1.23,5" no);
+ * - several identical separators are grouping only ("1.500.000" is 1 500 000, never 1 500);
+ * - a single separator followed by exactly three digits ("1.500", "1,340") is ambiguous
+ *   (1 500 to most fr/vi users, 1.5 to some en users) and is refused unless the field reads
+ *   it as a decimal (`ambiguousGrouping: "decimal"`, e.g. a quantity of 2,375 m³);
+ * - at most `maxDecimals` decimals; a leading minus only with `allowNegative`.
+ * The mobile defaults stay as permissive as before on decimals and sign (each caller checks
+ * its own range), but never misread grouping.
+ */
+const GROUPED_RE = /^\d{1,3}(?:[.,]\d{3})+$/;
+const AMBIGUOUS_RE = /^[1-9]\d{0,2}[.,]\d{3}$/;
+
+export type ParseMoneyInputOptions = {
+  /** Most decimals accepted; default 6. */
+  maxDecimals?: number;
+  /** Accept a leading minus sign; default true (callers check their own range). */
+  allowNegative?: boolean;
+  /** How to read "1,500": "reject" (default) refuses it as ambiguous, "decimal" reads 1.5. */
+  ambiguousGrouping?: "reject" | "decimal";
+};
+
+export type MoneyInputError =
+  "empty" | "invalid" | "ambiguous" | "tooManyDecimals" | "negative";
+
+export type ParsedMoneyInput = {
+  value: number | null;
+  error: MoneyInputError | null;
+  /** For "ambiguous": the amount read as a thousands group (1,500 -> 1500). */
+  suggestion?: number;
+};
+
+export function parseMoneyInputDetailed(
+  raw: string,
+  {
+    maxDecimals = 6,
+    allowNegative = true,
+    ambiguousGrouping = "reject",
+  }: ParseMoneyInputOptions = {},
+): ParsedMoneyInput {
+  let s = raw.replace(/[\s\u00a0\u202f€]/g, "");
+  let sign = 1;
+  if (/^[-−]/.test(s)) {
+    if (!allowNegative)
+      return { value: null, error: /^[-−]\d/.test(s) ? "negative" : "invalid" };
+    sign = -1;
+    s = s.slice(1);
+  }
+  if (s === "")
+    return { value: null, error: sign === -1 ? "invalid" : "empty" };
+
+  if (
+    AMBIGUOUS_RE.test(s) &&
+    !(maxDecimals >= 3 && ambiguousGrouping === "decimal")
+  ) {
+    return {
+      value: null,
+      error: "ambiguous",
+      suggestion: sign * Number(s.replace(/[.,]/, "")),
+    };
+  }
+
+  const lastComma = s.lastIndexOf(",");
+  const lastDot = s.lastIndexOf(".");
+  if (lastComma !== -1 && lastDot !== -1) {
+    const decimal = lastComma > lastDot ? "," : ".";
+    const grouping = decimal === "," ? "." : ",";
+    const [intPart, decPart, ...rest] = s.split(decimal);
+    if (rest.length > 0 || !GROUPED_RE.test(intPart))
+      return { value: null, error: "invalid" };
+    s = `${intPart.split(grouping).join("")}.${decPart}`;
+  } else if (lastComma !== -1 || lastDot !== -1) {
+    const sep = lastComma !== -1 ? "," : ".";
+    if (s.indexOf(sep) !== s.lastIndexOf(sep)) {
+      if (!GROUPED_RE.test(s)) return { value: null, error: "invalid" };
+      s = s.split(sep).join("");
+    } else {
+      s = s.replace(sep, ".");
+    }
+  }
+
+  if (!/^\d+(?:\.\d+)?$/.test(s)) return { value: null, error: "invalid" };
+  if (!new RegExp(`^\\d+(?:\\.\\d{1,${maxDecimals}})?$`).test(s))
+    return { value: null, error: "tooManyDecimals" };
+  const value = Number(s);
+  return Number.isFinite(value)
+    ? { value: sign * value, error: null }
+    : { value: null, error: "invalid" };
+}
+
+/** The amount typed, or null when the text is empty or not a valid amount (see parseMoneyInputDetailed). */
+export function parseMoneyInput(
+  text: string,
+  options: ParseMoneyInputOptions = {},
+): number | null {
+  return parseMoneyInputDetailed(text, options).value;
 }
 
 /** A typed amount rounded to the cents the server stores, so "0,004" reads as 0 rather than passing a "> 0" check. */
@@ -133,4 +215,41 @@ export function formatAmountInput(value: number): string {
     maximumFractionDigits: 2,
     useGrouping: false,
   }).format(Number(value.toPrecision(15)));
+}
+
+/**
+ * A stored number as the text of an input in the active locale (`12500,5` in fr/vi, `12500.5`
+ * in en): no thousands separator, at most `maxDecimals`, at least `minDecimals` once it has a
+ * fraction. A value that would read as ambiguous ("1,859") gets a fourth decimal ("1,8590")
+ * when the field keeps four, so parseMoneyInput always reads the prefill back.
+ */
+export function formatNumberInput(
+  value: number | string | null | undefined,
+  {
+    minDecimals = 0,
+    maxDecimals = 4,
+    padAmbiguous = true,
+  }: {
+    minDecimals?: number;
+    maxDecimals?: number;
+    /** False for a field that reads "2,375" as a decimal (a quantity). */
+    padAmbiguous?: boolean;
+  } = {},
+): string {
+  if (value === null || value === undefined || value === "") return "";
+  const number = typeof value === "string" ? Number(value) : value;
+  if (!Number.isFinite(number)) return "";
+  const rounded = Number(number.toPrecision(15));
+  const scale = 10 ** maxDecimals;
+  const hasFraction = Math.round(Math.abs(rounded) * scale) % scale !== 0;
+  const text = new Intl.NumberFormat(LOCALE_TAG[i18n.language] ?? "en-GB", {
+    useGrouping: false,
+    minimumFractionDigits: hasFraction ? Math.min(minDecimals, maxDecimals) : 0,
+    maximumFractionDigits: maxDecimals,
+  }).format(rounded);
+  return padAmbiguous &&
+    maxDecimals > 3 &&
+    AMBIGUOUS_RE.test(text.replace(/^[-−]/, ""))
+    ? `${text}0`
+    : text;
 }

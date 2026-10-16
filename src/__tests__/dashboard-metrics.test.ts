@@ -9,6 +9,7 @@ import {
   buildMonthlySpendSeries,
   buildTypeMonthlyBuckets,
   computeBudgetMetrics,
+  computeMonthToDateDelta,
   computePendingRefunds,
   computeSpentTotal,
 } from "@/lib/dashboard/overview-metrics";
@@ -96,6 +97,40 @@ describe("overview metrics", () => {
       left: 840,
       pct: 16,
     });
+  });
+
+  it("compares the running month with the same days of the previous one", () => {
+    const rows = [
+      inv({
+        id: "s1",
+        type: "labor",
+        total_amount: 100,
+        issue_date: "2026-09-05",
+      }),
+      inv({
+        id: "s2",
+        type: "labor",
+        total_amount: 300,
+        issue_date: "2026-09-25",
+      }),
+      inv({
+        id: "o1",
+        type: "labor",
+        total_amount: 50,
+        issue_date: "2026-10-10",
+      }),
+    ];
+    // 16 Oct: 1–16 Oct (50) against 1–16 Sep (100), not all of September (400).
+    expect(computeMonthToDateDelta(rows, new Date(2026, 9, 16))).toEqual({
+      deltaPct: -50,
+      toDay: 16,
+    });
+    // On the last day the whole months are compared.
+    expect(computeMonthToDateDelta(rows, new Date(2026, 9, 31)).deltaPct).toBe(
+      -87,
+    );
+    const buckets = buildTypeMonthlyBuckets(rows, 6, new Date(2026, 9, 16));
+    expect(buckets.find((b) => b.type === "labor")?.deltaPct).toBe(-50);
   });
 
   it("builds the draw ledger", () => {

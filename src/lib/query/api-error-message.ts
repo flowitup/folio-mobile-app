@@ -2,6 +2,18 @@ import { ApiError } from "@/lib/query/api-error";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
+/**
+ * The API refused a worker's role: deleted meanwhile, or of another company than the
+ * project's. Older APIs send it as a plain 400 "Labor role not found".
+ */
+export function isInvalidLaborRoleError(error: unknown): boolean {
+  return (
+    error instanceof ApiError &&
+    (error.code === "InvalidLaborRole" ||
+      (error.status === 400 && /labor role not found/i.test(error.message)))
+  );
+}
+
 /** A framework dump (5xx, or a Pydantic "N validation errors for …" report) is not user copy. */
 function isUnreadable(error: ApiError): boolean {
   return (
@@ -42,12 +54,32 @@ export function apiErrorMessage(
   // Leaving, demoting or removing the company's only admin: the generic 409 says "refresh and
   // try again", which never helps — someone else has to be made admin first.
   if (error.reason === "last_admin") return t("companies.errors.lastAdmin");
+  // Logging a worker already logged on another project that day: say so, not "refresh".
+  if (error.reason === "cross_project_conflict")
+    return t("labor.log.conflictGeneric");
   // A worker's phone that is not a phone number ("hello world"): say which field to fix.
   if (error.code === "InvalidPhone") return t("common.errors.invalidPhone");
   // Adding a worker for someone already on the roster (the generic 409's "refresh" never helps).
   if (error.code === "WorkerAlreadyOnProject")
-    return t("labor.workers.alreadyOnProject");
+    return t("labor.workers.alreadyOnProjectReactivate");
+  // A worker saved with a role deleted meanwhile, or of another company.
+  if (isInvalidLaborRoleError(error)) return t("labor.errors.roleUnavailable");
+  // A rate limit: never the limiter's own text ("5 per 1 minute"), and say how long to wait.
+  if (error.status === 429) return tooManyRequestsMessage(error.retryAfter, t);
   if (language === "en") return error.message;
   const key = STATUS_KEYS[error.status];
   return key ? t(key) : t("common.requestFailed");
+}
+
+/** "Too many attempts. Try again in 40 s / 3 min." — or the plain message when the wait is unknown. */
+export function tooManyRequestsMessage(
+  retryAfter: number | undefined,
+  t: Translate,
+): string {
+  if (!retryAfter) return t("common.errors.tooManyRequests");
+  if (retryAfter < 60)
+    return t("common.errors.tooManyRequestsSeconds", { count: retryAfter });
+  return t("common.errors.tooManyRequestsMinutes", {
+    count: Math.ceil(retryAfter / 60),
+  });
 }

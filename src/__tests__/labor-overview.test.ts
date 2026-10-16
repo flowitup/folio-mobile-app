@@ -5,10 +5,13 @@ import type {
 } from "@/features/labor/labor-types";
 import {
   availableYears,
+  earlierCreditByWorker,
   isPastMonth,
   monthDetail,
+  monthRateLabel,
   monthSettlement,
   overviewMonths,
+  paidOutsideMonths,
   rollupTotals,
   rowsInScope,
   scopeRange,
@@ -155,7 +158,68 @@ describe("labor overview helpers", () => {
       ["b", 0, 150],
     ]);
     expect(detail.paid).toBe(350);
-    expect(detail.balance).toBe(100);
+    // Settled worker by worker: An's 50 overpaid never hides Binh's 150 owed.
+    expect(detail.balance).toBe(150);
+    expect(detail.overpay).toBe(50);
     expect(detail.bonusCost).toBe(150);
+  });
+
+  it("counts payments with no month or outside the visible months in the grand total", () => {
+    const withOrphan = {
+      months: [
+        ...PAYMENTS.months,
+        {
+          year: 2026,
+          month: 5,
+          total_paid: 40,
+          company_paid: 40,
+          personal_paid: 0,
+          unassigned_count: 1,
+          unassigned_paid: 40,
+          workers: [],
+        },
+      ],
+    } as LaborPaymentsSummary;
+    expect(paidOutsideMonths(ROWS, withOrphan, { kind: "all" }).paid).toBe(50);
+    expect(
+      paidOutsideMonths(
+        rowsInScope(ROWS, { kind: "year", year: 2026 }),
+        withOrphan,
+        {
+          kind: "year",
+          year: 2026,
+        },
+      ),
+    ).toEqual({ paid: 40, companyPaid: 40, personalPaid: 0 });
+  });
+
+  it("labels a month with its own rate, or both when it changed mid-month", () => {
+    const fmt = (n: number) => `${n}€`;
+    expect(monthRateLabel({ daily_rate: 180.5 }, 190, fmt)).toBe("180.5€");
+    expect(
+      monthRateLabel({ daily_rate: 190, month_start_rate: 180.5 }, 190, fmt),
+    ).toBe("180.5€ → 190€");
+    expect(monthRateLabel({}, 190, fmt)).toBe("190€");
+    expect(monthRateLabel({}, null, fmt)).toBeNull();
+  });
+});
+
+describe("earlierCreditByWorker", () => {
+  it("carries an earlier overpayment into later months, never debts or no-month payments", () => {
+    // An was paid 350 in September 2026 for 300 of work; the December 2025 work is unpaid.
+    const credits = earlierCreditByWorker(ROWS, PAYMENTS, "2026-10");
+    expect(credits.has("a")).toBe(false); // 350 − 300 − 225 < 0
+    const paidAhead = {
+      months: [
+        {
+          ...PAYMENTS.months[0],
+          workers: [
+            { worker_id: "a", worker_name: "An", paid: 600, invoice_count: 1 },
+          ],
+        },
+      ],
+    } as LaborPaymentsSummary;
+    expect(earlierCreditByWorker(ROWS, paidAhead, "2026-10").get("a")).toBe(75);
+    expect(earlierCreditByWorker(ROWS, paidAhead, "2026-09").size).toBe(0);
   });
 });

@@ -1,0 +1,7 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Folio uses the camera to capture invoices and site pictures.",
+    "NSPhotoLibraryUsageDescription": "Folio uses your photos to attach invoices, documents and site pictures.",
+    "NSMicrophoneUsageDescription": "Folio uses the microphone to record voice messages in the team chat."
+  }
+}

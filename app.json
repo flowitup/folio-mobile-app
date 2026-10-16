@@ -9,33 +9,58 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
+      "associatedDomains": ["applinks:folio.flowitup.com"],
       "supportsTablet": true,
       "bundleIdentifier": "com.flowitup.folio",
       "infoPlist": {
-        "NSAppTransportSecurity": {
-          "NSAllowsLocalNetworking": true
-        }
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "en",
+        "CFBundleLocalizations": ["en", "fr", "vi"],
+        "CFBundleAllowMixedLocalizations": true
       }
     },
     "android": {
       "package": "com.flowitup.folio",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "folio.flowitup.com",
+              "pathPattern": "/.*/accept-invite/.*"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "usesCleartextTraffic": true,
       "permissions": [
         "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "blockedPermissions": [
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_MEDIA_VIDEO",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       "expo-localization",
       "expo-sharing",
       [
@@ -45,10 +70,7 @@
           "cameraPermission": "Folio uses the camera to capture invoices and site pictures."
         }
       ],
-      [
-        "@react-native-community/datetimepicker",
-        {}
-      ],
+      ["@react-native-community/datetimepicker", {}],
       "expo-document-picker",
       [
         "expo-notifications",
@@ -74,6 +96,11 @@
         }
       ]
     ],
+    "locales": {
+      "en": "./assets/locales/en.json",
+      "fr": "./assets/locales/fr.json",
+      "vi": "./assets/locales/vi.json"
+    },
     "extra": {
       "router": {},
       "eas": {

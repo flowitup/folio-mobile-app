@@ -22,8 +22,11 @@ const CONDITION_ICON: Record<WeatherCondition, IconName> = {
 type Props = {
   /** Project address; the city is geocoded for the weather. */
   address: string | null | undefined;
-  /** Distinct workers with an attendance entry today; null while loading or on error. */
-  workersOnSite: number | null;
+  /**
+   * Distinct workers with an attendance entry today; null while loading or on error; undefined
+   * when the caller may not see the project's attendance, which leaves the count out.
+   */
+  workersOnSite: number | null | undefined;
 };
 
 /**
@@ -46,9 +49,11 @@ export function TodayOnSiteCard({ address, workersOnSite }: Props) {
     ? "dashboard.today.unavailable"
     : "dashboard.today.noAddress";
   const workers =
-    workersOnSite === null
-      ? "—"
-      : t("dashboard.today.workers", { count: workersOnSite });
+    workersOnSite === undefined
+      ? null
+      : workersOnSite === null
+        ? "—"
+        : t("dashboard.today.workers", { count: workersOnSite });
 
   return (
     <View
@@ -76,7 +81,7 @@ export function TodayOnSiteCard({ address, workersOnSite }: Props) {
             t(emptyKey)
           )}
           {data?.place ? ` · ${data.place}` : ""}
-          {` · ${workers}`}
+          {workers ? ` · ${workers}` : ""}
         </Text>
       )}
     </View>

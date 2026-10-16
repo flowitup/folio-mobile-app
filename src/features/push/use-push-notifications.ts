@@ -76,8 +76,9 @@ export function usePushNotifications(): void {
     });
 
     // Pushes are rendered server-side in the language the device registered with, so a
-    // language picked in Settings (or restored from storage after launch) is re-sent.
-    const reRegister = () => void registerPushDevice();
+    // language picked in Settings (or restored from storage after launch) is re-sent — only when
+    // notifications are already allowed: switching language never asks for permission again.
+    const reRegister = () => void registerPushDevice({ ask: false });
     i18n.on("languageChanged", reRegister);
 
     return () => {

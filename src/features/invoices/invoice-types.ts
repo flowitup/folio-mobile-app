@@ -143,6 +143,8 @@ export interface Invoice {
 
 export interface CreateInvoicePayload {
   type: InvoiceType;
+  /** released_funds only: company money handed to a person (see Invoice.is_cash_advance). */
+  is_cash_advance?: boolean;
   issue_date: string;
   recipient_name: string;
   recipient_address?: string;

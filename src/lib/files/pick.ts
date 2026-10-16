@@ -7,7 +7,40 @@ export type PickedFile = {
   name: string;
   mimeType: string;
   size?: number;
+  /**
+   * When the photo was taken (ISO 8601, UTC), from the picker's EXIF. Sent with a photo upload:
+   * the picker re-encodes the image (quality 0.85), which can drop the file's own EXIF date.
+   */
+  capturedAt?: string;
 };
+
+/**
+ * EXIF `DateTimeOriginal` ("2026:10:14 09:12:33", camera local time) as an ISO instant. The
+ * `OffsetTimeOriginal` ("+02:00") places it when the camera wrote one; otherwise the device's own
+ * zone at that date, which is where a phone photo was taken in practice. Undefined when absent,
+ * unreadable or in the future.
+ */
+export function exifCapturedAt(
+  exif: Record<string, unknown> | null | undefined,
+  now: Date = new Date(),
+): string | undefined {
+  const raw =
+    exif?.DateTimeOriginal ?? exif?.DateTimeDigitized ?? exif?.DateTime;
+  if (typeof raw !== "string") return undefined;
+  const m = /^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(
+    raw.trim(),
+  );
+  if (!m) return undefined;
+  const [, y, mo, d, h, mi, se] = m;
+  const offset = exif?.OffsetTimeOriginal ?? exif?.OffsetTime;
+  const date =
+    typeof offset === "string" && /^[+-]\d{2}:\d{2}$/.test(offset)
+      ? new Date(`${y}-${mo}-${d}T${h}:${mi}:${se}${offset}`)
+      : new Date(+y, +mo - 1, +d, +h, +mi, +se);
+  if (Number.isNaN(date.getTime()) || +y < 1900) return undefined;
+  if (date.getTime() > now.getTime() + 24 * 3600 * 1000) return undefined;
+  return date.toISOString();
+}
 
 /** Callers distinguish "user cancelled" from "permission denied" to offer the settings deep link. */
 export type PickResult =
@@ -65,11 +98,13 @@ export function imageAssetToFile(
     asset.fileName && !MEANINGLESS_NAME.test(asset.fileName)
       ? asset.fileName
       : null;
+  const capturedAt = exifCapturedAt(asset.exif, now);
   return {
     uri: asset.uri,
     name: given ?? `${isVideo ? "video" : "photo"}-${stamp(now)}.${extension}`,
     mimeType,
     size: asset.fileSize,
+    ...(capturedAt ? { capturedAt } : {}),
   };
 }
 
@@ -94,6 +129,8 @@ export async function pickImages(
     mediaTypes: includeVideos ? ["images", "videos"] : ["images"],
     allowsMultipleSelection: multiple,
     quality: 0.85,
+    // The capture date, so a photo is filed under the day it was taken, not the upload day.
+    exif: true,
     // Ask iOS for JPEG-compatible assets instead of HEIC: the API only accepts jpeg / png / webp.
     preferredAssetRepresentationMode:
       ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,

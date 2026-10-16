@@ -33,6 +33,8 @@ import { useProjectCan } from "@/features/projects/use-project-can";
 import { formatDate, localDayKey } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { TEXT_LIMITS } from "@/lib/format/text-limits";
+import { searchIncludes } from "@/lib/utils/fold-for-search";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Project journal: category chips + search, date-grouped cards, open/done toggle,
@@ -48,6 +50,7 @@ export default function ProjectNotesSection() {
   const update = useUpdateNote(id);
   const remove = useDeleteNote(id);
   useRefetchOnFocus(notes.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const [category, setCategory] = useState<NoteCategory | "all">("all");
   const [search, setSearch] = useState("");
@@ -60,17 +63,10 @@ export default function ProjectNotesSection() {
   const [deleting, setDeleting] = useState<Note | null>(null);
 
   const sections = useMemo(() => {
-    const needle = search.trim().toLowerCase();
+    // Accent- and case-insensitive: "eloise" finds "Éloïse", "quyet dinh" finds "Quyết định".
     const filtered = (notes.data ?? []).filter((note) => {
       if (category !== "all" && note.category !== category) return false;
-      if (
-        needle &&
-        !`${note.title} ${note.description ?? ""}`
-          .toLowerCase()
-          .includes(needle)
-      )
-        return false;
-      return true;
+      return searchIncludes(`${note.title} ${note.description ?? ""}`, search);
     });
     // Grouped by the device's calendar day, not the UTC one.
     const map = new Map<string, Note[]>();
@@ -137,7 +133,10 @@ export default function ProjectNotesSection() {
           </Pressable>
         ))}
       </ScrollView>
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         <View className="mb-3 flex-row items-center gap-2">
           <SearchInput
             testID="notes-search"

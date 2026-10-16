@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { SearchInput } from "@/components/ui/input";
 import { useProducts, useSuppliers } from "@/features/library/library-api";
+import { displayedSupplierReference } from "@/features/library/library-helpers";
 import type { LibraryProduct } from "@/features/library/library-types";
 import { formatMoney } from "@/lib/format/money";
 
@@ -108,8 +109,12 @@ export const LibraryProductPickerSheet = forwardRef<BottomSheetModal, Props>(
             >
               <Text className="text-base text-primary">{product.name}</Text>
               <Text className="text-xs text-muted-foreground">
-                {supplierName.get(product.supplier_id) ?? ""} ·{" "}
-                {product.supplier_reference}
+                {[
+                  supplierName.get(product.supplier_id),
+                  displayedSupplierReference(product.supplier_reference),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
                 {product.last_unit_price != null
                   ? ` · ${formatMoney(product.last_unit_price)} ${t("chiffrage.htShort")}`
                   : ""}

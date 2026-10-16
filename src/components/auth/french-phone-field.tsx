@@ -37,6 +37,8 @@ export function FrenchPhoneField({
           keyboardType="phone-pad"
           textContentType="telephoneNumber"
           placeholder="6 12 34 56 78"
+          // Room for "+33 (0)6 12 34 56 78" and similar, not for pasted paragraphs.
+          maxLength={24}
           placeholderTextColor={tokens.muted2}
           autoFocus={autoFocus}
           value={value}

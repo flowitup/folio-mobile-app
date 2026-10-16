@@ -24,15 +24,19 @@ import {
 import type { MyCompany } from "@/features/companies/companies-api";
 import { CompanyFormSheet } from "@/features/companies/company-form-sheet";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** My companies: cards with masked sensitive fields, set primary, detach, manage (admins), create. */
 export default function MyCompaniesScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const superadmin = isPlatformOps(user);
   const companies = useMyCompanies();
   useRefetchOnFocus(companies.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.companies], {
+    refetch: [refreshUser],
+  });
   const setPrimary = useSetPrimaryCompany();
   const detach = useDetachCompany();
   const create = useCreateCompany();
@@ -56,7 +60,10 @@ export default function MyCompaniesScreen() {
           />
         }
       />
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         <Text className="mb-3 text-xs text-muted-foreground">
           {t("companies.my.description")}
         </Text>

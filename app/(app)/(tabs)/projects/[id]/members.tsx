@@ -29,6 +29,7 @@ import { projectCan, useProject } from "@/features/projects/projects-api";
 import { accountContact } from "@/lib/auth/user-display-name";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Members: manager/member assignments (D1 — no role picker, assigned once from the company
@@ -52,6 +53,7 @@ export default function ProjectMembersSection() {
   const unassign = useUnassignMember(id);
   const revoke = useRevokeInvitation(id);
   useRefetchOnFocus(members.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const assignSheet = useRef<BottomSheetModal>(null);
   const [removing, setRemoving] = useState<ProjectMember | null>(null);
@@ -66,9 +68,12 @@ export default function ProjectMembersSection() {
   );
   // The backend lets a manager unassign only company "member" users; an admin anyone.
   const callerIsAdmin = isCompanyAdmin(user, project.data?.company_id);
+  // A company admin is on every project of the company: the backend refuses (409) to
+  // remove them from one, so their card offers no Remove.
   const canRemove = (member: ProjectMember) =>
     canManage &&
     member.user_id !== user?.id &&
+    member.role_name !== "admin" &&
     (callerIsAdmin || member.role_name === "member");
   const canInvite = projectCan(
     project.data,
@@ -89,7 +94,11 @@ export default function ProjectMembersSection() {
     );
 
   return (
-    <ScrollView className="flex-1 bg-paper" contentContainerClassName="p-4">
+    <ScrollView
+      refreshControl={pullToRefresh}
+      className="flex-1 bg-paper"
+      contentContainerClassName="p-4"
+    >
       {canManage ? (
         <Button
           testID="members-assign"
@@ -118,6 +127,11 @@ export default function ProjectMembersSection() {
               {memberContact(member) ? (
                 <Text className="text-xs text-muted-foreground">
                   {memberContact(member)}
+                </Text>
+              ) : null}
+              {member.role_name === "admin" ? (
+                <Text className="text-xs text-muted-foreground">
+                  {t("members.allSitesAccess")}
                 </Text>
               ) : null}
               {member.joined_at ? (

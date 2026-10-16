@@ -1,5 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useMemo, useRef, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -45,7 +46,11 @@ import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { refundSplit } from "@/lib/invoices/refund-split";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { ApiError } from "@/lib/query/api-error";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import { useOpeningFile } from "@/lib/files/use-opening-file";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const STATUSES: RefundableStatus[] = [
   "refundable",
@@ -66,14 +71,18 @@ const STATUS_TONE = {
 export default function RefundableExpensesScreen() {
   const { t, i18n } = useTranslation();
   /** A PDF opens in the in-app viewer, anything else in the share sheet (web preview dialog). */
+  // The file downloads before the viewer opens: the link shows a spinner meanwhile.
+  const opener = useOpeningFile();
   const openExpenseAttachment = (attachment: RefundableExpenseAttachment) =>
-    openAttachment(attachment).catch((e: unknown) =>
-      showToast(apiErrorMessage(e, t, i18n.language), "error"),
-    );
+    opener
+      .run(attachment.id, () => openAttachment(attachment))
+      .catch((e: unknown) =>
+        showToast(apiErrorMessage(e, t, i18n.language), "error"),
+      );
   // The whole screen rides the company-scoped billing API, which only a company admin may
   // call: without the gate a refused caller just watched a spinner turn into a blank page.
   const access = useBillingAccess();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const companies = useMyCompanies();
   // The list is scoped to companies the caller administers (platform ops may read any): picking
   // one where they are only a member answered 403 and left the screen on "Could not load".
@@ -83,10 +92,18 @@ export default function RefundableExpensesScreen() {
       (companies.data ?? []).filter((c) => platformOps || c.role === "admin"),
     [companies.data, platformOps],
   );
-  const [companyId, setCompanyId] = useState<string | null>(null);
+  // Opened from a project's overview: that project's company (?company=).
+  const { company: requestedCompany } = useLocalSearchParams<{ company?: string }>();
+  const [companyId, setCompanyId] = useState<string | null>(
+    typeof requestedCompany === "string" && requestedCompany ? requestedCompany : null,
+  );
   const expenses = useRefundableExpenses(companyId, access.allowed);
   // `refetch()` runs even a disabled query, so the focus hook has to respect the gate too.
   useRefetchOnFocus(access.allowed ? expenses.refetch : NOOP_REFETCH);
+  const pullToRefresh = usePullToRefresh(
+    [refreshKeys.billing, refreshKeys.companies],
+    { refetch: [refreshUser] },
+  );
   const setRefundable = useSetRefundable();
   // The bulk "add" loop reports once for the batch, so its writes stay quiet.
   const bulkSetRefundable = useSetRefundable(true);
@@ -97,26 +114,25 @@ export default function RefundableExpensesScreen() {
   const refundedBySheet = useRef<BottomSheetModal>(null);
   const addSheet = useRef<BottomSheetModal>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  // The search runs on the server, so an expense past the first page is found too.
+  const searchQuery = useDebouncedValue(search.trim());
   const candidates = useRefundableCandidates(
     companyId,
     addOpen && access.allowed,
+    searchQuery,
   );
-  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
 
-  const filteredCandidates = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-    const all = candidates.data?.items ?? [];
-    return needle
-      ? all.filter((x) =>
-          [x.project_name, x.invoice_number, x.recipient_name]
-            .join(" ")
-            .toLowerCase()
-            .includes(needle),
-        )
-      : all;
-  }, [candidates.data, search]);
+  const filteredCandidates = useMemo(
+    () => (candidates.data?.pages ?? []).flatMap((page) => page.items),
+    [candidates.data],
+  );
+  const expenseRows = useMemo(
+    () => (expenses.data?.pages ?? []).flatMap((page) => page.items),
+    [expenses.data],
+  );
 
   function changeStatus(expense: RefundableExpense, status: RefundableStatus) {
     if (status === expense.refundable_status) return;
@@ -129,33 +145,62 @@ export default function RefundableExpensesScreen() {
   }
 
   /**
-   * One toast for the batch, not one per expense, and the sheet always ends up in a state
-   * that matches what happened: it stays open with the selection intact when nothing was
-   * added, so the user can retry, and closes once at least one went through.
+   * One toast for the batch, not one per expense. The expenses go one at a time, and a rate
+   * limit (429) pauses for the wait the server gives before going on, so a long selection is
+   * not cut off. Whatever still fails stays selected, with the sheet open, to try again; the
+   * sheet closes once everything went through.
    */
   async function addSelected() {
     setAdding(true);
-    const results = await Promise.allSettled(
-      [...selected].map((id) =>
-        bulkSetRefundable.mutateAsync({ invoiceId: id, status: "refundable" }),
-      ),
-    );
+    const failed = new Set<string>();
+    let added = 0;
+    for (const id of selected) {
+      for (let attempt = 0; ; attempt += 1) {
+        try {
+          await bulkSetRefundable.mutateAsync({
+            invoiceId: id,
+            status: "refundable",
+          });
+          added += 1;
+          break;
+        } catch (e) {
+          if (e instanceof ApiError && e.status === 429 && attempt < 3) {
+            const wait = Math.min(e.retryAfter ?? 5, 65);
+            showToast(
+              t("billing.refundable.dialog.waiting", { count: wait }),
+              "info",
+            );
+            await new Promise((resolve) => setTimeout(resolve, wait * 1000));
+            continue;
+          }
+          failed.add(id);
+          break;
+        }
+      }
+    }
     setAdding(false);
-    const added = results.filter((r) => r.status === "fulfilled").length;
-    if (added === 0)
-      return showToast(t("billing.refundable.dialog.addFailed"), "error");
-    if (added < results.length)
-      showToast(t("billing.refundable.dialog.partial"), "error");
-    else
+    if (failed.size === 0) {
       showToast(
         t("billing.refundable.dialog.added", { count: added }),
         "success",
       );
-    setSelected(new Set());
-    addSheet.current?.dismiss();
+      setSelected(new Set());
+      addSheet.current?.dismiss();
+      return;
+    }
+    setSelected(failed);
+    showToast(
+      added === 0
+        ? t("billing.refundable.dialog.addFailed")
+        : t("billing.refundable.dialog.partialKept", {
+            added,
+            failed: failed.size,
+          }),
+      "error",
+    );
   }
 
-  const summary = expenses.data?.summary;
+  const summary = expenses.data?.pages[0]?.summary;
   const split = summary ? refundSplit(summary) : null;
 
   if (access.loading)
@@ -190,7 +235,10 @@ export default function RefundableExpensesScreen() {
           />
         }
       />
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         {companyOptions.length > 1 ? (
           <Select
             testID="refundable-company"
@@ -278,15 +326,15 @@ export default function RefundableExpensesScreen() {
             onRetry={() => void expenses.refetch()}
           />
         ) : null}
-        {expenses.data && expenses.data.items.length === 0 ? (
+        {expenses.data && expenseRows.length === 0 ? (
           <EmptyState message={t("billing.refundable.none")} />
         ) : null}
-        {(expenses.data?.items ?? []).map((expense) => (
+        {expenseRows.map((expense) => (
           <Card key={expense.id} className="mb-2">
             <View className="flex-row items-center justify-between">
               <Text
                 className="flex-1 pr-2 text-base font-medium text-primary"
-                numberOfLines={1}
+                numberOfLines={2}
               >
                 {expense.invoice_number} · {expense.recipient_name}
               </Text>
@@ -320,16 +368,25 @@ export default function RefundableExpensesScreen() {
                 key={attachment.id}
                 testID={`refundable-attachment-${attachment.id}`}
                 accessibilityRole="button"
+                accessibilityState={{
+                  busy: opener.openingId === attachment.id,
+                }}
                 onPress={() => void openExpenseAttachment(attachment)}
                 hitSlop={4}
-                className="mt-1 active:opacity-70"
+                className="mt-1 flex-row items-center gap-2 active:opacity-70"
               >
                 <Text
-                  className="text-xs text-accent-ink underline"
+                  className="flex-shrink text-xs text-accent-ink underline"
                   numberOfLines={1}
                 >
                   {attachment.filename}
                 </Text>
+                {opener.openingId === attachment.id ? (
+                  <ActivityIndicator
+                    testID={`refundable-attachment-opening-${attachment.id}`}
+                    size="small"
+                  />
+                ) : null}
               </Pressable>
             ))}
             <View className="mt-2 flex-row items-end gap-3">
@@ -355,6 +412,16 @@ export default function RefundableExpensesScreen() {
             </View>
           </Card>
         ))}
+        {expenses.hasNextPage ? (
+          <Button
+            testID="refundable-load-more"
+            label={t("billing.refundable.loadMore")}
+            variant="secondary"
+            size="sm"
+            loading={expenses.isFetchingNextPage}
+            onPress={() => void expenses.fetchNextPage()}
+          />
+        ) : null}
       </ScrollView>
 
       <Sheet
@@ -390,6 +457,17 @@ export default function RefundableExpensesScreen() {
               }
             />
           ))}
+          {candidates.hasNextPage ? (
+            <Button
+              testID="refundable-candidates-more"
+              label={t("billing.refundable.loadMore")}
+              variant="ghost"
+              size="sm"
+              className="mb-2"
+              loading={candidates.isFetchingNextPage}
+              onPress={() => void candidates.fetchNextPage()}
+            />
+          ) : null}
           <Button
             testID="refundable-confirm"
             label={t("billing.refundable.dialog.confirm", {

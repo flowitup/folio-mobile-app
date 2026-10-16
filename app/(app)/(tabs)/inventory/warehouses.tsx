@@ -38,6 +38,7 @@ import {
   unitsByWarehouse,
 } from "@/lib/inventory/inventory-helpers";
 import { useTokens } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** One opening of the form sheet; see the same type on the inventory screen. */
 type FormSession = { warehouse: Warehouse | null; nonce: number };
@@ -57,6 +58,10 @@ export default function WarehousesScreen() {
   );
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
   const canManage = useCompanyCan("inventory:manage", effectiveCompany);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.inventory,
+    refreshKeys.companies,
+  ]);
 
   const warehouses = useWarehouses(effectiveCompany);
   const items = useInventoryItems(effectiveCompany);
@@ -131,7 +136,10 @@ export default function WarehousesScreen() {
           ) : undefined
         }
       />
-      <ScrollView contentContainerClassName="p-4 pb-24">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-24"
+      >
         {(companies.data?.length ?? 0) > 1 ? (
           <Select
             testID="warehouses-company"
@@ -155,7 +163,11 @@ export default function WarehousesScreen() {
         ) : null}
         {warehouses.data && warehouses.data.length === 0 ? (
           <EmptyState
-            message={t("inventory.warehouses.empty")}
+            message={t(
+              canManage
+                ? "inventory.warehouses.empty"
+                : "inventory.warehouses.emptyReadOnly",
+            )}
             action={
               canManage ? (
                 <Button

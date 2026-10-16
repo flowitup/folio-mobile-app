@@ -88,6 +88,8 @@ describe("accept-invite screen", () => {
       expect(mockRequestInviteCode).toHaveBeenCalledWith({
         token: "tok-123",
         phone: "+33612345678",
+        // The SMS is written in the app's language.
+        locale: "vi",
       }),
     );
 

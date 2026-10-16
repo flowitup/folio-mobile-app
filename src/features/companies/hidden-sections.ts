@@ -37,21 +37,64 @@ export function hideableSectionLabelKey(section: HideableSection): string {
   }
 }
 
+/** Company-wide Menu areas; the other sections belong to a project. */
+export const COMPANY_AREAS: readonly HideableSection[] = [
+  "billing",
+  "library",
+  "inventory",
+];
+
+type CompanySections = { id: string; hidden_sections?: string[] | null };
+
 /**
- * Sections the caller's company (the primary one, as the rest of the Menu) hides. Everything is
- * visible while the companies load or when the API predates the setting.
+ * What the Menu hides (the web applies the same rule):
+ * - a project section when the selected project's company hides it (with no project known, the
+ *   single company of a one-company user);
+ * - a company-wide area only when every company of the user hides it, so a user in two
+ *   companies still reaches the library of the one that uses it.
  */
-export function useHiddenSections(): ReadonlySet<string> {
-  const companies = useMyCompanies();
-  const hidden = companies.data?.[0]?.hidden_sections;
-  return useMemo(() => new Set(hidden ?? []), [hidden]);
+export function hiddenSectionsFor(
+  companies: readonly CompanySections[] | undefined,
+  projectCompanyId: string | null | undefined,
+): ReadonlySet<string> {
+  const list = companies ?? [];
+  const projectCompany = projectCompanyId
+    ? list.find((c) => c.id === projectCompanyId)
+    : list.length === 1
+      ? list[0]
+      : undefined;
+  const hidden = new Set(
+    (projectCompany?.hidden_sections ?? []).filter(
+      (key) => !COMPANY_AREAS.includes(key as HideableSection),
+    ),
+  );
+  if (list.length > 0)
+    for (const area of COMPANY_AREAS)
+      if (list.every((c) => (c.hidden_sections ?? []).includes(area)))
+        hidden.add(area);
+  return hidden;
 }
 
-/** Only a company admin (or platform ops) may change what the company hides. */
-export function useCanManageHiddenSections(): boolean {
+/** Sections hidden in the Menu for the project of `projectCompanyId` (see `hiddenSectionsFor`). */
+export function useHiddenSections(
+  projectCompanyId: string | null | undefined,
+): ReadonlySet<string> {
+  const companies = useMyCompanies();
+  return useMemo(
+    () => hiddenSectionsFor(companies.data, projectCompanyId),
+    [companies.data, projectCompanyId],
+  );
+}
+
+/**
+ * Only a company admin (or platform ops) may change what a company hides: of `companyId`, or of
+ * any company when none is given (whether to offer the screen at all).
+ */
+export function useCanManageHiddenSections(companyId?: string | null): boolean {
   const { user } = useAuth();
   const companies = useMyCompanies();
-  return (
-    isPlatformOps(user) || (companies.data?.[0]?.role ?? "member") === "admin"
+  if (isPlatformOps(user)) return true;
+  return (companies.data ?? []).some(
+    (c) => c.role === "admin" && (companyId == null || c.id === companyId),
   );
 }

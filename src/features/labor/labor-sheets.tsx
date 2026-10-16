@@ -36,7 +36,11 @@ import {
 } from "@/lib/labor/company-directory-candidates";
 import { accountOptionLabel } from "@/lib/labor/account-option-label";
 import { laborRoleLabel } from "@/lib/labor/labor-role-label";
-import { countRepricedDays } from "@/lib/labor/rate-change-impact";
+import {
+  countRepricedDays,
+  dayBefore,
+  nextRateChangeDate,
+} from "@/lib/labor/rate-change-impact";
 import { currentDailyRate } from "@/lib/labor/rate-history";
 import { parseSupplementHours } from "@/lib/labor/supplement-hours";
 
@@ -61,6 +65,9 @@ import type {
 
 export type SheetHandle = { open: () => void; close: () => void };
 
+/** The worker form also hears when the API refused its role (deleted, or another company's). */
+export type WorkerFormHandle = SheetHandle & { rejectRole: () => void };
+
 export const SHIFT_TYPES: ShiftType[] = ["full", "half", "overtime"];
 
 // ---- worker form -----------------------------------------------------------
@@ -81,7 +88,7 @@ type WorkerFormProps = {
 const NO_ACCOUNT = "__none__";
 
 /** Add / edit worker — name, daily rate (create only; later via rate changes), phone, role, linked account. */
-export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
+export const WorkerFormSheet = forwardRef<WorkerFormHandle, WorkerFormProps>(
   function WorkerFormSheet(
     { worker, submitting, onSubmit, projectId, companyId },
     ref,
@@ -98,7 +105,9 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     const directory = useCompanyPersons(
       mayReadDirectory ? (companyId ?? undefined) : undefined,
     );
-    const projectWorkers = useWorkers(projectId ?? "");
+    // Deactivated workers too: adding them again is refused (one row per person), they
+    // are reactivated from the roster instead.
+    const projectWorkers = useWorkers(projectId ?? "", true, true);
     const candidates = useMemo(
       () => directoryCandidates(directory.data, projectWorkers.data),
       [directory.data, projectWorkers.data],
@@ -125,6 +134,7 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
     // One message per field, so the rate error is shown under the rate and not under the name.
     const [nameError, setNameError] = useState<string | null>(null);
     const [rateError, setRateError] = useState<string | null>(null);
+    const [roleError, setRoleError] = useState<string | null>(null);
 
     const picked =
       personId === NEW_PERSON
@@ -141,9 +151,16 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
         setUserId(worker?.user_id ?? null);
         setNameError(null);
         setRateError(null);
+        setRoleError(null);
+        // Roles created or deleted elsewhere since the last open.
+        if (companyId) void roles.refetch();
         sheet.current?.present();
       },
       close: () => sheet.current?.dismiss(),
+      rejectRole: () => {
+        setRoleId(null);
+        setRoleError(t("labor.errors.roleUnavailable"));
+      },
     }));
 
     /** Company profile supplies identity, rate, role and account — each still editable below. */
@@ -228,9 +245,11 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
               options={[
                 ...offered.map((entry) => ({
                   value: entry.person_id,
-                  label: entry.phone
-                    ? `${entry.name} · ${entry.phone}`
-                    : entry.name,
+                  // Never "phone · phone" for someone added by number alone.
+                  label:
+                    entry.phone && entry.phone !== entry.name
+                      ? `${entry.name} · ${entry.phone}`
+                      : entry.name,
                 })),
                 { value: NEW_PERSON, label: t("labor.workers.fromCompanyNew") },
               ]}
@@ -292,11 +311,15 @@ export const WorkerFormSheet = forwardRef<SheetHandle, WorkerFormProps>(
             label={t("labor.workers.role")}
             placeholder={t("labor.workers.roleNone")}
             value={roleId}
+            error={roleError}
             options={(roles.data?.roles ?? []).map((role) => ({
               value: role.id,
               label: laborRoleLabel(role, t),
             }))}
-            onChange={setRoleId}
+            onChange={(value) => {
+              setRoleError(null);
+              setRoleId(value);
+            }}
           />
           {projectId ? (
             <Select
@@ -353,16 +376,19 @@ export const RateChangesSheet = forwardRef<
   const fresh =
     workers.data?.find((candidate) => candidate.id === worker?.id) ?? worker;
   const today = toIsoDate(new Date());
+  // A later rate change keeps its own days: only count up to it.
+  const until = date ? nextRateChangeDate(changes.data ?? [], date) : null;
   const logged = useLaborEntries(
     projectId,
     date ?? undefined,
-    undefined,
+    until ? dayBefore(until) : undefined,
     Boolean(worker && date),
   );
   const repricedDays = countRepricedDays(
     logged.data ?? [],
     worker?.id ?? "",
     date ?? "",
+    until,
   );
 
   // The sheet is mounted once and reused for every worker, so a rate typed for one worker
@@ -712,11 +738,20 @@ type EditEntryProps = {
   submitting: boolean;
   onSubmit: (values: UpdateAttendancePayload) => void;
   onDelete: () => void;
+  /**
+   * Settle a worker's self-logged day (status pending) or their change request
+   * from here, as the bell does: true validates/applies, false refuses.
+   */
+  onDecide?: (approve: boolean) => void;
+  deciding?: boolean;
 };
 
 /** Edit one attendance row: shift, supplement, override, note; delete. */
 export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
-  function EditEntrySheet({ entry, submitting, onSubmit, onDelete }, ref) {
+  function EditEntrySheet(
+    { entry, submitting, onSubmit, onDelete, onDecide, deciding = false },
+    ref,
+  ) {
     const { t } = useTranslation();
     const sheet = useRef<BottomSheetModal>(null);
     const [shift, setShift] = useState<ShiftType | "none">("full");
@@ -777,6 +812,13 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
                 })
               : null;
 
+    const decision =
+      entry?.status === "pending"
+        ? "pending"
+        : entry?.change_requested_at
+          ? "change"
+          : null;
+
     return (
       <Sheet
         ref={sheet}
@@ -784,6 +826,39 @@ export const EditEntrySheet = forwardRef<SheetHandle, EditEntryProps>(
         snapPoints={["80%"]}
       >
         <ScrollView contentContainerClassName="p-4">
+          {onDecide && decision ? (
+            <View
+              testID="entry-decision"
+              className="mb-4 rounded-[14px] bg-warning-tint p-3"
+            >
+              <Text className="mb-2 text-sm text-ink">
+                {decision === "pending"
+                  ? t("labor.entry.pendingHint")
+                  : t("notifications.attendance.changeTitle")}
+              </Text>
+              <View className="flex-row gap-2">
+                <Button
+                  testID="entry-validate"
+                  size="sm"
+                  label={
+                    decision === "pending"
+                      ? t("notifications.attendance.validate")
+                      : t("notifications.attendance.validateChange")
+                  }
+                  loading={deciding}
+                  onPress={() => onDecide(true)}
+                />
+                <Button
+                  testID="entry-reject"
+                  size="sm"
+                  variant="secondary"
+                  label={t("notifications.attendance.reject")}
+                  disabled={deciding}
+                  onPress={() => onDecide(false)}
+                />
+              </View>
+            </View>
+          ) : null}
           <Select<ShiftType | "none">
             testID="entry-shift"
             label={t("labor.log.shiftType")}

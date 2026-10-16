@@ -12,6 +12,10 @@
  * The Jest test pins each file's SHA-256: paste the hashes this script prints into
  * PDFJS_SHA256 in src/__tests__/pdf-viewer-open-file.test.ts, so a bump is reviewable.
  *
+ * The CMaps and standard fonts (needed to draw text in non-embedded CJK/CID fonts and the
+ * standard 14 fonts) are packed into one JSON text asset each, { name: base64 }, so they ship
+ * as two Metro assets instead of 190 files; the viewer hands them to pdf.js on request.
+ *
  * Usage: npm run pdfjs:vendor
  */
 
@@ -22,7 +26,9 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -40,6 +46,14 @@ const FILES = [
   ["legacy/build/pdf.min.mjs", "pdf.min.mjs.txt"],
   ["legacy/build/pdf.worker.min.mjs", "pdf.worker.min.mjs.txt"],
   ["LICENSE", "LICENSE"],
+  ["standard_fonts/LICENSE_FOXIT", "LICENSE_FOXIT"],
+  ["standard_fonts/LICENSE_LIBERATION", "LICENSE_LIBERATION"],
+];
+
+// [package folder, asset name, files kept]: CMaps by name, fonts by file name.
+const BUNDLES = [
+  ["cmaps", "cmaps.json.txt", /\.bcmap$/],
+  ["standard_fonts", "standard_fonts.json.txt", /\.(pfb|ttf)$/],
 ];
 
 const work = mkdtempSync(join(tmpdir(), "pdfjs-"));
@@ -61,6 +75,17 @@ try {
   for (const [from, to] of FILES) {
     const target = resolve(TARGET, to);
     copyFileSync(join(work, "package", from), target);
+    const sha = createHash("sha256").update(readFileSync(target)).digest("hex");
+    console.log(`assets/pdfjs/${to}  pdfjs-dist@${VERSION}  sha256 ${sha}`);
+  }
+  for (const [from, to, keep] of BUNDLES) {
+    const dir = join(work, "package", from);
+    const files = {};
+    for (const name of readdirSync(dir).sort())
+      if (keep.test(name))
+        files[name] = readFileSync(join(dir, name)).toString("base64");
+    const target = resolve(TARGET, to);
+    writeFileSync(target, JSON.stringify(files));
     const sha = createHash("sha256").update(readFileSync(target)).digest("hex");
     console.log(`assets/pdfjs/${to}  pdfjs-dist@${VERSION}  sha256 ${sha}`);
   }

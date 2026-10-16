@@ -22,6 +22,8 @@ export interface Worker {
   // falls back to the deterministic personColor hash otherwise.
   role_id?: string | null;
   role_name?: string | null;
+  /** Seed slug of the role (`tho_chinh` / `tho_phu`), so its name is shown translated. */
+  role_slug?: string | null;
   role_color?: string | null;
   // Rate in effect today: latest rate_change with effective_date <= today,
   // else the base daily_rate. Optional for back-compat with older API responses.
@@ -58,6 +60,8 @@ export interface UpdateWorkerPayload {
   role_id?: string | null;
   /** Link (or unlink with null) the app account that may self-log for this worker. */
   user_id?: string | null;
+  /** true reactivates a deactivated worker. */
+  is_active?: boolean;
 }
 
 export interface LaborEntry {
@@ -100,6 +104,10 @@ export interface LogAttendancePayload {
   shift_type?: ShiftType | null;
   supplement_hours?: number;
   tag_id?: string | null;
+  /** Refuse (409) a worker already logged on another project that day; useLogAttendance sends true. */
+  check_conflicts?: boolean;
+  /** The user saw that 409 and logs anyway. */
+  acknowledge_conflicts?: boolean;
 }
 
 export interface UpdateAttendancePayload {
@@ -195,6 +203,9 @@ interface MonthlyWorkerSubRow {
   days_worked: number;
   /** EUR */
   total_cost: number;
+  /** Rate on the month's last and first days (differ when it changed mid-month). Older APIs omit them. */
+  daily_rate?: number;
+  month_start_rate?: number;
 }
 
 export interface MonthlySummaryRow {

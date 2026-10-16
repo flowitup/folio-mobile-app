@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   Pressable,
@@ -10,6 +11,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/auth/auth-context";
 import { DeleteAccountAction } from "@/components/account/delete-account-action";
+import { LanguageChips } from "@/components/language-chips";
+import { LegalLinks } from "@/components/legal-links";
+import { Button } from "@/components/ui/button";
 import { useMyCompanies } from "@/features/companies/companies-api";
 import { useProjects } from "@/features/projects/projects-api";
 import { useTokens } from "@/theme/tokens";
@@ -24,11 +28,14 @@ import { useTokens } from "@/theme/tokens";
 export default function OnboardingWaitingScreen() {
   const { t } = useTranslation();
   const tokens = useTokens();
+  const router = useRouter();
   const { signOut } = useAuth();
   const companies = useMyCompanies();
   const projects = useProjects();
-  const company =
-    companies.data?.find((c) => c.is_primary) ?? companies.data?.[0];
+  // Every company the worker is attached to, primary first: the wait may be in any of them.
+  const attached = [...(companies.data ?? [])].sort(
+    (a, b) => Number(b.is_primary) - Number(a.is_primary),
+  );
   const refreshing = companies.isFetching || projects.isFetching;
 
   return (
@@ -56,11 +63,22 @@ export default function OnboardingWaitingScreen() {
           testID="onboarding-waiting-company"
           className="mb-2 font-sans-medium text-[15px] text-ink"
         >
-          {company?.legal_name ?? "…"}
+          {attached.length > 0
+            ? attached.map((c) => c.legal_name).join(" · ")
+            : "…"}
         </Text>
         <Text className="mb-8 font-sans text-[14px] text-muted">
           {t("onboarding.waiting.subtitle")}
         </Text>
+
+        {/* Wrong code, wrong company: join the right one from here. */}
+        <Button
+          testID="onboarding-waiting-join"
+          label={t("settings.joinCompany")}
+          variant="secondary"
+          onPress={() => router.push("/join-company?another=1")}
+          className="mb-6"
+        />
 
         <Pressable
           testID="onboarding-waiting-sign-out"
@@ -79,6 +97,9 @@ export default function OnboardingWaitingScreen() {
           className="mt-3 self-start"
           textClassName="font-sans text-[13px] text-muted"
         />
+
+        <LanguageChips className="mt-8" />
+        <LegalLinks className="mt-3" />
       </ScrollView>
     </SafeAreaView>
   );

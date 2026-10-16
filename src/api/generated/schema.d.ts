@@ -7589,6 +7589,8 @@ export interface components {
       /** Refresh Token */
       refresh_token: string;
       user: components["schemas"]["AcceptedUserResponse"];
+      /** Project Id */
+      project_id?: string | null;
     };
     /**
      * AcceptedUserResponse
@@ -9054,6 +9056,11 @@ export interface components {
      * @description POST /auth/otp/request — ask for a 6-digit code by SMS.
      */
     OtpRequestBody: {
+      /**
+       * Locale
+       * @default null
+       */
+      locale?: string | null;
       /** Phone */
       phone: string;
     };
@@ -9178,6 +9185,11 @@ export interface components {
      * @description POST /auth/me/phone/request-code — text a code to the new number the caller wants to use.
      */
     PhoneChangeRequestBody: {
+      /**
+       * Locale
+       * @default null
+       */
+      locale?: string | null;
       /** Phone */
       phone: string;
     };
@@ -9289,9 +9301,14 @@ export interface components {
       access_token: string;
       /**
        * Expires In
-       * @default 1800
+       * @default 604800
        */
       expires_in: number;
+      /**
+       * Refresh Token
+       * @description A rotated refresh token, sent when the presented one expires.
+       */
+      refresh_token?: string | null;
       /**
        * Token Type
        * @default Bearer
@@ -9331,6 +9348,11 @@ export interface components {
      *     code to the phone the invitee is claiming.
      */
     RequestInviteCodeRequest: {
+      /**
+       * Locale
+       * @default null
+       */
+      locale?: string | null;
       /** Phone */
       phone: string;
       /** Token */
@@ -9515,6 +9537,11 @@ export interface components {
      * @description POST /auth/signup/request — text a sign-up code to a phone without an account.
      */
     SignupRequestBody: {
+      /**
+       * Locale
+       * @default null
+       */
+      locale?: string | null;
       /** Phone */
       phone: string;
     };

@@ -25,7 +25,13 @@ jest.mock("@/components/shell/attendance-requests-section", () => ({
   AttendanceRequestsSection: () => null,
 }));
 jest.mock("@/features/projects/selected-project", () => ({
-  useSelectedProject: () => ({ projectId: "p-current", select: mockSelect }),
+  useSelectedProject: () => ({
+    projectId: "p-current",
+    select: mockSelect,
+    projects: [
+      { id: "p-other", name: "Villa Ngoc", address: "12 rue de la Paix" },
+    ],
+  }),
 }));
 jest.mock("@/features/notes/notes-api", () => ({
   useNotifications: () => ({
@@ -61,6 +67,14 @@ describe("notifications sheet · reminder", () => {
     expect(mockPush).toHaveBeenCalledWith("/projects/p-other/notes");
     expect(mockSelect.mock.invocationCallOrder[0]).toBeLessThan(
       mockPush.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("names the reminder's project, so the same title in two projects is not a duplicate", async () => {
+    await render(<NotificationsSheet />);
+
+    expect(screen.getByTestId("notification-project-n1")).toHaveTextContent(
+      "Villa Ngoc",
     );
   });
 });

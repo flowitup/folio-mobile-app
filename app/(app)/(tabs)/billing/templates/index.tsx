@@ -26,6 +26,7 @@ import { useMyCompanies } from "@/features/companies/companies-api";
 import { formatInstant } from "@/lib/format/date";
 import { formatNumber } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Templates grouped by kind; tap to edit, "Use" starts a document from it, long-press deletes.
@@ -49,6 +50,10 @@ export default function BillingTemplatesScreen() {
   const templates = useBillingTemplates(null, companyId, !companies.isPending);
   const remove = useDeleteBillingTemplate();
   useRefetchOnFocus(templates.refetch);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.billing,
+    refreshKeys.companies,
+  ]);
   const [deleting, setDeleting] = useState<BillingDocumentTemplate | null>(
     null,
   );
@@ -77,7 +82,10 @@ export default function BillingTemplatesScreen() {
           />
         }
       />
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         {adminCompanies.length > 1 ? (
           <Select
             testID="templates-company"

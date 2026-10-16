@@ -34,6 +34,7 @@ import {
 import { ImportMembersSheet } from "@/features/companies/import-members-sheet";
 import { MemberGrantsSheet } from "@/features/companies/member-grants-sheet";
 import { memberDisplayName } from "@/lib/companies/member-display";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Company members management (admin only): role per member, D8 custom scope, add by phone,
@@ -41,7 +42,7 @@ import { memberDisplayName } from "@/lib/companies/member-display";
  */
 export default function CompanyMembersScreen() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const companies = useMyCompanies();
   const adminCompanies = useMemo(
     () => (companies.data ?? []).filter((c) => c.role === "admin"),
@@ -53,6 +54,9 @@ export default function CompanyMembersScreen() {
   const company = useCompany(activeCompanyId ?? undefined);
   const users = useAttachedUsers(activeCompanyId ?? undefined);
   const persons = useCompanyPersons(activeCompanyId ?? undefined);
+  const pullToRefresh = usePullToRefresh([refreshKeys.companies], {
+    refetch: [refreshUser],
+  });
   const pendingPersons = useMemo(
     () => (persons.data ?? []).filter((person) => person.pending),
     [persons.data],
@@ -100,7 +104,10 @@ export default function CompanyMembersScreen() {
   return (
     <View className="flex-1 bg-paper">
       <ScreenHeader title={t("companies.members.title")} back />
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         {adminCompanies.length > 1 ? (
           <Select
             testID="members-company-picker"

@@ -49,6 +49,17 @@ describe("resolveOnboardingRedirect", () => {
     ).toBe("/onboarding-waiting");
   });
 
+  it("lets a waiting member open the join screen to join another company", () => {
+    expect(
+      resolveOnboardingRedirect({
+        ...BASE,
+        companyRoles: ["member"],
+        hasProjects: false,
+        pathname: "/join-company?another=1",
+      }),
+    ).toBeNull();
+  });
+
   it("does not wait when the member is assigned to a project", () => {
     expect(
       resolveOnboardingRedirect({

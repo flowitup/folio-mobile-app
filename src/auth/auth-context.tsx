@@ -35,12 +35,14 @@ import {
 
 import type { components } from "@/api/generated/schema";
 import i18n from "@/i18n";
+import { smsLocale } from "@/lib/auth/sms-locale";
 import {
   authErrorKey,
   AuthRequestError,
   hourlyLimitMinutes,
+  waitLabel,
 } from "@/lib/auth/auth-error-message";
-import type { AuthFlow } from "@/lib/auth/auth-error-message";
+import type { AuthFlow, AuthStep } from "@/lib/auth/auth-error-message";
 import { clearLocalUserFiles } from "@/lib/files/clear-local-files";
 
 // `is_platform_ops` (D5) is not on the generated `UserResponse` yet — the backend ships it in
@@ -63,6 +65,12 @@ type AuthStatus = "loading" | "signedOut" | "signedIn" | "unavailable";
 type AuthContextValue = {
   status: AuthStatus;
   user: AuthUser | null;
+  /**
+   * While `unavailable` because of a rate limit (429): the seconds to wait (0 when the server
+   * gave none), so the retry screen says "busy, try again in 40 s" instead of blaming the
+   * connection. Null for offline or a server error.
+   */
+  unavailableRetryAfter: number | null;
   /** Checks the stored session again after launch found the server unreachable. */
   retrySession: () => Promise<void>;
   /** Asks the backend to text a 6-digit code; resolves with the code's lifetime in seconds. */
@@ -121,19 +129,29 @@ function authError(
   flow: AuthFlow,
   error: unknown,
   response: Pick<Response, "status" | "headers"> | undefined,
+  step: AuthStep = "request",
 ): AuthRequestError {
   // Recognised failures get a translated string; the rest keep the server's own wording,
   // which is more specific than any catch-all we could write. The status travels with the
   // error so a screen can branch on it instead of matching the translated sentence.
   const errorCode = (error as { error?: string } | undefined)?.error;
-  const key = authErrorKey(flow, response?.status, errorCode);
+  const reason = (error as { reason?: string } | undefined)?.reason;
+  const key = authErrorKey(flow, response?.status, errorCode, { step, reason });
   // The hourly code cap names how long to wait (Retry-After), not "wait a minute".
   const minutes = hourlyLimitMinutes(
     errorCode,
     response?.headers?.get("Retry-After"),
   );
+  // The other limits say how long, too ("Try again in 40 s").
+  const retryAfter =
+    Number(response?.headers?.get("Retry-After")) ||
+    Number((error as { retry_after?: unknown } | undefined)?.retry_after) ||
+    null;
+  const wait =
+    waitLabel(retryAfter, (k, o) => i18n.t(k, o)) ??
+    i18n.t("common.errors.waitMinutes", { count: 1 });
   const message = key
-    ? i18n.t(key, minutes === null ? undefined : { count: minutes })
+    ? i18n.t(key, minutes === null ? { wait } : { count: minutes, wait })
     : ((error as { message?: string } | undefined)?.message ??
       `HTTP ${response?.status ?? "?"}`);
   return new AuthRequestError(message, response?.status);
@@ -145,6 +163,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [unavailableRetryAfter, setUnavailableRetryAfter] = useState<
+    number | null
+  >(null);
 
   const signOutLocally = useCallback(async () => {
     await clearStoredTokens();
@@ -198,9 +219,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
       const { refreshToken: kept } = await getStoredTokens();
       if (response.status === 404 || !kept) return await signOutLocally();
+      setUnavailableRetryAfter(
+        response.status === 429
+          ? Number(response.headers?.get("Retry-After")) || 0
+          : null,
+      );
       setStatus("unavailable");
     } catch {
       // Offline: openapi-fetch rethrows the network error.
+      setUnavailableRetryAfter(null);
       setStatus("unavailable");
     } finally {
       restoreInFlight.current = false;
@@ -234,26 +261,50 @@ export function AuthProvider({ children }: PropsWithChildren) {
   // change (role, D8 grant, new assignment) shows up without a re-login. Mints a fresh access
   // token first (`/auth/refresh` recomputes the JWT permission claim) so the `/auth/me` read
   // that follows reflects it.
-  const refreshInFlight = useRef(false);
+  //
+  // One read at a time, but a call made while one runs is not dropped: it may follow a write
+  // the running read started before (a company just created while a foreground refresh was on
+  // its way), so its answer would miss it — the role gates ("+ New role") then stayed off until
+  // the next foreground. Such calls wait for the running read and share one more read after it.
+  const refreshInFlight = useRef<Promise<void> | null>(null);
+  const refreshQueued = useRef<Promise<void> | null>(null);
   const statusRef = useRef(status);
   useEffect(() => {
     statusRef.current = status;
   }, [status]);
-  const refreshUser = useCallback(async () => {
-    if (refreshInFlight.current || statusRef.current !== "signedIn") return;
+  const readUser = useCallback(async () => {
     const { refreshToken } = await getStoredTokens();
     if (!refreshToken) return;
-    refreshInFlight.current = true;
     try {
       await refreshAccessToken();
       const { data } = await api.GET("/api/v1/auth/me");
-      if (data) setUser(data);
+      // Read on every foreground and pull-to-refresh: an unchanged answer keeps the same
+      // object, so the screens reading the user do not all re-render for nothing.
+      if (data)
+        setUser((prev) =>
+          prev && JSON.stringify(prev) === JSON.stringify(data) ? prev : data,
+        );
     } catch {
       // Offline: keep the user we have; the next foreground tries again.
-    } finally {
-      refreshInFlight.current = false;
     }
   }, []);
+  const refreshUser = useCallback((): Promise<void> => {
+    if (statusRef.current !== "signedIn") return Promise.resolve();
+    const start = (): Promise<void> => {
+      const read: Promise<void> = readUser().finally(() => {
+        if (refreshInFlight.current === read) refreshInFlight.current = null;
+      });
+      refreshInFlight.current = read;
+      return read;
+    };
+    const running = refreshInFlight.current;
+    if (!running) return start();
+    refreshQueued.current ??= running.then(() => {
+      refreshQueued.current = null;
+      return start();
+    });
+    return refreshQueued.current;
+  }, [readUser]);
 
   // Foreground/background also drives TanStack Query's focus manager directly (React Native has
   // no `visibilitychange` event, so the default browser-only detection never fires) — this makes
@@ -276,7 +327,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const requestOtp = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/otp/request",
-      { body: { phone } },
+      { body: { phone, locale: smsLocale() } },
     );
     if (!data) throw authError("otp", error, response);
     return data.expires_in;
@@ -288,7 +339,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/otp/verify",
         { body: { phone, code } },
       );
-      if (!data) throw authError("otp", error, response);
+      if (!data) throw authError("otp", error, response, "verify");
       await applyLoginPayload(data);
     },
     [applyLoginPayload],
@@ -307,7 +358,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const requestSignupOtp = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/signup/request",
-      { body: { phone } },
+      { body: { phone, locale: smsLocale() } },
     );
     if (!data) throw authError("signup", error, response);
     return data.expires_in;
@@ -319,7 +370,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/signup/verify",
         { body: { phone, code, display_name: displayName } },
       );
-      if (!data) throw authError("signup", error, response);
+      if (!data) throw authError("signup", error, response, "verify");
       await applyLoginPayload(data);
     },
     [applyLoginPayload],
@@ -328,7 +379,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const requestPhoneChangeCode = useCallback(async (phone: string) => {
     const { data, error, response } = await api.POST(
       "/api/v1/auth/me/phone/request-code",
-      { body: { phone } },
+      { body: { phone, locale: smsLocale() } },
     );
     if (!data) throw authError("phoneChange", error, response);
     return data.expires_in;
@@ -340,7 +391,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         "/api/v1/auth/me/phone/confirm",
         { body: { phone, code } },
       );
-      if (!data) throw authError("phoneChange", error, response);
+      if (!data) throw authError("phoneChange", error, response, "verify");
       // The change signs the account out everywhere else and revokes the tokens this
       // session used: keep the fresh pair it answers with, then the updated user.
       const { access_token, refresh_token, ...me } = data;
@@ -349,7 +400,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       // The change also removed every push device of the account, this phone's included, and
       // the signed-in area registers only when it mounts: register again now, best effort.
       void Promise.resolve()
-        .then(registerPushDevice)
+        .then(() => registerPushDevice())
         .catch(() => undefined);
     },
     [],
@@ -396,6 +447,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     () => ({
       status,
       user,
+      unavailableRetryAfter,
       retrySession: restoreSession,
       requestOtp,
       signInWithOtp,
@@ -411,6 +463,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [
       status,
       user,
+      unavailableRetryAfter,
       restoreSession,
       requestOtp,
       signInWithOtp,

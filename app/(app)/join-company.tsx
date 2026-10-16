@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   Text,
   TextInput,
@@ -18,7 +17,8 @@ import {
   useJoinCompanyByCode,
   useMyCompanies,
 } from "@/features/companies/companies-api";
-import { normalizeJoinCode } from "@/lib/companies/join-code";
+import { extractJoinCode, normalizeJoinCode } from "@/lib/companies/join-code";
+import { LanguageChips } from "@/components/language-chips";
 import { joinErrorKey } from "@/lib/companies/join-error-message";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 import { useTokens } from "@/theme/tokens";
@@ -68,8 +68,10 @@ export default function JoinCompanyScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-paper">
+      {/* Both platforms: the app is edge-to-edge, so on Android the keyboard drew over the
+          Join button instead of the window shrinking. */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior="padding"
         className="flex-1 justify-center px-7 pb-10"
       >
         <View className="mb-7 h-11 w-11 items-center justify-center rounded-xl bg-ink">
@@ -96,13 +98,21 @@ export default function JoinCompanyScreen() {
             autoCapitalize="characters"
             autoCorrect={false}
             autoComplete="off"
-            maxLength={9}
+            // Long enough for a pasted share message: the code is picked out of it below.
+            maxLength={400}
             placeholder="K7Q2-M9XR"
             placeholderTextColor={tokens.muted2}
             // Not reformatted while typing: a controlled value that differs from the keystrokes
             // drops characters on Android. Dashes/spaces are stripped on submit.
             value={raw}
-            onChangeText={(text) => setRaw(text.toUpperCase())}
+            onChangeText={(text) =>
+              // A pasted share message ("Rejoignez … le code K7Q2-M9XR.") keeps only its code.
+              setRaw(
+                text.length > 9
+                  ? (extractJoinCode(text) ?? text.toUpperCase().slice(0, 9))
+                  : text.toUpperCase(),
+              )
+            }
             onSubmitEditing={submit}
             autoFocus
           />
@@ -153,6 +163,7 @@ export default function JoinCompanyScreen() {
             </Text>
           </Pressable>
         </View>
+        {hasCompany ? null : <LanguageChips className="mt-6" />}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

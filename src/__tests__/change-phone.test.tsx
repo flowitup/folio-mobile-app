@@ -93,7 +93,7 @@ describe("ChangePhoneForm", () => {
     expect(mockRequestCode).toHaveBeenCalledWith("+33622222222");
     expect(
       await screen.findByText(
-        t("account.phone.codeSentTo", { phone: "+33622222222" }),
+        t("account.phone.codeSentTo", { phone: "+33 6 22 22 22 22" }),
       ),
     ).toBeTruthy();
 
@@ -178,6 +178,20 @@ describe("ChangePhoneForm", () => {
 
     expect(screen.getByTestId("change-phone-step-number")).toBeTruthy();
   });
+
+  it("returns to the code already sent when the same number is sent again within a minute", async () => {
+    await renderForm();
+
+    await sendCodeTo("0622222222");
+    await fireEvent.press(
+      await screen.findByTestId("change-phone-other-number"),
+    );
+    // The number is still typed; sending it again must not ask for a new code (429).
+    await fireEvent.press(screen.getByTestId("change-phone-send"));
+
+    expect(await screen.findByTestId("change-phone-code-0")).toBeTruthy();
+    expect(mockRequestCode).toHaveBeenCalledTimes(1);
+  });
 });
 
 function OpenAccount() {
@@ -202,7 +216,7 @@ describe("AccountSheet — phone number", () => {
     await fireEvent.press(screen.getByTestId("open-account"));
 
     expect(screen.getByTestId("account-phone")).toHaveTextContent(
-      /\+33611111111/,
+      /\+33 6 11 11 11 11/,
     );
     await fireEvent.press(screen.getByTestId("account-phone"));
     expect(mockPush).toHaveBeenCalledWith("/settings/phone");

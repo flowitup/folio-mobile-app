@@ -29,6 +29,9 @@ import {
 import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 /** Keeps the focus hook's dependency stable while the caller has no access to the list. */
 const NOOP_REFETCH = () => {};
@@ -63,33 +66,51 @@ export default function BillingHub() {
   const [kind, setKind] = useState<BillingDocumentKind>("devis");
   const [status, setStatus] = useState<BillingDocumentStatus | null>(null);
   const [search, setSearch] = useState("");
-  const list = useBillingDocuments(kind, status, access.allowed);
+  // Two companies can both have a FAC-2026-001: with several, each row names its issuer and the
+  // list can be narrowed to one company.
+  const issuerCompanies = access.companies.filter((c) => c.role === "admin");
+  const multiCompany = issuerCompanies.length > 1;
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  // The API searches every page (`q`); wait for a typing pause before asking it.
+  const [query, setQuery] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [search]);
+  const list = useBillingDocuments(
+    kind,
+    status,
+    access.allowed,
+    companyId,
+    query,
+  );
   // `refetch()` fetches even a disabled query, so the focus hook has to respect the gate too —
   // otherwise a refused caller re-issues the company-wide query every time the screen regains
   // focus, which is exactly what `enabled` is there to prevent.
   useRefetchOnFocus(access.allowed ? list.refetch : NOOP_REFETCH);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.billing,
+    refreshKeys.companies,
+  ]);
 
   const needle = search.trim().toLowerCase();
+  // While a new search, kind or status loads, the previous result stays on screen: narrow it
+  // to what the new request will return so typing and switching feel immediate.
+  const stale = list.isPlaceholderData;
   const documents = useMemo(() => {
     const all = list.data?.pages.flatMap((page) => page.items) ?? [];
-    return needle
-      ? all.filter(
-          (d) =>
-            d.document_number.toLowerCase().includes(needle) ||
-            d.recipient_name.toLowerCase().includes(needle),
-        )
-      : all;
-  }, [list.data, needle]);
-  // The API has no search parameter, so the filter only ever sees the pages already
-  // downloaded: a match on page three reads as "no document" until the list is exhausted.
-  // While a needle is set, keep pulling the next page so the empty state means what it says.
-  // A failed page stops the loop (otherwise it would retry forever) and hands control back
-  // to the manual "load more" button below.
-  const { fetchNextPage, isFetchingNextPage, isFetchNextPageError } = list;
-  const searching = needle !== "" && list.hasNextPage && !isFetchNextPageError;
-  useEffect(() => {
-    if (searching && !isFetchingNextPage) void fetchNextPage();
-  }, [searching, isFetchingNextPage, fetchNextPage]);
+    return all.filter(
+      (d) =>
+        (!stale ||
+          (d.kind === kind &&
+            (status === null || d.status === status) &&
+            (companyId === null || d.company_id === companyId))) &&
+        (!needle ||
+          d.document_number.toLowerCase().includes(needle) ||
+          d.recipient_name.toLowerCase().includes(needle)),
+    );
+  }, [list.data, needle, kind, status, companyId, stale]);
+  const searching = needle !== query.toLowerCase() || stale;
 
   return (
     <View className="flex-1 bg-paper">
@@ -102,6 +123,7 @@ export default function BillingHub() {
       ) : null}
       {access.allowed ? (
         <ScrollView
+          refreshControl={pullToRefresh}
           className="flex-1"
           contentContainerClassName="px-4 pb-6 pt-3.5"
           contentContainerStyle={{ gap: 16 }}
@@ -119,6 +141,80 @@ export default function BillingHub() {
               { value: "facture", label: t("billing.factures") },
             ]}
           />
+          {multiCompany ? (
+            <Select
+              testID="billing-company"
+              compact
+              value={companyId ?? "__all__"}
+              options={[
+                { value: "__all__", label: t("billing.list.allCompanies") },
+                ...issuerCompanies.map((c) => ({
+                  value: c.id,
+                  label: c.legal_name,
+                })),
+              ]}
+              onChange={(value) =>
+                setCompanyId(value === "__all__" ? null : value)
+              }
+            />
+          ) : null}
+          {/* The actions lead the screen: as a list footer, "+ New" sank below the fold and
+              under the floating tab bar once a company had more than a handful of documents. */}
+          <View className="flex-row gap-2">
+            <Pressable
+              testID="billing-templates"
+              accessibilityRole="button"
+              onPress={() => router.push("/billing/templates")}
+              className="h-10 flex-1 items-center justify-center rounded-[9px] border border-line-2 active:opacity-70"
+            >
+              <Text className="font-sans-medium text-[13px] text-ink">
+                {t("billing.list.templates")}
+              </Text>
+            </Pressable>
+            <Pressable
+              testID="billing-refundable"
+              accessibilityRole="button"
+              onPress={() => router.push("/billing/refundable")}
+              className="h-10 flex-1 items-center justify-center rounded-[9px] border border-line-2 active:opacity-70"
+            >
+              <Text
+                className="font-sans-medium text-[13px] text-ink"
+                numberOfLines={1}
+              >
+                {t("billing.list.refundable")}
+              </Text>
+            </Pressable>
+            <Pressable
+              testID="billing-new"
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({
+                  pathname: "/billing/documents/new",
+                  params: { kind },
+                })
+              }
+              className="h-10 flex-1 items-center justify-center rounded-[9px] bg-ink active:opacity-70"
+            >
+              <Text className="font-sans-semibold text-[13px] text-on-ink">
+                + {t("billing.list.new")}
+              </Text>
+            </Pressable>
+          </View>
+          <Pressable
+            testID="billing-import"
+            accessibilityRole="button"
+            onPress={() =>
+              router.push({
+                pathname: "/billing/documents/new",
+                params: { kind, mode: "import" },
+              })
+            }
+            className="items-center active:opacity-70"
+          >
+            <Text className="font-sans text-xs text-accent-ink">
+              {t("billing.list.import")} ›
+            </Text>
+          </Pressable>
           <View className="flex-row gap-1.5">
             <View className="h-[38px] flex-1 flex-row items-center gap-2 rounded-[9px] border border-line-2 bg-card px-3">
               <Icon name="search" size={14} color={tokens.muted} />
@@ -193,6 +289,15 @@ export default function BillingHub() {
                       {formatMoney(doc.total_ttc)}
                     </Text>
                   </View>
+                  {multiCompany ? (
+                    <Text
+                      testID={`billing-doc-issuer-${doc.id}`}
+                      className="font-sans text-[12px] text-muted"
+                      numberOfLines={1}
+                    >
+                      {doc.issuer_legal_name}
+                    </Text>
+                  ) : null}
                   <View className="mt-0.5 flex-row items-center justify-between gap-3">
                     <Text className="font-mono-regular text-[11.5px] text-muted">
                       {doc.document_number} · {longDate(doc.issue_date)}
@@ -219,62 +324,6 @@ export default function BillingHub() {
               onPress={() => void list.fetchNextPage()}
             />
           ) : null}
-
-          <View className="flex-row gap-2">
-            <Pressable
-              testID="billing-templates"
-              accessibilityRole="button"
-              onPress={() => router.push("/billing/templates")}
-              className="h-10 flex-1 items-center justify-center rounded-[9px] border border-line-2 active:opacity-70"
-            >
-              <Text className="font-sans-medium text-[13px] text-ink">
-                {t("billing.list.templates")}
-              </Text>
-            </Pressable>
-            <Pressable
-              testID="billing-refundable"
-              accessibilityRole="button"
-              onPress={() => router.push("/billing/refundable")}
-              className="h-10 flex-1 items-center justify-center rounded-[9px] border border-line-2 active:opacity-70"
-            >
-              <Text
-                className="font-sans-medium text-[13px] text-ink"
-                numberOfLines={1}
-              >
-                {t("billing.list.refundable")}
-              </Text>
-            </Pressable>
-            <Pressable
-              testID="billing-new"
-              accessibilityRole="button"
-              onPress={() =>
-                router.push({
-                  pathname: "/billing/documents/new",
-                  params: { kind },
-                })
-              }
-              className="h-10 flex-1 items-center justify-center rounded-[9px] bg-ink active:opacity-70"
-            >
-              <Text className="font-sans-semibold text-[13px] text-on-ink">
-                + {t("billing.list.new")}
-              </Text>
-            </Pressable>
-          </View>
-          <Pressable
-            testID="billing-import"
-            accessibilityRole="button"
-            onPress={() =>
-              router.push({
-                pathname: "/billing/documents/new",
-                params: { kind, mode: "import" },
-              })
-            }
-            className="items-center active:opacity-70"
-          >
-            <Text className="font-sans text-xs text-accent-ink">
-              {t("billing.list.import")} ›
-            </Text>
-          </Pressable>
         </ScrollView>
       ) : null}
     </View>

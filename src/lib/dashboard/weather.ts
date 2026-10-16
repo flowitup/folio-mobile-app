@@ -81,9 +81,11 @@ export function cityFromAddress(
   return null;
 }
 
-export function geocodeUrl(city: string): string {
+/** Place names come back in the reader's language (fr / en / vi), French when unknown. */
+export function geocodeUrl(city: string, language = "fr"): string {
   const q = encodeURIComponent(city);
-  return `https://geocoding-api.open-meteo.com/v1/search?name=${q}&count=1&language=fr&format=json`;
+  const lang = /^[a-z]{2}$/.test(language) ? language : "fr";
+  return `https://geocoding-api.open-meteo.com/v1/search?name=${q}&count=1&language=${lang}&format=json`;
 }
 
 export function forecastUrl(latitude: number, longitude: number): string {

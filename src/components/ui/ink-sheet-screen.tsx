@@ -1,5 +1,6 @@
-import type { PropsWithChildren, ReactNode } from "react";
+import type { PropsWithChildren, ReactElement, ReactNode } from "react";
 import { ScrollView, Text, View } from "react-native";
+import type { RefreshControlProps } from "react-native";
 
 import { splitMoney } from "@/lib/format/money";
 
@@ -12,6 +13,8 @@ type Props = PropsWithChildren<{
   gap?: number;
   /** Extra bottom padding, e.g. room for a floating button. */
   bottomPadding?: number;
+  /** Pull-to-refresh (`usePullToRefresh(keys, { onInk: true })`). */
+  refreshControl?: ReactElement<RefreshControlProps>;
   testID?: string;
 }>;
 
@@ -27,12 +30,17 @@ export function InkSheetScreen({
   gap = 18,
   bottomPadding = 24,
   children,
+  refreshControl,
   testID,
 }: Props) {
   return (
     <View className="flex-1 bg-paper" testID={testID}>
       <View className="bg-ink-block">{header}</View>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={refreshControl}
+      >
         <View className="bg-ink-block">
           <View
             pointerEvents="none"
@@ -57,6 +65,34 @@ export function InkSheetScreen({
  * Headline money figure of an ink hero: integer part in a large mono face, decimals + currency
  * half as big and muted (`97.640` `,00 €`).
  */
+/**
+ * Splits a formatted figure so its digit-group spaces can be drawn narrower. French and
+ * Vietnamese group with a (narrow) no-break space, which a monospace font draws a full digit
+ * wide: "11 420,00 €" read like two numbers in the big hero figure.
+ */
+export function splitDigitGroups(
+  text: string,
+): { text: string; gap: boolean }[] {
+  const parts: { text: string; gap: boolean }[] = [];
+  let run = "";
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    const isGap =
+      /[\u202F\u00A0 ]/.test(ch) &&
+      /\d/.test(text[i - 1] ?? "") &&
+      /\d/.test(text[i + 1] ?? "");
+    if (!isGap) {
+      run += ch;
+      continue;
+    }
+    if (run) parts.push({ text: run, gap: false });
+    parts.push({ text: ch, gap: true });
+    run = "";
+  }
+  if (run) parts.push({ text: run, gap: false });
+  return parts;
+}
+
 export function InkFigure({
   amount,
   size = 40,
@@ -78,7 +114,15 @@ export function InkFigure({
       numberOfLines={1}
       adjustsFontSizeToFit
     >
-      {main}
+      {splitDigitGroups(main).map((part, index) =>
+        part.gap ? (
+          <Text key={index} style={{ fontSize: size / 3, letterSpacing: 0 }}>
+            {part.text}
+          </Text>
+        ) : (
+          part.text
+        ),
+      )}
       <Text
         className="font-mono text-ink-block-muted"
         style={{ fontSize: size / 2 }}

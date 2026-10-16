@@ -22,9 +22,17 @@ const USER = {
   phone: "+33600000003",
 };
 
+const PHONE_ONLY = {
+  id: "u2",
+  email: "phone-33623100003@no-email.folio.flowitup.com",
+  display_name: null,
+  phone: "+33623100003",
+};
+
+let mockResults: (typeof USER | typeof PHONE_ONLY)[] = [USER];
 const mockMutate = jest.fn();
 jest.mock("@/features/admin/admin-api", () => ({
-  useAdminUserSearch: () => ({ data: [USER], isFetching: false }),
+  useAdminUserSearch: () => ({ data: mockResults, isFetching: false }),
   useUpdateUser: () => ({ mutate: mockMutate, isPending: false }),
 }));
 
@@ -42,7 +50,10 @@ jest.mock("@/auth/auth-context", () => ({
   useAuth: () => ({ user: { id: "ops", is_platform_ops: true } }),
 }));
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockResults = [USER];
+});
 
 async function openEditor() {
   await render(
@@ -94,5 +105,28 @@ describe("editing a user's sign-in number", () => {
     await fireEvent.press(screen.getByTestId("user-edit-submit"));
 
     expect(mockMutate.mock.calls[0][0].phone).toBeNull();
+  });
+});
+
+describe("a phone sign-up account", () => {
+  it("is shown by its phone, never by its synthetic address, and keeps it when the e-mail is left empty", async () => {
+    mockResults = [PHONE_ONLY];
+    await render(
+      <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
+        <UsersScreen />
+      </SafeAreaProvider>,
+    );
+    await fireEvent.changeText(screen.getByTestId("user-search"), "0623100003");
+    await waitFor(() => screen.getByTestId(`user-pick-${PHONE_ONLY.id}`));
+    expect(screen.queryByText(/no-email/)).toBeNull();
+    expect(screen.getAllByText(/\+33 6 23 10 00 03/).length).toBeGreaterThan(0);
+
+    await fireEvent.press(screen.getByTestId(`user-pick-${PHONE_ONLY.id}`));
+    expect(screen.queryByText(/no-email/)).toBeNull();
+    await fireEvent.press(screen.getByTestId("user-edit"));
+    expect(screen.getByTestId("user-edit-email").props.value).toBe("");
+
+    await fireEvent.press(screen.getByTestId("user-edit-submit"));
+    expect(mockMutate.mock.calls[0][0].email).toBe(PHONE_ONLY.email);
   });
 });

@@ -4,13 +4,22 @@ export class ApiError extends Error {
   readonly code: string;
   /** The envelope's machine-readable `reason` (e.g. "last_admin"), when the backend sends one. */
   readonly reason?: string;
+  /** Seconds to wait before trying again (429: the body's `retry_after` or the Retry-After header). */
+  readonly retryAfter?: number;
 
-  constructor(status: number, code: string, message: string, reason?: string) {
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    reason?: string,
+    retryAfter?: number,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
     this.reason = reason;
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -21,34 +30,46 @@ type FetchResult<T> = {
 };
 
 // Backend error envelope: { error: "NotFound", message: "...", status_code: 404, reason?: "..." }
-function readEnvelope(error: unknown): {
+export function readEnvelope(error: unknown): {
   code?: string;
   message?: string;
   reason?: string;
+  retryAfter?: number;
 } {
   if (typeof error !== "object" || error === null) return {};
   const body = error as {
     error?: unknown;
     message?: unknown;
     reason?: unknown;
+    retry_after?: unknown;
   };
   return {
     code: typeof body.error === "string" ? body.error : undefined,
     message: typeof body.message === "string" ? body.message : undefined,
     reason: typeof body.reason === "string" ? body.reason : undefined,
+    retryAfter: retryAfterSeconds(body.retry_after),
   };
+}
+
+/** A Retry-After value (seconds, as a number or numeric string) or undefined. */
+export function retryAfterSeconds(value: unknown): number | undefined {
+  const n = typeof value === "string" ? Number(value.trim()) : value;
+  return typeof n === "number" && Number.isFinite(n) && n > 0
+    ? Math.ceil(n)
+    : undefined;
 }
 
 /** Turns an openapi-fetch result into data, throwing ApiError on failure. */
 export function unwrap<T>(result: FetchResult<T>): T {
   if (result.error !== undefined || result.data === undefined) {
-    const { code, message, reason } = readEnvelope(result.error);
+    const { code, message, reason, retryAfter } = readEnvelope(result.error);
     throw new ApiError(
       result.response.status,
       code ?? "HttpError",
       message ??
         `HTTP ${result.response.status} ${result.response.statusText}`.trim(),
       reason,
+      retryAfter,
     );
   }
   return result.data;

@@ -17,12 +17,16 @@ import { Icon } from "@/components/ui/icon";
 import type { IconName } from "@/components/ui/icon";
 import { Eyebrow, RowChevron } from "@/components/ui/typography";
 import {
+  currentCompanyId,
   useBillingAccess,
   useMyCompanies,
 } from "@/features/companies/companies-api";
 import { useHiddenSections } from "@/features/companies/hidden-sections";
 import { useInventoryItems } from "@/features/inventory/inventory-api";
-import { useWorkerMode } from "@/features/labor/use-worker-mode";
+import {
+  useRestrictedMember,
+  useWorkerMode,
+} from "@/features/labor/use-worker-mode";
 import { useProducts, useSuppliers } from "@/features/library/library-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
@@ -38,11 +42,13 @@ const MENU_PROJECT_SECTIONS: {
   key: string;
   icon: IconName;
   requiresUpdate?: boolean;
+  /** Hidden from a member with no labor or pay access: the backend shows them no worker. */
+  requiresLaborView?: boolean;
 }[] = [
   { key: "documents", icon: "folder", requiresUpdate: true },
   { key: "photos", icon: "image" },
   { key: "notes", icon: "edit-3" },
-  { key: "salaries", icon: "credit-card" },
+  { key: "salaries", icon: "credit-card", requiresLaborView: true },
   { key: "chiffrage", icon: "clipboard" },
   { key: "analyses", icon: "bar-chart-2" },
   { key: "members", icon: "user-plus" },
@@ -105,15 +111,18 @@ export function MenuSheet() {
   const router = useRouter();
   const { height } = useWindowDimensions();
   const { sheet, closeSheet } = useShell();
-  const { projectId } = useSelectedProject();
+  const { projectId, project } = useSelectedProject();
   const canUpdateProject = useProjectCan(projectId, "project:update");
   const { workerMode } = useWorkerMode();
+  const restrictedMember = useRestrictedMember();
   const { user } = useAuth();
   const billing = useBillingAccess();
   const companyAdmin = isCompanyAdminAnywhere(user);
-  const hidden = useHiddenSections();
+  const hidden = useHiddenSections(project?.company_id);
   const companies = useMyCompanies();
-  const companyId = companies.data?.[0]?.id ?? null;
+  // Counts of the library / inventory the screens open on: the default company (primary,
+  // then oldest attachment — the API's default).
+  const companyId = currentCompanyId(companies.data) ?? null;
   const products = useProducts(companyId, {
     supplier: null,
     category: null,
@@ -131,7 +140,9 @@ export function MenuSheet() {
 
   const projectSections = MENU_PROJECT_SECTIONS.filter(
     (section) =>
-      (!section.requiresUpdate || canUpdateProject) && !hidden.has(section.key),
+      (!section.requiresUpdate || canUpdateProject) &&
+      (!section.requiresLaborView || !restrictedMember) &&
+      !hidden.has(section.key),
   );
 
   const librarySub =

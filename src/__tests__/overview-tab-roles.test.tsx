@@ -1,11 +1,12 @@
-import type { QueryClient } from "@tanstack/react-query";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
-import "@/i18n";
+import i18n from "@/i18n";
 import OverviewTab from "../../app/(app)/(tabs)/index";
-import { companyKeys } from "@/features/companies/companies-api";
 import { formatMoney } from "@/lib/format/money";
+import type { Invoice } from "@/features/invoices/invoice-types";
 import {
+  COMPANY_ID,
+  INVOICE_MATERIALS,
   PROJECT_ID,
   TODAY,
   answerGet,
@@ -74,12 +75,27 @@ beforeEach(() => {
   mockGet.mockImplementation(answerGet(() => mockPersona));
 });
 
-/** The refund tile's destination depends on `useBillingAccess`, i.e. on the companies query. */
-async function companiesLoaded(queryClient: QueryClient) {
-  await waitFor(() =>
-    expect(queryClient.getQueryState(companyKeys.mine)?.status).toBe("success"),
-  );
+/** The materials expense waits for its company refund, so the tile offers "View". */
+function withPendingRefund() {
+  const answer = answerGet(() => mockPersona);
+  mockGet.mockImplementation(async (path: string, options?: unknown) => {
+    const result = await answer(path, options as never);
+    if (path !== "/api/v1/projects/{project_id}/invoices") return result;
+    const data = result.data as { invoices: Invoice[] };
+    return {
+      ...result,
+      data: {
+        ...data,
+        invoices: data.invoices.map((row) =>
+          row.id === INVOICE_MATERIALS.id
+            ? { ...row, refundable_status: "refundable" }
+            : row,
+        ),
+      },
+    };
+  });
 }
+
 
 describe("overview tab · manager", () => {
   beforeEach(() => {
@@ -164,16 +180,37 @@ describe("overview tab · manager", () => {
       expect(screen.queryByTestId("overview-pay-labor")).toBeNull(),
     );
     expect(screen.getByTestId("overview-add-invoice")).toBeTruthy();
+    // Their attendance view is their own worker only, so no head count of the site.
+    const location = screen.getByTestId("overview-today-location");
+    for (const count of [0, 1, 2, 3])
+      expect(location).not.toHaveTextContent(
+        containing(i18n.t("dashboard.today.workers", { count })),
+      );
   });
 
   it("sends a manager (not a company admin) to the expenses tab for pending refunds", async () => {
-    const { queryClient } = await renderWithProviders(<OverviewTab />);
+    withPendingRefund();
+    await renderWithProviders(<OverviewTab />);
     await screen.findByTestId("overview-due-tiles");
-    await companiesLoaded(queryClient);
 
     await fireEvent.press(screen.getByTestId("overview-pending-refunds"));
     expect(mockRouter.navigate).toHaveBeenCalledWith("/(app)/(tabs)/expenses");
-    expect(mockRouter.push).not.toHaveBeenCalledWith("/billing/refundable");
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+});
+
+describe("overview tab · nothing due", () => {
+  beforeEach(() => {
+    mockPersona = persona("admin");
+  });
+
+  it("offers no 'pay now' or 'view' over 0,00 €", async () => {
+    await renderWithProviders(<OverviewTab />);
+    await screen.findByTestId("overview-due-tiles");
+    expect(screen.getByTestId("overview-figure-pending")).toHaveTextContent(
+      containing(formatMoney(0)),
+    );
+    expect(screen.queryByTestId("overview-pending-refunds")).toBeNull();
   });
 });
 
@@ -199,13 +236,15 @@ describe("overview tab · admin", () => {
     });
   });
 
-  it("opens the company billing refund list for pending refunds", async () => {
-    const { queryClient } = await renderWithProviders(<OverviewTab />);
+  it("opens the refund list of the project's company for pending refunds", async () => {
+    withPendingRefund();
+    await renderWithProviders(<OverviewTab />);
     await screen.findByTestId("overview-due-tiles");
-    await companiesLoaded(queryClient);
 
     await fireEvent.press(screen.getByTestId("overview-pending-refunds"));
-    expect(mockRouter.push).toHaveBeenCalledWith("/billing/refundable");
+    expect(mockRouter.push).toHaveBeenCalledWith(
+      `/billing/refundable?company=${COMPANY_ID}`,
+    );
     expect(mockRouter.navigate).not.toHaveBeenCalledWith(
       "/(app)/(tabs)/expenses",
     );

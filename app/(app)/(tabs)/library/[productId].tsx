@@ -30,6 +30,7 @@ import {
   useUploadProductImage,
 } from "@/features/library/library-api";
 import {
+  displayedSupplierReference,
   isHttpUrl,
   localizeCategory,
   sortPurchasesNewestFirst,
@@ -40,6 +41,7 @@ import { captureImage } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney, formatNumber } from "@/lib/format/money";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** Product detail: image, metadata, purchase history, edit sheet, image actions, typed-name delete. */
 export default function LibraryProductScreen() {
@@ -51,6 +53,7 @@ export default function LibraryProductScreen() {
   const suppliers = useSuppliers(product?.company_id ?? null);
   const update = useUpdateProduct();
   const remove = useDeleteProduct();
+  const pullToRefresh = usePullToRefresh([refreshKeys.library]);
   const uploadImage = useUploadProductImage();
   const imageFromUrl = useProductImageFromUrl();
   const editSheet = useRef<BottomSheetModal>(null);
@@ -137,7 +140,10 @@ export default function LibraryProductScreen() {
           ) : undefined
         }
       />
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         <View className="aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-paper-2">
           {product.has_image ? (
             <AuthedImage
@@ -190,12 +196,16 @@ export default function LibraryProductScreen() {
             {supplier?.name ?? product.supplier_id}
             {supplier?.website_url ? ` · ${supplier.website_url}` : ""}
           </Text>
-          <Text className="mt-2 text-xs text-muted-foreground">
-            {t("library.reference")}
-          </Text>
-          <Text className="text-base text-primary">
-            {product.supplier_reference}
-          </Text>
+          {displayedSupplierReference(product.supplier_reference) ? (
+            <>
+              <Text className="mt-2 text-xs text-muted-foreground">
+                {t("library.reference")}
+              </Text>
+              <Text className="text-base text-primary">
+                {displayedSupplierReference(product.supplier_reference)}
+              </Text>
+            </>
+          ) : null}
           <View className="mt-2 flex-row flex-wrap gap-1">
             <Badge
               label={localizeCategory(t, product.category)}

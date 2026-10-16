@@ -18,7 +18,7 @@ import {
   JetBrainsMono_700Bold,
 } from "@expo-google-fonts/jetbrains-mono";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -32,7 +32,8 @@ import { UpdateRequired } from "@/components/auth/update-required";
 import { DismissSheetsOnRouteChange } from "@/components/shell/dismiss-sheets-on-route-change";
 import { ToastProvider } from "@/components/ui/toast";
 import { useUpdateGate } from "@/lib/app-update/use-update-gate";
-import { shouldRetryQuery } from "@/lib/query/api-error";
+import { usePendingDeepLink } from "@/lib/auth/pending-deep-link";
+import { createAppQueryClient } from "@/lib/query/query-client";
 import { ThemePreferenceProvider } from "@/theme/theme-preference";
 import { useTokens } from "@/theme/tokens";
 
@@ -43,9 +44,7 @@ import { useTokens } from "@/theme/tokens";
 // an invisible tap-blocker over the tab bar. Warnings stay visible in the Metro logs.
 if (__DEV__) LogBox.ignoreAllLogs();
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: shouldRetryQuery, staleTime: 30_000 } },
-});
+const queryClient = createAppQueryClient();
 
 // The three design families, one file per weight (see tailwind.config.js fontFamily).
 const FONTS = {
@@ -75,6 +74,7 @@ function Splash() {
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const { status } = useAuth();
   const updateGate = useUpdateGate();
+  usePendingDeepLink(status);
 
   // A build below the server's minimum version can't be used, signed in or not.
   if (updateGate.required)

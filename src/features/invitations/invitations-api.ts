@@ -12,7 +12,7 @@ export interface VerifyInviteResponse {
 }
 
 export type InviteErrorReason =
-  "expired" | "revoked" | "accepted" | "not_found";
+  "expired" | "revoked" | "superseded" | "accepted" | "not_found";
 
 /** Unauthenticated: 200 → details, 404 → not_found, 410 → reason from the body (default expired). */
 export async function verifyInvite(
@@ -29,6 +29,7 @@ export async function verifyInvite(
       if (
         body.reason === "expired" ||
         body.reason === "revoked" ||
+        body.reason === "superseded" ||
         body.reason === "accepted"
       )
         return { error: body.reason };
@@ -107,6 +108,7 @@ async function inviteActionError(
       if (
         body.reason === "expired" ||
         body.reason === "revoked" ||
+        body.reason === "superseded" ||
         body.reason === "accepted"
       )
         return new InviteActionError(body.reason, body.message);
@@ -138,6 +140,8 @@ async function inviteActionError(
 export async function requestInviteCode(payload: {
   token: string;
   phone: string;
+  /** The language the SMS is written in. */
+  locale?: string | null;
 }): Promise<{ expiresIn: number }> {
   const response = await fetch(
     `${API_BASE_URL}/api/v1/invitations/accept/request-code`,

@@ -15,7 +15,10 @@ import {
   useMyCompanies,
 } from "@/features/companies/companies-api";
 import { useImportLibrary } from "@/features/library/library-api";
-import { parseImportPayload } from "@/features/library/library-helpers";
+import {
+  IMPORT_SAMPLE,
+  parseImportPayload,
+} from "@/features/library/library-helpers";
 import type { ImportResult } from "@/features/library/library-types";
 import { pickDocuments } from "@/lib/files/pick";
 
@@ -32,6 +35,7 @@ export default function LibraryImportScreen() {
   const canManage = useCompanyCan("bibliotheque:manage", effectiveCompany);
   const [text, setText] = useState("");
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [showSample, setShowSample] = useState(false);
   const importLibrary = useImportLibrary();
 
   async function pickFile() {
@@ -82,16 +86,43 @@ export default function LibraryImportScreen() {
             onChange={setCompanyId}
           />
         ) : null}
-        <Text className="mb-2 text-xs text-muted-foreground">
-          {t("library.importHint")}
-        </Text>
-        <Button
-          testID="import-pick"
-          label={t("invoices.attachments.document")}
-          variant="secondary"
-          className="mb-3"
-          onPress={() => void pickFile()}
-        />
+        {/* Plain words first: what this imports and where the file comes from. */}
+        <Card className="mb-3">
+          <Text testID="import-help" className="text-sm text-primary">
+            {t("library.importHelp")}
+          </Text>
+          <Text className="mt-2 text-xs text-muted-foreground">
+            {t("library.importHint")}
+          </Text>
+        </Card>
+        <View className="mb-3 flex-row gap-2">
+          <Button
+            testID="import-pick"
+            label={t("invoices.attachments.document")}
+            variant="secondary"
+            className="flex-1"
+            onPress={() => void pickFile()}
+          />
+          <Button
+            testID="import-sample"
+            label={t("library.importSample")}
+            variant="ghost"
+            className="flex-1"
+            onPress={() => setShowSample((v) => !v)}
+          />
+        </View>
+        {/* Shown, never pasted: importing the example would add a fake product. */}
+        {showSample ? (
+          <Card className="mb-3">
+            <Text
+              testID="import-sample-text"
+              selectable
+              className="font-mono text-xs text-primary"
+            >
+              {IMPORT_SAMPLE}
+            </Text>
+          </Card>
+        ) : null}
         <Input
           testID="import-text"
           value={text}

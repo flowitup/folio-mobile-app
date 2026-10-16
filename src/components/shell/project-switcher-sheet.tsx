@@ -15,7 +15,10 @@ import { projectCan, useCreateProject } from "@/features/projects/projects-api";
 import type { Project } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { formatMoney } from "@/lib/format/money";
-import { projectDisplayName } from "@/lib/projects/project-display-name";
+import {
+  projectDisplayName,
+  projectSecondaryLabel,
+} from "@/lib/projects/project-display-name";
 
 /**
  * Second line of a switcher row: members · budget state (README "Đổi công trình"); the
@@ -97,6 +100,18 @@ const REMAIN_CLASS = {
   muted: "text-muted",
 } as const;
 
+// The new-project form asked for from outside the sheet (the empty Home's "Create a project"):
+// the sheet opens it as soon as it is shown.
+let newProjectRequested = false;
+
+/** Open the switcher straight on its new-project form. */
+export function openNewProjectForm(
+  openSheet: (sheet: "switcher") => void,
+): void {
+  newProjectRequested = true;
+  openSheet("switcher");
+}
+
 /** "Đổi công trình" sheet: every project with its remaining budget, current row highlighted, "+ new". */
 export function ProjectSwitcherSheet() {
   const { t } = useTranslation();
@@ -118,6 +133,11 @@ export function ProjectSwitcherSheet() {
   // can still create a project (D8 company-scoped grant), hence the `isCompanyAdminAnywhere`
   // fallback.
   const canCreate = can(user, "project:create") || isCompanyAdminAnywhere(user);
+  useEffect(() => {
+    if (!open || !newProjectRequested) return;
+    newProjectRequested = false;
+    if (canCreate) form.current?.open();
+  }, [open, canCreate]);
   // The matrix only grants `project:create` to a company admin — a new project is created
   // inside that company (creator auto-assigned manager, D6). An admin of several companies
   // picks it in the form, which defaults to the primary one.
@@ -178,6 +198,25 @@ export function ProjectSwitcherSheet() {
                         </Text>
                       ) : null}
                     </View>
+                    {projectSecondaryLabel(project) ? (
+                      <Text
+                        testID={`switcher-project-address-${project.id}`}
+                        className="font-sans text-[12px] text-muted"
+                        numberOfLines={1}
+                      >
+                        {projectSecondaryLabel(project)}
+                      </Text>
+                    ) : null}
+                    {(companies.data?.length ?? 0) > 1 && project.company_id ? (
+                      <Text
+                        testID={`switcher-company-${project.id}`}
+                        className="font-sans text-[12px] text-muted"
+                        numberOfLines={1}
+                      >
+                        {companies.data?.find((c) => c.id === project.company_id)
+                          ?.legal_name ?? ""}
+                      </Text>
+                    ) : null}
                     {row.pct !== null ? (
                       <View className="mt-[5px] h-[3px] overflow-hidden rounded-sm bg-paper-2">
                         <View

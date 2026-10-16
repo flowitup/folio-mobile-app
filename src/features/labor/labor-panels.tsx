@@ -8,6 +8,7 @@ import type { LaborEntry, Worker } from "@/features/labor/labor-types";
 import { formatMoney, formatNumber } from "@/lib/format/money";
 import { dayCount } from "@/lib/labor/day-count";
 import { useTokens } from "@/theme/tokens";
+import { workerRoleLabel } from "@/lib/labor/labor-role-label";
 
 /** Colored worker used by every panel: the worker plus its avatar color. */
 export type ColoredWorker = { worker: Worker; color: string };
@@ -108,7 +109,8 @@ type EntryRowProps = {
   entry: LaborEntry;
   color: string;
   role: string | null;
-  onPress: (entry: LaborEntry) => void;
+  /** Omitted for read-only viewers: the row is then plain text, not a button. */
+  onPress?: (entry: LaborEntry) => void;
   testID?: string;
   size?: 32 | 36;
 };
@@ -127,13 +129,8 @@ export function LaborEntryRow({
   // A self-logged day is unpriced until a manager validates it: the backend sends 0, which
   // reads as "worked for free" next to the other rows.
   const pending = entry.status === "pending";
-  return (
-    <Pressable
-      testID={testID}
-      accessibilityRole="button"
-      onPress={() => onPress(entry)}
-      className="flex-row items-center gap-3 active:opacity-70"
-    >
+  const content = (
+    <>
       <Avatar name={entry.worker_name} size={size} color={color} />
       <View className="min-w-0 flex-1">
         <Text
@@ -164,6 +161,22 @@ export function LaborEntryRow({
         />
       ) : null}
       <Badge label={chip.label} tone={chip.tone} />
+    </>
+  );
+  if (!onPress)
+    return (
+      <View testID={testID} className="flex-row items-center gap-3">
+        {content}
+      </View>
+    );
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      onPress={() => onPress(entry)}
+      className="flex-row items-center gap-3 active:opacity-70"
+    >
+      {content}
     </Pressable>
   );
 }
@@ -227,7 +240,7 @@ export function LaborDayCard({
             entry={entry}
             color={colorOf(entry.worker_id)}
             role={roleOf(entry.worker_id)}
-            onPress={canManage ? onEntry : () => undefined}
+            onPress={canManage ? onEntry : undefined}
             testID={`day-entry-${entry.id}`}
           />
         ))}
@@ -282,54 +295,62 @@ export function WorkersPanel({
       {workers.length === 0 ? (
         <EmptyState message={t("labor.workers.none")} />
       ) : null}
-      {workers.map(({ worker, color }) => (
-        <Pressable
-          key={worker.id}
-          testID={`worker-card-${worker.id}`}
-          // Edit, rates and deactivate all need project:manage_labor.
-          accessibilityRole={canManage ? "button" : undefined}
-          disabled={!canManage}
-          onPress={() => onWorker(worker)}
-          className="active:opacity-70"
-        >
-          <Card
-            radius={14}
-            elevated
-            className="flex-row items-center gap-3 px-3.5 py-3"
+      {/* Deactivated workers last: still listed, as they can be owed wages or reactivated. */}
+      {[...workers]
+        .sort(
+          (a, b) => Number(!a.worker.is_active) - Number(!b.worker.is_active),
+        )
+        .map(({ worker, color }) => (
+          <Pressable
+            key={worker.id}
+            testID={`worker-card-${worker.id}`}
+            // Edit, rates and deactivate all need project:manage_labor.
+            accessibilityRole={canManage ? "button" : undefined}
+            disabled={!canManage}
+            onPress={() => onWorker(worker)}
+            className="active:opacity-70"
           >
-            <Avatar name={worker.name} size={40} color={color} />
-            <View className="min-w-0 flex-1">
-              <View className="flex-row items-center gap-2">
+            <Card
+              radius={14}
+              elevated
+              className="flex-row items-center gap-3 px-3.5 py-3"
+            >
+              <Avatar name={worker.name} size={40} color={color} />
+              <View className="min-w-0 flex-1">
+                <View className="flex-row items-center gap-2">
+                  <Text
+                    className="font-sans-medium text-[15px] text-ink"
+                    numberOfLines={1}
+                  >
+                    {worker.name}
+                  </Text>
+                  {!worker.is_active ? (
+                    <Badge label={t("labor.workers.inactive")} tone="warning" />
+                  ) : null}
+                </View>
                 <Text
-                  className="font-sans-medium text-[15px] text-ink"
+                  className="font-sans text-xs text-muted"
                   numberOfLines={1}
                 >
-                  {worker.name}
+                  {[workerRoleLabel(worker, t) ?? "—", worker.phone]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </Text>
-                {!worker.is_active ? (
-                  <Badge label={t("labor.workers.inactive")} tone="warning" />
-                ) : null}
               </View>
-              <Text className="font-sans text-xs text-muted" numberOfLines={1}>
-                {[worker.role_name ?? "—", worker.phone]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </Text>
-            </View>
-            <View className="items-end">
-              <Text className="font-mono text-[14px] text-ink">
-                {formatMoney(worker.current_daily_rate ?? worker.daily_rate)}
-              </Text>
-              <Text className="font-sans text-[10.5px] text-muted">
-                {t("labor.workers.perDay", {
-                  count: dayCount(daysOf(worker.id)),
-                  value: formatNumber(daysOf(worker.id), 2) || "0",
-                })}
-              </Text>
-            </View>
-          </Card>
-        </Pressable>
-      ))}
+              <View className="items-end">
+                <Text className="font-mono text-[14px] text-ink">
+                  {formatMoney(worker.current_daily_rate ?? worker.daily_rate)}
+                </Text>
+                <Text className="font-sans text-[10.5px] text-muted">
+                  {t("labor.workers.perDay", {
+                    count: dayCount(daysOf(worker.id)),
+                    value: formatNumber(daysOf(worker.id), 2) || "0",
+                  })}
+                </Text>
+              </View>
+            </Card>
+          </Pressable>
+        ))}
       {canManage ? (
         <Pressable
           testID="worker-add"
@@ -351,7 +372,14 @@ export type PaymentRow = {
   color: string;
   owed: number;
   paid: number;
+  /** Overpaid in earlier months and deducted from what is due now. */
+  credit?: number;
 };
+
+/** What is still to pay on a row, after this month's payments and any earlier credit. */
+export function rowDue(row: PaymentRow): number {
+  return Math.max(0, row.owed - row.paid - (row.credit ?? 0));
+}
 
 type PaymentsPanelProps = {
   rows: PaymentRow[];
@@ -368,20 +396,18 @@ export function PaymentsPanel({
   canRecord,
 }: PaymentsPanelProps) {
   const { t } = useTranslation();
-  const totalDue = rows.reduce(
-    (sum, row) => sum + Math.max(0, row.owed - row.paid),
-    0,
-  );
+  const totalDue = rows.reduce((sum, row) => sum + rowDue(row), 0);
   return (
     <View className="gap-2">
       {rows.length === 0 ? (
         <EmptyState message={t("labor.payments.none")} />
       ) : null}
       {rows.map((row) => {
-        const due = Math.max(0, row.owed - row.paid);
+        const due = rowDue(row);
+        const covered = row.paid + (row.credit ?? 0);
         const pct =
           row.owed > 0
-            ? Math.min(100, Math.round((row.paid / row.owed) * 100))
+            ? Math.min(100, Math.round((covered / row.owed) * 100))
             : 100;
         return (
           <Pressable
@@ -401,6 +427,9 @@ export function PaymentsPanel({
                 >
                   {row.worker.name}
                 </Text>
+                {!row.worker.is_active ? (
+                  <Badge label={t("labor.workers.inactive")} tone="neutral" />
+                ) : null}
                 <Badge
                   label={
                     due > 0
@@ -433,6 +462,16 @@ export function PaymentsPanel({
                   </Text>
                 </Text>
               </View>
+              {(row.credit ?? 0) > 0 ? (
+                <Text
+                  testID={`payment-credit-${row.worker.id}`}
+                  className="mt-1 font-sans text-[11px] text-muted"
+                >
+                  {t("salaries.creditDeducted", {
+                    amount: formatMoney(row.credit ?? 0),
+                  })}
+                </Text>
+              ) : null}
             </Card>
           </Pressable>
         );

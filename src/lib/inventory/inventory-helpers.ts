@@ -83,7 +83,9 @@ export function summarizeInventory(
     if (item.condition === "damaged") summary.damaged += quantity;
     else summary.working += quantity;
     if (item.location_type === "warehouse") summary.inWarehouse += quantity;
-    else summary.onSite += quantity;
+    // A site row whose project was deleted has no site any more: it is listed under
+    // "unknown place", so it is not counted as on site either.
+    else if (item.project_id) summary.onSite += quantity;
   }
   return summary;
 }
@@ -221,5 +223,16 @@ export function parseQuantity(text: string): number | null {
   const trimmed = text.trim();
   if (!/^\d+$/.test(trimmed)) return null;
   const value = Number(trimmed);
-  return Number.isSafeInteger(value) ? value : null;
+  return Number.isSafeInteger(value) && value <= MAX_INVENTORY_QUANTITY
+    ? value
+    : null;
+}
+
+/** The API's MAX_INT_QUANTITY: a larger count is refused (422), so it is caught on the field. */
+export const MAX_INVENTORY_QUANTITY = 2_147_483_647;
+
+/** A whole number the API would refuse only because it is too large. */
+export function isQuantityTooLarge(text: string): boolean {
+  const trimmed = text.trim();
+  return /^\d+$/.test(trimmed) && Number(trimmed) > MAX_INVENTORY_QUANTITY;
 }

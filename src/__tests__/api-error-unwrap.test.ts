@@ -92,3 +92,22 @@ describe("shouldRetryQuery", () => {
     expect(shouldRetryQuery(1, new ApiError(500, "Error", "boom"))).toBe(false);
   });
 });
+
+describe("unwrap retry_after", () => {
+  it("carries the 429 body's retry_after as seconds", () => {
+    try {
+      unwrap({
+        error: {
+          error: "TooManyRequests",
+          message: "Slow down",
+          retry_after: 42,
+        },
+        response: { status: 429, statusText: "Too Many Requests" },
+      });
+      throw new Error("unreachable");
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      expect((e as ApiError).retryAfter).toBe(42);
+    }
+  });
+});

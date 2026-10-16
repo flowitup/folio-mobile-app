@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { Text, View } from "react-native";
@@ -13,7 +13,10 @@ import { statusLabelKey } from "@/lib/billing/billing-status-transitions";
 import { computeBillingTotals } from "@/lib/billing/billing-totals";
 import { parseIsoDate, toIsoDate } from "@/lib/format/date";
 import { formatMoney, formatNumber } from "@/lib/format/money";
-import { projectDisplayName } from "@/lib/projects/project-display-name";
+import {
+  projectDisplayName,
+  projectSecondaryLabel,
+} from "@/lib/projects/project-display-name";
 
 import {
   BillingItemsEditor,
@@ -32,7 +35,10 @@ import type {
   ImportBillingDocumentPayload,
   UpdateBillingDocumentPayload,
 } from "./billing-types";
+import { useCompany } from "@/features/companies/companies-api";
+
 import { CompanyPicker } from "./company-picker";
+import { IssuerProfileWarning } from "./issuer-profile-warning";
 
 export type DocumentDraft = {
   company_id: string | null;
@@ -160,6 +166,7 @@ export function validateDraft(
   t: TFunction,
   draft: DocumentDraft,
   mode: FormMode,
+  kind?: BillingDocumentKind,
 ): { errors: Record<string, string>; itemErrors: Record<number, ItemErrors> } {
   const errors: Record<string, string> = {};
   if (mode !== "edit" && !draft.company_id)
@@ -174,6 +181,21 @@ export function validateDraft(
     errors.items = t("billing.form.errors.atLeastOneItem");
   if (mode === "import" && !draft.document_number.trim())
     errors.document_number = t("billing.form.errors.documentNumberRequired");
+  // ISO days compare as strings; the API refuses either date before the issue date (422).
+  if (draft.issue_date) {
+    if (
+      kind === "devis" &&
+      draft.validity_until &&
+      draft.validity_until < draft.issue_date
+    )
+      errors.validity_until = t("billing.form.errors.validityBeforeIssue");
+    if (
+      kind === "facture" &&
+      draft.payment_due_date &&
+      draft.payment_due_date < draft.issue_date
+    )
+      errors.payment_due_date = t("billing.form.errors.dueBeforeIssue");
+  }
   return { errors, itemErrors: validateItems(t, draft.items) };
 }
 
@@ -210,9 +232,46 @@ export function BillingDocumentForm({
     value: DocumentDraft[K],
   ) => setDraft((d) => ({ ...d, [key]: value }));
   const totals = computeBillingTotals(draft.items);
+  // A new document's validity / due date follows the issue date (+30 days) until edited by hand.
+  const validityTouched = useRef(mode === "edit");
+  const dueTouched = useRef(mode === "edit");
+  function changeIssueDate(iso: string) {
+    setDraft((d) => ({
+      ...d,
+      issue_date: iso,
+      validity_until:
+        kind === "devis" && !validityTouched.current
+          ? addDays(iso, 30)
+          : d.validity_until,
+      payment_due_date:
+        kind === "facture" && !dueTouched.current
+          ? addDays(iso, 30)
+          : d.payment_due_date,
+    }));
+  }
+
+  // A new facture starts from the company's default payment terms, as the PDF prints them when
+  // the field is left empty; switching company swaps them unless the user typed their own.
+  const prefillTerms = kind === "facture" && mode !== "edit" && !readOnly;
+  const company = useCompany(
+    prefillTerms ? (draft.company_id ?? undefined) : undefined,
+  );
+  const autoTerms = useRef<string | null>(null);
+  const companyLoaded = company.data !== undefined;
+  const defaultTerms = company.data?.default_payment_terms ?? null;
+  useEffect(() => {
+    if (!prefillTerms || !companyLoaded) return;
+    setDraft((d) => {
+      const current = d.payment_terms.trim();
+      if (current && current !== autoTerms.current) return d;
+      autoTerms.current = defaultTerms;
+      const next = defaultTerms ?? "";
+      return d.payment_terms === next ? d : { ...d, payment_terms: next };
+    });
+  }, [prefillTerms, companyLoaded, defaultTerms]);
 
   function submit() {
-    const result = validateDraft(t, draft, mode);
+    const result = validateDraft(t, draft, mode, kind);
     setErrors(result.errors);
     setItemErrors(result.itemErrors);
     if (
@@ -228,6 +287,7 @@ export function BillingDocumentForm({
     ...(projects.data?.projects ?? []).map((p) => ({
       value: p.id,
       label: projectDisplayName(p),
+      description: projectSecondaryLabel(p) ?? undefined,
     })),
   ];
 
@@ -240,6 +300,9 @@ export function BillingDocumentForm({
           onChange={(company_id) => set("company_id", company_id)}
           error={errors.company_id}
         />
+      ) : null}
+      {mode === "create" ? (
+        <IssuerProfileWarning companyId={draft.company_id} />
       ) : null}
       {mode === "import" ? (
         <>
@@ -317,28 +380,54 @@ export function BillingDocumentForm({
         testID="doc-issue-date"
         label={t("billing.form.issueDate")}
         value={draft.issue_date}
-        onChange={(iso) => iso && set("issue_date", iso)}
+        onChange={(iso) => iso && changeIssueDate(iso)}
         doneLabel={t("common.ok")}
       />
       {kind === "devis" ? (
-        <DatePicker
-          testID="doc-validity"
-          label={t("billing.form.validityUntil")}
-          value={draft.validity_until}
-          onChange={(iso) => set("validity_until", iso)}
-          clearable
-          doneLabel={t("common.ok")}
-        />
+        <>
+          <DatePicker
+            testID="doc-validity"
+            label={t("billing.form.validityUntil")}
+            value={draft.validity_until}
+            onChange={(iso) => {
+              validityTouched.current = true;
+              set("validity_until", iso);
+            }}
+            minimumDate={draft.issue_date}
+            clearable
+            doneLabel={t("common.ok")}
+          />
+          {errors.validity_until ? (
+            <Text
+              testID="doc-validity-error"
+              className="-mt-3 mb-3 text-xs text-danger"
+            >
+              {errors.validity_until}
+            </Text>
+          ) : null}
+        </>
       ) : (
         <>
           <DatePicker
             testID="doc-payment-due"
             label={t("billing.form.paymentDue")}
             value={draft.payment_due_date}
-            onChange={(iso) => set("payment_due_date", iso)}
+            onChange={(iso) => {
+              dueTouched.current = true;
+              set("payment_due_date", iso);
+            }}
+            minimumDate={draft.issue_date}
             clearable
             doneLabel={t("common.ok")}
           />
+          {errors.payment_due_date ? (
+            <Text
+              testID="doc-payment-due-error"
+              className="-mt-3 mb-3 text-xs text-danger"
+            >
+              {errors.payment_due_date}
+            </Text>
+          ) : null}
           <Input
             testID="doc-payment-terms"
             label={t("billing.form.paymentTerms")}

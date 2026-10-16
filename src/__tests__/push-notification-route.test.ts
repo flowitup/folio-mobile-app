@@ -22,14 +22,107 @@ describe("routeForNotification", () => {
     });
   });
 
-  it("only selects the project for a worker decision push", () => {
+  it("opens the labor calendar on the day for a worker decision push", () => {
     expect(
-      routeForNotification({ kind: "validated", project_id: "p2" }),
+      routeForNotification({
+        kind: "validated",
+        project_id: "p2",
+        date: "2026-10-15",
+      }),
     ).toEqual({
       projectId: "p2",
       sheet: null,
-      path: null,
+      path: "/(app)/(tabs)/labor?segment=calendar&day=2026-10-15",
     });
+    expect(
+      routeForNotification({ kind: "rejected", project_id: "p2" }),
+    ).toEqual({
+      projectId: "p2",
+      sheet: null,
+      path: "/(app)/(tabs)/labor?segment=calendar",
+    });
+  });
+
+  it("opens the labor calendar on the day for attendance entered, edited or deleted", () => {
+    for (const kind of ["logged", "attendance_edited", "attendance_deleted"]) {
+      expect(
+        routeForNotification({ kind, project_id: "p2", date: "2026-10-01" }),
+      ).toEqual({
+        projectId: "p2",
+        sheet: null,
+        path: "/(app)/(tabs)/labor?segment=calendar&day=2026-10-01",
+      });
+    }
+  });
+
+  it("opens the workers list for a worker added or stopped", () => {
+    for (const kind of ["worker_added", "worker_removed"]) {
+      expect(
+        routeForNotification({ kind, project_id: "p2", worker_id: "w1" }),
+      ).toEqual({
+        projectId: "p2",
+        sheet: null,
+        path: "/(app)/(tabs)/labor?segment=workers",
+      });
+    }
+  });
+
+  it("opens the expense for invoice activity, the expenses tab once deleted", () => {
+    for (const kind of ["invoice_created", "invoice_updated"]) {
+      expect(
+        routeForNotification({ kind, project_id: "p9", invoice_id: "i9" }),
+      ).toEqual({
+        projectId: "p9",
+        sheet: null,
+        path: "/projects/p9/invoices/i9",
+      });
+    }
+    expect(
+      routeForNotification({
+        kind: "invoice_deleted",
+        project_id: "p9",
+        invoice_id: "i9",
+      }),
+    ).toEqual({ projectId: "p9", sheet: null, path: "/(app)/(tabs)/expenses" });
+    expect(
+      routeForNotification({ kind: "invoice_created", invoice_id: "i9" }),
+    ).toEqual({ projectId: null, sheet: null, path: null });
+  });
+
+  it("opens the company members for a team change an admin hears about", () => {
+    for (const kind of [
+      "member_added",
+      "member_role_changed",
+      "member_removed",
+      "member_left",
+    ]) {
+      expect(routeForNotification({ kind, company_id: "c1" })).toEqual({
+        projectId: null,
+        sheet: null,
+        path: "/company/members",
+      });
+    }
+  });
+
+  it("opens the company's settings for a reported chat message", () => {
+    expect(
+      routeForNotification({ kind: "chat_report", company_id: "c3" }),
+    ).toEqual({
+      projectId: null,
+      sheet: null,
+      path: "/settings/companies/c3",
+    });
+    expect(routeForNotification({ kind: "chat_report" })).toEqual({
+      projectId: null,
+      sheet: null,
+      path: "/settings/companies",
+    });
+  });
+
+  it("never selects a deleted project", () => {
+    expect(
+      routeForNotification({ kind: "project_deleted", project_id: "p0" }),
+    ).toEqual({ projectId: null, sheet: null, path: null });
   });
 
   it("opens the notes section for a due reminder", () => {
@@ -108,22 +201,29 @@ describe("routeForNotification", () => {
     });
   });
 
-  it("opens the planning tab on the project for task pushes", () => {
+  it("opens the planning tab on the task for task pushes", () => {
     for (const kind of ["task_assigned", "task_moved"]) {
       expect(
         routeForNotification({ kind, project_id: "p6", task_id: "t1" }),
       ).toEqual({
         projectId: "p6",
         sheet: null,
-        path: "/(app)/(tabs)/planning",
+        path: "/(app)/(tabs)/planning?task=t1&project=p6",
       });
     }
+    expect(
+      routeForNotification({ kind: "task_moved", project_id: "p6" }),
+    ).toEqual({ projectId: "p6", sheet: null, path: "/(app)/(tabs)/planning" });
   });
 
-  it("selects the project when added to it, and only opens the app when removed", () => {
-    expect(
-      routeForNotification({ kind: "project_member_added", project_id: "p7" }),
-    ).toEqual({ projectId: "p7", sheet: null, path: null });
+  it("opens the project's overview when added to it, and only opens the app when removed", () => {
+    for (const kind of ["project_member_added", "project_created"]) {
+      expect(routeForNotification({ kind, project_id: "p7" })).toEqual({
+        projectId: "p7",
+        sheet: null,
+        path: "/(app)/(tabs)",
+      });
+    }
     expect(
       routeForNotification({
         kind: "project_member_removed",
@@ -144,6 +244,7 @@ describe("routeForNotification", () => {
     for (const kind of [
       "company_member_role_changed",
       "company_member_grants_changed",
+      "company_member_added",
     ]) {
       expect(routeForNotification({ kind, company_id: "c2" })).toEqual({
         projectId: null,

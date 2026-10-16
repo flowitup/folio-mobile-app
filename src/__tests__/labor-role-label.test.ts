@@ -1,4 +1,4 @@
-import { laborRoleLabel } from "@/lib/labor/labor-role-label";
+import { laborRoleLabel, workerRoleLabel } from "@/lib/labor/labor-role-label";
 
 const t = (key: string) => `translated:${key}`;
 
@@ -40,5 +40,33 @@ describe("laborRoleLabel", () => {
     expect(
       laborRoleLabel({ name: "Custom role", slug: "not-a-seed-slug" }, t),
     ).toBe("Custom role");
+  });
+});
+
+describe("laborRoleLabel — localized seed names", () => {
+  it("translates seed roles created with a French or English name", () => {
+    expect(
+      laborRoleLabel({ name: "Ouvrier principal", slug: "tho_chinh" }, t),
+    ).toBe("translated:labor.roles.tho_chinh");
+    expect(laborRoleLabel({ name: "assistant worker", slug: "tho_phu" }, t)).toBe(
+      "translated:labor.roles.tho_phu",
+    );
+  });
+
+  it("recognises a seed name on a worker row without a slug", () => {
+    expect(workerRoleLabel({ role_name: "Thợ chính" }, t)).toBe(
+      "translated:labor.roles.tho_chinh",
+    );
+    expect(
+      workerRoleLabel({ role_name: "Ouvrier auxiliaire", role_slug: "tho_phu" }, t),
+    ).toBe("translated:labor.roles.tho_phu");
+    expect(workerRoleLabel({ role_name: "Maçon" }, t)).toBe("Maçon");
+    expect(workerRoleLabel({ role_name: null }, t)).toBeNull();
+  });
+
+  it("keeps a renamed seed role's own name", () => {
+    expect(laborRoleLabel({ name: "Chef d'équipe", slug: "tho_chinh" }, t)).toBe(
+      "Chef d'équipe",
+    );
   });
 });

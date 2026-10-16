@@ -77,7 +77,8 @@ describe("labor payment sheet", () => {
     await waitFor(() =>
       expect(screen.getByTestId("payment-amount").props.value).toBe("49,66"),
     );
-    await fireEvent.changeText(screen.getByTestId("payment-amount"), "12,345");
+    // "12,345" alone would be refused as ambiguous (12 345 €?); four decimals still round to the cent.
+    await fireEvent.changeText(screen.getByTestId("payment-amount"), "12,3456");
     await fireEvent.press(screen.getByTestId("payment-submit"));
 
     await waitFor(() =>

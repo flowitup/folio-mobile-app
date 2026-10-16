@@ -48,6 +48,7 @@ import {
 import type { SiteRef } from "@/lib/inventory/inventory-helpers";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 type LocationFilter = InventoryLocationType | "all";
 type ConditionFilter = InventoryCondition | "all";
@@ -110,6 +111,11 @@ export default function InventoryScreen() {
   const items = useInventoryItems(effectiveCompany);
   const warehouses = useWarehouses(effectiveCompany);
   useRefetchOnFocus(items.refetch);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.inventory,
+    refreshKeys.companies,
+    refreshKeys.projects,
+  ]);
   const create = useCreateInventoryItem(effectiveCompany);
   const update = useUpdateInventoryItem();
   const remove = useDeleteInventoryItem();
@@ -199,6 +205,7 @@ export default function InventoryScreen() {
         }
       />
       <ScrollView
+        refreshControl={pullToRefresh}
         contentContainerClassName="p-4 pb-24"
         keyboardShouldPersistTaps="handled"
       >
@@ -340,7 +347,11 @@ export default function InventoryScreen() {
               <EmptyState
                 message={
                   all.length === 0
-                    ? t("inventory.empty")
+                    ? t(
+                        canManage
+                          ? "inventory.empty"
+                          : "inventory.emptyReadOnly",
+                      )
                     : t("inventory.noResults")
                 }
                 action={

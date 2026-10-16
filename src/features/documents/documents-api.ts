@@ -144,6 +144,8 @@ export function useUploadDocument(projectId: string) {
       ),
     invalidates: [documentKeys.all(projectId), documentKeys.tags(projectId)],
     successMessage: t("documents.uploaded"),
+    // The screen reports a refused file by name (uploadErrorMessage), one message per file.
+    onError: () => true,
   });
 }
 
@@ -215,10 +217,18 @@ export function useDeleteDocument(projectId: string) {
 }
 
 /** Downloads through the API (Bearer): a PDF opens in the in-app viewer, the rest in the share sheet. */
-export function openDocument(document: ProjectDocument): Promise<string> {
+export function openDocument(
+  document: ProjectDocument,
+  { share = false }: { share?: boolean } = {},
+): Promise<string> {
+  // A document's bytes never change once uploaded; a rename changes the shared file's name.
   return openFile(
     document.download_url,
     document.filename,
     document.content_type,
+    {
+      version: `${document.uploaded_at}|${document.filename}`,
+      ...(share ? { share } : {}),
+    },
   );
 }

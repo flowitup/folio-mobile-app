@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -11,6 +11,7 @@ import {
 import { useAuthConfig } from "@/auth/auth-config";
 import { useAuth } from "@/auth/auth-context";
 import { can } from "@/auth/permissions";
+import { useChatFabReserve } from "@/components/shell/chat-fab";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
@@ -53,6 +54,7 @@ import { classifyOwnEdit } from "@/lib/labor/own-attendance-edit";
 import { parseSupplementHours } from "@/lib/labor/supplement-hours";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const SHIFTS: ShiftType[] = ["full", "half", "overtime"];
 
@@ -64,6 +66,7 @@ const SHIFTS: ShiftType[] = ["full", "half", "overtime"];
  */
 export function WorkerAttendanceTab() {
   const { t } = useTranslation();
+  const bottomPadding = useChatFabReserve();
   const tokens = useTokens();
   const { user } = useAuth();
   const {
@@ -101,8 +104,9 @@ export function WorkerAttendanceTab() {
   }, [canViewPay, dayPaySummary.data]);
   const selfLog = useSelfLogAttendance(projectId);
   const editOwn = useEditOwnAttendance(projectId);
-  // Inline "edit this day" form for the selected, already-logged day.
-  const [editing, setEditing] = useState(false);
+  // Inline "edit this day" form, open for one entry only: once another day is selected (list row,
+  // calendar, month stepper) it is closed, so a draft can never be sent for another day.
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editShift, setEditShift] = useState<ShiftType>("full");
   const [editHours, setEditHours] = useState("0");
   const [editNote, setEditNote] = useState("");
@@ -113,6 +117,7 @@ export function WorkerAttendanceTab() {
   // view_pay, on the day's cost next to it; refresh both with the rest.
   useRefetchOnFocus(roster.refetch);
   useRefetchOnFocus(dayPaySummary.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   // Only the worker linked to this account — never a first-row fallback, which would show
   // (and log against) a colleague's row for a member the backend answers with every worker.
@@ -127,6 +132,8 @@ export function WorkerAttendanceTab() {
     (e) => e.status === "pending",
   ).length;
   const selectedEntry = monthEntries.find((e) => e.date === selectedDay);
+  const editing = editingId !== null && editingId === selectedEntry?.id;
+  const scrollRef = useRef<ScrollView>(null);
   // The backend refuses anything older than today − SELF_ATTENDANCE_MAX_BACKDATE_DAYS.
   const authConfig = useAuthConfig();
   // The deployment publishes the window on /auth/config; the constant is the fallback.
@@ -139,13 +146,16 @@ export function WorkerAttendanceTab() {
 
   function selectDay(iso: string) {
     setPickedDay(iso);
-    setEditing(false);
+    setEditingId(null);
+    // The day card is the first block: from the calendar or the month list it is off-screen,
+    // so a tap seemed to do nothing. Bring it into view.
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
   }
 
   /** Stepping the month re-derives the selected day, so an open edit form no longer matches it. */
   function selectMonth(next: string) {
     setMonth(next);
-    setEditing(false);
+    setEditingId(null);
   }
 
   function startEdit(entry: LaborEntry) {
@@ -154,7 +164,7 @@ export function WorkerAttendanceTab() {
       String(entry.proposed_supplement_hours ?? entry.supplement_hours ?? 0),
     );
     setEditNote(entry.proposed_note ?? entry.note ?? "");
-    setEditing(true);
+    setEditingId(entry.id);
   }
 
   function submitEdit(entry: LaborEntry) {
@@ -181,7 +191,7 @@ export function WorkerAttendanceTab() {
     }
     editOwn.mutate(
       { entryId: entry.id, ...proposal },
-      { onSuccess: () => setEditing(false) },
+      { onSuccess: () => setEditingId(null) },
     );
   }
 
@@ -197,9 +207,12 @@ export function WorkerAttendanceTab() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        refreshControl={pullToRefresh}
+        ref={scrollRef}
         className="flex-1"
-        contentContainerClassName="px-4 pb-6 pt-3.5"
-        contentContainerStyle={{ gap: 16 }}
+        contentContainerClassName="px-4 pt-3.5"
+        // The last row must clear the floating chat button.
+        contentContainerStyle={{ gap: 16, paddingBottom: bottomPadding }}
       >
         <View className="flex-row items-end justify-between">
           <View className="min-w-0 flex-1">
@@ -318,7 +331,7 @@ export function WorkerAttendanceTab() {
                           testID="worker-edit-cancel"
                           label={t("common.cancel")}
                           variant="secondary"
-                          onPress={() => setEditing(false)}
+                          onPress={() => setEditingId(null)}
                         />
                       </View>
                       <View className="flex-1">
@@ -448,7 +461,7 @@ export function WorkerAttendanceTab() {
             <EntryRow
               key={entry.id}
               entry={entry}
-              onPress={() => setPickedDay(entry.date)}
+              onPress={() => selectDay(entry.date)}
             />
           ))}
         </View>

@@ -6,7 +6,24 @@ import vi from "../i18n/locales/vi.json";
 describe("chiffrage section label", () => {
   it("is translated in English and Vietnamese and stays 'Chiffrage' in French", () => {
     expect(en.project.sections.chiffrage).toBe("Cost planning");
-    expect(vi.project.sections.chiffrage).toBe("Hoạch toán");
+    // "Dự toán" (cost estimate), never "hạch toán" (accounting), as on the web.
+    expect(vi.project.sections.chiffrage).toBe("Dự toán");
+    expect(JSON.stringify(vi)).not.toMatch(/ạch toán/i);
     expect(fr.project.sections.chiffrage).toBe("Chiffrage");
+  });
+});
+
+/** Section names match the web navigation; "Factures" means customer invoices only. */
+describe("project section glossary", () => {
+  it("calls the expense screens Dépenses / Expenses / Chi phí, like the expenses tab", () => {
+    expect(fr.project.sections.invoices).toBe(fr.tabs.expenses);
+    expect(en.project.sections.invoices).toBe(en.tabs.expenses);
+    expect(vi.project.sections.invoices).toBe(vi.tabs.expenses);
+    expect(fr.project.sections.settings).toBe(fr.tabs.settings);
+  });
+
+  it("writes Vietnamese tone marks in one style (Xóa, ủy), as the web does", () => {
+    const text = JSON.stringify(vi);
+    expect(text).not.toMatch(/Xoá|xoá|uỷ/);
   });
 });

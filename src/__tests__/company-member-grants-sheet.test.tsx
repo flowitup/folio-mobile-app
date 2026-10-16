@@ -188,10 +188,10 @@ describe("MemberGrantsSheet", () => {
       expect(screen.getByTestId("grant-scope-option-p1")).toBeTruthy(),
     );
     await fireEvent.press(screen.getByTestId("grant-scope"));
-    // Scope options are labelled by address (falling back to the name).
-    expect(screen.getByText("1 rue des Chantiers")).toBeTruthy();
+    // Scope options are labelled by name first (the address is not the label).
+    expect(screen.getByText("Chantier A")).toBeTruthy();
     expect(screen.getByText("Chantier B")).toBeTruthy();
-    expect(screen.queryByText("Chantier A")).toBeNull();
+    expect(screen.queryByText("1 rue des Chantiers")).toBeNull();
     await fireEvent.press(screen.getByTestId("grant-scope-option-p1"));
 
     await fireEvent.press(screen.getByTestId("grant-submit"));

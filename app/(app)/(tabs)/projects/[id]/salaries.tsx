@@ -1,5 +1,5 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import {
   Badge,
@@ -30,8 +31,14 @@ import {
   usePaymentMethods,
 } from "@/features/invoices/invoices-api";
 import { useLaborMonthlySummary, useWorkers } from "@/features/labor/labor-api";
+import { RestrictedNotice } from "@/features/labor/restricted-area";
 import { projectCan, useProject } from "@/features/projects/projects-api";
-import { formatDate, formatMonth, toIsoDate } from "@/lib/format/date";
+import {
+  capitalizeFirst,
+  formatDate,
+  formatMonth,
+  toIsoDate,
+} from "@/lib/format/date";
 import {
   formatAmountInput,
   formatMoney,
@@ -44,7 +51,10 @@ import {
   salaryTotals,
 } from "@/lib/labor/worker-salary-months";
 import type { SalaryMonth } from "@/lib/labor/worker-salary-months";
+import { hasFullLaborView } from "@/lib/labor/worker-mode";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { useTokens } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const STATUS_TONE = {
   paid: "success",
@@ -69,7 +79,8 @@ export default function ProjectSalariesSection({
   const id = projectId ?? params.id;
   const { user } = useAuth();
   const project = useProject(id);
-  const workers = useWorkers(id);
+  // Deactivated workers can still be owed wages.
+  const workers = useWorkers(id, true, true);
   const [workerId, setWorkerId] = useState<string | null>(null);
   const worker =
     (workers.data ?? []).find((w) => w.id === workerId) ??
@@ -86,11 +97,13 @@ export default function ProjectSalariesSection({
   const deleteInvoice = useDeleteInvoice(id, { silent: true });
   useRefetchOnFocus(monthly.refetch);
   useRefetchOnFocus(laborInvoices.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
   const canManage = projectCan(
     project.data,
     "project:manage_invoices",
     user?.permissions,
   );
+  const fullLaborView = hasFullLaborView(project.data, user);
 
   const months = useMemo(
     () =>
@@ -111,6 +124,8 @@ export default function ProjectSalariesSection({
   const [methodId, setMethodId] = useState<string | null>(null);
   const [unpaying, setUnpaying] = useState<SalaryMonth | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const router = useRouter();
+  const tokens = useTokens();
 
   function openPay(row: SalaryMonth) {
     setPaying(row);
@@ -170,7 +185,10 @@ export default function ProjectSalariesSection({
 
   return (
     <View className="flex-1 bg-paper">
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         {(workers.isError && !workers.data) ||
         (monthly.isError && !monthly.data) ? (
           <ErrorState
@@ -183,7 +201,13 @@ export default function ProjectSalariesSection({
           />
         ) : null}
         {workers.data && workers.data.length === 0 ? (
-          <EmptyState message={t("salaries.noWorkers")} />
+          fullLaborView ? (
+            <EmptyState message={t("salaries.noWorkers")} />
+          ) : (
+            // Without labor or pay access the backend lists only the worker linked to this
+            // account, so an empty roster means "not yours to see", not "no worker".
+            <RestrictedNotice message={t("labor.restricted.salaries")} />
+          )
         ) : null}
         {(workers.data?.length ?? 0) > 0 ? (
           <Select
@@ -220,13 +244,16 @@ export default function ProjectSalariesSection({
             </View>
             <View className="flex-row justify-between">
               <Text className="text-base font-semibold text-primary">
-                {t("salaries.outstanding")}
+                {/* Never a negative amount "left to pay": overpaid is said as such. */}
+                {totals.remaining < 0
+                  ? t("salaries.status.overpaid")
+                  : t("salaries.outstanding")}
               </Text>
               <Text
                 testID="salaries-outstanding"
                 className={`text-base font-semibold ${totals.remaining > 0 ? "text-danger" : "text-primary"}`}
               >
-                {formatMoney(totals.remaining)}
+                {formatMoney(Math.abs(totals.remaining))}
               </Text>
             </View>
             {!canManage ? (
@@ -243,16 +270,36 @@ export default function ProjectSalariesSection({
           <Card key={row.month || "unassigned"} className="mb-2">
             <Pressable
               testID={`salary-month-${row.month || "unassigned"}`}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: expanded === row.month }}
+              className="active:opacity-70"
               onPress={() =>
                 setExpanded(expanded === row.month ? null : row.month)
               }
             >
               <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold capitalize text-primary">
-                  {row.month === UNASSIGNED_MONTH
-                    ? t("salaries.noMonth")
-                    : formatMonth(row.month)}
-                </Text>
+                <View className="flex-1 flex-row items-center gap-1">
+                  <Icon
+                    name={
+                      expanded === row.month ? "chevron-down" : "chevron-right"
+                    }
+                    size={16}
+                    color={tokens.muted}
+                  />
+                  <Text className="text-base font-semibold text-primary">
+                    {row.month === UNASSIGNED_MONTH
+                      ? capitalizeFirst(t("salaries.noMonth"))
+                      : capitalizeFirst(formatMonth(row.month))}
+                  </Text>
+                  {row.invoices.length > 0 ? (
+                    <Text className="text-xs text-muted-foreground">
+                      {" · "}
+                      {t("salaries.paymentsCount", {
+                        count: row.invoices.length,
+                      })}
+                    </Text>
+                  ) : null}
+                </View>
                 <Badge
                   label={t(`salaries.status.${row.status}`)}
                   tone={STATUS_TONE[row.status]}
@@ -265,21 +312,54 @@ export default function ProjectSalariesSection({
                 })}{" "}
                 · {t("salaries.earned")} {formatMoney(row.earned)} ·{" "}
                 {t("salaries.paid")} {formatMoney(row.paid)}
-                {row.remaining !== 0
+                {row.remaining > 0
                   ? ` · ${t("salaries.remaining")} ${formatMoney(row.remaining)}`
-                  : ""}
+                  : row.remaining < 0
+                    ? ` · ${t("salaries.status.overpaid")} ${formatMoney(-row.remaining)}`
+                    : ""}
               </Text>
-            </Pressable>
-            {expanded === row.month && row.invoices.length > 0 ? (
-              <View className="mt-2 border-t border-border pt-2">
-                <Text className="text-xs text-muted-foreground">
-                  {t("salaries.payments")}
+              {row.credit > 0 ? (
+                <Text
+                  testID={`salary-credit-${row.month}`}
+                  className="text-xs text-muted-foreground"
+                >
+                  {t("salaries.creditDeducted", {
+                    amount: formatMoney(row.credit),
+                  })}
                 </Text>
-                {row.invoices.map((inv) => (
-                  <Text key={inv.id} className="text-xs text-primary">
-                    {inv.invoice_number} · {formatDate(inv.issue_date)} ·{" "}
-                    {formatMoney(inv.total_amount)}
+              ) : null}
+            </Pressable>
+            {expanded === row.month ? (
+              <View
+                className="mt-2 border-t border-border pt-2"
+                testID={`salary-payments-${row.month || "unassigned"}`}
+              >
+                {row.invoices.length === 0 ? (
+                  <Text className="text-xs text-muted-foreground">
+                    {t("salaries.noPayments")}
                   </Text>
+                ) : (
+                  <Text className="text-xs text-muted-foreground">
+                    {t("salaries.payments")}
+                  </Text>
+                )}
+                {row.invoices.map((inv) => (
+                  <Pressable
+                    key={inv.id}
+                    testID={`salary-payment-${inv.id}`}
+                    accessibilityRole="link"
+                    hitSlop={6}
+                    className="flex-row items-center justify-between py-1 active:opacity-70"
+                    onPress={() =>
+                      router.push(`/projects/${id}/invoices/${inv.id}`)
+                    }
+                  >
+                    <Text className="flex-1 text-xs text-primary underline">
+                      {inv.invoice_number} · {formatDate(inv.issue_date)} ·{" "}
+                      {formatMoney(inv.total_amount)}
+                    </Text>
+                    <Icon name="chevron-right" size={14} color={tokens.muted} />
+                  </Pressable>
                 ))}
               </View>
             ) : null}

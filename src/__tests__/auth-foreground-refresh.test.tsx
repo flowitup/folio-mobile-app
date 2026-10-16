@@ -4,6 +4,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { AppState, Text } from "react-native";
 
@@ -142,5 +143,50 @@ describe("auth foreground refresh", () => {
     expect(setFocusedSpy).toHaveBeenLastCalledWith(false);
 
     setFocusedSpy.mockRestore();
+  });
+
+  it("does not drop a re-read asked for while another runs: creating a company during a foreground refresh", async () => {
+    mockGet.mockResolvedValueOnce(meResponse("member"));
+    const handle: { refreshUser?: () => Promise<void> } = {};
+    function Capture() {
+      const { refreshUser } = useAuth();
+      useEffect(() => {
+        handle.refreshUser = refreshUser;
+      });
+      return <RoleProbe />;
+    }
+    await renderAuthed(<Capture />);
+    await waitFor(() =>
+      expect(screen.getByTestId("role")).toHaveTextContent("member"),
+    );
+
+    // The foreground read is on its way and answers with the state from before the creation.
+    let answerForeground: (value: unknown) => void = () => undefined;
+    mockGet.mockImplementationOnce(
+      () => new Promise((resolve) => (answerForeground = resolve)),
+    );
+    await act(async () => {
+      appStateListener?.("active");
+    });
+
+    // Meanwhile the company is created: its success asks for the user again, twice even.
+    mockGet.mockResolvedValueOnce(meResponse("admin"));
+    let afterCreate: Promise<void> | undefined;
+    let again: Promise<void> | undefined;
+    await act(async () => {
+      afterCreate = handle.refreshUser!();
+      again = handle.refreshUser!();
+    });
+    expect(again).toBe(afterCreate);
+
+    await act(async () => {
+      answerForeground(meResponse("member"));
+      await afterCreate;
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId("role")).toHaveTextContent("admin"),
+    );
+    // Mount, foreground, and one shared read for both later calls.
+    expect(mockGet).toHaveBeenCalledTimes(3);
   });
 });

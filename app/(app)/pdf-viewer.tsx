@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Platform, Pressable, View } from "react-native";
 import { WebView } from "react-native-webview";
 
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
@@ -15,10 +16,13 @@ import { shareLocalFile } from "@/lib/files/download";
 import { resolveViewerFile } from "@/lib/files/open-file";
 import {
   buildPdfJsHtml,
+  isPermanentPdfError,
   parsePdfViewerMessage,
+  pdfAssetMessage,
   pdfTransferMessages,
+  type PdfAssetKind,
 } from "@/lib/files/pdf";
-import { loadPdfJsScripts } from "@/lib/files/pdfjs-sources";
+import { loadPdfAsset, loadPdfJsScripts } from "@/lib/files/pdfjs-sources";
 import { useTokens } from "@/theme/tokens";
 
 /** A page that never reports back (dead renderer, stuck script) turns into the error state. */
@@ -41,15 +45,26 @@ export default function PdfViewerScreen() {
   const uri = useMemo(() => resolveViewerFile(file), [file]);
   const [rendered, setRendered] = useState(false);
   const [failed, setFailed] = useState(false);
+  // A damaged file or a refused password: Retry would fail the same way, offer "Open with…".
+  const [permanent, setPermanent] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [sharing, setSharing] = useState(false);
   const webView = useRef<WebView>(null);
 
   const android = Platform.OS === "android";
   const background = tokens.paper2;
+  const labels = useMemo(
+    () => ({
+      password: t("pdfViewer.passwordPrompt"),
+      wrongPassword: t("pdfViewer.wrongPassword"),
+      open: t("pdfViewer.open"),
+    }),
+    [t],
+  );
   const page = useQuery({
-    queryKey: ["pdf-viewer", background],
-    queryFn: async () => buildPdfJsHtml(background, await loadPdfJsScripts()),
+    queryKey: ["pdf-viewer", background, labels],
+    queryFn: async () =>
+      buildPdfJsHtml(background, await loadPdfJsScripts(), labels),
     enabled: android && uri !== null,
     gcTime: 0,
     staleTime: Infinity,
@@ -79,6 +94,17 @@ export default function PdfViewerScreen() {
     }
   }
 
+  /** Hands the page a CMap or font it asked for (or says it has none, so pdf.js falls back). */
+  async function sendAsset(kind: PdfAssetKind, name: string) {
+    let base64: string | undefined;
+    try {
+      base64 = await loadPdfAsset(kind, name);
+    } catch {
+      base64 = undefined;
+    }
+    webView.current?.postMessage(pdfAssetMessage(kind, name, base64));
+  }
+
   async function share() {
     if (!uri || sharing) return;
     setSharing(true);
@@ -92,6 +118,7 @@ export default function PdfViewerScreen() {
   }
   const retry = () => {
     setFailed(false);
+    setPermanent(false);
     setRendered(false);
     setAttempt((n) => n + 1);
     if (page.isError) void page.refetch();
@@ -122,6 +149,19 @@ export default function PdfViewerScreen() {
       {uri === null ? (
         // Unknown token: a stale or forged link, nothing to retry.
         <EmptyState message={t("pdfViewer.loadError")} />
+      ) : error && permanent ? (
+        <EmptyState
+          message={t("pdfViewer.cannotOpen")}
+          action={
+            <Button
+              testID="pdf-viewer-open-with"
+              label={t("pdfViewer.openWith")}
+              variant="secondary"
+              size="sm"
+              onPress={() => void share()}
+            />
+          }
+        />
       ) : error ? (
         <ErrorState
           message={t("pdfViewer.loadError")}
@@ -145,7 +185,14 @@ export default function PdfViewerScreen() {
                   const message = parsePdfViewerMessage(event.nativeEvent.data);
                   if (message?.type === "ready") void sendDocument();
                   if (message?.type === "loaded") setRendered(true);
-                  if (message?.type === "error") setFailed(true);
+                  // The page shows its password form: stop the spinner and the timeout.
+                  if (message?.type === "password") setRendered(true);
+                  if (message?.type === "asset")
+                    void sendAsset(message.kind, message.name);
+                  if (message?.type === "error") {
+                    setPermanent(isPermanentPdfError(message.name));
+                    setFailed(true);
+                  }
                 }}
                 onError={() => setFailed(true)}
                 onRenderProcessGone={() => setFailed(true)}
@@ -166,6 +213,10 @@ export default function PdfViewerScreen() {
               onLoadEnd={() => setRendered(true)}
               onError={() => setFailed(true)}
               onContentProcessDidTerminate={() => setFailed(true)}
+              // WKWebView draws its "1 of N" page pill over the top of the document; start
+              // the first page below it. The pill follows the app's declared localizations
+              // (CFBundleLocalizations in app.json), so it speaks French and Vietnamese too.
+              contentInset={{ top: 40 }}
               style={{ flex: 1, backgroundColor: background }}
             />
           )}

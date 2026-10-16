@@ -297,11 +297,17 @@ export function useDeleteAttachment(projectId: string, invoiceId: string) {
 /** Opens the attachment: a PDF in the in-app viewer, anything else in the OS share sheet. */
 export function openAttachment(
   attachment: Pick<InvoiceAttachment, "id" | "filename" | "mime_type">,
+  { share = false }: { share?: boolean } = {},
 ): Promise<string> {
+  // An attachment's bytes never change; a rename changes the shared file's name.
   return openFile(
     `/api/v1/attachments/${encodeURIComponent(attachment.id)}/download`,
     attachment.filename,
     attachment.mime_type,
+    {
+      version: `immutable|${attachment.filename}`,
+      ...(share ? { share } : {}),
+    },
   );
 }
 
@@ -326,13 +332,17 @@ export function exportInvoices(
   return openFile(
     `/api/v1/projects/${encodeURIComponent(projectId)}/invoices-export?${query.toString()}`,
     `invoices-${from}-${to}.${format}`,
+    undefined,
+    // The server names the file with the project and range, in the app's language.
+    { preferServerName: true },
   );
 }
 
 export function useLaborPaymentsSummary(projectId: string, enabled = true) {
   return useQuery({
     queryKey: invoiceKeys.laborPayments(projectId),
-    enabled,
+    // No request for an empty id (".../projects//labor-payments-summary") while no project is selected.
+    enabled: enabled && Boolean(projectId),
     queryFn: async () =>
       unwrapAs<LaborPaymentsSummary>(
         await api.GET("/api/v1/projects/{project_id}/labor-payments-summary", {

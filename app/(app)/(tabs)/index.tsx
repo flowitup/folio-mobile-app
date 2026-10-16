@@ -5,8 +5,10 @@ import { ActivityIndicator, View } from "react-native";
 
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
-import { EmptyState, ErrorState } from "@/components/ui/primitives";
-import { useBillingAccess } from "@/features/companies/companies-api";
+import { useChatFabReserve } from "@/components/shell/chat-fab";
+import { ErrorState } from "@/components/ui/primitives";
+import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdmin } from "@/auth/permissions";
 import {
   AgendaCard,
   MonthSpendCard,
@@ -14,6 +16,7 @@ import {
 } from "@/features/dashboard/overview-cards";
 import { OverviewDueTiles } from "@/features/dashboard/overview-due-tiles";
 import { OverviewHero } from "@/features/dashboard/overview-hero";
+import { NoProjectYet } from "@/features/dashboard/no-project-yet";
 import { TodayOnSiteCard } from "@/features/dashboard/today-on-site-card";
 import { useInvoices } from "@/features/invoices/invoices-api";
 import { useLaborEntries } from "@/features/labor/labor-api";
@@ -30,12 +33,14 @@ import {
   buildTypeMonthlyBuckets,
   computeBudgetMetrics,
   computeMonthDelta,
+  computeMonthToDateDelta,
   computePendingRefunds,
   computeSpentTotal,
 } from "@/lib/dashboard/overview-metrics";
-import { parseIsoDate, toIsoDate } from "@/lib/format/date";
+import { businessToday, parseIsoDate, toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { INK_BLOCK } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Tổng quan (design 1b): ink hero — remaining figure, ring gauge, quick actions — then the paper
@@ -48,7 +53,10 @@ function OverviewTabContent() {
     useSelectedProject();
   const invoices = useInvoices(projectId);
   const tasks = useTasks(projectId);
-  const billing = useBillingAccess();
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects], {
+    onInk: true,
+  });
+  const { user } = useAuth();
   // Financing side of the project: the backend nulls `budget` and zeroes every
   // released-funds total without `project:view_budget`, so the hero drops the
   // figures measured against them instead of drawing them from zeros.
@@ -68,9 +76,11 @@ function OverviewTabContent() {
 
   // Keyed on the calendar day so an app left open across midnight moves on with it.
   const todayIso = toIsoDate(new Date());
+  // "This month" is the business's (Paris) month, as on the web dashboard.
+  const businessDay = businessToday();
   const referenceDate = useMemo(
-    () => parseIsoDate(todayIso) ?? new Date(),
-    [todayIso],
+    () => parseIsoDate(businessDay) ?? new Date(),
+    [businessDay],
   );
   const todayEntries = useLaborEntries(projectId, todayIso, todayIso);
   useRefetchOnFocus(todayEntries.refetch);
@@ -87,7 +97,11 @@ function OverviewTabContent() {
     return {
       spentTotal,
       budget: computeBudgetMetrics(budgetValue, spentTotal, fundsReleased),
-      monthDelta: computeMonthDelta(series),
+      // The percentage compares days 1–today of both months, like the web.
+      monthDelta: {
+        ...computeMonthDelta(series),
+        deltaPct: computeMonthToDateDelta(rows, referenceDate).deltaPct,
+      },
       pendingCompany: computePendingRefunds(rows),
       bank: computeBankReleaseMetrics(budgetValue, fundsReleased),
       buckets: buildTypeMonthlyBuckets(rows, 6, referenceDate),
@@ -99,6 +113,14 @@ function OverviewTabContent() {
   );
 
   const ready = Boolean(project && invoices.data);
+  // The last agenda line must clear the floating chat button.
+  const bottomPadding = useChatFabReserve();
+  // A chart mark opens the expenses it adds up: its month, and its type when it has one.
+  const openExpenses = (filters: { month?: string; type?: string } = {}) =>
+    router.navigate({
+      pathname: "/(app)/(tabs)/expenses",
+      params: { ...filters, focus: Date.now().toString() },
+    });
   // The labor tab applies `segment` from an effect keyed on the params it receives, so a
   // repeated tap must carry a value that changed — otherwise the second one is a no-op once
   // the user has moved to another segment themselves.
@@ -110,6 +132,8 @@ function OverviewTabContent() {
 
   return (
     <InkSheetScreen
+      refreshControl={pullToRefresh}
+      bottomPadding={bottomPadding}
       header={<ProjectTopBar tone="ink" />}
       hero={
         ready && project ? (
@@ -160,9 +184,7 @@ function OverviewTabContent() {
           onRetry={refetch}
         />
       ) : null}
-      {!isPending && !isError && !project ? (
-        <EmptyState message={t("dashboard.noProjects")} />
-      ) : null}
+      {!isPending && !isError && !project ? <NoProjectYet /> : null}
       {project && invoices.isError && !invoices.data ? (
         <ErrorState
           message={t("dashboard.loadError")}
@@ -180,8 +202,12 @@ function OverviewTabContent() {
                 pendingRefundTotal={metrics.pendingCompany.total}
                 onPayLabor={payLabor}
                 onOpenRefunds={() =>
-                  billing.allowed
-                    ? router.push("/billing/refundable")
+                  // The company refunds page lists only companies the user administers:
+                  // open it on this project's company, else stay on the project's expenses.
+                  project.company_id && isCompanyAdmin(user, project.company_id)
+                    ? router.push(
+                        `/billing/refundable?company=${encodeURIComponent(project.company_id)}`,
+                      )
                     : router.navigate("/(app)/(tabs)/expenses")
                 }
               />
@@ -190,21 +216,29 @@ function OverviewTabContent() {
                 currentMonthKey={metrics.monthDelta.current.key}
                 totalCurrent={metrics.monthDelta.current.total}
                 totalDeltaPct={metrics.monthDelta.deltaPct}
-                onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+                onOpenExpenses={openExpenses}
               />
               <TypeTrendsCard
                 buckets={metrics.buckets}
-                onOpenExpenses={() => router.navigate("/(app)/(tabs)/expenses")}
+                onOpenExpenses={openExpenses}
               />
             </>
           ) : null}
           <AgendaCard
             groups={agenda}
             onOpenPlanning={() => router.navigate("/(app)/(tabs)/planning")}
+            onOpenTask={(task) =>
+              router.navigate({
+                pathname: "/(app)/(tabs)/planning",
+                params: { task: task.id, project: projectId ?? undefined },
+              })
+            }
           />
           <TodayOnSiteCard
             address={project.address}
-            workersOnSite={workersOnSite}
+            // Attendance is scoped to the caller's own worker without labor or pay access, so
+            // a head count would read "no worker on site" on a busy site.
+            workersOnSite={canPayLabor ? workersOnSite : undefined}
           />
         </>
       ) : null}

@@ -32,6 +32,10 @@
       "gone": "This link has expired or is no longer available.",
       "tooLarge": "The file is too large.",
       "tooManyRequests": "Too many attempts. Wait a moment and try again.",
+      "tooManyRequestsSeconds": "Too many attempts. Try again in {{count}} s.",
+      "tooManyRequestsMinutes": "Too many attempts. Try again in {{count}} min.",
+      "waitSeconds": "{{count}} s",
+      "waitMinutes": "{{count}} min",
       "keepExtension": "The file name must keep its {{ext}} extension.",
       "fileNameRequired": "Enter a file name."
     }
@@ -58,8 +62,13 @@
       "phoneTaken": "This number already has an account. Sign in instead.",
       "smsFailed": "The text message could not be sent. Try again in a moment.",
       "throttled": "A code was sent a moment ago. Wait a minute and try again.",
+      "networkThrottled": "Too many sign-ins from this network (site Wi-Fi). Try again in {{wait}}.",
+      "smsBusy": "The text message service is busy. Try again in {{wait}}.",
+      "tooManyTries": "Too many tries. Wait {{wait}} and try again.",
       "hourlyLimit_one": "Too many codes were requested for this number. Try again in {{count}} minute.",
-      "hourlyLimit_other": "Too many codes were requested for this number. Try again in {{count}} minutes."
+      "hourlyLimit_other": "Too many codes were requested for this number. Try again in {{count}} minutes.",
+      "codeLocked": "Too many tries: this code no longer works, even typed correctly. Ask for a new code.",
+      "deactivated": "Access for this number was deactivated. Contact your company’s administrator."
     },
     "codeTitle": "Check your\nmessages",
     "codeDigit": "Digit {{position}} of {{total}}",
@@ -70,8 +79,12 @@
     "retry": "Try again",
     "unavailable": {
       "title": "Can't reach Folio",
-      "body": "You're still signed in. Check your connection, then try again."
-    }
+      "body": "You're still signed in. Check your connection, then try again.",
+      "busy": "You're still signed in. The server is busy (too many requests from this network). Try again in {{wait}}."
+    },
+    "codeHelp": "No SMS? Check the number. Only Folio accounts receive a code: they are created in the app or through your company’s invitation. Access deactivated? Contact your company’s administrator.",
+    "codeStillValid": "The code already sent to this number is still valid: type it in.",
+    "invalidPhoneHint": "This is not a French number (e.g. 06 12 34 56 78)."
   },
   "updateRequired": {
     "title": "Update required",
@@ -80,6 +93,9 @@
     "hint": "Your version: {{version}}. Already updated? Reopen the app."
   },
   "home": {
+    "noProjectAdmin": "Create your first project to track its budget, expenses, workers and schedule.",
+    "noProjectMember": "An admin of your company has to add you to a project. It will show up here as soon as they do.",
+    "createProject": "Create a project",
     "welcome": "Signed in as {{email}}",
     "projects": "Projects",
     "noProjects": "No projects yet.",
@@ -101,7 +117,7 @@
     "budget": "Budget",
     "sections": {
       "overview": "Overview",
-      "invoices": "Invoices",
+      "invoices": "Expenses",
       "labor": "Labor",
       "documents": "Documents",
       "photos": "Photos",
@@ -109,7 +125,7 @@
       "planning": "Planning",
       "chiffrage": "Cost planning",
       "analyses": "Analyses",
-      "members": "Project members",
+      "members": "Members",
       "settings": "Settings",
       "salaries": "Salaries"
     },
@@ -181,7 +197,7 @@
     "version": "Version",
     "notificationPrefs": {
       "title": "Notifications",
-      "intro": "Choose which pushes reach this phone.",
+      "intro": "Choose which notifications you get. These settings apply to your account, on all your devices.",
       "pushEnabled": "Push notifications",
       "pushEnabledDesc": "Master switch — off silences everything below",
       "loadError": "Could not load your notification settings.",
@@ -216,9 +232,14 @@
       "title": "Hidden sections",
       "intro": "Switch off the sections {{company}} does not use. A switched-off section disappears from the Menu of every member of the company.",
       "adminOnly": "Only a company admin can change this setting."
+    },
+    "company": {
+      "label": "Company",
+      "single": "Company: {{company}}"
     }
   },
   "members": {
+    "allSitesAccess": "Company admin: access to every project",
     "title": "Members ({{count}})",
     "none": "No members yet.",
     "inviteSent": "Invitation sent.",
@@ -250,11 +271,11 @@
     "deleted": "Invoice deleted.",
     "deleteConfirm": "Delete invoice {{number}}?",
     "types": {
-      "released_funds": "Released funds",
+      "released_funds": "Released Funds",
       "labor": "Labor",
-      "materials_services": "Materials & services",
+      "materials_services": "Materials & Services",
       "others": "Others",
-      "return": "Return / avoir"
+      "return": "Return"
     },
     "serviceMonthShort": "for",
     "auto": "auto",
@@ -330,13 +351,13 @@
       "serviceMonthClear": "Clear month",
       "paymentMethod": "Payment method",
       "paymentMethodNone": "None",
-      "refundHint": "A return nets against expenses. Link the materials & services invoice it refunds.",
-      "refundsInvoice": "Refunds invoice",
+      "refundHint": "A return nets against expenses. Link the materials & services expense it refunds.",
+      "refundsInvoice": "Refunded expense",
       "refundsInvoiceNone": "Not linked",
       "settledVia": "Settled via",
       "settledViaCash": "Cash / bank",
       "settledViaAvoir": "Avoir (credit note)",
-      "appliedTo": "Applied to invoice",
+      "appliedTo": "Applied to expense",
       "appliedToNone": "Not applied",
       "items": "Items",
       "itemsRequired": "Add at least one item with a description.",
@@ -348,12 +369,20 @@
       "addItem": "Add item",
       "notes": "Notes",
       "highlight": "Highlight",
-      "create": "Create invoice",
+      "create": "Create expense",
       "quantityPositive": "Every line needs a quantity greater than 0.",
       "settledViaNone": "Not settled yet",
-      "pricePositive": "Unit prices cannot be negative for this type. Record money coming back as a Return / avoir.",
+      "pricePositive": "Unit prices cannot be negative for this type. Record money coming back as a Return.",
       "vatRange": "VAT must be between 0 and 100.",
-      "lineTooLarge": "A line cannot exceed a quantity of {{quantity}} or a unit price of {{price}}."
+      "lineTooLarge": "A line cannot exceed a quantity of {{quantity}} or a unit price of {{price}}.",
+      "amountInvalid": "Enter a number, e.g. 1500 or 1,500.50.",
+      "amountAmbiguous": "\"{{typed}}\": did you mean {{grouped}}? Type {{grouped}}, or use a decimal mark with one or two decimals.",
+      "tooManyDecimals": "At most {{max}} decimals.",
+      "negative": "No negative amount here.",
+      "fixFields_one": "Fix the highlighted field.",
+      "fixFields_other": "Fix the {{count}} highlighted fields.",
+      "cashAdvance": "Company cash advance",
+      "cashAdvanceHint": "Money handed out by the company (e.g. cash to pay labor): not counted in released funds, counted as spent in the company purse."
     },
     "summary": {
       "totalExpenses": "Total expenses",
@@ -378,7 +407,15 @@
       "paidByCompany": "company",
       "paidByPersonal": "personal",
       "sumOfTypes": "Total",
-      "sharedScaleTo": "shared scale to {{amount}}"
+      "sharedScaleTo": "shared scale to {{amount}}",
+      "unfunded": "not funded",
+      "spentLower": "spent",
+      "overLower": "over",
+      "purseLine": "Released {{released}} · Spent {{spent}}",
+      "noPurseSpend_one": "{{count}} expense in no purse · {{amount}}",
+      "noPurseSpend_other": "{{count}} expenses in no purse · {{amount}}",
+      "noPurseHint": "Payment method is neither company nor personal: counted in the total, not in a purse.",
+      "releasedTotal": "Released this month"
     },
     "tvaShort": "VAT",
     "invoiceCount_zero": "no expense",
@@ -394,6 +431,9 @@
       "transferConfirm": "Transfer",
       "info": "Details",
       "noHighlight": "No highlight",
+      "highlightLockedAuto": "Generated from an invoice: the colour cannot be changed.",
+      "highlightLockedRefunded": "Refunded expense: the colour cannot be changed.",
+      "highlightReadOnly": "Only an admin or a manager can change the colour.",
       "attachmentsEmpty": "No attachments yet"
     },
     "highlightColors": {
@@ -428,6 +468,7 @@
       "none": "No shift"
     },
     "workers": {
+      "deactivateCompanyHint": "This person is stopped on every project of the company and can no longer log days there. Their days and what they are still owed stay visible and payable; you can reactivate them.",
       "add": "Add worker",
       "edit": "Edit worker",
       "name": "Name",
@@ -453,7 +494,9 @@
       "fromCompanyHint": "from the company directory",
       "deactivate": "Deactivate",
       "rateTooLarge": "The daily rate cannot exceed {{max}}.",
-      "alreadyOnProject": "This person is already a worker on this project (possibly deactivated)."
+      "alreadyOnProject": "This person is already a worker on this project (possibly deactivated).",
+      "reactivate": "Reactivate",
+      "alreadyOnProjectReactivate": "This person is already a worker on this project. If they were deactivated, open their card under Workers and tap Reactivate."
     },
     "rates": {
       "link": "Rates",
@@ -472,7 +515,7 @@
       "title": "Log {{date}}",
       "sameAsLastDay": "Same as last day",
       "noWorkers": "Every active worker is already logged for this day.",
-      "supplement": "Extra hours (not paid)",
+      "supplement": "Extra hours (banked into bonus days)",
       "submit_one": "Log {{count}} worker",
       "submit_other": "Log {{count}} workers",
       "saved": "Attendance saved.",
@@ -569,7 +612,8 @@
       "tho_phu": "Assistant worker"
     },
     "entry": {
-      "deleteConfirm": "Delete this attendance entry?"
+      "deleteConfirm": "Delete this attendance entry?",
+      "pendingHint": "Day logged by the worker, waiting for validation: it only counts once validated."
     },
     "overview": {
       "totalCost": "Total labor cost",
@@ -605,7 +649,17 @@
       "toggleWorkers": "Show or hide the workers of this month",
       "openMonth": "Open this month",
       "daysUnit_one": "day",
-      "daysUnit_other": "days"
+      "daysUnit_other": "days",
+      "paidOutsideMonths": "incl. {{amount}} paid with no month or outside logged months"
+    },
+    "errors": {
+      "roleUnavailable": "This role is no longer available for this project's company. Pick another one."
+    },
+    "restricted": {
+      "title": "Managers only",
+      "labor": "This site's workers, attendance and pay are visible to managers and admins. To see your own days, ask a manager to link your account to your worker profile.",
+      "expenses": "This site's expenses and payments are visible to managers and admins.",
+      "salaries": "This site's salaries are visible to managers and admins. To see your own pay, ask a manager to link your account to your worker profile."
     }
   },
   "documents": {
@@ -649,7 +703,16 @@
     "share": "Share",
     "videoHint": "Video — use Share to open it.",
     "loadMore": "Load more",
-    "loadError": "Could not load the photos."
+    "loadError": "Could not load the photos.",
+    "readOnly": "Only members who can edit the project can add, edit or delete photos. Ask a project or company manager if you need to add some.",
+    "takenOn": "Taken on"
+  },
+  "uploads": {
+    "unsupported": "{{name}}: {{ext}} files are not accepted (accepted: {{allowed}}).",
+    "empty": "{{name}}: the file is empty.",
+    "tooLarge": "{{name}}: the file is too large.",
+    "invalidEncoding": "{{name}}: the file is not readable UTF-8 text. Save it as UTF-8 and try again.",
+    "failed": "{{name}}: {{reason}}"
   },
   "notes": {
     "create": "New note",
@@ -679,6 +742,7 @@
     "title": "Reminders ({{count}})",
     "none": "No reminders due.",
     "due": "Due {{date}}",
+    "bellLabel": "Notifications ({{count}})",
     "dismiss": "Dismiss",
     "attendance": {
       "title": "Attendance to validate ({{count}})",
@@ -700,8 +764,17 @@
       "unassigned": "Not assigned yet"
     },
     "activity": {
-      "title": "Activity ({{count}} unread)",
+      "title_one": "Activity ({{count}} unread)",
+      "title_other": "Activity ({{count}} unread)",
+      "yesterday": "Yesterday {{time}}",
+      "markRead": "Mark as read",
       "markAllRead": "Mark all read"
+    },
+    "prePrompt": {
+      "title": "Turn on notifications?",
+      "body": "Folio lets you know when a task is assigned to you, a document arrives or someone messages you. You can change this later in your phone settings.",
+      "enable": "Turn on",
+      "later": "Not now"
     }
   },
   "tasks": {
@@ -737,7 +810,8 @@
       "high": "High",
       "urgent": "Urgent"
     },
-    "loadError": "Could not load the tasks."
+    "loadError": "Could not load the tasks.",
+    "notFound": "This task no longer exists."
   },
   "chiffrage": {
     "totalHt": "Total excl. VAT",
@@ -799,7 +873,10 @@
     "imageFromUrl": "Image from URL",
     "imageUrl": "Image URL",
     "takePhoto": "Take a photo",
-    "noneReadOnly": "No sections yet."
+    "noneReadOnly": "No sections yet.",
+    "basketPartial": "{{priced}}/{{total}} items",
+    "moveUp": "Move “{{name}}” up",
+    "moveDown": "Move “{{name}}” down"
   },
   "analyses": {
     "upload": "Add analysis",
@@ -859,7 +936,8 @@
       "templates": "Templates",
       "refundable": "Refundable",
       "import": "Import",
-      "noResults": "No document matches this search."
+      "noResults": "No document matches this search.",
+      "allCompanies": "All companies"
     },
     "form": {
       "modes": {
@@ -919,7 +997,18 @@
         "documentNumberRequired": "Document number is required.",
         "itemQuantityMax": "Quantity cannot exceed {{max}}.",
         "itemUnitPriceMax": "Unit price cannot exceed {{max}}.",
-        "emailInvalid": "Enter a valid email address, e.g. name@example.com."
+        "emailInvalid": "Enter a valid email address, e.g. name@example.com.",
+        "validityBeforeIssue": "The validity date cannot be before the issue date.",
+        "dueBeforeIssue": "The payment due date cannot be before the issue date."
+      },
+      "issuerProfile": {
+        "missing": "{{name}} has not filled in: {{fields}}. These will be missing from the document.",
+        "open": "Complete the company profile",
+        "fields": {
+          "siret": "SIRET",
+          "tva_number": "VAT number",
+          "iban": "IBAN"
+        }
       }
     },
     "actions": {
@@ -934,7 +1023,10 @@
       "invalidTransition": "This status change is not allowed.",
       "convertedLocked": "This quote was converted to an invoice and is locked. Cancel the invoice to change it.",
       "openFacture": "Open the invoice",
-      "deletePaidWarning": "This facture is paid: the funds release it recorded in its project is deleted with it."
+      "deletePaidWarning": "This facture is paid: the funds release it recorded in its project is deleted with it.",
+      "cancelConfirm": "Cancel {{number}}?",
+      "cancelWarning": "A cancelled facture can no longer change status.",
+      "cancelPaidWarning": "This facture is paid: cancelling it deletes the funds release it recorded in its project. A cancelled facture can no longer change status."
     },
     "toast": {
       "documentCreated": "Document created.",
@@ -1011,10 +1103,13 @@
         "none": "No candidate expense.",
         "confirm": "Add {{count}}",
         "partial": "Some expenses could not be added.",
+        "partialKept": "{{added}} added. {{failed}} could not be added and stay selected: try again.",
+        "waiting": "Server busy: waiting {{count}} s before continuing…",
         "added_one": "{{count}} expense added.",
         "added_other": "{{count}} expenses added.",
         "addFailed": "No expense could be added."
-      }
+      },
+      "loadMore": "Load more"
     }
   },
   "library": {
@@ -1134,7 +1229,9 @@
       "delete": "Delete"
     },
     "loadError": "Could not load the library.",
-    "imageUrlBlocked": "This image address is not accepted. Use a link from a supported supplier site."
+    "imageUrlBlocked": "This image address is not accepted. Use a link from a supported supplier site.",
+    "importHelp": "Import your purchase history from a supplier (receipts, orders): each line becomes a library product with its latest price. Pick the exported JSON file, or paste its content below.",
+    "importSample": "See an example"
   },
   "inventory": {
     "title": "Equipment inventory",
@@ -1197,7 +1294,8 @@
       "siteRequired": "Pick a site.",
       "noWarehouseYet": "No warehouse yet — create one from “Warehouses” on the inventory screen, or keep the equipment on a site.",
       "warehouseNameRequired": "Give the warehouse a name.",
-      "noSiteYet": "No site yet — this company has no project to put the equipment on, so keep it in a warehouse."
+      "noSiteYet": "No site yet — this company has no project to put the equipment on, so keep it in a warehouse.",
+      "quantityTooLarge": "The quantity cannot exceed {{max}}."
     },
     "actions": {
       "create": "Add to inventory"
@@ -1230,8 +1328,10 @@
       },
       "actions": {
         "create": "Add warehouse"
-      }
-    }
+      },
+      "emptyReadOnly": "No warehouses yet."
+    },
+    "emptyReadOnly": "No equipment yet."
   },
   "companies": {
     "masking": {
@@ -1277,7 +1377,7 @@
           "nameEmail": "Name / Email",
           "attachedAt": "Attached",
           "primaryBadge": "Primary",
-          "boot": "Boot user",
+          "boot": "Remove from company",
           "bootConfirm": "Remove {{name}} from this company? They will lose access immediately.",
           "empty": "No users attached to this company yet.",
           "countSingular": "user",
@@ -1305,7 +1405,8 @@
           "tapToShare": "Tap to share",
           "shareMessage": "Join {{company}} on Folio: create your profile in the app, then enter the company code {{code}}.",
           "createdToast": "Company code ready.",
-          "revokedToast": "Company code revoked."
+          "revokedToast": "Company code revoked.",
+          "shareMessageWithLink": "Join {{company}} on Folio: install the app ({{url}}), create your profile, then enter the company code {{code}}."
         }
       }
     },
@@ -1460,6 +1561,8 @@
         "removeConfirm": "Remove the custom permission \"{{permission}}\"?"
       },
       "pending": {
+        "roleOnSignup": "Role once signed up: {{role}}",
+        "validUntil": "Invitation valid until {{date}}",
         "title": "Pending profiles ({{count}})",
         "empty": "No pending profiles — everyone added by phone has signed in.",
         "badge": "Pending",
@@ -1542,7 +1645,8 @@
       "accepted": "This invitation was already used. Try logging in.",
       "notFound": "This invitation link is invalid.",
       "accountExists": "This invitation is for an existing Folio account. Enter that account's phone number.",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "superseded": "A newer invitation was sent to you: use the link in the latest e-mail."
     },
     "loggedInOther": {
       "title": "You're signed in as someone else",
@@ -1560,7 +1664,12 @@
     "none": "No role yet.",
     "deleteConfirm": "Delete role {{name}}?",
     "nameRequired": "Name is required.",
-    "colorInvalid": "Enter a colour as # followed by 6 hexadecimal digits, e.g. #E11D48."
+    "colorInvalid": "Enter a colour as # followed by 6 hexadecimal digits, e.g. #E11D48.",
+    "created": "Role created.",
+    "deleted": "Role deleted.",
+    "deleteWarning": "Workers who have this role will lose it.",
+    "nameTooLong": "The name must not exceed {{max}} characters.",
+    "noCompany": "Join or create a company to manage its roles."
   },
   "persons": {
     "title": "Merge persons",
@@ -1721,7 +1830,11 @@
     "paidToast": "Payment recorded.",
     "unpaidToast": "Payments removed.",
     "readOnly": "Only an admin or manager can change the paid status.",
-    "noMonth": "No month recorded"
+    "noMonth": "No month recorded",
+    "creditDeducted": "Overpaid in earlier months, deducted: {{amount}}",
+    "noPayments": "No payment recorded for this month.",
+    "paymentsCount_one": "{{count}} payment",
+    "paymentsCount_other": "{{count}} payments"
   },
   "shell": {
     "switchProject": "Switch project",
@@ -1746,6 +1859,10 @@
     "add": "Add",
     "itemsCount_one": "{{count}} item",
     "itemsCount_other": "{{count}} items",
+    "spendCount_one": "{{count}} expense",
+    "spendCount_other": "{{count}} expenses",
+    "returnsCount_one": "{{count}} return",
+    "returnsCount_other": "{{count}} returns",
     "purseCaption": "left · {{pct}} % used",
     "pendingRefunds_one": "{{count}} expense awaiting company refund",
     "pendingRefunds_other": "{{count}} expenses awaiting company refund",
@@ -1805,7 +1922,7 @@
       "menu": "Message options",
       "report": "Report message",
       "reportTitle": "Report this message?",
-      "reportBody": "It will be sent to the moderators of your company and the Folio team for review.",
+      "reportBody": "Your company's admins will be notified and can remove the message.",
       "reported": "Reported. Thank you.",
       "block": "Block {{name}}",
       "blockTitle": "Block {{name}}?",
@@ -1826,8 +1943,20 @@
       "nobodySeen": "Nobody has seen it yet",
       "unknownMember": "Former member",
       "chip_one": "{{emoji}} {{count}} reaction",
-      "chip_other": "{{emoji}} {{count}} reactions"
-    }
+      "chip_other": "{{emoji}} {{count}} reactions",
+      "formerMember": "{{name}} (former member)"
+    },
+    "deletedAccount": "Deleted account",
+    "unnamedMember": "Unnamed member",
+    "loadOlder": "Load earlier messages",
+    "historyStart": "Start of the conversation",
+    "newMessages": "New messages",
+    "noLongerAvailable": "You no longer have access to this conversation.",
+    "channelsError": "Conversations could not be loaded.",
+    "bodyTooLong": "Message too long: {{max}} characters at most.",
+    "attachmentRejected": "This file is not a valid photo or voice message.",
+    "charactersLeft_one": "{{count}} character left",
+    "charactersLeft_other": "{{count}} characters left"
   },
   "signup": {
     "title": "Create your profile",
@@ -1870,7 +1999,7 @@
     "editSent": "Change request sent — waiting for a manager.",
     "editUnchanged": "Nothing changed — this day already has these values.",
     "editDuplicate": "This change request is already waiting for a manager.",
-    "supplement": "Extra hours (not paid)",
+    "supplement": "Extra hours (banked into bonus days)",
     "note": "Note",
     "changeRequested": "Change requested",
     "proposedLine": "Requested: {{value}}",
@@ -1961,6 +2090,19 @@
   "pdfViewer": {
     "title": "PDF",
     "share": "Share",
-    "loadError": "Could not display this PDF."
+    "loadError": "Could not display this PDF.",
+    "passwordPrompt": "This PDF is protected. Enter its password.",
+    "wrongPassword": "Wrong password. Try again.",
+    "open": "Open",
+    "cannotOpen": "This PDF cannot be displayed here (damaged or protected). Open it with another app.",
+    "openWith": "Open with…"
+  },
+  "legal": {
+    "support": "Help and support",
+    "privacy": "Privacy"
+  },
+  "imageViewer": {
+    "title": "Picture",
+    "loadError": "Could not display this picture."
   }
 }

@@ -24,6 +24,14 @@ const GAP = 12;
 export const CHAT_FAB_RESERVE = GAP + SIZE + GAP;
 
 /**
+ * Bottom padding for a scroller on a project tab: the reserve while the chat button is shown,
+ * `base` otherwise. Every tab screen's scroller uses it so its last row stays reachable.
+ */
+export function useChatFabReserve(base = 24): number {
+  return useChatEnabled() ? Math.max(base, CHAT_FAB_RESERVE) : base;
+}
+
+/**
  * Floating chat button (design 2a): 52 px card circle bottom-right above the tab bar with the
  * total unread count as an accent pill. Rendered only when the backend enables chat.
  */

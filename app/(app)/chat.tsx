@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -9,7 +9,9 @@ import {
   Text,
   View,
 } from "react-native";
+import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { usePreventRemove } from "expo-router/react-navigation";
 
 import { useAuth } from "@/auth/auth-context";
 import { Avatar } from "@/components/ui/avatar";
@@ -17,6 +19,10 @@ import { Icon } from "@/components/ui/icon";
 import { showToast } from "@/components/ui/toast";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import {
+  CHAT_OLDER_PAGE_SIZE,
+  CHAT_PAGE_SIZE,
+  chatKeys,
+  fetchChatMessages,
   useBlockChatUser,
   useBlockedUsers,
   useChatChannels,
@@ -28,6 +34,7 @@ import {
   useSendChatMessage,
   useToggleChatReaction,
 } from "@/features/chat/chat-api";
+import type { ChatMessage } from "@/features/chat/chat-api";
 import { BlockedUsersSheet } from "@/features/chat/blocked-users-sheet";
 import { ChatComposer } from "@/features/chat/chat-composer";
 import { ChatMessageList } from "@/features/chat/chat-message-list";
@@ -35,8 +42,16 @@ import { MessageDetailsSheet } from "@/features/chat/message-details-sheet";
 import type { PickedFile } from "@/lib/files/pick";
 import type { SupportedLocale } from "@/i18n";
 import { seenByMessage } from "@/lib/chat/seen-by";
+import { mergeHistory, slidOut } from "@/lib/chat/merge-history";
+import { chatPersonName } from "@/lib/chat/person-name";
+import { ApiError } from "@/lib/query/api-error";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
+import { useQueryClient } from "@tanstack/react-query";
 import { useChatColors } from "@/features/chat/chat-colors";
 import { useTokens, workerColor } from "@/theme/tokens";
+
+/** How close to the end (px) still counts as "reading the newest messages". */
+const NEAR_BOTTOM_PX = 80;
 
 /** Stable avatar color per conversation, cycling the design palette. */
 function channelColor(tokens: ReturnType<typeof useTokens>, key: string) {
@@ -64,6 +79,11 @@ export default function ChatScreen() {
   // features query is what says which — see the disabled branch below.
   const features = useFeatures();
   const channels = useChatChannels(enabled, 15_000);
+  // The conversation list: pulling re-reads the channels (a project just joined) and the flag.
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.chatChannels,
+    refreshKeys.features,
+  ]);
   const channelList = useMemo(() => channels.data ?? [], [channels.data]);
   const [selected, setSelected] = useState<string | null>(
     params.channel ?? null,
@@ -81,14 +101,15 @@ export default function ChatScreen() {
       setShowList(false);
     }
   }
+  const queryClient = useQueryClient();
   // The requested channel can be newer than the cached list (a project the user was just added
-  // to). Wait for a fresh list instead of falling back to the first channel, which showed an
-  // unrelated, often empty, conversation until the next poll.
+  // to): refetch the list once and wait for it. If it is still missing, the reader lost access
+  // (removed from the project, or the link is stale): say so and show the list, instead of
+  // silently opening another conversation.
   const selectedKnown = Boolean(
     selected && channelList.some((c) => c.key === selected),
   );
-  const waitingForChannel =
-    Boolean(selected) && !selectedKnown && channels.isFetching;
+  const waitingForChannel = enabled && Boolean(selected) && !selectedKnown;
   const channelKey = selectedKnown
     ? selected
     : waitingForChannel
@@ -96,14 +117,91 @@ export default function ChatScreen() {
       : (channelList[0]?.key ?? null);
   const listVisible = showList && channelList.length > 1;
   const canGoToList = channelList.length > 1;
+  // Only a thread on screen is fetched, polled and marked read: the list shows unread dots, and
+  // opening it must not mark the first conversation read for its senders.
+  const activeKey = listVisible ? null : channelKey;
+  const loseChannel = useCallback(
+    (key: string) => {
+      showToast(t("chat.noLongerAvailable"), "error");
+      setSelected((current) => (current === key ? null : current));
+      setShowList(true);
+      void queryClient.invalidateQueries({ queryKey: chatKeys.channels });
+    },
+    [queryClient, t],
+  );
+  const refetchChannels = channels.refetch;
+  useEffect(() => {
+    if (!selected || selectedKnown || !channels.isSuccess) return;
+    let cancelled = false;
+    const key = selected;
+    void refetchChannels().then((result) => {
+      if (cancelled) return;
+      if (!(result.data ?? []).some((c) => c.key === key)) loseChannel(key);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // Once per requested channel; a list that still lacks it must not loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, selectedKnown, channels.isSuccess]);
   const blocked = useBlockedUsers(enabled);
   const report = useReportChatMessage();
   const block = useBlockChatUser();
   const [blockedOpen, setBlockedOpen] = useState(false);
-  const messages = useChatMessages(channelKey);
+  const messages = useChatMessages(activeKey);
   const markRead = useMarkChatRead();
-  const send = useSendChatMessage(channelKey ?? "");
-  const react = useToggleChatReaction(channelKey ?? "", user?.id);
+  const send = useSendChatMessage(activeKey ?? "");
+  const react = useToggleChatReaction(activeKey ?? "", user?.id);
+  // A thread answering 403/404 is one the reader was removed from.
+  const lostStatus =
+    messages.error instanceof ApiError &&
+    (messages.error.status === 403 || messages.error.status === 404);
+  useEffect(() => {
+    // Reacts to the query's answer; there is no event to subscribe to instead.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (lostStatus && activeKey) loseChannel(activeKey);
+  }, [lostStatus, activeKey, loseChannel]);
+
+  // Unsent text per conversation, kept while the chat screen is open.
+  // (A mutable map held in state: written on each keystroke, read when a thread mounts.)
+  const [drafts] = useState(() => new Map<string, string>());
+
+  // History older than the polled newest page, fetched on demand (oldest first). Reset when the
+  // thread changes (adjusting state during render, keyed on the thread).
+  const [older, setOlder] = useState<ChatMessage[]>([]);
+  const [olderDone, setOlderDone] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [newBelow, setNewBelow] = useState(false);
+  const [threadKey, setThreadKey] = useState(activeKey);
+  if (threadKey !== activeKey) {
+    setThreadKey(activeKey);
+    setOlder([]);
+    setOlderDone(false);
+    setLoadingOlder(false);
+    setNewBelow(false);
+  }
+  const activeKeyRef = useRef(activeKey);
+  const atBottomRef = useRef(true);
+  const prependRef = useRef<{ height: number; offset: number } | null>(null);
+  const contentHeightRef = useRef(0);
+  const offsetRef = useRef(0);
+  useEffect(() => {
+    activeKeyRef.current = activeKey;
+    atBottomRef.current = true;
+    prependRef.current = null;
+  }, [activeKey]);
+
+  // Newer messages push the oldest ones out of the polled page; once older history is shown,
+  // keep them so there is no gap.
+  const previousPage = useRef<ChatMessage[]>([]);
+  useEffect(() => {
+    const next = messages.data?.items ?? [];
+    const gone = slidOut(previousPage.current, next);
+    previousPage.current = next;
+    if (gone.length > 0 && older.length > 0)
+      setOlder((current) => mergeHistory(current, gone));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.data]);
   // The message whose details sheet is open; looked up in the live page so it tracks each poll.
   const [detailsId, setDetailsId] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -112,8 +210,18 @@ export default function ChatScreen() {
     () => channelList.find((c) => c.key === channelKey) ?? null,
     [channelList, channelKey],
   );
-  const members = messages.data?.members ?? [];
-  const items = messages.data?.items ?? [];
+  const members = useMemo(
+    () => messages.data?.members ?? [],
+    [messages.data],
+  );
+  const pageItems = useMemo(() => messages.data?.items ?? [], [messages.data]);
+  const items = useMemo(
+    () => mergeHistory(older, pageItems),
+    [older, pageItems],
+  );
+  const hasOlder =
+    !olderDone &&
+    (older.length > 0 || pageItems.length >= CHAT_PAGE_SIZE);
   const detailsMessage = detailsId
     ? (items.find((m) => m.id === detailsId) ?? null)
     : null;
@@ -121,28 +229,98 @@ export default function ChatScreen() {
   const lastMessageMine = items[items.length - 1]?.mine ?? true;
   // Who has read up to which message ("seen" avatars); recomputed on every poll.
   const seen = useMemo(
-    () =>
-      seenByMessage(
-        messages.data?.items ?? [],
-        messages.data?.members ?? [],
-        user?.id,
-      ),
-    [messages.data, user?.id],
+    () => seenByMessage(items, members, user?.id),
+    [items, members, user?.id],
   );
 
-  // Opening (or switching to) a channel clears its unread marker.
+  // Opening (or switching to) a thread clears its unread marker.
   useEffect(() => {
-    if (channelKey) markRead.mutate({ channelKey });
+    if (activeKey) markRead.mutate({ channelKey: activeKey });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channelKey]);
-  // Keep the list anchored to the newest message; an incoming one is read since the screen is open,
-  // so move the marker too (that is what shows this reader's avatar on the sender's side).
+  }, [activeKey]);
+  // An incoming message is read only if the reader is at the end of the thread; while they read
+  // older messages it waits under a "new messages" pill and the position is kept.
   useEffect(() => {
-    if (lastMessageId) scrollRef.current?.scrollToEnd({ animated: false });
-    if (lastMessageId && !lastMessageMine && channelKey)
-      markRead.mutate({ channelKey });
+    if (!lastMessageId || !activeKey) return;
+    if (atBottomRef.current) {
+      scrollRef.current?.scrollToEnd({ animated: false });
+      if (!lastMessageMine) markRead.mutate({ channelKey: activeKey });
+    } else if (!lastMessageMine) {
+      // Reacts to a poll bringing a message; there is no event to subscribe to instead.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setNewBelow(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastMessageId]);
+
+  const loadOlder = useCallback(async () => {
+    const oldest = items[0];
+    if (!activeKey || !oldest || loadingOlder || !hasOlder) return;
+    const key = activeKey;
+    setLoadingOlder(true);
+    try {
+      const page = await fetchChatMessages(key, {
+        limit: CHAT_OLDER_PAGE_SIZE,
+        before: oldest.created_at,
+      });
+      if (key !== activeKeyRef.current) return; // the reader switched thread meanwhile
+      prependRef.current = {
+        height: contentHeightRef.current,
+        offset: offsetRef.current,
+      };
+      setOlder((current) => mergeHistory(page.items, current));
+      if (page.items.length < CHAT_OLDER_PAGE_SIZE) setOlderDone(true);
+    } catch {
+      showToast(t("common.loadError"), "error");
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [activeKey, hasOlder, items, loadingOlder, t]);
+
+  function onThreadScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    offsetRef.current = contentOffset.y;
+    const atBottom =
+      contentOffset.y + layoutMeasurement.height >=
+      contentSize.height - NEAR_BOTTOM_PX;
+    atBottomRef.current = atBottom;
+    if (atBottom && newBelow) {
+      setNewBelow(false);
+      if (activeKey) markRead.mutate({ channelKey: activeKey });
+    }
+  }
+
+  function onThreadContentSize(_width: number, height: number) {
+    const previous = contentHeightRef.current;
+    contentHeightRef.current = height;
+    const anchor = prependRef.current;
+    if (anchor) {
+      // Older messages went on top: keep the message the reader was looking at in place.
+      prependRef.current = null;
+      scrollRef.current?.scrollTo({
+        y: Math.max(0, height - anchor.height + anchor.offset),
+        animated: false,
+      });
+      return;
+    }
+    if (atBottomRef.current || previous === 0)
+      scrollRef.current?.scrollToEnd({ animated: false });
+  }
+
+  function showNewest() {
+    atBottomRef.current = true;
+    setNewBelow(false);
+    scrollRef.current?.scrollToEnd({ animated: true });
+    if (activeKey) markRead.mutate({ channelKey: activeKey });
+  }
+
+  function backToList() {
+    setShowList(true);
+    setSelected(null);
+  }
+  // Android's back button and the iOS back gesture leave a thread for the list, as the on-screen
+  // arrow does, instead of closing the whole chat.
+  usePreventRemove(!listVisible && canGoToList, () => backToList());
 
   // Sending implies having read the channel; the composer clears itself once this resolves.
   // `lang` (the reader's UI language) goes on every send.
@@ -154,7 +332,7 @@ export default function ChatScreen() {
       ...message,
       lang: i18n.language as SupportedLocale,
     });
-    if (channelKey) markRead.mutate({ channelKey });
+    if (activeKey) markRead.mutate({ channelKey: activeKey });
   }
 
   return (
@@ -165,7 +343,7 @@ export default function ChatScreen() {
           accessibilityRole="button"
           onPress={() => {
             if (!listVisible && canGoToList) {
-              setShowList(true);
+              backToList();
               return;
             }
             if (router.canGoBack()) router.back();
@@ -207,7 +385,9 @@ export default function ChatScreen() {
                 {channel
                   ? [
                       t("chat.membersCount", { count: channel.member_count }),
-                      ...members.slice(0, 3).map((m) => m.name),
+                      ...members
+                        .slice(0, 3)
+                        .map((m) => chatPersonName(m.name, m.state, t)),
                     ].join(" · ")
                   : ""}
               </Text>
@@ -229,11 +409,22 @@ export default function ChatScreen() {
         )}
       </View>
 
+      {channels.isError && channelList.length === 0 ? (
+        <ErrorState
+          message={t("chat.channelsError")}
+          retryLabel={t("common.retry")}
+          onRetry={() => void channels.refetch()}
+        />
+      ) : null}
       {listVisible ? (
-        <ScrollView testID="chat-list-screen" className="flex-1">
+        <ScrollView
+          testID="chat-list-screen"
+          className="flex-1"
+          refreshControl={pullToRefresh}
+        >
           <View className="gap-0.5 px-2 py-2">
             {channelList.map((item) => {
-              const active = item.key === channelKey;
+              const active = item.key === selected;
               const unread = item.unread_count > 0;
               return (
                 <Pressable
@@ -290,12 +481,38 @@ export default function ChatScreen() {
         <KeyboardAvoidingView behavior="padding" className="flex-1">
           <ScrollView
             ref={scrollRef}
+            testID="chat-thread"
             className="flex-1"
             contentContainerClassName="flex-grow justify-end p-4"
-            onContentSizeChange={() =>
-              scrollRef.current?.scrollToEnd({ animated: false })
-            }
+            onScroll={onThreadScroll}
+            scrollEventThrottle={64}
+            onContentSizeChange={onThreadContentSize}
           >
+            {items.length > 0 && hasOlder ? (
+              <Pressable
+                testID="chat-load-older"
+                accessibilityRole="button"
+                onPress={() => void loadOlder()}
+                disabled={loadingOlder}
+                className="mb-3 items-center self-center rounded-full border border-line px-3 py-1.5 active:opacity-70"
+              >
+                {loadingOlder ? (
+                  <ActivityIndicator color={tokens.muted} />
+                ) : (
+                  <Text className="font-sans-medium text-[12.5px] text-ink">
+                    {t("chat.loadOlder")}
+                  </Text>
+                )}
+              </Pressable>
+            ) : null}
+            {items.length > 0 && !hasOlder && messages.data ? (
+              <Text
+                testID="chat-history-start"
+                className="mb-3 text-center font-sans text-[11.5px] text-muted"
+              >
+                {t("chat.historyStart")}
+              </Text>
+            ) : null}
             {/* Gated on the FEATURES query, not the channels one. `useChatChannels` is
               passed `enabled`, so when chat is off the channels query never runs and
               `channels.isFetched` stays false forever — the old condition could never
@@ -306,10 +523,10 @@ export default function ChatScreen() {
             {!enabled && features.isFetched ? (
               <EmptyState message={t("chat.disabled")} />
             ) : null}
-            {(messages.isPending && channelKey) || waitingForChannel ? (
+            {(messages.isPending && activeKey) || waitingForChannel ? (
               <ActivityIndicator className="my-6" color={tokens.ink} />
             ) : null}
-            {messages.isError ? (
+            {messages.isError && !lostStatus ? (
               <ErrorState
                 message={t("common.loadError")}
                 retryLabel={t("common.retry")}
@@ -343,8 +560,13 @@ export default function ChatScreen() {
                   block.mutate(
                     { userId },
                     {
-                      onSuccess: () =>
-                        showToast(t("chat.moderation.blocked"), "success"),
+                      onSuccess: () => {
+                        // The refetched page hides them; the older history must too.
+                        setOlder((current) =>
+                          current.filter((m) => m.sender_id !== userId),
+                        );
+                        showToast(t("chat.moderation.blocked"), "success");
+                      },
                     },
                   )
                 }
@@ -352,11 +574,35 @@ export default function ChatScreen() {
             ) : null}
           </ScrollView>
 
-          <ChatComposer
-            disabled={!channelKey}
-            sending={send.isPending}
-            onSend={submit}
-          />
+          {newBelow ? (
+            <Pressable
+              testID="chat-new-below"
+              accessibilityRole="button"
+              onPress={showNewest}
+              className="absolute bottom-[84px] self-center rounded-full px-3.5 py-1.5 active:opacity-80"
+              style={{ backgroundColor: colors.blue }}
+            >
+              <Text className="font-sans-medium text-[12.5px] text-white">
+                {t("chat.newMessages")}
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {/* No composer when the server has chat off: there is nothing to send to. */}
+          {enabled ? (
+            <ChatComposer
+              key={activeKey ?? "none"}
+              disabled={!activeKey}
+              sending={send.isPending}
+              onSend={submit}
+              initialDraft={activeKey ? drafts.get(activeKey) : ""}
+              onDraftChange={(text) => {
+                if (!activeKey) return;
+                if (text) drafts.set(activeKey, text);
+                else drafts.delete(activeKey);
+              }}
+            />
+          ) : null}
         </KeyboardAvoidingView>
       ) : null}
       <MessageDetailsSheet

@@ -187,6 +187,43 @@ describe("labor tab · manager", () => {
   });
 });
 
+describe("labor tab · manager with a deactivated worker", () => {
+  beforeEach(() => {
+    mockPersona = persona("manager");
+    mockWorkers = [WORKER_MINH, { ...WORKER_TUAN, is_active: false }];
+  });
+
+  it("keeps the deactivated worker's wages payable", async () => {
+    mockParams = { segment: "payments" };
+    await renderWithProviders(<LaborTab />);
+
+    expect(await screen.findByTestId("payment-record-all")).toHaveTextContent(
+      containing(formatMoney(230)),
+    );
+    expect(screen.getByTestId(`payment-record-${WORKER_TUAN.id}`)).toBeTruthy();
+    expect(
+      callsTo(mockGet, "/api/v1/projects/{project_id}/workers").some(
+        ([, options]) =>
+          (options as { params?: { query?: Record<string, string> } })?.params
+            ?.query?.include_inactive === "true",
+      ),
+    ).toBe(true);
+  });
+
+  it("offers to reactivate them from the roster", async () => {
+    await renderWithProviders(<LaborTab />);
+
+    await fireEvent.press(await screen.findByTestId("labor-tab-workers"));
+    await fireEvent.press(
+      await screen.findByTestId(`worker-card-${WORKER_TUAN.id}`),
+    );
+    expect(
+      await screen.findByTestId(`worker-reactivate-${WORKER_TUAN.id}`),
+    ).toBeTruthy();
+    expect(screen.queryByTestId(`worker-delete-${WORKER_TUAN.id}`)).toBeNull();
+  });
+});
+
 describe("labor tab · manager denied project:manage_invoices (D8)", () => {
   beforeEach(() => {
     mockPersona = persona("manager", { deny: ["project:manage_invoices"] });
@@ -233,7 +270,10 @@ describe("labor tab · pay visible but project:manage_labor denied (D8)", () => 
     await renderWithProviders(<LaborTab />);
 
     await fireEvent.press(await screen.findByTestId("attendance-view-list"));
-    await fireEvent.press(await screen.findByTestId(`list-entry-${first.id}`));
+    const row = await screen.findByTestId(`list-entry-${first.id}`);
+    // Not announced as a button that does nothing.
+    expect(row.props.accessibilityRole).toBeUndefined();
+    await fireEvent.press(row);
     expect(
       screen.queryByText(`${first.worker_name} · ${formatDate(first.date)}`),
     ).toBeNull();
@@ -250,44 +290,25 @@ describe("labor tab · pay visible but project:manage_labor denied (D8)", () => 
   });
 });
 
-describe("labor tab · export without a full project view", () => {
-  // Neither manage_labor nor view_pay: the backend refuses the project-wide export.
+describe("labor tab · member without labor or pay access, linked to no worker", () => {
+  // Neither manage_labor nor view_pay: the backend lists only the worker linked to the caller
+  // (a linked caller is in worker mode, whose own export is covered by the worker salary tab).
   beforeEach(() => {
     mockPersona = persona("manager", {
       deny: ["project:manage_labor", "project:view_pay"],
     });
   });
 
-  it("offers only the caller's own worker, never the whole project", async () => {
-    mockWorkers = [WORKER_TUAN];
-    await renderWithProviders(<LaborTab />);
-
-    // No pay visibility: no Summary segment, the tab opens on attendance.
-    expect(await screen.findByTestId("labor-tab-calendar")).toBeTruthy();
-    expect(screen.queryByTestId("labor-tab-overview")).toBeNull();
-
-    expect(await screen.findByTestId("labor-export")).toBeTruthy();
-    await waitFor(() =>
-      expect(
-        screen.queryByTestId("labor-export-worker-option-__all__"),
-      ).toBeNull(),
-    );
-    expect(
-      screen.getByTestId(`labor-export-worker-option-${WORKER_TUAN.id}`),
-    ).toBeTruthy();
-    expect(screen.getByTestId("labor-export-worker")).toHaveTextContent(
-      containing(WORKER_TUAN.name),
-    );
-  });
-
-  it("hides the export when no worker is linked to the caller", async () => {
+  it("says the area is reserved instead of drawing an empty site, and offers no export", async () => {
     mockWorkers = [];
     await renderWithProviders(<LaborTab />);
 
-    expect(await screen.findByTestId("labor-title")).toBeTruthy();
-    await waitFor(() =>
-      expect(screen.queryByTestId("labor-export")).toBeNull(),
+    expect(await screen.findByTestId("restricted-area")).toHaveTextContent(
+      containing(i18n.t("labor.restricted.title")),
     );
+    expect(screen.queryByTestId("labor-title")).toBeNull();
+    expect(screen.queryByTestId("labor-export")).toBeNull();
+    expect(screen.queryByTestId("labor-tab-calendar")).toBeNull();
   });
 });
 

@@ -34,7 +34,8 @@ describe("computeBillingTotals", () => {
     // 1 × 1,005 is 1.00499… as a float; the backend's Decimal rounds it to 1,01.
     expect(
       computeBillingTotals([
-        { quantity: "1", unit_price: "1,005", vat_rate: "0" },
+        // "1,005" alone is refused as ambiguous (1 005 €?), so the test types four decimals.
+        { quantity: "1", unit_price: "1,0050", vat_rate: "0" },
       ]).totalHt,
     ).toBe(1.01);
   });

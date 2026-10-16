@@ -29,7 +29,11 @@ import {
   useUpdateBillingDocument,
 } from "@/features/billing/billing-documents-api";
 import { BillingStatusBadge } from "@/features/billing/billing-status-badge";
-import type { BillingDocumentKind } from "@/features/billing/billing-types";
+import type {
+  BillingDocumentKind,
+  BillingDocumentStatus,
+} from "@/features/billing/billing-types";
+import { useCompany } from "@/features/companies/companies-api";
 import {
   allowedTransitions,
   transitionLabelKey,
@@ -40,6 +44,7 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { toIsoDate } from "@/lib/format/date";
 import { MAX_BUSINESS_DATE } from "@/lib/format/date-bounds";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** Document detail: status transitions, PDF / XLSX share, duplicate, convert, delete, and the edit form. */
 export default function BillingDocumentScreen() {
@@ -48,6 +53,7 @@ export default function BillingDocumentScreen() {
   const { docId } = useLocalSearchParams<{ docId: string }>();
   const query = useBillingDocument(docId);
   useRefetchOnFocus(query.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.billing]);
   const update = useUpdateBillingDocument();
   const remove = useDeleteBillingDocument();
   const clone = useCloneBillingDocument();
@@ -55,10 +61,12 @@ export default function BillingDocumentScreen() {
   const setStatus = useSetBillingStatus();
   const [sharing, setSharing] = useState<"pdf" | "xlsx" | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const cloneSheet = useRef<BottomSheetModal>(null);
   const convertSheet = useRef<BottomSheetModal>(null);
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [paymentTerms, setPaymentTerms] = useState("");
+  const company = useCompany(query.data?.company_id ?? undefined);
   const queryClient = useQueryClient();
   // A 4xx is final: the document was deleted (or is hidden from this caller, which the API also
   // answers with a 404), so a Retry could never succeed.
@@ -111,6 +119,20 @@ export default function BillingDocumentScreen() {
     }
   }
 
+  function changeStatus(next: BillingDocumentStatus, onSettled?: () => void) {
+    if (!doc) return;
+    setStatus.mutate(
+      { id: doc.id, new_status: next },
+      {
+        onError: (error) => {
+          if (error instanceof ApiError && error.status === 409)
+            showToast(t("billing.actions.invalidTransition"), "error");
+        },
+        onSettled,
+      },
+    );
+  }
+
   const otherKind: BillingDocumentKind =
     doc.kind === "devis" ? "facture" : "devis";
   const busy = clone.isPending || convert.isPending || setStatus.isPending;
@@ -124,6 +146,7 @@ export default function BillingDocumentScreen() {
     <View className="flex-1 bg-paper">
       <ScreenHeader title={doc.document_number} back />
       <ScrollView
+        refreshControl={pullToRefresh}
         contentContainerClassName="p-4 pb-12"
         keyboardShouldPersistTaps="handled"
       >
@@ -184,18 +207,11 @@ export default function BillingDocumentScreen() {
                   variant="secondary"
                   disabled={busy}
                   onPress={() =>
-                    setStatus.mutate(
-                      { id: doc.id, new_status: next },
-                      {
-                        onError: (error) => {
-                          if (error instanceof ApiError && error.status === 409)
-                            showToast(
-                              t("billing.actions.invalidTransition"),
-                              "error",
-                            );
-                        },
-                      },
-                    )
+                    // Cancelling is terminal (and, on a paid facture, deletes its
+                    // funds release), so it asks first; other moves apply at once.
+                    next === "cancelled"
+                      ? setCancelling(true)
+                      : changeStatus(next)
                   }
                 />
               ))}
@@ -235,6 +251,12 @@ export default function BillingDocumentScreen() {
               size="sm"
               onPress={() => {
                 setDueDate(toIsoDate(new Date(Date.now() + 30 * 86_400_000)));
+                // The facture's PDF prints the company's default terms when left empty:
+                // show them here, so what is printed is what was seen.
+                setPaymentTerms(
+                  (current) =>
+                    current || company.data?.default_payment_terms || "",
+                );
                 convertSheet.current?.present();
               }}
             />
@@ -359,6 +381,25 @@ export default function BillingDocumentScreen() {
         </View>
       </Sheet>
 
+      <ConfirmDialog
+        visible={cancelling}
+        title={t("billing.actions.cancelConfirm", {
+          number: doc.document_number,
+        })}
+        message={
+          doc.status === "paid"
+            ? t("billing.actions.cancelPaidWarning")
+            : t("billing.actions.cancelWarning")
+        }
+        confirmLabel={t(
+          `billing.transitions.${transitionLabelKey(doc.kind, doc.status, "cancelled")}`,
+        )}
+        cancelLabel={t("common.back")}
+        destructive
+        loading={setStatus.isPending}
+        onCancel={() => setCancelling(false)}
+        onConfirm={() => changeStatus("cancelled", () => setCancelling(false))}
+      />
       <ConfirmDialog
         visible={deleting}
         title={t("billing.actions.deleteConfirm", {

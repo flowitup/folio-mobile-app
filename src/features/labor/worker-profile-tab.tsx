@@ -21,6 +21,8 @@ import { buildRateHistory, currentDailyRate } from "@/lib/labor/rate-history";
 import type { RateHistoryRow } from "@/lib/labor/rate-history";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
+import { workerRoleLabel } from "@/lib/labor/labor-role-label";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Worker mode · Hồ sơ: the signed-in worker's own profile on the selected project — identity
@@ -54,6 +56,10 @@ export function WorkerProfileTab() {
   const refetchChanges = changes.refetch;
   const hasWorker = Boolean(myWorker);
   useRefetchOnFocus(workers.refetch);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.projects,
+    refreshKeys.laborRoles,
+  ]);
   useRefetchOnFocus(
     useCallback(() => {
       if (hasWorker) void refetchChanges();
@@ -74,7 +80,7 @@ export function WorkerProfileTab() {
       ? null
       : currentDailyRate(myWorker, changes.data ?? [], today)
     : null;
-  const roleName = myWorker?.role_name ?? null;
+  const roleName = myWorker ? workerRoleLabel(myWorker, t) : null;
   const phone = myWorker?.person_phone ?? myWorker?.phone ?? null;
 
   if (!projectPending && !project)
@@ -89,6 +95,7 @@ export function WorkerProfileTab() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        refreshControl={pullToRefresh}
         className="flex-1"
         contentContainerClassName="px-4 pb-6 pt-3.5"
         contentContainerStyle={{ gap: 16 }}

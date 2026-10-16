@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { showToast } from "@/components/ui/toast";
 import { Eyebrow } from "@/components/ui/typography";
-import { normalizePhone } from "@/lib/auth/phone-number";
+import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { useCodeExpiry } from "@/lib/auth/use-code-expiry";
 import { useTokens } from "@/theme/tokens";
 
@@ -27,6 +27,8 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
   const { user, requestPhoneChangeCode, confirmPhoneChange } = useAuth();
   const [phoneInput, setPhoneInput] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
+  // The number the last code went to, kept after "Use another number".
+  const [lastSentTo, setLastSentTo] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
   const [codeExpiresAt, setCodeExpiresAt] = useState<number | null>(null);
@@ -61,6 +63,14 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
     if (target === user?.phone) {
       return setError(t("account.phone.errors.sameNumber"));
     }
+    if (target === lastSentTo && secondsLeft > 0 && !codeExpired) {
+      // "Use another number" then the same one again inside the backend's per-number
+      // cooldown: the code already texted is still valid, and asking for another only
+      // answers 429 and strands the user on this step (the sign-up screen's rule).
+      setError(null);
+      setSentTo(target);
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -68,6 +78,7 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
       const sentAt = Date.now();
       setCodeExpiresAt(sentAt + expiresIn * 1000);
       setSentTo(target);
+      setLastSentTo(target);
       setCode("");
       setLastSubmitted(null);
       setResendAt(sentAt + RESEND_SECONDS * 1000);
@@ -104,7 +115,9 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
     return (
       <View testID="change-phone-step-number">
         <Text className="mb-5 font-sans text-[14px] leading-5 text-muted">
-          {t("account.phone.intro", { phone: user?.phone ?? "—" })}
+          {t("account.phone.intro", {
+            phone: user?.phone ? formatFrenchPhone(user.phone) : "—",
+          })}
         </Text>
         <Eyebrow className="mb-2">{t("account.phone.newNumber")}</Eyebrow>
         <FrenchPhoneField
@@ -133,7 +146,7 @@ export function ChangePhoneForm({ onDone }: { onDone: () => void }) {
   return (
     <View testID="change-phone-step-code">
       <Text className="mb-5 font-sans text-[14px] leading-5 text-muted">
-        {t("account.phone.codeSentTo", { phone: sentTo })}
+        {t("account.phone.codeSentTo", { phone: formatFrenchPhone(sentTo) })}
       </Text>
       <Eyebrow className="mb-2">{t("login.code")}</Eyebrow>
       <OtpCodeBoxes

@@ -1,7 +1,11 @@
 import { useAuth } from "@/auth/auth-context";
 import { useWorkers } from "@/features/labor/labor-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
-import { isWorkerMode, needsWorkerLink } from "@/lib/labor/worker-mode";
+import {
+  isRestrictedMember,
+  isWorkerMode,
+  needsWorkerLink,
+} from "@/lib/labor/worker-mode";
 
 /**
  * Whether the selected project shows the restricted worker shell (own attendance, own salary,
@@ -26,4 +30,15 @@ export function useWorkerMode(): { workerMode: boolean; pending: boolean } {
     workerMode: isWorkerMode(project, user, workers.data),
     pending: candidate && workers.isPending,
   };
+}
+
+/**
+ * Whether the selected project's labor and money screens are closed to this user (a member
+ * with no linked worker and no labor/pay permission): see `isRestrictedMember`.
+ */
+export function useRestrictedMember(): boolean {
+  const { user } = useAuth();
+  const { project } = useSelectedProject();
+  const { workerMode, pending } = useWorkerMode();
+  return isRestrictedMember(project, user, workerMode, pending);
 }

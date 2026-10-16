@@ -65,3 +65,38 @@ export function isWorkerMode(
     (worker) => Boolean(worker.user_id) && worker.user_id === user?.id,
   );
 }
+
+const VIEW_PAY = "project:view_pay";
+
+/**
+ * True when the user sees the project's whole labor side — workers, attendance, pay, the
+ * invoice ledger: `project:manage_labor` or `project:view_pay`. Mirrors the backend's labor
+ * scope, which answers everyone else with their own linked worker only.
+ */
+export function hasFullLaborView(
+  project: ProjectLike | undefined,
+  user: UserLike | null | undefined,
+): boolean {
+  const permissions = { permissions: user?.permissions ?? [] };
+  return (
+    can(permissions, MANAGE_LABOR, project?.my_permissions) ||
+    can(permissions, VIEW_PAY, project?.my_permissions)
+  );
+}
+
+/**
+ * True for a member outside worker mode who has no full labor view: the backend answers their
+ * workers, attendance, salaries and expenses with empty lists and zero totals, so those screens
+ * say the area is reserved instead of drawing an empty project ("0 €", "no worker").
+ * `workerMode` / `pending` come from `useWorkerMode`; while the answer is pending or the project
+ * is unknown nothing is decided yet.
+ */
+export function isRestrictedMember(
+  project: ProjectLike | undefined,
+  user: UserLike | null | undefined,
+  workerMode: boolean,
+  pending: boolean,
+): boolean {
+  if (!project || !user || workerMode || pending) return false;
+  return !hasFullLaborView(project, user);
+}

@@ -101,3 +101,8 @@ export function useSelectedProject(): SelectedProjectValue {
     );
   return context;
 }
+
+/** The selected project, or undefined outside the shell (screens that also render standalone). */
+export function useOptionalSelectedProject(): SelectedProjectValue | undefined {
+  return useContext(SelectedProjectContext) ?? undefined;
+}

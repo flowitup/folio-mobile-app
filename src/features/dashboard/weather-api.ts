@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import {
   cityFromAddress,
@@ -16,14 +17,17 @@ import type { SiteWeather } from "@/lib/dashboard/weather";
  */
 export function useSiteWeather(address: string | null | undefined) {
   const city = cityFromAddress(address);
+  const language = useTranslation().i18n.language.slice(0, 2);
   return useQuery({
-    queryKey: ["site-weather", city],
+    queryKey: ["site-weather", city, language],
     enabled: city !== null,
     staleTime: 30 * 60 * 1000,
     retry: 1,
     queryFn: async ({ signal }): Promise<SiteWeather | null> => {
       if (!city) return null;
-      const geo = parseGeocode(await fetchJson(geocodeUrl(city), signal));
+      const geo = parseGeocode(
+        await fetchJson(geocodeUrl(city, language), signal),
+      );
       if (!geo) return null;
       return parseForecast(
         await fetchJson(forecastUrl(geo.latitude, geo.longitude), signal),
