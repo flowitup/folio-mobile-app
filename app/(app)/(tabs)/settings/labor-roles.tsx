@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
-import { isCompanyAdminOrManager } from "@/auth/permissions";
+import { isCompanyAdminOrManager, isPlatformOps } from "@/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,14 @@ export default function LaborRolesScreen() {
   const { companies, eligible, selected, setCompanyId } =
     useSettingsCompany(anyCompany);
   const companyId = selected?.id;
-  const mayManage = isCompanyAdminOrManager(user, companyId);
+  // The role from the company list (the one the picker shows), not `user.companies`: the list
+  // is refetched before a company creation resolves, while `user` is re-read after it, so a
+  // company just created showed no "+ New role" until the app was relaunched.
+  const mayManage = selected?.role
+    ? isPlatformOps(user) ||
+      selected.role === "admin" ||
+      selected.role === "manager"
+    : isCompanyAdminOrManager(user, companyId);
   const roles = useLaborRoles(companyId);
   useRefetchOnFocus(roles.refetch);
   const create = useCreateLaborRole(companyId);

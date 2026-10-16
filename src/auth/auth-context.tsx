@@ -261,26 +261,50 @@ export function AuthProvider({ children }: PropsWithChildren) {
   // change (role, D8 grant, new assignment) shows up without a re-login. Mints a fresh access
   // token first (`/auth/refresh` recomputes the JWT permission claim) so the `/auth/me` read
   // that follows reflects it.
-  const refreshInFlight = useRef(false);
+  //
+  // One read at a time, but a call made while one runs is not dropped: it may follow a write
+  // the running read started before (a company just created while a foreground refresh was on
+  // its way), so its answer would miss it — the role gates ("+ New role") then stayed off until
+  // the next foreground. Such calls wait for the running read and share one more read after it.
+  const refreshInFlight = useRef<Promise<void> | null>(null);
+  const refreshQueued = useRef<Promise<void> | null>(null);
   const statusRef = useRef(status);
   useEffect(() => {
     statusRef.current = status;
   }, [status]);
-  const refreshUser = useCallback(async () => {
-    if (refreshInFlight.current || statusRef.current !== "signedIn") return;
+  const readUser = useCallback(async () => {
     const { refreshToken } = await getStoredTokens();
     if (!refreshToken) return;
-    refreshInFlight.current = true;
     try {
       await refreshAccessToken();
       const { data } = await api.GET("/api/v1/auth/me");
-      if (data) setUser(data);
+      // Read on every foreground and pull-to-refresh: an unchanged answer keeps the same
+      // object, so the screens reading the user do not all re-render for nothing.
+      if (data)
+        setUser((prev) =>
+          prev && JSON.stringify(prev) === JSON.stringify(data) ? prev : data,
+        );
     } catch {
       // Offline: keep the user we have; the next foreground tries again.
-    } finally {
-      refreshInFlight.current = false;
     }
   }, []);
+  const refreshUser = useCallback((): Promise<void> => {
+    if (statusRef.current !== "signedIn") return Promise.resolve();
+    const start = (): Promise<void> => {
+      const read: Promise<void> = readUser().finally(() => {
+        if (refreshInFlight.current === read) refreshInFlight.current = null;
+      });
+      refreshInFlight.current = read;
+      return read;
+    };
+    const running = refreshInFlight.current;
+    if (!running) return start();
+    refreshQueued.current ??= running.then(() => {
+      refreshQueued.current = null;
+      return start();
+    });
+    return refreshQueued.current;
+  }, [readUser]);
 
   // Foreground/background also drives TanStack Query's focus manager directly (React Native has
   // no `visibilitychange` event, so the default browser-only detection never fires) — this makes

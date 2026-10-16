@@ -45,11 +45,19 @@ export const chatKeys = {
   messages: (key: string) => ["chat", "messages", key] as const,
 };
 
-/** Deployment feature flags; chat is only on for AVN Construction. Cached for the session. */
+/**
+ * How long the deployment flags count as current. They rarely change, so not the app's 30 s,
+ * but not the whole session either: a flag switched on while the app runs (chat for a company)
+ * used to stay off until the app was force-quit. Past this, the next foreground or screen
+ * change reads them again.
+ */
+export const FEATURES_STALE_TIME_MS = 5 * 60_000;
+
+/** Deployment feature flags; chat is only on for AVN Construction. */
 export function useFeatures() {
   return useQuery({
     queryKey: chatKeys.features,
-    staleTime: Infinity,
+    staleTime: FEATURES_STALE_TIME_MS,
     queryFn: async () => unwrapAs<Features>(await api.GET("/api/v1/features")),
   });
 }
