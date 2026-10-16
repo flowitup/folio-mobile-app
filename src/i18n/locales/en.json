@@ -250,11 +250,11 @@
     "deleted": "Invoice deleted.",
     "deleteConfirm": "Delete invoice {{number}}?",
     "types": {
-      "released_funds": "Released funds",
+      "released_funds": "Released Funds",
       "labor": "Labor",
-      "materials_services": "Materials & services",
+      "materials_services": "Materials & Services",
       "others": "Others",
-      "return": "Return / avoir"
+      "return": "Return"
     },
     "serviceMonthShort": "for",
     "auto": "auto",
@@ -351,7 +351,7 @@
       "create": "Create invoice",
       "quantityPositive": "Every line needs a quantity greater than 0.",
       "settledViaNone": "Not settled yet",
-      "pricePositive": "Unit prices cannot be negative for this type. Record money coming back as a Return / avoir.",
+      "pricePositive": "Unit prices cannot be negative for this type. Record money coming back as a Return.",
       "vatRange": "VAT must be between 0 and 100.",
       "lineTooLarge": "A line cannot exceed a quantity of {{quantity}} or a unit price of {{price}}."
     },

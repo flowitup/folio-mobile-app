@@ -254,7 +254,7 @@
       "labor": "Nhân công",
       "materials_services": "Vật tư & dịch vụ",
       "others": "Khác",
-      "return": "Trả hàng / avoir"
+      "return": "Trả hàng"
     },
     "serviceMonthShort": "cho",
     "auto": "tự động",
@@ -351,7 +351,7 @@
       "create": "Tạo hoá đơn",
       "quantityPositive": "Mỗi dòng phải có số lượng lớn hơn 0.",
       "settledViaNone": "Chưa thanh toán",
-      "pricePositive": "Đơn giá không được âm với loại này. Hãy dùng loại Trả hàng / avoir để ghi nhận tiền hoàn lại.",
+      "pricePositive": "Đơn giá không được âm với loại này. Hãy dùng loại Trả hàng để ghi nhận tiền hoàn lại.",
       "vatRange": "VAT phải nằm trong khoảng 0 đến 100.",
       "lineTooLarge": "Mỗi dòng không được vượt quá số lượng {{quantity}} hoặc đơn giá {{price}}."
     },

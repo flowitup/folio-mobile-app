@@ -254,7 +254,7 @@
       "labor": "Main-d'œuvre",
       "materials_services": "Matériaux & services",
       "others": "Autres",
-      "return": "Retour / avoir"
+      "return": "Avoir"
     },
     "serviceMonthShort": "pour",
     "auto": "auto",
@@ -351,7 +351,7 @@
       "create": "Créer la facture",
       "quantityPositive": "Chaque ligne doit avoir une quantité supérieure à 0.",
       "settledViaNone": "Pas encore réglé",
-      "pricePositive": "Les prix unitaires ne peuvent pas être négatifs pour ce type. Enregistrez un remboursement comme Retour / avoir.",
+      "pricePositive": "Les prix unitaires ne peuvent pas être négatifs pour ce type. Enregistrez un remboursement comme Avoir.",
       "vatRange": "La TVA doit être comprise entre 0 et 100.",
       "lineTooLarge": "Une ligne ne peut pas dépasser une quantité de {{quantity}} ni un prix unitaire de {{price}}."
     },
