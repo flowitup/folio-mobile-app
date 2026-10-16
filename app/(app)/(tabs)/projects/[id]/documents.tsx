@@ -55,6 +55,7 @@ import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 import { useOpeningFile } from "@/lib/files/use-opening-file";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const SORTS: DocumentSort[] = ["created_at", "name", "size", "uploader"];
 
@@ -129,6 +130,7 @@ export default function ProjectDocumentsSection() {
   const setTags = useSetDocumentTags(id);
   const remove = useDeleteDocument(id);
   useRefetchOnFocus(canAccess ? documents.refetch : noRefetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const addSheet = useRef<BottomSheetModal>(null);
   const editSheet = useRef<BottomSheetModal>(null);
@@ -254,7 +256,11 @@ export default function ProjectDocumentsSection() {
           ))}
         </ScrollView>
       ) : null}
-      <ScrollView className="flex-1" contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        className="flex-1"
+        contentContainerClassName="p-4 pb-12"
+      >
         <View className="flex-row items-center gap-2">
           <View className="flex-1">
             <Select

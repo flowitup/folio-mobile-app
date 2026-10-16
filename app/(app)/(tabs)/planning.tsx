@@ -36,6 +36,7 @@ import { userDisplayName } from "@/lib/auth/user-display-name";
 import { toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const PRIORITY_CLASS = {
   urgent: "text-negative",
@@ -66,6 +67,7 @@ export default function PlanningTab() {
   const move = useMoveTask(projectId);
   const remove = useDeleteTask(projectId);
   useRefetchOnFocus(tasks.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const [lane, setLane] = useState<TaskStatus>("todo");
   const [deleting, setDeleting] = useState<Task | null>(null);
@@ -149,6 +151,7 @@ export default function PlanningTab() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        refreshControl={pullToRefresh}
         className="flex-1"
         contentContainerClassName="px-4 pt-3.5"
         // The last row must clear the floating chat button.

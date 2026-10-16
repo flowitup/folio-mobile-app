@@ -29,6 +29,7 @@ import { projectCan, useProject } from "@/features/projects/projects-api";
 import { accountContact } from "@/lib/auth/user-display-name";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Members: manager/member assignments (D1 — no role picker, assigned once from the company
@@ -52,6 +53,7 @@ export default function ProjectMembersSection() {
   const unassign = useUnassignMember(id);
   const revoke = useRevokeInvitation(id);
   useRefetchOnFocus(members.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const assignSheet = useRef<BottomSheetModal>(null);
   const [removing, setRemoving] = useState<ProjectMember | null>(null);
@@ -92,7 +94,11 @@ export default function ProjectMembersSection() {
     );
 
   return (
-    <ScrollView className="flex-1 bg-paper" contentContainerClassName="p-4">
+    <ScrollView
+      refreshControl={pullToRefresh}
+      className="flex-1 bg-paper"
+      contentContainerClassName="p-4"
+    >
       {canManage ? (
         <Button
           testID="members-assign"

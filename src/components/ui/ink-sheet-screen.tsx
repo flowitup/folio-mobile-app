@@ -1,5 +1,6 @@
-import type { PropsWithChildren, ReactNode } from "react";
+import type { PropsWithChildren, ReactElement, ReactNode } from "react";
 import { ScrollView, Text, View } from "react-native";
+import type { RefreshControlProps } from "react-native";
 
 import { splitMoney } from "@/lib/format/money";
 
@@ -12,6 +13,8 @@ type Props = PropsWithChildren<{
   gap?: number;
   /** Extra bottom padding, e.g. room for a floating button. */
   bottomPadding?: number;
+  /** Pull-to-refresh (`usePullToRefresh(keys, { onInk: true })`). */
+  refreshControl?: ReactElement<RefreshControlProps>;
   testID?: string;
 }>;
 
@@ -27,12 +30,17 @@ export function InkSheetScreen({
   gap = 18,
   bottomPadding = 24,
   children,
+  refreshControl,
   testID,
 }: Props) {
   return (
     <View className="flex-1 bg-paper" testID={testID}>
       <View className="bg-ink-block">{header}</View>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={refreshControl}
+      >
         <View className="bg-ink-block">
           <View
             pointerEvents="none"

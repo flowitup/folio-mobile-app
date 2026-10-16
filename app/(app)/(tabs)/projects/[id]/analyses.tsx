@@ -55,6 +55,7 @@ import type { PickedFile } from "@/lib/files/pick";
 import { formatInstant } from "@/lib/format/date";
 import { useTokens } from "@/theme/tokens";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * The report WebView. Android reports every navigation as `other`, so a scripted redirect cannot be
@@ -160,6 +161,7 @@ export default function ProjectAnalysesSection() {
   const update = useUpdateAnalysis(id);
   const remove = useDeleteAnalysis(id);
   useRefetchOnFocus(analyses.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const formSheet = useRef<BottomSheetModal>(null);
   const [editing, setEditing] = useState<Analysis | null>(null);
@@ -239,7 +241,10 @@ export default function ProjectAnalysesSection() {
 
   return (
     <View className="flex-1 bg-paper">
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         <View className="mb-2 flex-row items-center gap-2">
           <SearchInput
             testID="analyses-search"

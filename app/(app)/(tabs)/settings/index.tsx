@@ -18,12 +18,13 @@ import { usePaymentMethods } from "@/features/invoices/invoices-api";
 import { useLaborRoles } from "@/features/labor/labor-api";
 import { pickSettingsCompany } from "@/features/companies/settings-company";
 import { useOptionalSelectedProject } from "@/features/projects/selected-project";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** Cài đặt hub: list card with a value column (company name, counts) and chevrons; About card; outline sign-out. */
 export default function SettingsHub() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshUser } = useAuth();
   const superadmin = isPlatformOps(user);
   const companies = useMyCompanies();
   const primary = companies.data?.[0];
@@ -38,6 +39,12 @@ export default function SettingsHub() {
     useOptionalSelectedProject()?.project?.company_id,
   );
   const roles = useLaborRoles(rolesCompany?.id);
+  const pullToRefresh = usePullToRefresh(
+    [refreshKeys.companies, refreshKeys.laborRoles],
+    {
+      refetch: [refreshUser],
+    },
+  );
   const multiCompany = (companies.data?.length ?? 0) > 1;
   const appVersion = Constants.expoConfig?.version ?? "—";
   const { preference: themePreference } = useThemePreference();
@@ -116,6 +123,7 @@ export default function SettingsHub() {
     <View className="flex-1 bg-paper">
       <ScreenHeader title={t("settings.title")} back />
       <ScrollView
+        refreshControl={pullToRefresh}
         contentContainerClassName="px-4 pb-6 pt-3.5"
         contentContainerStyle={{ gap: 16 }}
       >

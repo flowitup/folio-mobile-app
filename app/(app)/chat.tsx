@@ -45,6 +45,7 @@ import { seenByMessage } from "@/lib/chat/seen-by";
 import { mergeHistory, slidOut } from "@/lib/chat/merge-history";
 import { chatPersonName } from "@/lib/chat/person-name";
 import { ApiError } from "@/lib/query/api-error";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 import { useQueryClient } from "@tanstack/react-query";
 import { useChatColors } from "@/features/chat/chat-colors";
 import { useTokens, workerColor } from "@/theme/tokens";
@@ -78,6 +79,11 @@ export default function ChatScreen() {
   // features query is what says which — see the disabled branch below.
   const features = useFeatures();
   const channels = useChatChannels(enabled, 15_000);
+  // The conversation list: pulling re-reads the channels (a project just joined) and the flag.
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.chatChannels,
+    refreshKeys.features,
+  ]);
   const channelList = useMemo(() => channels.data ?? [], [channels.data]);
   const [selected, setSelected] = useState<string | null>(
     params.channel ?? null,
@@ -411,7 +417,11 @@ export default function ChatScreen() {
         />
       ) : null}
       {listVisible ? (
-        <ScrollView testID="chat-list-screen" className="flex-1">
+        <ScrollView
+          testID="chat-list-screen"
+          className="flex-1"
+          refreshControl={pullToRefresh}
+        >
           <View className="gap-0.5 px-2 py-2">
             {channelList.map((item) => {
               const active = item.key === selected;

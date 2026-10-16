@@ -16,6 +16,7 @@ import {
 import { CompanyFormSheet } from "@/features/companies/company-form-sheet";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** Superadmin roster of every company (full sensitive values) with create and manage. */
 export default function AdminCompaniesScreen() {
@@ -25,6 +26,7 @@ export default function AdminCompaniesScreen() {
   const superadmin = isPlatformOps(user);
   const companies = useAllCompanies(superadmin);
   useRefetchOnFocus(companies.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.companies]);
   const create = useCreateCompany();
   const sheet = useRef<BottomSheetModal>(null);
   const [key, setKey] = useState(0);
@@ -45,7 +47,10 @@ export default function AdminCompaniesScreen() {
           ) : null
         }
       />
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         {!superadmin ? (
           <EmptyState message={t("companies.errors.forbiddenAdminRequired")} />
         ) : null}

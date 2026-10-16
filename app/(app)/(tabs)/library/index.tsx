@@ -46,6 +46,7 @@ import type { PickedFile } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** Company product library: filters, 2-column paged grid, compare (≤4), create with inline supplier. */
 export default function LibraryTab() {
@@ -69,6 +70,10 @@ export default function LibraryTab() {
     page,
   });
   useRefetchOnFocus(products.refetch);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.library,
+    refreshKeys.companies,
+  ]);
   const create = useCreateProduct(effectiveCompany);
   const uploadImage = useUploadProductImage();
   const formSheet = useRef<BottomSheetModal>(null);
@@ -264,6 +269,7 @@ export default function LibraryTab() {
         />
       ) : null}
       <FlatList
+        refreshControl={pullToRefresh}
         data={products.data?.items ?? []}
         keyExtractor={(item) => item.id}
         numColumns={2}

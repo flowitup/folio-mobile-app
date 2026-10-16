@@ -54,6 +54,7 @@ import type { SalaryMonth } from "@/lib/labor/worker-salary-months";
 import { hasFullLaborView } from "@/lib/labor/worker-mode";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const STATUS_TONE = {
   paid: "success",
@@ -96,6 +97,7 @@ export default function ProjectSalariesSection({
   const deleteInvoice = useDeleteInvoice(id, { silent: true });
   useRefetchOnFocus(monthly.refetch);
   useRefetchOnFocus(laborInvoices.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
   const canManage = projectCan(
     project.data,
     "project:manage_invoices",
@@ -183,7 +185,10 @@ export default function ProjectSalariesSection({
 
   return (
     <View className="flex-1 bg-paper">
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         {(workers.isError && !workers.data) ||
         (monthly.isError && !monthly.data) ? (
           <ErrorState

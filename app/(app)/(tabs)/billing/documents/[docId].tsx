@@ -44,6 +44,7 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { toIsoDate } from "@/lib/format/date";
 import { MAX_BUSINESS_DATE } from "@/lib/format/date-bounds";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** Document detail: status transitions, PDF / XLSX share, duplicate, convert, delete, and the edit form. */
 export default function BillingDocumentScreen() {
@@ -52,6 +53,7 @@ export default function BillingDocumentScreen() {
   const { docId } = useLocalSearchParams<{ docId: string }>();
   const query = useBillingDocument(docId);
   useRefetchOnFocus(query.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.billing]);
   const update = useUpdateBillingDocument();
   const remove = useDeleteBillingDocument();
   const clone = useCloneBillingDocument();
@@ -144,6 +146,7 @@ export default function BillingDocumentScreen() {
     <View className="flex-1 bg-paper">
       <ScreenHeader title={doc.document_number} back />
       <ScrollView
+        refreshControl={pullToRefresh}
         contentContainerClassName="p-4 pb-12"
         keyboardShouldPersistTaps="handled"
       >

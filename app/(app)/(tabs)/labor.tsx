@@ -101,6 +101,7 @@ import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
 import { workerRoleLabel } from "@/lib/labor/labor-role-label";
 import { isInvalidLaborRoleError } from "@/lib/query/api-error-message";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 type Segment = "overview" | "calendar" | "workers" | "payments";
 const SEGMENTS: Segment[] = ["overview", "calendar", "workers", "payments"];
@@ -181,6 +182,10 @@ function LaborTabContent() {
   const laborInvoices = useInvoices(id, { type: "labor" });
   useRefetchOnFocus(entries.refetch);
   useRefetchOnFocus(summary.refetch);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.projects,
+    refreshKeys.laborRoles,
+  ]);
 
   const createWorker = useCreateWorker(id);
   const updateWorker = useUpdateWorker(id);
@@ -382,6 +387,7 @@ function LaborTabContent() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        refreshControl={pullToRefresh}
         ref={scrollRef}
         testID="labor-scroll"
         className="flex-1"

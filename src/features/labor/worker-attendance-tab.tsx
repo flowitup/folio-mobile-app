@@ -54,6 +54,7 @@ import { classifyOwnEdit } from "@/lib/labor/own-attendance-edit";
 import { parseSupplementHours } from "@/lib/labor/supplement-hours";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const SHIFTS: ShiftType[] = ["full", "half", "overtime"];
 
@@ -116,6 +117,7 @@ export function WorkerAttendanceTab() {
   // view_pay, on the day's cost next to it; refresh both with the rest.
   useRefetchOnFocus(roster.refetch);
   useRefetchOnFocus(dayPaySummary.refetch);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   // Only the worker linked to this account — never a first-row fallback, which would show
   // (and log against) a colleague's row for a member the backend answers with every worker.
@@ -205,6 +207,7 @@ export function WorkerAttendanceTab() {
     <View className="flex-1 bg-paper">
       <ProjectTopBar />
       <ScrollView
+        refreshControl={pullToRefresh}
         ref={scrollRef}
         className="flex-1"
         contentContainerClassName="px-4 pt-3.5"
