@@ -1805,7 +1805,7 @@
       "menu": "Options du message",
       "report": "Signaler le message",
       "reportTitle": "Signaler ce message ?",
-      "reportBody": "Il sera transmis aux modérateurs de votre entreprise et à l'équipe Folio pour examen.",
+      "reportBody": "Les administrateurs de votre entreprise seront prévenus et pourront retirer le message.",
       "reported": "Signalé. Merci.",
       "block": "Bloquer {{name}}",
       "blockTitle": "Bloquer {{name}} ?",
@@ -1826,8 +1826,20 @@
       "nobodySeen": "Personne ne l’a encore vu",
       "unknownMember": "Ancien membre",
       "chip_one": "{{emoji}} {{count}} réaction",
-      "chip_other": "{{emoji}} {{count}} réactions"
-    }
+      "chip_other": "{{emoji}} {{count}} réactions",
+      "formerMember": "{{name}} (ancien membre)"
+    },
+    "deletedAccount": "Compte supprimé",
+    "unnamedMember": "Membre sans nom",
+    "loadOlder": "Charger les messages précédents",
+    "historyStart": "Début de la discussion",
+    "newMessages": "Nouveaux messages",
+    "noLongerAvailable": "Vous n'avez plus accès à cette discussion.",
+    "channelsError": "Impossible de charger les discussions.",
+    "bodyTooLong": "Message trop long : {{max}} caractères au maximum.",
+    "attachmentRejected": "Ce fichier n'est pas une photo ou un message vocal valide.",
+    "charactersLeft_one": "{{count}} caractère restant",
+    "charactersLeft_other": "{{count}} caractères restants"
   },
   "signup": {
     "title": "Créez votre profil",

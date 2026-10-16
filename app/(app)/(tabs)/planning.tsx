@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { useChatFabReserve } from "@/components/shell/chat-fab";
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
@@ -49,6 +50,7 @@ const PRIORITY_CLASS = {
  */
 export default function PlanningTab() {
   const { t } = useTranslation();
+  const bottomPadding = useChatFabReserve();
   const tokens = useTokens();
   const { projectId, project } = useSelectedProject();
   const { user } = useAuth();
@@ -108,8 +110,9 @@ export default function PlanningTab() {
       <ProjectTopBar />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-4 pb-6 pt-3.5"
-        contentContainerStyle={{ gap: 16 }}
+        contentContainerClassName="px-4 pt-3.5"
+        // The last row must clear the floating chat button.
+        contentContainerStyle={{ gap: 16, paddingBottom: bottomPadding }}
       >
         <View className="flex-row items-center justify-between">
           <ScreenTitle testID="planning-title" className="text-2xl">

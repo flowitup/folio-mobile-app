@@ -1805,7 +1805,7 @@
       "menu": "Message options",
       "report": "Report message",
       "reportTitle": "Report this message?",
-      "reportBody": "It will be sent to the moderators of your company and the Folio team for review.",
+      "reportBody": "Your company's admins will be notified and can remove the message.",
       "reported": "Reported. Thank you.",
       "block": "Block {{name}}",
       "blockTitle": "Block {{name}}?",
@@ -1826,8 +1826,20 @@
       "nobodySeen": "Nobody has seen it yet",
       "unknownMember": "Former member",
       "chip_one": "{{emoji}} {{count}} reaction",
-      "chip_other": "{{emoji}} {{count}} reactions"
-    }
+      "chip_other": "{{emoji}} {{count}} reactions",
+      "formerMember": "{{name}} (former member)"
+    },
+    "deletedAccount": "Deleted account",
+    "unnamedMember": "Unnamed member",
+    "loadOlder": "Load earlier messages",
+    "historyStart": "Start of the conversation",
+    "newMessages": "New messages",
+    "noLongerAvailable": "You no longer have access to this conversation.",
+    "channelsError": "Conversations could not be loaded.",
+    "bodyTooLong": "Message too long: {{max}} characters at most.",
+    "attachmentRejected": "This file is not a valid photo or voice message.",
+    "charactersLeft_one": "{{count}} character left",
+    "charactersLeft_other": "{{count}} characters left"
   },
   "signup": {
     "title": "Create your profile",

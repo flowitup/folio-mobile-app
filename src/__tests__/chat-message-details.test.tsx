@@ -158,7 +158,7 @@ describe("MessageDetailsSheet", () => {
     expect(onReact).toHaveBeenCalledWith("m1", THUMBS);
   });
 
-  it("lists who reacted with what and who has seen it with the time", async () => {
+  it("lists who reacted with what and who has seen it, without the viewer or a time", async () => {
     await render(
       sheet(
         message({
@@ -175,11 +175,32 @@ describe("MessageDetailsSheet", () => {
     const reacted = within(screen.getByTestId("message-details-reacted-ann"));
     expect(reacted.getByText("Ann")).toBeTruthy();
     expect(reacted.getByText(THUMBS)).toBeTruthy();
-    // Bob sent it and Cat stopped reading before it; Me and Ann have seen it.
-    expect(screen.getByTestId("message-details-seen-ann")).toBeTruthy();
-    expect(screen.getByTestId("message-details-seen-me")).toBeTruthy();
+    // Bob sent it and Cat stopped reading before it; Ann has seen it, and so has the viewer,
+    // who is not listed: they know. A read marker gives no "seen at" time, so none is shown.
+    const seenAnn = screen.getByTestId("message-details-seen-ann");
+    expect(within(seenAnn).queryByText(/\d{2}:\d{2}/)).toBeNull();
+    expect(screen.queryByTestId("message-details-seen-me")).toBeNull();
     expect(screen.queryByTestId("message-details-seen-bob")).toBeNull();
     expect(screen.queryByTestId("message-details-seen-cat")).toBeNull();
+  });
+
+  it("names a reactor who left the channel by the name the server sends, else neutrally", async () => {
+    await render(
+      sheet(
+        message({
+          reactions: [
+            { user_id: "gone", emoji: THUMBS, created_at: "2026-09-04T10:02:00Z", user_name: "Zoé" },
+            { user_id: "ghost", emoji: THUMBS, created_at: "2026-09-04T10:03:00Z" },
+          ] as never,
+        }),
+      ),
+    );
+    expect(
+      within(screen.getByTestId("message-details-reacted-gone")).getByText(/Zoé/),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByTestId("message-details-reacted-ghost")).queryByText(/Zoé/),
+    ).toBeNull();
   });
 
   it("says nobody has seen it yet", async () => {

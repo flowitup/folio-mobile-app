@@ -1,5 +1,4 @@
 import {
-  readAtLabel,
   readersOfMessage,
   seenByMessage,
 } from "@/lib/chat/seen-by";
@@ -85,27 +84,23 @@ describe("readersOfMessage", () => {
     ]);
   });
 
+  it("leaves the viewer out: they know they read it", () => {
+    const readers = readersOfMessage(
+      messages[1],
+      [
+        { id: "me", name: "Me", last_read_at: "2026-09-04T12:00:00+00:00" },
+        { id: "carol", name: "Carol", last_read_at: "2026-09-04T10:30:00+00:00" },
+      ],
+      "me",
+    );
+    expect(readers.map((r) => r.member.id)).toEqual(["carol"]);
+  });
+
   it("is empty when nobody has caught up yet", () => {
     expect(
       readersOfMessage(messages[2], [
         { id: "bob", name: "Bob", last_read_at: "2026-09-04T10:09:00+00:00" },
       ]),
     ).toEqual([]);
-  });
-});
-
-describe("readAtLabel", () => {
-  const today = new Date(2026, 8, 4, 18, 0);
-
-  it("shows only the time for a read today", () => {
-    expect(readAtLabel(new Date(2026, 8, 4, 9, 7).toISOString(), today)).toBe(
-      "09:07",
-    );
-  });
-
-  it("adds the day for an earlier read", () => {
-    expect(readAtLabel(new Date(2026, 8, 2, 21, 30).toISOString(), today)).toBe(
-      "02/09 21:30",
-    );
   });
 });

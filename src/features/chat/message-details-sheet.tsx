@@ -1,10 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 
-import type { ChatMember, ChatMessage } from "@/features/chat/chat-api";
+import type {
+  ChatMember,
+  ChatMessage,
+  ChatReaction,
+} from "@/features/chat/chat-api";
 import { REACTION_EMOJIS, ownReaction, whoReacted } from "@/lib/chat/reactions";
 import type { ReactionEmoji } from "@/lib/chat/reactions";
-import { readAtLabel, readersOfMessage } from "@/lib/chat/seen-by";
+import { chatPersonName } from "@/lib/chat/person-name";
+import { readersOfMessage } from "@/lib/chat/seen-by";
 
 /**
  * One message's details, opened by tapping its bubble: the emoji picker on top (tapping the
@@ -26,10 +31,25 @@ export function MessageDetailsSheet({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const reactions = message?.reactions ?? [];
+  // Newer servers add each reactor's name (`user_name`), which the generated type lacks.
+  const reactions: ChatReaction[] = message?.reactions ?? [];
   const mine = ownReaction(reactions, viewerId);
   const reacted = whoReacted(reactions, members);
-  const readers = message ? readersOfMessage(message, members) : [];
+  // A reactor still in the channel by their member name; someone who left by the name the
+  // server sends with the reaction, marked as a former member; else a neutral label.
+  const memberById = new Map(members.map((m) => [m.id, m]));
+  const reactorName = (userId: string, memberName: string | null): string => {
+    const member = memberById.get(userId);
+    if (member && memberName !== null)
+      return chatPersonName(member.name, member.state, t);
+    const userName = reactions.find((r) => r.user_id === userId)?.user_name;
+    if (userName)
+      return t("chat.details.formerMember", { name: userName });
+    return t("chat.details.unknownMember");
+  };
+  const readers = message
+    ? readersOfMessage(message, members, viewerId)
+    : [];
   return (
     <Modal
       visible={message !== null}
@@ -96,7 +116,7 @@ export function MessageDetailsSheet({
                       className="mr-3 min-w-0 flex-1 font-sans text-[14px] text-ink"
                       numberOfLines={1}
                     >
-                      {entry.name ?? t("chat.details.unknownMember")}
+                      {reactorName(entry.userId, entry.name)}
                     </Text>
                     <Text className="text-[18px]">{entry.emoji}</Text>
                   </View>
@@ -115,20 +135,19 @@ export function MessageDetailsSheet({
                   {t("chat.details.nobodySeen")}
                 </Text>
               ) : null}
-              {readers.map(({ member, readAt }) => (
+              {/* Names only: a read marker says how far someone has read, not when they saw
+                  this message. */}
+              {readers.map(({ member }) => (
                 <View
                   key={member.id}
                   testID={`message-details-seen-${member.id}`}
-                  className="flex-row items-center justify-between border-b border-line py-2.5"
+                  className="border-b border-line py-2.5"
                 >
                   <Text
-                    className="mr-3 min-w-0 flex-1 font-sans text-[14px] text-ink"
+                    className="font-sans text-[14px] text-ink"
                     numberOfLines={1}
                   >
-                    {member.name}
-                  </Text>
-                  <Text className="font-sans text-[12px] text-muted">
-                    {readAtLabel(readAt)}
+                    {chatPersonName(member.name, member.state, t)}
                   </Text>
                 </View>
               ))}
