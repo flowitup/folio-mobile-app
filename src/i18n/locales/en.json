@@ -737,7 +737,8 @@
       "high": "High",
       "urgent": "Urgent"
     },
-    "loadError": "Could not load the tasks."
+    "loadError": "Could not load the tasks.",
+    "notFound": "This task no longer exists."
   },
   "chiffrage": {
     "totalHt": "Total excl. VAT",

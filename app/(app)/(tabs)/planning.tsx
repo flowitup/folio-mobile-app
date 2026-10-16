@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -66,6 +67,34 @@ export default function PlanningTab() {
   const [lane, setLane] = useState<TaskStatus>("todo");
   const [deleting, setDeleting] = useState<Task | null>(null);
   const form = useRef<TaskFormSheetHandle>(null);
+  const router = useRouter();
+  const params = useLocalSearchParams<{ taskId?: string; project?: string }>();
+
+  // A bell entry or a push about one task opens that task, on its lane, once the board of its
+  // project has loaded; then the parameter is dropped so the same entry can open it again.
+  useEffect(() => {
+    const taskId = params.taskId;
+    if (!taskId || !projectId || tasks.isPending || tasks.isFetching) return;
+    if (params.project && params.project !== projectId) return;
+    router.setParams({ taskId: undefined, project: undefined });
+    const task = (tasks.data ?? []).find((x) => x.id === taskId);
+    if (!task) {
+      showToast(t("tasks.notFound"), "error");
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLane(task.status);
+    form.current?.open(task, task.status);
+  }, [
+    params.taskId,
+    params.project,
+    projectId,
+    tasks.data,
+    tasks.isPending,
+    tasks.isFetching,
+    router,
+    t,
+  ]);
 
   const byLane = useMemo(() => {
     const map = new Map<TaskStatus, Task[]>(BOARD_COLUMNS.map((s) => [s, []]));

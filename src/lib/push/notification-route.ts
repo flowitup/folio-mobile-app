@@ -14,6 +14,11 @@ export type PushData = {
   document_id?: string;
   company_id?: string;
   status?: string;
+  /** Attendance kinds: the day (YYYY-MM-DD) the entry is about. */
+  date?: string;
+  worker_id?: string;
+  /** billing_status: `devis` (quote) or `facture` (invoice). */
+  document_kind?: string;
 };
 
 export type NotificationRoute = {
@@ -35,6 +40,32 @@ const BELL_KINDS = new Set([
   "member_joined",
 ]);
 
+/** Company team changes an admin hears about: the company members screen lists them. */
+const COMPANY_MEMBER_KINDS = new Set([
+  "member_added",
+  "member_role_changed",
+  "member_removed",
+  "member_left",
+]);
+
+/** A day was entered, changed, removed or decided: the labor calendar opens on that day. */
+const ATTENDANCE_DAY_KINDS = new Set([
+  "logged",
+  "attendance_edited",
+  "attendance_deleted",
+  "validated",
+  "rejected",
+  "change_applied",
+  "change_refused",
+]);
+
+/** An expense (invoice) was recorded, edited or removed by another admin. */
+const EXPENSE_KINDS = new Set([
+  "invoice_created",
+  "invoice_updated",
+  "invoice_deleted",
+]);
+
 /** Kinds that open a specific project section, mapped to the section route segment. A Map
  * (not an object) so an inherited key like `constructor` cannot resolve to a bogus section. */
 const SECTION_KINDS = new Map<string, string>([
@@ -42,11 +73,8 @@ const SECTION_KINDS = new Map<string, string>([
   ["invitation_accepted", "members"],
 ]);
 
-/** Project-scoped tabs a push can land on; selecting the project comes first. */
-const PROJECT_TAB_KINDS = new Map<string, string>([
-  ["task_assigned", "/(app)/(tabs)/planning"],
-  ["task_moved", "/(app)/(tabs)/planning"],
-]);
+/** Being added to a project, or a new project: select it and open its overview. */
+const PROJECT_HOME_KINDS = new Set(["project_member_added", "project_created"]);
 
 /** The recipient's own company role or grants changed: My companies shows their role in each
  * company. Not the members screen, which is admin-only — a member only got "you don't have
@@ -54,13 +82,25 @@ const PROJECT_TAB_KINDS = new Map<string, string>([
 const OWN_COMPANY_ACCESS_KINDS = new Set([
   "company_member_role_changed",
   "company_member_grants_changed",
+  "company_member_added",
 ]);
 
-/** Access was taken away: selecting the project/company would fail, so just open the app. */
+/** Access was taken away, or the project is gone: selecting it would fail, so just open the app. */
 const REMOVED_KINDS = new Set([
   "project_member_removed",
   "company_member_removed",
+  "project_deleted",
 ]);
+
+/** Query string from the defined values only, so a missing id never lands as "undefined". */
+function withQuery(path: string, query: Record<string, string | null>): string {
+  const pairs = Object.entries(query).filter(
+    (entry): entry is [string, string] => Boolean(entry[1]),
+  );
+  return pairs.length === 0
+    ? path
+    : `${path}?${pairs.map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&")}`;
+}
 
 function asId(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
@@ -74,11 +114,14 @@ function projectFromChannelKey(key: string | null): string | null {
 }
 
 /**
- * Where a tapped push lands: a manager's "to validate" push opens the bell on the project;
- * a worker's decision push just opens the project (their attendance tab is the home tab);
- * a reminder or an accepted invitation opens the project section that shows it; a chat
- * push opens that channel; a task push the planning tab; a refund the expense itself; a
- * billing push the document. Unknown payloads open the app without navigating.
+ * Where a tapped push or bell entry lands — the same table as the web bell
+ * (`activity-event-row.tsx`): a manager's "to validate" push opens the bell on the project;
+ * a day entered, changed or decided opens the labor calendar on that day; a worker change the
+ * workers list; a reminder or an accepted invitation the project section that shows it; a
+ * chat push that channel; a task push the planning tab with that task open; a refund or an
+ * expense the expense itself; a billing push the document; a company team change the company
+ * members; being added to a project its overview. Access removed, a deleted project or an
+ * unknown payload open nothing (`path` and `projectId` null).
  */
 export function routeForNotification(
   data: PushData | null | undefined,
@@ -99,6 +142,9 @@ export function routeForNotification(
   }
   if (kind && OWN_COMPANY_ACCESS_KINDS.has(kind)) {
     return { projectId: null, sheet: null, path: "/settings/companies" };
+  }
+  if (kind && COMPANY_MEMBER_KINDS.has(kind)) {
+    return { projectId: null, sheet: null, path: "/company/members" };
   }
   if (kind === "billing_status") {
     const documentId = asId(data?.document_id);
@@ -126,15 +172,60 @@ export function routeForNotification(
             : null,
     };
   }
-  const tab = kind ? PROJECT_TAB_KINDS.get(kind) : undefined;
+  if (kind && EXPENSE_KINDS.has(kind)) {
+    const invoiceId = asId(data?.invoice_id);
+    // A deleted expense has no page of its own any more: open the list.
+    return {
+      projectId,
+      sheet,
+      path: !projectId
+        ? null
+        : invoiceId && kind !== "invoice_deleted"
+          ? `/projects/${projectId}/invoices/${invoiceId}`
+          : "/(app)/(tabs)/expenses",
+    };
+  }
+  if (!projectId) {
+    // Every remaining route is inside a project.
+    return { projectId: null, sheet, path: null };
+  }
+  if (kind === "task_assigned" || kind === "task_moved") {
+    return {
+      projectId,
+      sheet,
+      // `project` lets the board wait until the shell has switched to the task's project.
+      path: withQuery("/(app)/(tabs)/planning", {
+        taskId: asId(data?.task_id),
+        project: asId(data?.task_id) ? projectId : null,
+      }),
+    };
+  }
+  if (kind === "worker_added" || kind === "worker_removed") {
+    return {
+      projectId,
+      sheet,
+      path: withQuery("/(app)/(tabs)/labor", { segment: "workers" }),
+    };
+  }
+  if (kind && ATTENDANCE_DAY_KINDS.has(kind)) {
+    return {
+      projectId,
+      sheet,
+      path: withQuery("/(app)/(tabs)/labor", {
+        segment: "calendar",
+        day: asId(data?.date),
+      }),
+    };
+  }
+  if (kind && PROJECT_HOME_KINDS.has(kind)) {
+    return { projectId, sheet, path: "/(app)/(tabs)" };
+  }
   const section = kind ? SECTION_KINDS.get(kind) : undefined;
-  const path =
-    tab && projectId
-      ? tab
-      : section && projectId
-        ? `/projects/${projectId}/${section}`
-        : null;
-  return { projectId, sheet, path };
+  return {
+    projectId,
+    sheet,
+    path: section ? `/projects/${projectId}/${section}` : null,
+  };
 }
 
 const NOTIFICATIONS_KEY = ["notifications"] as const;
@@ -142,10 +233,12 @@ const NOTIFICATIONS_KEY = ["notifications"] as const;
 /** `chatKeys` prefix, spelled out for the same reason as `COMPANIES_KEY`. */
 const CHAT_KEY = ["chat"] as const;
 
-/** Pushes that change which projects the user is on: the switcher list must be refetched. */
+/** Pushes that change which projects the user sees: the switcher list must be refetched. */
 const MEMBERSHIP_KINDS = new Set([
   "project_member_added",
   "project_member_removed",
+  "project_created",
+  "project_deleted",
 ]);
 
 /** `companyKeys.all`, spelled out: importing companies-api would pull the auth context in here. */

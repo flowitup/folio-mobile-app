@@ -737,7 +737,8 @@
       "high": "Haute",
       "urgent": "Urgente"
     },
-    "loadError": "Impossible de charger les tâches."
+    "loadError": "Impossible de charger les tâches.",
+    "notFound": "Cette tâche n'existe plus."
   },
   "chiffrage": {
     "totalHt": "Total HT",

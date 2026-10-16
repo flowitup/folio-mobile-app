@@ -737,7 +737,8 @@
       "high": "Cao",
       "urgent": "Khẩn"
     },
-    "loadError": "Không tải được công việc."
+    "loadError": "Không tải được công việc.",
+    "notFound": "Công việc này không còn nữa."
   },
   "chiffrage": {
     "totalHt": "Tổng chưa VAT",

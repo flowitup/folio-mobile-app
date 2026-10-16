@@ -103,7 +103,12 @@ function LaborTabContent() {
   const tokens = useTokens();
   const { user } = useAuth();
   const chatEnabled = useChatEnabled();
-  const params = useLocalSearchParams<{ segment?: string; focus?: string }>();
+  const params = useLocalSearchParams<{
+    segment?: string;
+    focus?: string;
+    /** A bell entry or push about one day (YYYY-MM-DD): the calendar opens on it. */
+    day?: string;
+  }>();
   const { projectId, project: selected } = useSelectedProject();
   const id = projectId;
   // Null until the user picks one: the default depends on permissions the project row loads.
@@ -139,6 +144,16 @@ function LaborTabContent() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSegment(params.segment as Segment);
   }, [params.segment, params.focus]);
+
+  // Applied once, then dropped from the route, so tapping the same entry again re-applies it.
+  useEffect(() => {
+    if (!params.day || !/^\d{4}-\d{2}-\d{2}$/.test(params.day)) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setMonth(params.day.slice(0, 7));
+    setPickedDay(params.day);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    router.setParams({ day: undefined });
+  }, [params.day, router]);
 
   const project = useProject(id);
   const workers = useWorkers(id);
