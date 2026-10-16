@@ -161,9 +161,7 @@ function OverviewTabContent() {
           onRetry={refetch}
         />
       ) : null}
-      {!isPending && !isError && !project ? (
-        <NoProjectYet />
-      ) : null}
+      {!isPending && !isError && !project ? <NoProjectYet /> : null}
       {project && invoices.isError && !invoices.data ? (
         <ErrorState
           message={t("dashboard.loadError")}

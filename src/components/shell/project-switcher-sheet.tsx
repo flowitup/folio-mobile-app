@@ -102,7 +102,9 @@ const REMAIN_CLASS = {
 let newProjectRequested = false;
 
 /** Open the switcher straight on its new-project form. */
-export function openNewProjectForm(openSheet: (sheet: "switcher") => void): void {
+export function openNewProjectForm(
+  openSheet: (sheet: "switcher") => void,
+): void {
   newProjectRequested = true;
   openSheet("switcher");
 }

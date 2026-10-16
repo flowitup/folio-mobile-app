@@ -39,7 +39,9 @@ const ATTACHED_USERS_MAX_PAGES = 50;
  * Every user attached to the company. The API pages (50 by default): reading only the
  * first page hid every member past the 50th, so this follows `total` to the end.
  */
-export async function fetchAllAttachedUsers(companyId: string): Promise<AttachedUser[]> {
+export async function fetchAllAttachedUsers(
+  companyId: string,
+): Promise<AttachedUser[]> {
   const all: AttachedUser[] = [];
   for (let page = 0; page < ATTACHED_USERS_MAX_PAGES; page++) {
     const data = unwrapAs<{ items?: AttachedUser[]; total?: number }>(
@@ -47,7 +49,10 @@ export async function fetchAllAttachedUsers(companyId: string): Promise<Attached
         params: {
           path: { company_id: companyId },
           // The endpoint pages with ?limit/&offset; the generated schema does not list them.
-          query: { limit: ATTACHED_USERS_PAGE, offset: page * ATTACHED_USERS_PAGE } as never,
+          query: {
+            limit: ATTACHED_USERS_PAGE,
+            offset: page * ATTACHED_USERS_PAGE,
+          } as never,
         },
       }),
     );
