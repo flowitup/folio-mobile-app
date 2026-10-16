@@ -429,6 +429,7 @@
       "none": "No shift"
     },
     "workers": {
+      "deactivateCompanyHint": "This person is stopped on every project of the company and can no longer log days there. Their days and what they are still owed stay visible and payable; you can reactivate them.",
       "add": "Add worker",
       "edit": "Edit worker",
       "name": "Name",

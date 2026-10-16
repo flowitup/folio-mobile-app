@@ -429,6 +429,7 @@
       "none": "Không ca"
     },
     "workers": {
+      "deactivateCompanyHint": "Người này sẽ bị ngừng trên tất cả công trình của công ty và không thể chấm công nữa. Ngày công và khoản còn nợ vẫn hiển thị và có thể thanh toán; bạn có thể kích hoạt lại.",
       "add": "Thêm nhân công",
       "edit": "Sửa nhân công",
       "name": "Tên",

@@ -679,7 +679,7 @@ function LaborTabContent() {
         title={t("labor.workers.deleteConfirm", {
           name: deletingWorker?.name ?? "",
         })}
-        message={t("labor.workers.deleteHint")}
+        message={t("labor.workers.deactivateCompanyHint")}
         confirmLabel={t("labor.workers.deactivate")}
         cancelLabel={t("common.cancel")}
         destructive

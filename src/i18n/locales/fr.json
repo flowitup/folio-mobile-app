@@ -429,6 +429,7 @@
       "none": "Sans poste"
     },
     "workers": {
+      "deactivateCompanyHint": "Cette personne sera arrêtée sur tous les chantiers de l’entreprise et ne pourra plus y pointer. Ses journées et ce qui lui reste dû restent visibles et payables ; vous pourrez la réactiver.",
       "add": "Ajouter un ouvrier",
       "edit": "Modifier l'ouvrier",
       "name": "Nom",
