@@ -1721,7 +1721,8 @@
     "paidToast": "Paiement enregistré.",
     "unpaidToast": "Paiements supprimés.",
     "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement.",
-    "noMonth": "Sans mois renseigné"
+    "noMonth": "Sans mois renseigné",
+    "creditDeducted": "Avance des mois précédents déduite : {{amount}}"
   },
   "shell": {
     "switchProject": "Changer de chantier",

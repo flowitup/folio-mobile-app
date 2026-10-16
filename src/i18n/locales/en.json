@@ -1721,7 +1721,8 @@
     "paidToast": "Payment recorded.",
     "unpaidToast": "Payments removed.",
     "readOnly": "Only an admin or manager can change the paid status.",
-    "noMonth": "No month recorded"
+    "noMonth": "No month recorded",
+    "creditDeducted": "Overpaid in earlier months, deducted: {{amount}}"
   },
   "shell": {
     "switchProject": "Switch project",

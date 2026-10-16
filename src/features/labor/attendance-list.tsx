@@ -13,7 +13,8 @@ type Props = {
   entries: LaborEntry[];
   colorOf: (workerId: string) => string;
   roleOf: (workerId: string) => string | null;
-  onEntry: (entry: LaborEntry) => void;
+  /** Omitted for viewers who cannot edit entries: rows are then not buttons. */
+  onEntry?: (entry: LaborEntry) => void;
 };
 
 /**

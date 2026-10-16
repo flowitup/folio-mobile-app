@@ -220,13 +220,16 @@ export default function ProjectSalariesSection({
             </View>
             <View className="flex-row justify-between">
               <Text className="text-base font-semibold text-primary">
-                {t("salaries.outstanding")}
+                {/* Never a negative amount "left to pay": overpaid is said as such. */}
+                {totals.remaining < 0
+                  ? t("salaries.status.overpaid")
+                  : t("salaries.outstanding")}
               </Text>
               <Text
                 testID="salaries-outstanding"
                 className={`text-base font-semibold ${totals.remaining > 0 ? "text-danger" : "text-primary"}`}
               >
-                {formatMoney(totals.remaining)}
+                {formatMoney(Math.abs(totals.remaining))}
               </Text>
             </View>
             {!canManage ? (
@@ -265,10 +268,22 @@ export default function ProjectSalariesSection({
                 })}{" "}
                 · {t("salaries.earned")} {formatMoney(row.earned)} ·{" "}
                 {t("salaries.paid")} {formatMoney(row.paid)}
-                {row.remaining !== 0
+                {row.remaining > 0
                   ? ` · ${t("salaries.remaining")} ${formatMoney(row.remaining)}`
-                  : ""}
+                  : row.remaining < 0
+                    ? ` · ${t("salaries.status.overpaid")} ${formatMoney(-row.remaining)}`
+                    : ""}
               </Text>
+              {row.credit > 0 ? (
+                <Text
+                  testID={`salary-credit-${row.month}`}
+                  className="text-xs text-muted-foreground"
+                >
+                  {t("salaries.creditDeducted", {
+                    amount: formatMoney(row.credit),
+                  })}
+                </Text>
+              ) : null}
             </Pressable>
             {expanded === row.month && row.invoices.length > 0 ? (
               <View className="mt-2 border-t border-border pt-2">

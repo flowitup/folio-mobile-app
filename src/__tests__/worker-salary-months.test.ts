@@ -105,3 +105,72 @@ describe("buildWorkerSalaryMonths", () => {
     expect(salaryTotals(months).paid).toBe(800);
   });
 });
+
+describe("overpayment carried into later months", () => {
+  // W2 earned 99,99 in September, was paid 250 that month, then earned 149,99 in October.
+  const monthly: MonthlySummaryRow[] = [
+    {
+      year: 2026,
+      month: 10,
+      total_days: 1.5,
+      total_cost: 149.99,
+      workers: [
+        {
+          worker_id: "w2",
+          worker_name: "W2",
+          days_worked: 1.5,
+          total_cost: 149.99,
+        },
+      ],
+    },
+    {
+      year: 2026,
+      month: 9,
+      total_days: 1,
+      total_cost: 99.99,
+      workers: [
+        {
+          worker_id: "w2",
+          worker_name: "W2",
+          days_worked: 1,
+          total_cost: 99.99,
+        },
+      ],
+    },
+  ];
+
+  it("does not offer October for payment again", () => {
+    const months = buildWorkerSalaryMonths(
+      monthly,
+      [inv("p", 250, "2026-09", "w2")],
+      "w2",
+    );
+    const [oct, sep] = months;
+    expect(sep).toMatchObject({
+      month: "2026-09",
+      status: "overpaid",
+      credit: 0,
+    });
+    expect(oct).toMatchObject({
+      month: "2026-10",
+      status: "paid",
+      credit: 150.01,
+      remaining: 0,
+    });
+    expect(salaryTotals(months).remaining).toBe(-0.02);
+  });
+
+  it("lowers what is left when the credit only covers part of the month", () => {
+    const months = buildWorkerSalaryMonths(
+      monthly,
+      [inv("p", 150, "2026-09", "w2")],
+      "w2",
+    );
+    expect(months[0]).toMatchObject({
+      month: "2026-10",
+      status: "partial",
+      credit: 50.01,
+      remaining: 99.98,
+    });
+  });
+});

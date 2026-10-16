@@ -433,7 +433,7 @@ function LaborTabContent() {
                         setEditingEntry(entry);
                         setTimeout(() => entrySheet.current?.open(), 0);
                       }
-                    : () => undefined
+                    : undefined
                 }
               />
             ) : (

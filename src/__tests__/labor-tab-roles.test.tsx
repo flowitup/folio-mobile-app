@@ -233,7 +233,10 @@ describe("labor tab · pay visible but project:manage_labor denied (D8)", () => 
     await renderWithProviders(<LaborTab />);
 
     await fireEvent.press(await screen.findByTestId("attendance-view-list"));
-    await fireEvent.press(await screen.findByTestId(`list-entry-${first.id}`));
+    const row = await screen.findByTestId(`list-entry-${first.id}`);
+    // Not announced as a button that does nothing.
+    expect(row.props.accessibilityRole).toBeUndefined();
+    await fireEvent.press(row);
     expect(
       screen.queryByText(`${first.worker_name} · ${formatDate(first.date)}`),
     ).toBeNull();

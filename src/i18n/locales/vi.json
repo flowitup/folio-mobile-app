@@ -1721,7 +1721,8 @@
     "paidToast": "Đã ghi nhận thanh toán.",
     "unpaidToast": "Đã xóa thanh toán.",
     "readOnly": "Chỉ admin hoặc quản lý mới đổi được trạng thái thanh toán.",
-    "noMonth": "Chưa gán tháng"
+    "noMonth": "Chưa gán tháng",
+    "creditDeducted": "Đã trừ khoản trả dư từ các tháng trước: {{amount}}"
   },
   "shell": {
     "switchProject": "Đổi công trình",

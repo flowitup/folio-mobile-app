@@ -1,5 +1,9 @@
 import type { LaborEntry, ShiftType } from "@/features/labor/labor-types";
-import { countRepricedDays } from "@/lib/labor/rate-change-impact";
+import {
+  countRepricedDays,
+  dayBefore,
+  nextRateChangeDate,
+} from "@/lib/labor/rate-change-impact";
 
 const entry = (
   id: string,
@@ -71,5 +75,31 @@ describe("countRepricedDays", () => {
     expect(
       countRepricedDays([entry("a", "w1", "2026-06-02")], "w1", "2026-12-01"),
     ).toBe(0);
+  });
+});
+
+describe("later rate changes", () => {
+  it("stops counting at the next later rate change", () => {
+    const entries = [
+      entry("a", "w1", "2026-06-01"),
+      entry("b", "w1", "2026-06-30"),
+      entry("c", "w1", "2026-07-01"),
+      entry("d", "w1", "2026-08-10"),
+    ];
+    expect(countRepricedDays(entries, "w1", EFFECTIVE, "2026-07-01")).toBe(2);
+  });
+
+  it("finds the first change after the picked date", () => {
+    const changes = [
+      { effective_date: "2026-09-01" },
+      { effective_date: "2026-05-01" },
+      { effective_date: "2026-07-01" },
+    ];
+    expect(nextRateChangeDate(changes, EFFECTIVE)).toBe("2026-07-01");
+    expect(nextRateChangeDate(changes, "2026-09-01")).toBeNull();
+  });
+
+  it("steps back one day across a month boundary", () => {
+    expect(dayBefore("2026-03-01")).toBe("2026-02-28");
   });
 });

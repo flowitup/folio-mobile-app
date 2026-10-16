@@ -36,7 +36,11 @@ import {
 } from "@/lib/labor/company-directory-candidates";
 import { accountOptionLabel } from "@/lib/labor/account-option-label";
 import { laborRoleLabel } from "@/lib/labor/labor-role-label";
-import { countRepricedDays } from "@/lib/labor/rate-change-impact";
+import {
+  countRepricedDays,
+  dayBefore,
+  nextRateChangeDate,
+} from "@/lib/labor/rate-change-impact";
 import { currentDailyRate } from "@/lib/labor/rate-history";
 import { parseSupplementHours } from "@/lib/labor/supplement-hours";
 
@@ -353,16 +357,19 @@ export const RateChangesSheet = forwardRef<
   const fresh =
     workers.data?.find((candidate) => candidate.id === worker?.id) ?? worker;
   const today = toIsoDate(new Date());
+  // A later rate change keeps its own days: only count up to it.
+  const until = date ? nextRateChangeDate(changes.data ?? [], date) : null;
   const logged = useLaborEntries(
     projectId,
     date ?? undefined,
-    undefined,
+    until ? dayBefore(until) : undefined,
     Boolean(worker && date),
   );
   const repricedDays = countRepricedDays(
     logged.data ?? [],
     worker?.id ?? "",
     date ?? "",
+    until,
   );
 
   // The sheet is mounted once and reused for every worker, so a rate typed for one worker

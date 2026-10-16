@@ -332,7 +332,9 @@ export function exportInvoices(
 export function useLaborPaymentsSummary(projectId: string, enabled = true) {
   return useQuery({
     queryKey: invoiceKeys.laborPayments(projectId),
-    enabled,
+    // No project yet (cold start before the stored one is restored): asking
+    // would hit /projects//labor-payments-summary.
+    enabled: enabled && Boolean(projectId),
     queryFn: async () =>
       unwrapAs<LaborPaymentsSummary>(
         await api.GET("/api/v1/projects/{project_id}/labor-payments-summary", {

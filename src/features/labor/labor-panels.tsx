@@ -108,7 +108,8 @@ type EntryRowProps = {
   entry: LaborEntry;
   color: string;
   role: string | null;
-  onPress: (entry: LaborEntry) => void;
+  /** Omitted for read-only viewers: the row is then plain text, not a button. */
+  onPress?: (entry: LaborEntry) => void;
   testID?: string;
   size?: 32 | 36;
 };
@@ -127,13 +128,8 @@ export function LaborEntryRow({
   // A self-logged day is unpriced until a manager validates it: the backend sends 0, which
   // reads as "worked for free" next to the other rows.
   const pending = entry.status === "pending";
-  return (
-    <Pressable
-      testID={testID}
-      accessibilityRole="button"
-      onPress={() => onPress(entry)}
-      className="flex-row items-center gap-3 active:opacity-70"
-    >
+  const content = (
+    <>
       <Avatar name={entry.worker_name} size={size} color={color} />
       <View className="min-w-0 flex-1">
         <Text
@@ -164,6 +160,22 @@ export function LaborEntryRow({
         />
       ) : null}
       <Badge label={chip.label} tone={chip.tone} />
+    </>
+  );
+  if (!onPress)
+    return (
+      <View testID={testID} className="flex-row items-center gap-3">
+        {content}
+      </View>
+    );
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      onPress={() => onPress(entry)}
+      className="flex-row items-center gap-3 active:opacity-70"
+    >
+      {content}
     </Pressable>
   );
 }
@@ -227,7 +239,7 @@ export function LaborDayCard({
             entry={entry}
             color={colorOf(entry.worker_id)}
             role={roleOf(entry.worker_id)}
-            onPress={canManage ? onEntry : () => undefined}
+            onPress={canManage ? onEntry : undefined}
             testID={`day-entry-${entry.id}`}
           />
         ))}
