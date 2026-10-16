@@ -12,6 +12,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.flowitup.folio",
       "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         }
@@ -74,6 +75,11 @@
         }
       ]
     ],
+    "locales": {
+      "en": "./assets/locales/en.json",
+      "fr": "./assets/locales/fr.json",
+      "vi": "./assets/locales/vi.json"
+    },
     "extra": {
       "router": {},
       "eas": {

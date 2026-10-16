@@ -1,0 +1,7 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Folio dùng máy ảnh để chụp hoá đơn và ảnh công trình.",
+    "NSPhotoLibraryUsageDescription": "Folio dùng ảnh của bạn để đính kèm hoá đơn, tài liệu và ảnh công trình.",
+    "NSMicrophoneUsageDescription": "Folio dùng micro để ghi tin nhắn thoại trong trò chuyện nhóm."
+  }
+}
