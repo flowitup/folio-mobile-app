@@ -695,7 +695,7 @@
     "videoHint": "Video — dùng Chia sẻ để mở.",
     "loadMore": "Tải thêm",
     "loadError": "Không tải được ảnh.",
-    "readOnly": "Chỉ thành viên có quyền chỉnh sửa dự án mới thêm, sửa hoặc xoá ảnh. Hãy hỏi người quản lý dự án hoặc công ty nếu bạn cần thêm ảnh.",
+    "readOnly": "Chỉ thành viên có quyền chỉnh sửa dự án mới thêm, sửa hoặc xóa ảnh. Hãy hỏi người quản lý dự án hoặc công ty nếu bạn cần thêm ảnh.",
     "takenOn": "Chụp ngày"
   },
   "uploads": {
@@ -1635,7 +1635,7 @@
     "nameRequired": "Cần nhập tên.",
     "colorInvalid": "Nhập màu dạng # theo sau là 6 chữ số thập lục phân, ví dụ #E11D48.",
     "created": "Đã tạo vai trò.",
-    "deleted": "Đã xoá vai trò.",
+    "deleted": "Đã xóa vai trò.",
     "deleteWarning": "Những thợ đang có vai trò này sẽ mất vai trò.",
     "nameTooLong": "Tên không được dài quá {{max}} ký tự.",
     "noCompany": "Hãy tham gia hoặc tạo một công ty để quản lý vai trò."
