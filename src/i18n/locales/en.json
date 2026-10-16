@@ -707,6 +707,12 @@
     "activity": {
       "title": "Activity ({{count}} unread)",
       "markAllRead": "Mark all read"
+    },
+    "prePrompt": {
+      "title": "Turn on notifications?",
+      "body": "Folio lets you know when a task is assigned to you, a document arrives or someone messages you. You can change this later in your phone settings.",
+      "enable": "Turn on",
+      "later": "Not now"
     }
   },
   "tasks": {

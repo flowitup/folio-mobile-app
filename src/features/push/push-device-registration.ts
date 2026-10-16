@@ -5,6 +5,7 @@ import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
 import { api } from "@/api/client";
+import { confirmPushPrePrompt } from "@/features/push/push-pre-prompt";
 import { activeLocale } from "@/i18n";
 
 // Remembered so sign-out can tell the backend to forget this device.
@@ -23,10 +24,13 @@ export async function registerPushDevice(): Promise<string | null> {
         importance: Notifications.AndroidImportance.HIGH,
       });
     const current = await Notifications.getPermissionsAsync();
-    const status = current.granted
-      ? current
-      : await Notifications.requestPermissionsAsync();
-    if (!status.granted) return null;
+    if (!current.granted) {
+      // The OS dialog only after the app's own explanation, and never again once refused for
+      // good; "Not now" is remembered so a cold start does not ask every time.
+      if (!current.canAskAgain || !(await confirmPushPrePrompt())) return null;
+      const status = await Notifications.requestPermissionsAsync();
+      if (!status.granted) return null;
+    }
     // Simulators / emulators can show local and simulated notifications but never get a token.
     if (!Device.isDevice) return null;
     const projectId =

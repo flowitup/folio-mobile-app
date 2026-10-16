@@ -707,6 +707,12 @@
     "activity": {
       "title": "Activité ({{count}} non lus)",
       "markAllRead": "Tout marquer comme lu"
+    },
+    "prePrompt": {
+      "title": "Activer les notifications ?",
+      "body": "Folio vous prévient quand on vous assigne une tâche, qu'un document arrive ou qu'un message vous est adressé. Vous pourrez changer d'avis dans les réglages du téléphone.",
+      "enable": "Activer",
+      "later": "Plus tard"
     }
   },
   "tasks": {

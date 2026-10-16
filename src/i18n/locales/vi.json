@@ -707,6 +707,12 @@
     "activity": {
       "title": "Hoạt động ({{count}} chưa đọc)",
       "markAllRead": "Đánh dấu đã đọc"
+    },
+    "prePrompt": {
+      "title": "Bật thông báo?",
+      "body": "Folio báo cho bạn khi bạn được giao việc, có tài liệu mới hoặc có người nhắn tin cho bạn. Bạn có thể đổi lại trong cài đặt của điện thoại.",
+      "enable": "Bật",
+      "later": "Để sau"
     }
   },
   "tasks": {
