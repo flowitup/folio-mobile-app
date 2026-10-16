@@ -5,13 +5,14 @@ import { Icon } from "@/components/ui/icon";
 import { Card } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import {
-  THEME_PREFERENCES,
+  availableThemePreferences,
   useThemePreference,
 } from "@/theme/theme-preference";
 import { useTokens } from "@/theme/tokens";
 
 /**
- * Settings → Appearance: light, dark, or follow the device.
+ * Settings → Appearance: light, dark, or follow the device (not on iOS: see
+ * availableThemePreferences).
  *
  * The choice takes effect on the tap — this screen repaints under the user's
  * finger, which is the confirmation, so there is nothing to save.
@@ -29,7 +30,7 @@ export default function AppearanceScreen() {
           {t("settings.appearance.subtitle")}
         </Text>
         <Card className="overflow-hidden p-0">
-          {THEME_PREFERENCES.map((option, index) => (
+          {availableThemePreferences().map((option, index) => (
             <Pressable
               key={option}
               testID={`appearance-${option}`}

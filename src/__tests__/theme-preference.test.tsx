@@ -13,7 +13,7 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import * as SecureStore from "expo-secure-store";
-import { Text } from "react-native";
+import { Platform, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 
@@ -69,11 +69,22 @@ describe("Settings → Appearance", () => {
     jest.clearAllMocks();
     getItem.mockResolvedValue(null);
   });
+  afterEach(() => jest.restoreAllMocks());
 
-  it("offers device, light and dark", async () => {
+  it("offers device, light and dark on Android", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
     await renderScreen();
 
     expect(screen.getByTestId("appearance-system")).toBeTruthy();
+    expect(screen.getByTestId("appearance-light")).toBeTruthy();
+    expect(screen.getByTestId("appearance-dark")).toBeTruthy();
+  });
+
+  it("leaves 'follow the device' off iOS, where the build pins light", async () => {
+    jest.replaceProperty(Platform, "OS", "ios");
+    await renderScreen();
+
+    expect(screen.queryByTestId("appearance-system")).toBeNull();
     expect(screen.getByTestId("appearance-light")).toBeTruthy();
     expect(screen.getByTestId("appearance-dark")).toBeTruthy();
   });
@@ -142,6 +153,7 @@ describe("Settings → Appearance", () => {
   });
 
   it("still lets the user hand control back to the device", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
     await renderScreen();
 
     await fireEvent.press(screen.getByTestId("appearance-system"));

@@ -191,6 +191,10 @@ all four green, zero warnings (CI runs the last three).
   Release with generated notes. `version:none` skips the release.
 
 App binaries are not built by CI — release builds are cut separately (no `eas.json` is committed).
+A release build must set `EXPO_PUBLIC_API_BASE_URL=https://folio.flowitup.com`: without it the
+app stops at start-up rather than talking to localhost (`src/config/env.ts`), and with an `https://`
+URL `app.config.ts` leaves out plain-HTTP traffic (Android `usesCleartextTraffic`, iOS local
+networking), which a dev build against the local API keeps (or force it with `APP_VARIANT=development`).
 
 ## Refreshing the API types
 
