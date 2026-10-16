@@ -19,7 +19,7 @@ import { showToast } from "@/components/ui/toast";
 import { ScreenTitle } from "@/components/ui/typography";
 import { shortDayMonth } from "@/features/dashboard/overview-cards";
 import { useMembers } from "@/features/projects/members-api";
-import { projectCan, projectKeys } from "@/features/projects/projects-api";
+import { projectCan } from "@/features/projects/projects-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { TaskFormSheet } from "@/features/tasks/task-form-sheet";
 import type { TaskFormSheetHandle } from "@/features/tasks/task-form-sheet";
@@ -36,7 +36,7 @@ import { userDisplayName } from "@/lib/auth/user-display-name";
 import { toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const PRIORITY_CLASS = {
   urgent: "text-negative",
@@ -67,7 +67,7 @@ export default function PlanningTab() {
   const move = useMoveTask(projectId);
   const remove = useDeleteTask(projectId);
   useRefetchOnFocus(tasks.refetch);
-  const pullToRefresh = usePullToRefresh([projectKeys.all]);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const [lane, setLane] = useState<TaskStatus>("todo");
   const [deleting, setDeleting] = useState<Task | null>(null);

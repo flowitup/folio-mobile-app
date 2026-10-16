@@ -50,6 +50,7 @@ import { ApiError } from "@/lib/query/api-error";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useOpeningFile } from "@/lib/files/use-opening-file";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const STATUSES: RefundableStatus[] = [
   "refundable",
@@ -81,7 +82,7 @@ export default function RefundableExpensesScreen() {
   // The whole screen rides the company-scoped billing API, which only a company admin may
   // call: without the gate a refused caller just watched a spinner turn into a blank page.
   const access = useBillingAccess();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const companies = useMyCompanies();
   // The list is scoped to companies the caller administers (platform ops may read any): picking
   // one where they are only a member answered 403 and left the screen on "Could not load".
@@ -99,6 +100,10 @@ export default function RefundableExpensesScreen() {
   const expenses = useRefundableExpenses(companyId, access.allowed);
   // `refetch()` runs even a disabled query, so the focus hook has to respect the gate too.
   useRefetchOnFocus(access.allowed ? expenses.refetch : NOOP_REFETCH);
+  const pullToRefresh = usePullToRefresh(
+    [refreshKeys.billing, refreshKeys.companies],
+    { refetch: [refreshUser] },
+  );
   const setRefundable = useSetRefundable();
   // The bulk "add" loop reports once for the batch, so its writes stay quiet.
   const bulkSetRefundable = useSetRefundable(true);
@@ -230,7 +235,10 @@ export default function RefundableExpensesScreen() {
           />
         }
       />
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         {companyOptions.length > 1 ? (
           <Select
             testID="refundable-company"

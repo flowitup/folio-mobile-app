@@ -25,15 +25,11 @@ import type {
   Invitation,
   ProjectMember,
 } from "@/features/projects/members-api";
-import {
-  projectCan,
-  useProject,
-  projectKeys,
-} from "@/features/projects/projects-api";
+import { projectCan, useProject } from "@/features/projects/projects-api";
 import { accountContact } from "@/lib/auth/user-display-name";
 import { formatDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Members: manager/member assignments (D1 — no role picker, assigned once from the company
@@ -57,7 +53,7 @@ export default function ProjectMembersSection() {
   const unassign = useUnassignMember(id);
   const revoke = useRevokeInvitation(id);
   useRefetchOnFocus(members.refetch);
-  const pullToRefresh = usePullToRefresh([projectKeys.all]);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const assignSheet = useRef<BottomSheetModal>(null);
   const [removing, setRemoving] = useState<ProjectMember | null>(null);

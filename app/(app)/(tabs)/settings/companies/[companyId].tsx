@@ -44,6 +44,7 @@ import {
 } from "@/lib/companies/member-display";
 import { formatDate } from "@/lib/format/date";
 import { joinCodeShareMessage } from "@/lib/companies/join-code-share";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 type Tab = "edit" | "code" | "users" | "payments" | "delete";
 const TABS: Tab[] = ["edit", "code", "users", "payments", "delete"];
@@ -53,13 +54,19 @@ const ROLE_OPTIONS: CompanyRole[] = ["admin", "manager", "member"];
 export default function CompanyManageScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   // `DELETE /companies/<id>` is platform-ops only: a company admin's confirm always ends in a 403.
   const canDelete = isPlatformOps(user);
   const tabs = canDelete ? TABS : TABS.filter((value) => value !== "delete");
   const { companyId } = useLocalSearchParams<{ companyId: string }>();
   const company = useCompany(companyId);
   const users = useAttachedUsers(companyId);
+  const pullToRefresh = usePullToRefresh(
+    [refreshKeys.companies, refreshKeys.laborRoles],
+    {
+      refetch: [refreshUser],
+    },
+  );
   const update = useUpdateCompany();
   const setJoinCode = useSetJoinCode();
   const revokeJoinCode = useRevokeJoinCode();
@@ -125,6 +132,7 @@ export default function CompanyManageScreen() {
         ))}
       </ScrollView>
       <ScrollView
+        refreshControl={pullToRefresh}
         contentContainerClassName="p-4 pb-12"
         keyboardShouldPersistTaps="handled"
       >

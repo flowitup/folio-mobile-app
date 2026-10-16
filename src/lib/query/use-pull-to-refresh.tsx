@@ -7,6 +7,23 @@ import type { RefreshControlProps } from "react-native";
 
 import { INK_BLOCK, useTokens } from "@/theme/tokens";
 
+/**
+ * Query-key prefixes a screen hands to `usePullToRefresh`: each one covers every query under it
+ * (`projects`: the project list and every per-project query; `billing`: documents, templates
+ * and refundable expenses). Plain values rather than the feature key factories, so a screen
+ * test that mocks a feature's API module still renders; a test pins them to the factories.
+ */
+export const refreshKeys = {
+  projects: ["projects"],
+  companies: ["companies"],
+  laborRoles: ["labor", "roles"],
+  library: ["library"],
+  inventory: ["inventory"],
+  billing: ["billing"],
+  chatChannels: ["chat", "channels"],
+  features: ["features"],
+} as const satisfies Record<string, QueryKey>;
+
 /** Something to re-read on a pull: a query's `refetch`, `refreshUser`… Falsy entries are skipped. */
 export type Refresher = (() => unknown) | null | undefined | false;
 

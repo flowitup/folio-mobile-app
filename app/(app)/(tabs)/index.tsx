@@ -39,8 +39,7 @@ import {
 import { businessToday, parseIsoDate, toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { INK_BLOCK } from "@/theme/tokens";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
-import { projectKeys } from "@/features/projects/projects-api";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Tổng quan (design 1b): ink hero — remaining figure, ring gauge, quick actions — then the paper
@@ -53,7 +52,9 @@ function OverviewTabContent() {
     useSelectedProject();
   const invoices = useInvoices(projectId);
   const tasks = useTasks(projectId);
-  const pullToRefresh = usePullToRefresh([projectKeys.all], { onInk: true });
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects], {
+    onInk: true,
+  });
   const { user } = useAuth();
   // Financing side of the project: the backend nulls `budget` and zeroes every
   // released-funds total without `project:view_budget`, so the hero drops the

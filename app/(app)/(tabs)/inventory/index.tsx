@@ -22,7 +22,6 @@ import { Eyebrow } from "@/components/ui/typography";
 import {
   useCompanyCan,
   useMyCompanies,
-  companyKeys,
 } from "@/features/companies/companies-api";
 import {
   useCreateInventoryItem,
@@ -30,7 +29,6 @@ import {
   useInventoryItems,
   useUpdateInventoryItem,
   useWarehouses,
-  inventoryKeys,
 } from "@/features/inventory/inventory-api";
 import { InventoryItemFormSheet } from "@/features/inventory/inventory-item-form-sheet";
 import { InventoryItemRow } from "@/features/inventory/inventory-item-row";
@@ -50,8 +48,7 @@ import {
 import type { SiteRef } from "@/lib/inventory/inventory-helpers";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
-import { projectKeys } from "@/features/projects/projects-api";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 type LocationFilter = InventoryLocationType | "all";
 type ConditionFilter = InventoryCondition | "all";
@@ -115,9 +112,9 @@ export default function InventoryScreen() {
   const warehouses = useWarehouses(effectiveCompany);
   useRefetchOnFocus(items.refetch);
   const pullToRefresh = usePullToRefresh([
-    inventoryKeys.all,
-    companyKeys.all,
-    projectKeys.all,
+    refreshKeys.inventory,
+    refreshKeys.companies,
+    refreshKeys.projects,
   ]);
   const create = useCreateInventoryItem(effectiveCompany);
   const update = useUpdateInventoryItem();

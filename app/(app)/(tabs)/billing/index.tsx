@@ -29,6 +29,7 @@ import {
 import { formatMoney } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens } from "@/theme/tokens";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -87,6 +88,10 @@ export default function BillingHub() {
   // otherwise a refused caller re-issues the company-wide query every time the screen regains
   // focus, which is exactly what `enabled` is there to prevent.
   useRefetchOnFocus(access.allowed ? list.refetch : NOOP_REFETCH);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.billing,
+    refreshKeys.companies,
+  ]);
 
   const needle = search.trim().toLowerCase();
   // While a new search, kind or status loads, the previous result stays on screen: narrow it
@@ -118,6 +123,7 @@ export default function BillingHub() {
       ) : null}
       {access.allowed ? (
         <ScrollView
+          refreshControl={pullToRefresh}
           className="flex-1"
           contentContainerClassName="px-4 pb-6 pt-3.5"
           contentContainerStyle={{ gap: 16 }}

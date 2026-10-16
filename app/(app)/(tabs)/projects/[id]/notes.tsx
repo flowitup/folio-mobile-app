@@ -34,8 +34,7 @@ import { formatDate, localDayKey } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { TEXT_LIMITS } from "@/lib/format/text-limits";
 import { searchIncludes } from "@/lib/utils/fold-for-search";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
-import { projectKeys } from "@/features/projects/projects-api";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Project journal: category chips + search, date-grouped cards, open/done toggle,
@@ -51,7 +50,7 @@ export default function ProjectNotesSection() {
   const update = useUpdateNote(id);
   const remove = useDeleteNote(id);
   useRefetchOnFocus(notes.refetch);
-  const pullToRefresh = usePullToRefresh([projectKeys.all]);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const [category, setCategory] = useState<NoteCategory | "all">("all");
   const [search, setSearch] = useState("");

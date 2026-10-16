@@ -19,7 +19,6 @@ import { showToast } from "@/components/ui/toast";
 import {
   useCompanyCan,
   useMyCompanies,
-  companyKeys,
 } from "@/features/companies/companies-api";
 import {
   useCreateWarehouse,
@@ -27,7 +26,6 @@ import {
   useInventoryItems,
   useUpdateWarehouse,
   useWarehouses,
-  inventoryKeys,
 } from "@/features/inventory/inventory-api";
 import type {
   CreateWarehousePayload,
@@ -40,7 +38,7 @@ import {
   unitsByWarehouse,
 } from "@/lib/inventory/inventory-helpers";
 import { useTokens } from "@/theme/tokens";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** One opening of the form sheet; see the same type on the inventory screen. */
 type FormSession = { warehouse: Warehouse | null; nonce: number };
@@ -60,7 +58,10 @@ export default function WarehousesScreen() {
   );
   const effectiveCompany = companyId ?? companies.data?.[0]?.id ?? null;
   const canManage = useCompanyCan("inventory:manage", effectiveCompany);
-  const pullToRefresh = usePullToRefresh([inventoryKeys.all, companyKeys.all]);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.inventory,
+    refreshKeys.companies,
+  ]);
 
   const warehouses = useWarehouses(effectiveCompany);
   const items = useInventoryItems(effectiveCompany);

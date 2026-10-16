@@ -55,8 +55,7 @@ import { useProjectCan } from "@/features/projects/use-project-can";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 import { useOpeningFile } from "@/lib/files/use-opening-file";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
-import { projectKeys } from "@/features/projects/projects-api";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 const SORTS: DocumentSort[] = ["created_at", "name", "size", "uploader"];
 
@@ -131,7 +130,7 @@ export default function ProjectDocumentsSection() {
   const setTags = useSetDocumentTags(id);
   const remove = useDeleteDocument(id);
   useRefetchOnFocus(canAccess ? documents.refetch : noRefetch);
-  const pullToRefresh = usePullToRefresh([projectKeys.all]);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const addSheet = useRef<BottomSheetModal>(null);
   const editSheet = useRef<BottomSheetModal>(null);

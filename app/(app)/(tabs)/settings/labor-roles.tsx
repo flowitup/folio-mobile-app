@@ -30,6 +30,7 @@ import {
 import type { LaborRole } from "@/features/labor/labor-api";
 import { isHexColor, laborRoleLabel } from "@/lib/labor/labor-role-label";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** The API's limit on a role name. */
 const NAME_MAX = 100;
@@ -46,7 +47,7 @@ const anyCompany = () => true;
  */
 export default function LaborRolesScreen() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { companies, eligible, selected, setCompanyId } =
     useSettingsCompany(anyCompany);
   const companyId = selected?.id;
@@ -60,6 +61,12 @@ export default function LaborRolesScreen() {
     : isCompanyAdminOrManager(user, companyId);
   const roles = useLaborRoles(companyId);
   useRefetchOnFocus(roles.refetch);
+  const pullToRefresh = usePullToRefresh(
+    [refreshKeys.laborRoles, refreshKeys.companies],
+    {
+      refetch: [refreshUser],
+    },
+  );
   const create = useCreateLaborRole(companyId);
   const update = useUpdateLaborRole();
   const remove = useDeleteLaborRole();
@@ -115,7 +122,10 @@ export default function LaborRolesScreen() {
           ) : undefined
         }
       />
-      <ScrollView contentContainerClassName="p-4 pb-12">
+      <ScrollView
+        refreshControl={pullToRefresh}
+        contentContainerClassName="p-4 pb-12"
+      >
         <SettingsCompanyPicker
           testID="roles-company"
           eligible={eligible}

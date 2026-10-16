@@ -28,7 +28,6 @@ import {
   useSuppliers,
   useUpdateProduct,
   useUploadProductImage,
-  libraryKeys,
 } from "@/features/library/library-api";
 import {
   displayedSupplierReference,
@@ -42,7 +41,7 @@ import { captureImage } from "@/lib/files/pick";
 import type { PickedFile } from "@/lib/files/pick";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney, formatNumber } from "@/lib/format/money";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** Product detail: image, metadata, purchase history, edit sheet, image actions, typed-name delete. */
 export default function LibraryProductScreen() {
@@ -54,7 +53,7 @@ export default function LibraryProductScreen() {
   const suppliers = useSuppliers(product?.company_id ?? null);
   const update = useUpdateProduct();
   const remove = useDeleteProduct();
-  const pullToRefresh = usePullToRefresh([libraryKeys.all]);
+  const pullToRefresh = usePullToRefresh([refreshKeys.library]);
   const uploadImage = useUploadProductImage();
   const imageFromUrl = useProductImageFromUrl();
   const editSheet = useRef<BottomSheetModal>(null);

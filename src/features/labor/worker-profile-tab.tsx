@@ -12,11 +12,7 @@ import {
   ErrorState,
 } from "@/components/ui/primitives";
 import { ScreenTitle } from "@/components/ui/typography";
-import {
-  useRateChanges,
-  useWorkers,
-  laborKeys,
-} from "@/features/labor/labor-api";
+import { useRateChanges, useWorkers } from "@/features/labor/labor-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
 import { formatDate, toIsoDate } from "@/lib/format/date";
@@ -26,8 +22,7 @@ import type { RateHistoryRow } from "@/lib/labor/rate-history";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
 import { workerRoleLabel } from "@/lib/labor/labor-role-label";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
-import { projectKeys } from "@/features/projects/projects-api";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /**
  * Worker mode · Hồ sơ: the signed-in worker's own profile on the selected project — identity
@@ -61,7 +56,10 @@ export function WorkerProfileTab() {
   const refetchChanges = changes.refetch;
   const hasWorker = Boolean(myWorker);
   useRefetchOnFocus(workers.refetch);
-  const pullToRefresh = usePullToRefresh([projectKeys.all, laborKeys.roles]);
+  const pullToRefresh = usePullToRefresh([
+    refreshKeys.projects,
+    refreshKeys.laborRoles,
+  ]);
   useRefetchOnFocus(
     useCallback(() => {
       if (hasWorker) void refetchChanges();

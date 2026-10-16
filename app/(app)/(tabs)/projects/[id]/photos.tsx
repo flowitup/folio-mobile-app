@@ -37,8 +37,7 @@ import { PHOTO_EXTENSIONS, uploadEach } from "@/lib/files/upload-rules";
 import { formatDate, localDayKey, toIsoDate } from "@/lib/format/date";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
-import { usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
-import { projectKeys } from "@/features/projects/projects-api";
+import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 /** Noon on that device-local day: a corrected date stays on its day in any nearby time zone. */
 function capturedAtOnDay(day: string): string {
@@ -62,7 +61,7 @@ export default function ProjectPhotosSection() {
   const update = useUpdatePhoto(id);
   const remove = useDeletePhoto(id);
   useRefetchOnFocus(photos.refetch);
-  const pullToRefresh = usePullToRefresh([projectKeys.all]);
+  const pullToRefresh = usePullToRefresh([refreshKeys.projects]);
 
   const addSheet = useRef<BottomSheetModal>(null);
   const [open, setOpen] = useState<ProjectPhoto | null>(null);
