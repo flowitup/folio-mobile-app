@@ -216,6 +216,10 @@
       "title": "Ẩn mục",
       "intro": "Tắt những mục {{company}} không dùng. Mục bị tắt sẽ biến mất khỏi Menu của mọi thành viên trong công ty.",
       "adminOnly": "Chỉ quản trị viên công ty mới đổi được cài đặt này."
+    },
+    "company": {
+      "label": "Công ty",
+      "single": "Công ty: {{company}}"
     }
   },
   "members": {
@@ -606,6 +610,9 @@
       "openMonth": "Mở tháng này",
       "daysUnit_one": "ngày",
       "daysUnit_other": "ngày"
+    },
+    "errors": {
+      "roleUnavailable": "Vai trò này không còn dùng được cho công ty của công trình. Hãy chọn vai trò khác."
     }
   },
   "documents": {
@@ -859,7 +866,8 @@
       "templates": "Mẫu",
       "refundable": "Chi phí hoàn lại",
       "import": "Nhập",
-      "noResults": "Không có tài liệu nào khớp với tìm kiếm này."
+      "noResults": "Không có tài liệu nào khớp với tìm kiếm này.",
+      "allCompanies": "Tất cả công ty"
     },
     "form": {
       "modes": {
@@ -1563,7 +1571,12 @@
     "none": "Chưa có vai trò.",
     "deleteConfirm": "Xóa vai trò {{name}}?",
     "nameRequired": "Cần nhập tên.",
-    "colorInvalid": "Nhập màu dạng # theo sau là 6 chữ số thập lục phân, ví dụ #E11D48."
+    "colorInvalid": "Nhập màu dạng # theo sau là 6 chữ số thập lục phân, ví dụ #E11D48.",
+    "created": "Đã tạo vai trò.",
+    "deleted": "Đã xoá vai trò.",
+    "deleteWarning": "Những thợ đang có vai trò này sẽ mất vai trò.",
+    "nameTooLong": "Tên không được dài quá {{max}} ký tự.",
+    "noCompany": "Hãy tham gia hoặc tạo một công ty để quản lý vai trò."
   },
   "persons": {
     "title": "Gộp người",

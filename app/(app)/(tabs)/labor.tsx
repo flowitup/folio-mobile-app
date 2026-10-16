@@ -54,8 +54,9 @@ import {
   LogDaySheet,
   RateChangesSheet,
   WorkerFormSheet,
+  type SheetHandle,
+  type WorkerFormHandle,
 } from "@/features/labor/labor-sheets";
-import type { SheetHandle } from "@/features/labor/labor-sheets";
 import {
   DayDetailsSheet,
   LaborExportSheet,
@@ -87,6 +88,8 @@ import { ApiError } from "@/lib/query/api-error";
 import { frenchHolidayKeyForIso } from "@/lib/labor/french-holidays";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { useTokens, workerColor } from "@/theme/tokens";
+import { workerRoleLabel } from "@/lib/labor/labor-role-label";
+import { isInvalidLaborRoleError } from "@/lib/query/api-error-message";
 
 type Segment = "overview" | "calendar" | "workers" | "payments";
 const SEGMENTS: Segment[] = ["overview", "calendar", "workers", "payments"];
@@ -170,7 +173,7 @@ function LaborTabContent() {
   const [pendingBulk, setPendingBulk] = useState<BulkLogEntry[] | null>(null);
   const [paymentRow, setPaymentRow] = useState<PaymentRow | null>(null);
 
-  const workerForm = useRef<SheetHandle>(null);
+  const workerForm = useRef<WorkerFormHandle>(null);
   const rateSheet = useRef<SheetHandle>(null);
   const logDaySheet = useRef<SheetHandle>(null);
   const entrySheet = useRef<SheetHandle>(null);
@@ -194,8 +197,10 @@ function LaborTabContent() {
   );
   const colorOf = (workerId: string) =>
     colorById.get(workerId) ?? tokens.muted2;
-  const roleOf = (workerId: string) =>
-    workers.data?.find((w) => w.id === workerId)?.role_name ?? null;
+  const roleOf = (workerId: string) => {
+    const worker = workers.data?.find((w) => w.id === workerId);
+    return worker ? workerRoleLabel(worker, t) : null;
+  };
 
   const dayEntries = useMemo(
     () => (entries.data ?? []).filter((e) => e.date === selectedDay),
@@ -606,12 +611,22 @@ function LaborTabContent() {
           editingWorker
             ? updateWorker.mutate(
                 { workerId: editingWorker.id, ...values },
-                { onSuccess: () => workerForm.current?.close() },
+                {
+                  onSuccess: () => workerForm.current?.close(),
+                  onError: (error) => {
+                    if (isInvalidLaborRoleError(error))
+                      workerForm.current?.rejectRole();
+                  },
+                },
               )
             : createWorker.mutate(
                 values as Parameters<typeof createWorker.mutate>[0],
                 {
                   onSuccess: () => workerForm.current?.close(),
+                  onError: (error) => {
+                    if (isInvalidLaborRoleError(error))
+                      workerForm.current?.rejectRole();
+                  },
                 },
               )
         }

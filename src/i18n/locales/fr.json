@@ -216,6 +216,10 @@
       "title": "Sections masquées",
       "intro": "Désactivez les sections que {{company}} n'utilise pas. Une section désactivée disparaît du menu de tous les membres de l'entreprise.",
       "adminOnly": "Seul un administrateur de l'entreprise peut modifier ce réglage."
+    },
+    "company": {
+      "label": "Entreprise",
+      "single": "Entreprise : {{company}}"
     }
   },
   "members": {
@@ -606,6 +610,9 @@
       "openMonth": "Ouvrir ce mois",
       "daysUnit_one": "jour",
       "daysUnit_other": "jours"
+    },
+    "errors": {
+      "roleUnavailable": "Ce rôle n'est plus disponible pour l'entreprise de ce chantier. Choisissez-en un autre."
     }
   },
   "documents": {
@@ -859,7 +866,8 @@
       "templates": "Modèles",
       "refundable": "Remboursables",
       "import": "Importer",
-      "noResults": "Aucun document ne correspond à cette recherche."
+      "noResults": "Aucun document ne correspond à cette recherche.",
+      "allCompanies": "Toutes les entreprises"
     },
     "form": {
       "modes": {
@@ -1563,7 +1571,12 @@
     "none": "Aucun rôle.",
     "deleteConfirm": "Supprimer le rôle {{name}} ?",
     "nameRequired": "Le nom est obligatoire.",
-    "colorInvalid": "Saisissez une couleur sous la forme # suivi de 6 chiffres hexadécimaux, par ex. #E11D48."
+    "colorInvalid": "Saisissez une couleur sous la forme # suivi de 6 chiffres hexadécimaux, par ex. #E11D48.",
+    "created": "Rôle créé.",
+    "deleted": "Rôle supprimé.",
+    "deleteWarning": "Les ouvriers qui ont ce rôle le perdront.",
+    "nameTooLong": "Le nom ne doit pas dépasser {{max}} caractères.",
+    "noCompany": "Rejoignez ou créez une entreprise pour gérer ses rôles."
   },
   "persons": {
     "title": "Fusionner des personnes",

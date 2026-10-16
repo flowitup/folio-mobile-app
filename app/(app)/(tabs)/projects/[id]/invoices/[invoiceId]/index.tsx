@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
 
 import { useAuth } from "@/auth/auth-context";
+import { isCompanyAdmin } from "@/auth/permissions";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InkSheetScreen } from "@/components/ui/ink-sheet-screen";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
@@ -29,7 +30,6 @@ import {
   useSetRefundableStatus,
   useUpdateInvoice,
 } from "@/features/invoices/invoices-api";
-import { useBillingAccess } from "@/features/companies/companies-api";
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { openPdfViewer } from "@/lib/files/open-file";
 import { buildInvoicePrintHtml } from "@/lib/invoices/invoice-print-html";
@@ -58,9 +58,10 @@ export default function InvoiceDetailScreen() {
     "project:manage_invoices",
     user?.permissions,
   );
-  // The refund workflow writes through the company-scoped billing endpoint, which only a
-  // company admin may call: `project:manage_invoices` alone earns a 403 there.
-  const billing = useBillingAccess();
+  // The refund workflow writes through the company-scoped billing endpoint, which only an
+  // admin of the PROJECT's company may call: `project:manage_invoices`, or admin of another
+  // company, earns a 403 there.
+  const adminOfProjectCompany = isCompanyAdmin(user, project.data?.company_id);
   const update = useUpdateInvoice(id, invoiceId);
   const remove = useDeleteInvoice(id);
   const setRefundable = useSetRefundableStatus(id);
@@ -155,14 +156,14 @@ export default function InvoiceDetailScreen() {
     (canManage && orphanedRelease && data.refundable_status !== "refunded");
   const canTransferToCompany =
     canManage &&
-    billing.allowed &&
+    adminOfProjectCompany &&
     data.type === "materials_services" &&
     !data.refundable_status &&
     !data.paid_by_company &&
     Boolean(project.data?.company_id);
   const awaitingRefund =
     canManage &&
-    billing.allowed &&
+    adminOfProjectCompany &&
     Boolean(data.refundable_status) &&
     data.refundable_status !== "refunded";
 

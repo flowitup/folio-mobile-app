@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/api/client";
@@ -8,6 +8,7 @@ import { projectKeys } from "@/features/projects/projects-api";
 import { rosterKeys } from "@/features/labor/roster-api";
 import { openFile } from "@/lib/files/open-file";
 import { unwrapAs, unwrapVoid } from "@/lib/query/api-error";
+import { isInvalidLaborRoleError } from "@/lib/query/api-error-message";
 import { useApiMutation } from "@/lib/query/use-api-mutation";
 
 import type {
@@ -105,20 +106,20 @@ export function useWorkers(projectId: string, enabled = true) {
 }
 
 /**
- * Roles are company-scoped. Without `companyId` the backend answers with the caller's
- * PRIMARY company, which is the wrong list on a project of another company: its ids are
- * refused with "Labor role not found" when saved on a worker. Pass the project's company.
+ * Roles are company-scoped: always the list of `companyId` (the project's company in the worker
+ * form, the company picked in Settings). Nothing is fetched until it is known, so another
+ * company's list (whose ids a worker save refuses with "Labor role not found") never shows
+ * while the project loads. One key per company under `laborKeys.roles`, and the app's default
+ * 30 s staleness, so a role created or deleted elsewhere shows up when the form reopens.
  */
-export function useLaborRoles(companyId?: string | null) {
+export function useLaborRoles(companyId: string | null | undefined) {
   return useQuery({
-    queryKey: companyId
-      ? ([...laborKeys.roles, companyId] as const)
-      : laborKeys.roles,
-    staleTime: 10 * 60_000,
+    queryKey: [...laborKeys.roles, companyId ?? ""] as const,
+    enabled: Boolean(companyId),
     queryFn: async () => {
       const data = unwrapAs<{ roles?: LaborRole[]; palette?: string[] }>(
         await api.GET("/api/v1/labor/roles", {
-          params: { query: companyId ? { company_id: companyId } : {} },
+          params: { query: { company_id: companyId } },
         } as never),
       );
       return { roles: data.roles ?? [], palette: data.palette ?? [] };
@@ -126,9 +127,20 @@ export function useLaborRoles(companyId?: string | null) {
   });
 }
 
+/** A role refused on a worker save is stale: refetch every company's role list. */
+function useRefreshRolesOnRoleError() {
+  const queryClient = useQueryClient();
+  return (error: unknown) => {
+    if (isInvalidLaborRoleError(error))
+      void queryClient.invalidateQueries({ queryKey: laborKeys.roles });
+  };
+}
+
 export function useCreateWorker(projectId: string) {
   const { t } = useTranslation();
+  const onRoleError = useRefreshRolesOnRoleError();
   return useApiMutation<CreateWorkerPayload, Worker>({
+    onError: onRoleError,
     mutationFn: async (body) =>
       unwrapAs<Worker>(
         await api.POST("/api/v1/projects/{project_id}/workers", {
@@ -143,7 +155,9 @@ export function useCreateWorker(projectId: string) {
 
 export function useUpdateWorker(projectId: string) {
   const { t } = useTranslation();
+  const onRoleError = useRefreshRolesOnRoleError();
   return useApiMutation<{ workerId: string } & UpdateWorkerPayload, Worker>({
+    onError: onRoleError,
     mutationFn: async ({ workerId, ...body }) =>
       unwrapAs<Worker>(
         await api.PUT("/api/v1/projects/{project_id}/workers/{worker_id}", {
@@ -579,15 +593,19 @@ export function exportLabor(
 
 // ---- labor roles management (settings) --------------------------------------------------------
 
-export function useCreateLaborRole() {
+/** Creates the role in `companyId` (the API needs it: no silent fallback to the primary). */
+export function useCreateLaborRole(companyId: string | null | undefined) {
   const { t } = useTranslation();
   return useApiMutation<{ name: string; color: string }, LaborRole>({
     mutationFn: async (body) =>
       unwrapAs<LaborRole>(
-        await api.POST("/api/v1/labor/roles", { body: body as never }),
+        await api.POST("/api/v1/labor/roles", {
+          params: { query: { company_id: companyId ?? "" } },
+          body: body as never,
+        } as never),
       ),
     invalidates: [laborKeys.roles],
-    successMessage: t("common.saved"),
+    successMessage: t("laborRoles.created"),
   });
 }
 
@@ -619,6 +637,6 @@ export function useDeleteLaborRole() {
         }),
       ),
     invalidates: [laborKeys.roles],
-    successMessage: t("common.saved"),
+    successMessage: t("laborRoles.deleted"),
   });
 }

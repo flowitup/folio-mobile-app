@@ -10,28 +10,35 @@ import {
 
 import { Card, EmptyState, ListRow } from "@/components/ui/primitives";
 import { ScreenHeader } from "@/components/ui/screen-header";
+import { useAuth } from "@/auth/auth-context";
+import { isPlatformOps } from "@/auth/permissions";
+import { useUpdateCompany } from "@/features/companies/companies-api";
 import {
-  useMyCompanies,
-  useUpdateCompany,
-} from "@/features/companies/companies-api";
+  SettingsCompanyPicker,
+  useSettingsCompany,
+} from "@/features/companies/settings-company";
 import {
   HIDEABLE_SECTIONS,
   hideableSectionLabelKey,
-  useCanManageHiddenSections,
 } from "@/features/companies/hidden-sections";
 import { useTokens } from "@/theme/tokens";
 
 /**
  * Settings → Hidden sections: one switch per Menu area / project section, saved on the company
- * (every member of it stops seeing a switched-off section). A switch moves at once and snaps back
+ * picked here — by default the selected project's, among those the user administers (every
+ * member of it stops seeing a switched-off section). A switch moves at once and snaps back
  * if the save fails — `useApiMutation` toasts the error.
  */
 export default function HiddenSectionsScreen() {
   const { t } = useTranslation();
   const tokens = useTokens();
-  const companies = useMyCompanies();
-  const company = companies.data?.[0];
-  const canManage = useCanManageHiddenSections();
+  const { user } = useAuth();
+  const ops = isPlatformOps(user);
+  const { companies, eligible, selected, setCompanyId } = useSettingsCompany(
+    (c) => ops || c.role === "admin",
+  );
+  const company = selected;
+  const canManage = Boolean(company);
   const update = useUpdateCompany();
   // Optimistic view while a save is in flight; cleared on settle so the cache wins again.
   const [optimistic, setOptimistic] = useState<string[] | null>(null);
@@ -62,6 +69,15 @@ export default function HiddenSectionsScreen() {
         ) : null}
         {company && canManage ? (
           <>
+            <SettingsCompanyPicker
+              testID="hidden-sections-company"
+              eligible={eligible}
+              selected={company}
+              onChange={(id) => {
+                setOptimistic(null);
+                setCompanyId(id);
+              }}
+            />
             <Text className="font-sans text-[13px] text-muted">
               {t("settings.hiddenSections.intro", {
                 company: company.legal_name,

@@ -49,15 +49,18 @@ export function useBillingDocuments(
   status: BillingDocumentStatus | null,
   /** Billing is company-admin gated; a denied caller must not ask for a list the API refuses. */
   enabled = true,
+  /** Issuing company filter (users of several companies); every company when unset. */
+  companyId: string | null = null,
 ) {
   return useInfiniteQuery({
     enabled,
-    queryKey: billingKeys.list(kind, status),
+    queryKey: [...billingKeys.list(kind, status), companyId ?? "all"],
     initialPageParam: 0,
     queryFn: ({ pageParam }) =>
       fetchPage({
         kind,
         ...(status ? { status } : {}),
+        ...(companyId ? { company_id: companyId } : {}),
         limit: PAGE_SIZE,
         offset: pageParam,
       }),

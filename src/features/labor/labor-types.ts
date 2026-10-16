@@ -22,6 +22,8 @@ export interface Worker {
   // falls back to the deterministic personColor hash otherwise.
   role_id?: string | null;
   role_name?: string | null;
+  /** Seed slug of the role (`tho_chinh` / `tho_phu`), so its name is shown translated. */
+  role_slug?: string | null;
   role_color?: string | null;
   // Rate in effect today: latest rate_change with effective_date <= today,
   // else the base daily_rate. Optional for back-compat with older API responses.
