@@ -252,7 +252,7 @@
     "types": {
       "released_funds": "Fonds débloqués",
       "labor": "Main-d'œuvre",
-      "materials_services": "Matériaux & services",
+      "materials_services": "Achats & prestations",
       "others": "Autres",
       "return": "Retour / avoir"
     },
@@ -1780,7 +1780,7 @@
     "filters": {
       "released_funds": "Fonds débloqués",
       "labor": "Main-d'œuvre",
-      "materials_services": "Matériaux & services",
+      "materials_services": "Achats & prestations",
       "others": "Autres"
     },
     "abbr": {
