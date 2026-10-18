@@ -1831,7 +1831,6 @@
     "unpaidToast": "Payments removed.",
     "readOnly": "Only an admin or manager can change the paid status.",
     "noMonth": "No month recorded",
-    "creditDeducted": "Overpaid in earlier months, deducted: {{amount}}",
     "noPayments": "No payment recorded for this month.",
     "paymentsCount_one": "{{count}} payment",
     "paymentsCount_other": "{{count}} payments"

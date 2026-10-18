@@ -1831,7 +1831,6 @@
     "unpaidToast": "Paiements supprimés.",
     "readOnly": "Seul un admin ou un manager peut modifier le statut de paiement.",
     "noMonth": "Sans mois renseigné",
-    "creditDeducted": "Avance des mois précédents déduite : {{amount}}",
     "noPayments": "Aucun paiement enregistré pour ce mois.",
     "paymentsCount_one": "{{count}} paiement",
     "paymentsCount_other": "{{count}} paiements"

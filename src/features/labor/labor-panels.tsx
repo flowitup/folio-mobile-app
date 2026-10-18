@@ -372,13 +372,11 @@ export type PaymentRow = {
   color: string;
   owed: number;
   paid: number;
-  /** Overpaid in earlier months and deducted from what is due now. */
-  credit?: number;
 };
 
-/** What is still to pay on a row, after this month's payments and any earlier credit. */
+/** What is still to pay on a row, after this month's payments. */
 export function rowDue(row: PaymentRow): number {
-  return Math.max(0, row.owed - row.paid - (row.credit ?? 0));
+  return Math.max(0, row.owed - row.paid);
 }
 
 type PaymentsPanelProps = {
@@ -404,10 +402,9 @@ export function PaymentsPanel({
       ) : null}
       {rows.map((row) => {
         const due = rowDue(row);
-        const covered = row.paid + (row.credit ?? 0);
-        const pct =
+                const pct =
           row.owed > 0
-            ? Math.min(100, Math.round((covered / row.owed) * 100))
+            ? Math.min(100, Math.round((row.paid / row.owed) * 100))
             : 100;
         return (
           <Pressable
@@ -462,16 +459,6 @@ export function PaymentsPanel({
                   </Text>
                 </Text>
               </View>
-              {(row.credit ?? 0) > 0 ? (
-                <Text
-                  testID={`payment-credit-${row.worker.id}`}
-                  className="mt-1 font-sans text-[11px] text-muted"
-                >
-                  {t("salaries.creditDeducted", {
-                    amount: formatMoney(row.credit ?? 0),
-                  })}
-                </Text>
-              ) : null}
             </Card>
           </Pressable>
         );

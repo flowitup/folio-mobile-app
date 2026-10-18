@@ -2,20 +2,26 @@
   "expo": {
     "name": "Folio",
     "slug": "folio-mobile-app",
-    "version": "0.5.28",
+    "version": "0.5.29",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "folio",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
-      "associatedDomains": ["applinks:folio.flowitup.com"],
+      "associatedDomains": [
+        "applinks:folio.flowitup.com"
+      ],
       "supportsTablet": true,
       "bundleIdentifier": "com.flowitup.folio",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleDevelopmentRegion": "en",
-        "CFBundleLocalizations": ["en", "fr", "vi"],
+        "CFBundleLocalizations": [
+          "en",
+          "fr",
+          "vi"
+        ],
         "CFBundleAllowMixedLocalizations": true
       }
     },
@@ -32,7 +38,10 @@
               "pathPattern": "/.*/accept-invite/.*"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "adaptiveIcon": {
@@ -70,7 +79,10 @@
           "cameraPermission": "Folio uses the camera to capture invoices and site pictures."
         }
       ],
-      ["@react-native-community/datetimepicker", {}],
+      [
+        "@react-native-community/datetimepicker",
+        {}
+      ],
       "expo-document-picker",
       [
         "expo-notifications",

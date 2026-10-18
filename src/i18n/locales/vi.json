@@ -1831,7 +1831,6 @@
     "unpaidToast": "Đã xóa thanh toán.",
     "readOnly": "Chỉ admin hoặc quản lý mới đổi được trạng thái thanh toán.",
     "noMonth": "Chưa gán tháng",
-    "creditDeducted": "Đã trừ khoản trả dư từ các tháng trước: {{amount}}",
     "noPayments": "Chưa ghi nhận khoản thanh toán nào trong tháng này.",
     "paymentsCount_one": "{{count}} khoản thanh toán",
     "paymentsCount_other": "{{count}} khoản thanh toán"
