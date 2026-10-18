@@ -38,7 +38,6 @@ import {
   useDeleteAttendance,
   useDeleteWorker,
   useLaborEntries,
-  useLaborMonthlySummary,
   useLaborSummary,
   useRejectAttendance,
   useUpdateAttendance,
@@ -93,7 +92,6 @@ import {
 } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { dayInMonth } from "@/lib/labor/attendance-day";
-import { earlierCreditByWorker } from "@/lib/labor/labor-overview";
 import { monthRange } from "@/lib/labor/month-range";
 import { ApiError } from "@/lib/query/api-error";
 import { frenchHolidayKeyForIso } from "@/lib/labor/french-holidays";
@@ -271,18 +269,6 @@ function LaborTabContent() {
       ),
     [summary.data],
   );
-  // A worker overpaid in an earlier month has that money in hand: deduct it here so
-  // the same work is not offered for payment twice.
-  const monthlyLedger = useLaborMonthlySummary(id);
-  const creditByWorker = useMemo(
-    () =>
-      earlierCreditByWorker(
-        monthlyLedger.data?.rows ?? [],
-        laborPayments.data,
-        month,
-      ),
-    [monthlyLedger.data, laborPayments.data, month],
-  );
   const paymentRows = useMemo<PaymentRow[]>(
     () =>
       (summary.data?.rows ?? []).flatMap((row) => {
@@ -294,12 +280,11 @@ function LaborTabContent() {
                 color: entry.color,
                 owed: row.total_cost,
                 paid: paidByWorker.get(row.worker_id) ?? 0,
-                credit: creditByWorker.get(row.worker_id) ?? 0,
               },
             ]
           : [];
       }),
-    [summary.data, coloredWorkers, paidByWorker, creditByWorker],
+    [summary.data, coloredWorkers, paidByWorker],
   );
   const unpaid = paymentRows.reduce((sum, row) => sum + rowDue(row), 0);
   const unassignedLabor = useMemo(

@@ -318,16 +318,6 @@ export default function ProjectSalariesSection({
                     ? ` · ${t("salaries.status.overpaid")} ${formatMoney(-row.remaining)}`
                     : ""}
               </Text>
-              {row.credit > 0 ? (
-                <Text
-                  testID={`salary-credit-${row.month}`}
-                  className="text-xs text-muted-foreground"
-                >
-                  {t("salaries.creditDeducted", {
-                    amount: formatMoney(row.credit),
-                  })}
-                </Text>
-              ) : null}
             </Pressable>
             {expanded === row.month ? (
               <View

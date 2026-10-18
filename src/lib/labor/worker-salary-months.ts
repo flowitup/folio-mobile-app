@@ -22,11 +22,6 @@ export interface SalaryMonth {
   earned: number;
   paid: number;
   remaining: number;
-  /**
-   * What the worker was overpaid in earlier months and still has in hand,
-   * deducted here so work already paid ahead is not offered for payment again.
-   */
-  credit: number;
   status: SalaryStatus;
   invoices: Invoice[];
 }
@@ -64,7 +59,6 @@ export function buildWorkerSalaryMonths(
       earned: 0,
       paid: 0,
       remaining: 0,
-      credit: 0,
       status: "none",
       invoices: [],
     };
@@ -86,39 +80,15 @@ export function buildWorkerSalaryMonths(
     entry.paid = round2(entry.paid + inv.total_amount);
     entry.invoices.push(inv);
   }
-  // Oldest first, so an overpayment carries into the months after it.
-  const ordered = [...byMonth.values()].sort((a, b) =>
-    a.month === UNASSIGNED_MONTH
-      ? 1
-      : b.month === UNASSIGNED_MONTH
-        ? -1
-        : a.month.localeCompare(b.month),
-  );
-  let ahead = 0;
-  const months = ordered.map((entry) => {
-    const invoices = [...entry.invoices].sort((a, b) =>
-      b.issue_date.localeCompare(a.issue_date),
-    );
-    if (entry.month === UNASSIGNED_MONTH)
-      return {
-        ...entry,
-        invoices,
-        remaining: round2(entry.earned - entry.paid),
-        status: salaryStatus(entry.earned, entry.paid),
-      };
-    const credit = ahead > 0 ? round2(ahead) : 0;
-    ahead = round2(ahead + entry.paid - entry.earned);
-    // Paid ahead covers this month: nothing left to pay, but the month itself
-    // was not overpaid, so it reads as paid (the rest carries on).
-    const ownOverpay = entry.paid > entry.earned;
-    const remaining = ownOverpay
-      ? round2(entry.earned - entry.paid)
-      : Math.max(0, round2(entry.earned - entry.paid - credit));
-    let status = salaryStatus(entry.earned, entry.paid + credit);
-    if (entry.earned <= 0 && entry.paid <= 0) status = "none";
-    else if (status === "overpaid" && !ownOverpay) status = "paid";
-    return { ...entry, invoices, credit, remaining, status };
-  });
+  // Each month stands alone: an overpayment never carries into the next month.
+  const months = [...byMonth.values()].map((entry) => ({
+    ...entry,
+    invoices: [...entry.invoices].sort((x, y) =>
+      y.issue_date.localeCompare(x.issue_date),
+    ),
+    remaining: round2(entry.earned - entry.paid),
+    status: salaryStatus(entry.earned, entry.paid),
+  }));
   return months.sort((a, b) => b.month.localeCompare(a.month));
 }
 

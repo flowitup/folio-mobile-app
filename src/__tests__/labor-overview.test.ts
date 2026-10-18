@@ -5,7 +5,6 @@ import type {
 } from "@/features/labor/labor-types";
 import {
   availableYears,
-  earlierCreditByWorker,
   isPastMonth,
   monthDetail,
   monthRateLabel,
@@ -204,22 +203,3 @@ describe("labor overview helpers", () => {
   });
 });
 
-describe("earlierCreditByWorker", () => {
-  it("carries an earlier overpayment into later months, never debts or no-month payments", () => {
-    // An was paid 350 in September 2026 for 300 of work; the December 2025 work is unpaid.
-    const credits = earlierCreditByWorker(ROWS, PAYMENTS, "2026-10");
-    expect(credits.has("a")).toBe(false); // 350 − 300 − 225 < 0
-    const paidAhead = {
-      months: [
-        {
-          ...PAYMENTS.months[0],
-          workers: [
-            { worker_id: "a", worker_name: "An", paid: 600, invoice_count: 1 },
-          ],
-        },
-      ],
-    } as LaborPaymentsSummary;
-    expect(earlierCreditByWorker(ROWS, paidAhead, "2026-10").get("a")).toBe(75);
-    expect(earlierCreditByWorker(ROWS, paidAhead, "2026-09").size).toBe(0);
-  });
-});
