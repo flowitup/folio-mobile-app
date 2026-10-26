@@ -24,6 +24,8 @@ export type ArticlePayload = {
   unit?: string | null;
   room_id?: string | null;
   note?: string | null;
+  purchased?: boolean;
+  actual_ttc?: number | null;
 };
 export type QuotePayload = {
   unit_price_ht: number;
