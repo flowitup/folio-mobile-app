@@ -10,6 +10,29 @@ import type {
   ChiffrageTree,
 } from "./chiffrage-types";
 
+/** What a bought line cost beyond (+) or under (-) its estimate; null while no amount is entered. */
+const lineGap = (a: ChiffrageArticle): number | null =>
+  a.purchased && a.actual_ttc != null ? a.actual_ttc - a.total_ttc : null;
+
+const sumGaps = (articles: ChiffrageArticle[]) =>
+  articles.reduce((s, a) => s + (lineGap(a) ?? 0), 0);
+
+const gapText = (value: number) =>
+  `${value > 0 ? "+" : ""}${formatMoney(value)}`;
+
+/** Red when over the estimate, green when under; nothing when it is zero. */
+function Gap({ value, testID }: { value: number; testID?: string }) {
+  if (Math.abs(value) < 0.005) return null;
+  return (
+    <Text
+      testID={testID}
+      className={`text-xs ${value > 0 ? "text-danger" : "text-success"}`}
+    >
+      {gapText(value)}
+    </Text>
+  );
+}
+
 /**
  * Shopping list: every article grouped by section, a tick for "bought" and the amount really
  * paid next to the estimate (both TTC, so they compare line by line).
@@ -34,12 +57,11 @@ export function ShoppingList({
   const { t } = useTranslation();
   const all = tree.postes.flatMap((p) => p.articles);
   const bought = all.filter((a) => a.purchased);
-  const estimatedBought = bought.reduce((s, a) => s + a.total_ttc, 0);
   const toBuyEstimate = all
     .filter((a) => !a.purchased)
     .reduce((s, a) => s + a.total_ttc, 0);
   const actual = tree.actual_ttc ?? 0;
-  const diff = actual - estimatedBought;
+  const diff = sumGaps(all);
 
   const rows = (poste: ChiffragePoste) =>
     onlyToBuy ? poste.articles.filter((a) => !a.purchased) : poste.articles;
@@ -96,6 +118,10 @@ export function ShoppingList({
                   {t("chiffrage.actualShort")}{" "}
                   {formatMoney(poste.actual_ttc ?? 0)}
                 </Text>
+                <Gap
+                  testID={`shopping-poste-gap-${poste.id}`}
+                  value={sumGaps(poste.articles)}
+                />
               </View>
             </View>
             {list.map((article) => (
@@ -116,20 +142,26 @@ export function ShoppingList({
                       : formatMoney(article.total_ttc)}
                   </Text>
                   {article.purchased ? (
-                    <Pressable
-                      testID={`shopping-actual-${article.id}`}
-                      disabled={!canManage}
-                      onPress={() => onEditActual(article)}
-                      className="min-h-[44px] justify-center"
-                    >
-                      <Text className="text-sm text-primary">
-                        {t("chiffrage.actualShort")}{" "}
-                        {article.actual_ttc == null
-                          ? "—"
-                          : formatMoney(article.actual_ttc)}
-                        {canManage ? " ✎" : ""}
-                      </Text>
-                    </Pressable>
+                    <View className="items-end">
+                      <Gap
+                        testID={`shopping-gap-${article.id}`}
+                        value={lineGap(article) ?? 0}
+                      />
+                      <Pressable
+                        testID={`shopping-actual-${article.id}`}
+                        disabled={!canManage}
+                        onPress={() => onEditActual(article)}
+                        className="min-h-[44px] justify-center"
+                      >
+                        <Text className="text-sm text-primary">
+                          {t("chiffrage.actualShort")}{" "}
+                          {article.actual_ttc == null
+                            ? "—"
+                            : formatMoney(article.actual_ttc)}
+                          {canManage ? " ✎" : ""}
+                        </Text>
+                      </Pressable>
+                    </View>
                   ) : null}
                 </View>
               </View>

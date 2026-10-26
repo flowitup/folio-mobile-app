@@ -141,4 +141,26 @@ describe("chiffrage shopping list", () => {
     await fireEvent.press(screen.getByTestId("shopping-check-art-1"));
     expect(mockPatch).not.toHaveBeenCalled();
   });
+
+  it("shows the gap between what was paid and the estimate", async () => {
+    mockCurrent = persona("manager");
+    mockGet.mockImplementation(async (path: string, options?: unknown) => {
+      if (path === CHIFFRAGE_PATH) {
+        const tree = JSON.parse(JSON.stringify(TREE));
+        tree.postes[0].articles[0].purchased = true;
+        tree.postes[0].articles[0].actual_ttc = 700;
+        return ok(tree);
+      }
+      if (path === `${CHIFFRAGE_PATH}/units`) return ok([]);
+      if (path.startsWith("/api/v1/bibliotheque")) return ok({ items: [] });
+      return answerGet(() => mockCurrent)(path, options as never);
+    });
+    await renderWithProviders(<ProjectChiffrageSection />);
+
+    await fireEvent.press(await screen.findByTestId("chiffrage-view-shopping"));
+    expect(screen.getByTestId("shopping-gap-art-1")).toBeTruthy();
+    expect(screen.getByTestId("shopping-gap-art-1").props.children).toMatch(
+      /20/,
+    );
+  });
 });
