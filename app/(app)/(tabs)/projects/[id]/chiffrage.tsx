@@ -44,10 +44,9 @@ import { useProject } from "@/features/projects/projects-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { captureImage, pickImages } from "@/lib/files/pick";
 import {
-  formatAmountInput,
+  formatNumberInput,
   formatMoney,
   formatNumber,
-  parseCentsInput,
   parseMoneyInput,
 } from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
@@ -241,12 +240,23 @@ export default function ProjectChiffrageSection() {
         return actions.createUnit.mutate({ symbol: name }, done);
       case "actual": {
         if (!editingId) return;
-        const text = (draft.actual ?? "").trim();
-        const amount = text === "" ? null : parseCentsInput(text);
-        if (text !== "" && (amount == null || amount < 0))
-          return showToast(t("chiffrage.actualInvalid"), "error");
+        const opts = { ambiguousGrouping: "decimal" as const };
+        const bought = parseMoneyInput(draft.bought ?? "", opts);
+        const returnedText = (draft.returned ?? "").trim();
+        const returned =
+          returnedText === "" ? null : parseMoneyInput(returnedText, opts);
+        if (bought == null || bought < 0)
+          return showToast(t("chiffrage.quantityInvalid"), "error");
+        if (returnedText !== "" && (returned == null || returned < 0))
+          return showToast(t("chiffrage.quantityInvalid"), "error");
+        if ((returned ?? 0) > bought)
+          return showToast(t("chiffrage.returnTooMuch"), "error");
         return actions.updateArticle.mutate(
-          { articleId: editingId, actual_ttc: amount },
+          {
+            articleId: editingId,
+            purchased_quantity: bought,
+            returned_quantity: returned,
+          },
           done,
         );
       }
@@ -268,15 +278,9 @@ export default function ProjectChiffrageSection() {
     }
   }
 
-  /** A new tick starts at the estimated amount, which the user then corrects. */
+  /** A new tick starts at the planned quantity, which the buyer then corrects. */
   function togglePurchased(article: ChiffrageArticle, purchased: boolean) {
-    actions.updateArticle.mutate({
-      articleId: article.id,
-      purchased,
-      ...(purchased && article.effective_source !== "none"
-        ? { actual_ttc: article.total_ttc }
-        : {}),
-    });
+    actions.updateArticle.mutate({ articleId: article.id, purchased });
   }
 
   /** The shop / room sheet offers its own delete (the chip long-press is not discoverable). */
@@ -702,10 +706,17 @@ export default function ProjectChiffrageSection() {
               onToggle={togglePurchased}
               onEditActual={(article) =>
                 open("actual", article.id, null, {
-                  actual:
-                    article.actual_ttc == null
+                  bought: formatNumberInput(
+                    article.purchased_quantity ?? article.quantity,
+                    { maxDecimals: 3, padAmbiguous: false },
+                  ),
+                  returned:
+                    article.returned_quantity == null
                       ? ""
-                      : formatAmountInput(article.actual_ttc),
+                      : formatNumberInput(article.returned_quantity, {
+                          maxDecimals: 3,
+                          padAmbiguous: false,
+                        }),
                 })
               }
             />
@@ -862,14 +873,23 @@ export default function ProjectChiffrageSection() {
                   })}
                 </>
               ) : kind === "actual" ? (
-                <Input
-                  testID="article-actual"
-                  label={t("chiffrage.actualAmount")}
-                  value={draft.actual ?? ""}
-                  onChangeText={set("actual")}
-                  keyboardType="decimal-pad"
-                  autoFocus
-                />
+                <>
+                  <Input
+                    testID="article-bought"
+                    label={t("chiffrage.boughtQuantity")}
+                    value={draft.bought ?? ""}
+                    onChangeText={set("bought")}
+                    keyboardType="decimal-pad"
+                    autoFocus
+                  />
+                  <Input
+                    testID="article-returned"
+                    label={t("chiffrage.returnedQuantity")}
+                    value={draft.returned ?? ""}
+                    onChangeText={set("returned")}
+                    keyboardType="decimal-pad"
+                  />
+                </>
               ) : kind === "quote" ? (
                 <>
                   <Button

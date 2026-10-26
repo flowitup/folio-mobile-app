@@ -154,11 +154,16 @@ export function ShoppingList({
                         className="min-h-[44px] justify-center"
                       >
                         <Text className="text-sm text-primary">
-                          {t("chiffrage.actualShort")}{" "}
-                          {article.actual_ttc == null
-                            ? "—"
-                            : formatMoney(article.actual_ttc)}
+                          {t("chiffrage.boughtQuantity")}{" "}
+                          {formatNumber(article.purchased_quantity ?? 0)}
+                          {article.returned_quantity
+                            ? ` · ${t("chiffrage.returnedQuantity")} ${formatNumber(article.returned_quantity)}`
+                            : ""}
                           {canManage ? " ✎" : ""}
+                        </Text>
+                        <Text className="text-xs text-muted-foreground">
+                          {t("chiffrage.actualShort")}{" "}
+                          {formatMoney(article.actual_ttc ?? 0)}
                         </Text>
                       </Pressable>
                     </View>

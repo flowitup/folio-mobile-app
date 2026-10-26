@@ -867,7 +867,7 @@
       "room": "Room",
       "unit": "Unit",
       "templates": "Section templates",
-      "actual": "Actual spend"
+      "actual": "Quantity bought"
     },
     "pickFromLibrary": "Pick from the library",
     "librarySearch": "Search a product",
@@ -883,8 +883,6 @@
     "templatesHint": "Tick the usual sections to create them at once. Sections the project already has are locked.",
     "templateExists": "already there",
     "templatesCreate": "Create {{count}} sections",
-    "actualAmount": "Amount actually paid (incl. VAT, €)",
-    "actualInvalid": "Enter an amount of 0 or more.",
     "template": {
       "demolition": "Demolition",
       "maconnerie": "Masonry",
@@ -911,7 +909,10 @@
     "onlyToBuy": "Show only items still to buy",
     "boughtOf": "{{done}}/{{total}} bought",
     "estimateShort": "Estimate",
-    "actualShort": "Actual"
+    "actualShort": "Actual",
+    "boughtQuantity": "Bought",
+    "returnedQuantity": "Returned",
+    "returnTooMuch": "Cannot return more than was bought."
   },
   "analyses": {
     "upload": "Add analysis",

@@ -867,7 +867,7 @@
       "room": "Pièce",
       "unit": "Unité",
       "templates": "Postes types",
-      "actual": "Dépense réelle"
+      "actual": "Quantité achetée"
     },
     "pickFromLibrary": "Choisir dans la bibliothèque",
     "librarySearch": "Rechercher un produit",
@@ -883,8 +883,6 @@
     "templatesHint": "Cochez les postes habituels pour les créer d'un coup. Ceux que le projet a déjà sont verrouillés.",
     "templateExists": "déjà présent",
     "templatesCreate": "Créer {{count}} postes",
-    "actualAmount": "Montant réellement payé (TTC, €)",
-    "actualInvalid": "Saisissez un montant supérieur ou égal à 0.",
     "template": {
       "demolition": "Dépose et démolition",
       "maconnerie": "Maçonnerie",
@@ -911,7 +909,10 @@
     "onlyToBuy": "Afficher seulement ce qui reste à acheter",
     "boughtOf": "{{done}}/{{total}} achetés",
     "estimateShort": "Estimé",
-    "actualShort": "Réel"
+    "actualShort": "Réel",
+    "boughtQuantity": "Acheté",
+    "returnedQuantity": "Rendu",
+    "returnTooMuch": "On ne peut pas rendre plus que ce qui a été acheté."
   },
   "analyses": {
     "upload": "Ajouter une analyse",

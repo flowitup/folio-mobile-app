@@ -118,7 +118,7 @@ beforeEach(() => {
 });
 
 describe("chiffrage shopping list", () => {
-  it("ticks an article as bought, starting at its estimated amount", async () => {
+  it("ticks an article as bought, starting at its planned quantity", async () => {
     mockCurrent = persona("manager");
     mockPatch.mockResolvedValue(ok({}));
     await renderWithProviders(<ProjectChiffrageSection />);
@@ -127,10 +127,7 @@ describe("chiffrage shopping list", () => {
     await fireEvent.press(screen.getByTestId("shopping-check-art-1"));
 
     await waitFor(() => expect(mockPatch).toHaveBeenCalled());
-    expect(mockPatch.mock.calls[0][1].body).toEqual({
-      purchased: true,
-      actual_ttc: 720,
-    });
+    expect(mockPatch.mock.calls[0][1].body).toEqual({ purchased: true });
   });
 
   it("offers a read-only caller no way to tick", async () => {
@@ -142,13 +139,14 @@ describe("chiffrage shopping list", () => {
     expect(mockPatch).not.toHaveBeenCalled();
   });
 
-  it("shows the gap between what was paid and the estimate", async () => {
+  it("shows the gap when more was bought than planned", async () => {
     mockCurrent = persona("manager");
     mockGet.mockImplementation(async (path: string, options?: unknown) => {
       if (path === CHIFFRAGE_PATH) {
         const tree = JSON.parse(JSON.stringify(TREE));
         tree.postes[0].articles[0].purchased = true;
-        tree.postes[0].articles[0].actual_ttc = 700;
+        tree.postes[0].articles[0].purchased_quantity = 21;
+        tree.postes[0].articles[0].actual_ttc = 756;
         return ok(tree);
       }
       if (path === `${CHIFFRAGE_PATH}/units`) return ok([]);
@@ -160,7 +158,37 @@ describe("chiffrage shopping list", () => {
     await fireEvent.press(await screen.findByTestId("chiffrage-view-shopping"));
     expect(screen.getByTestId("shopping-gap-art-1")).toBeTruthy();
     expect(screen.getByTestId("shopping-gap-art-1").props.children).toMatch(
-      /20/,
+      /36/,
     );
+  });
+
+  it("saves the quantity bought and the quantity returned", async () => {
+    mockCurrent = persona("manager");
+    mockPatch.mockResolvedValue(ok({}));
+    mockGet.mockImplementation(async (path: string, options?: unknown) => {
+      if (path === CHIFFRAGE_PATH) {
+        const tree = JSON.parse(JSON.stringify(TREE));
+        tree.postes[0].articles[0].purchased = true;
+        tree.postes[0].articles[0].purchased_quantity = 20;
+        tree.postes[0].articles[0].actual_ttc = 720;
+        return ok(tree);
+      }
+      if (path === `${CHIFFRAGE_PATH}/units`) return ok([]);
+      if (path.startsWith("/api/v1/bibliotheque")) return ok({ items: [] });
+      return answerGet(() => mockCurrent)(path, options as never);
+    });
+    await renderWithProviders(<ProjectChiffrageSection />);
+
+    await fireEvent.press(await screen.findByTestId("chiffrage-view-shopping"));
+    await fireEvent.press(screen.getByTestId("shopping-actual-art-1"));
+    await fireEvent.changeText(screen.getByTestId("article-bought"), "23");
+    await fireEvent.changeText(screen.getByTestId("article-returned"), "2");
+    await fireEvent.press(screen.getByTestId("chiffrage-submit"));
+
+    await waitFor(() => expect(mockPatch).toHaveBeenCalled());
+    expect(mockPatch.mock.calls[0][1].body).toEqual({
+      purchased_quantity: 23,
+      returned_quantity: 2,
+    });
   });
 });

@@ -867,7 +867,7 @@
       "room": "Phòng",
       "unit": "Đơn vị",
       "templates": "Hạng mục mẫu",
-      "actual": "Thực chi"
+      "actual": "Số lượng đã mua"
     },
     "pickFromLibrary": "Chọn từ thư viện",
     "librarySearch": "Tìm sản phẩm",
@@ -883,8 +883,6 @@
     "templatesHint": "Chọn các hạng mục thường gặp để tạo một lần. Hạng mục đã có thì được khóa lại.",
     "templateExists": "đã có",
     "templatesCreate": "Tạo {{count}} hạng mục",
-    "actualAmount": "Số tiền thực trả (gồm VAT, €)",
-    "actualInvalid": "Nhập số tiền từ 0 trở lên.",
     "template": {
       "demolition": "Phá dỡ",
       "maconnerie": "Xây, tô trát",
@@ -911,7 +909,10 @@
     "onlyToBuy": "Chỉ hiện món chưa mua",
     "boughtOf": "{{done}}/{{total}} đã mua",
     "estimateShort": "Dự toán",
-    "actualShort": "Thực chi"
+    "actualShort": "Thực chi",
+    "boughtQuantity": "Đã mua",
+    "returnedQuantity": "Trả lại",
+    "returnTooMuch": "Số lượng trả lại không được lớn hơn số đã mua."
   },
   "analyses": {
     "upload": "Thêm phân tích",
