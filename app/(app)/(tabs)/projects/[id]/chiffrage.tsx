@@ -15,7 +15,7 @@ import { AuthedImage } from "@/components/ui/authed-image";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import { Badge, Card, Checkbox, EmptyState } from "@/components/ui/primitives";
 import { Select } from "@/components/ui/select";
 import { Sheet } from "@/components/ui/sheet";
 import { showToast } from "@/components/ui/toast";
@@ -32,13 +32,23 @@ import type {
   ChiffrageStore,
   ChiffrageStoreBasket,
 } from "@/features/chiffrage/chiffrage-types";
+import {
+  normalizeName,
+  POSTE_TEMPLATES,
+} from "@/features/chiffrage/poste-templates";
+import { ShoppingList } from "@/features/chiffrage/shopping-list";
 import { LibraryProductPickerSheet } from "@/features/chiffrage/library-product-picker-sheet";
 import type { PickedProduct } from "@/features/chiffrage/library-product-picker-sheet";
 import { stepMove } from "@/features/chiffrage/reorder";
 import { useProject } from "@/features/projects/projects-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { captureImage, pickImages } from "@/lib/files/pick";
-import { formatMoney, formatNumber, parseMoneyInput } from "@/lib/format/money";
+import {
+  formatNumberInput,
+  formatMoney,
+  formatNumber,
+  parseMoneyInput,
+} from "@/lib/format/money";
 import { useRefetchOnFocus } from "@/lib/query/use-refetch-on-focus";
 import { TEXT_LIMITS } from "@/lib/format/text-limits";
 import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
@@ -48,10 +58,21 @@ const pricedBaskets = (baskets: ChiffrageStoreBasket[]) =>
   baskets.filter((b) => b.priced_article_count > 0);
 
 type SheetKind =
-  "poste" | "article" | "quote" | "store" | "room" | "unit" | null;
+  | "poste"
+  | "article"
+  | "quote"
+  | "store"
+  | "room"
+  | "unit"
+  | "templates"
+  | "actual"
+  | null;
 
 /** Longest name the API accepts for each kind the name field edits. */
-const NAME_LIMIT: Record<Exclude<SheetKind, "quote" | null>, number> = {
+const NAME_LIMIT: Record<
+  Exclude<SheetKind, "quote" | "templates" | "actual" | null>,
+  number
+> = {
   poste: TEXT_LIMITS.chiffrage.posteName,
   article: TEXT_LIMITS.chiffrage.articleName,
   store: TEXT_LIMITS.chiffrage.storeName,
@@ -92,6 +113,11 @@ export default function ProjectChiffrageSection() {
     run: () => void;
   } | null>(null);
   const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
+  const [view, setView] = useState<"budget" | "shopping">("budget");
+  const [onlyToBuy, setOnlyToBuy] = useState(false);
+  const [pickedTemplates, setPickedTemplates] = useState<Set<string>>(
+    new Set(),
+  );
 
   const storeName = useMemo(
     () => new Map((tree.data?.stores ?? []).map((s) => [s.id, s.name])),
@@ -212,7 +238,49 @@ export default function ProjectChiffrageSection() {
       case "unit":
         if (!name) return showToast(t("chiffrage.nameRequired"), "error");
         return actions.createUnit.mutate({ symbol: name }, done);
+      case "actual": {
+        if (!editingId) return;
+        const opts = { ambiguousGrouping: "decimal" as const };
+        const bought = parseMoneyInput(draft.bought ?? "", opts);
+        const returnedText = (draft.returned ?? "").trim();
+        const returned =
+          returnedText === "" ? null : parseMoneyInput(returnedText, opts);
+        if (bought == null || bought < 0)
+          return showToast(t("chiffrage.quantityInvalid"), "error");
+        if (returnedText !== "" && (returned == null || returned < 0))
+          return showToast(t("chiffrage.quantityInvalid"), "error");
+        if ((returned ?? 0) > bought)
+          return showToast(t("chiffrage.returnTooMuch"), "error");
+        return actions.updateArticle.mutate(
+          {
+            articleId: editingId,
+            purchased_quantity: bought,
+            returned_quantity: returned,
+          },
+          done,
+        );
+      }
+      case "templates":
+        return void createTemplates();
     }
+  }
+
+  /** One at a time so the sections keep the order they were ticked in. */
+  async function createTemplates() {
+    const names = POSTE_TEMPLATES.map((tpl) => tpl.name).filter((n) =>
+      pickedTemplates.has(n),
+    );
+    try {
+      for (const name of names) await actions.createPoste.mutateAsync({ name });
+      close();
+    } catch {
+      // The mutation already toasted the error; keep the sheet open.
+    }
+  }
+
+  /** A new tick starts at the planned quantity, which the buyer then corrects. */
+  function togglePurchased(article: ChiffrageArticle, purchased: boolean) {
+    actions.updateArticle.mutate({ articleId: article.id, purchased });
   }
 
   /** The shop / room sheet offers its own delete (the chip long-press is not discoverable). */
@@ -499,13 +567,39 @@ export default function ProjectChiffrageSection() {
             </Text>
           ))}
         </Card>
-        {canManage ? (
+        <View className="mb-3 flex-row gap-2">
+          <Button
+            testID="chiffrage-view-budget"
+            label={t("chiffrage.viewBudget")}
+            size="sm"
+            variant={view === "budget" ? "primary" : "secondary"}
+            onPress={() => setView("budget")}
+          />
+          <Button
+            testID="chiffrage-view-shopping"
+            label={t("chiffrage.viewShopping")}
+            size="sm"
+            variant={view === "shopping" ? "primary" : "secondary"}
+            onPress={() => setView("shopping")}
+          />
+        </View>
+        {canManage && view === "budget" ? (
           <View className="mb-3 flex-row flex-wrap gap-2">
             <Button
               testID="chiffrage-add-poste"
               label={t("chiffrage.addPoste")}
               size="sm"
               onPress={() => open("poste")}
+            />
+            <Button
+              testID="chiffrage-templates"
+              label={t("chiffrage.templates")}
+              size="sm"
+              variant="secondary"
+              onPress={() => {
+                setPickedTemplates(new Set());
+                open("templates");
+              }}
             />
             <Button
               testID="chiffrage-add-store"
@@ -532,7 +626,8 @@ export default function ProjectChiffrageSection() {
         ) : null}
         {/* Shops and rooms are independent lists: a room declared before any shop exists must
             still be visible, and editable, on its own. */}
-        {data.stores.length > 0 || data.rooms.length > 0 ? (
+        {view === "budget" &&
+        (data.stores.length > 0 || data.rooms.length > 0) ? (
           <View className="mb-3 flex-row flex-wrap gap-1">
             {data.stores.map((store: ChiffrageStore) => (
               <Pressable
@@ -594,111 +689,148 @@ export default function ProjectChiffrageSection() {
             message={t(canManage ? "chiffrage.none" : "chiffrage.noneReadOnly")}
           />
         ) : null}
-        {data.postes.map((poste, index) => (
-          <View key={poste.id} className="mb-4">
-            <View className="flex-row items-center justify-between border-b border-border py-2">
-              <Pressable
-                className="flex-1"
-                onPress={
-                  canManage
-                    ? () =>
-                        open("poste", poste.id, null, {
-                          name: poste.name,
-                          note: poste.note ?? "",
+        {view === "shopping" && data.postes.length > 0 ? (
+          <>
+            <Checkbox
+              testID="shopping-only-to-buy"
+              label={t("chiffrage.onlyToBuy")}
+              value={onlyToBuy}
+              onChange={setOnlyToBuy}
+            />
+            <ShoppingList
+              tree={data}
+              canManage={canManage}
+              onlyToBuy={onlyToBuy}
+              busy={actions.updateArticle.isPending}
+              roomName={roomName}
+              onToggle={togglePurchased}
+              onEditActual={(article) =>
+                open("actual", article.id, null, {
+                  bought: formatNumberInput(
+                    article.purchased_quantity ?? article.quantity,
+                    { maxDecimals: 3, padAmbiguous: false },
+                  ),
+                  returned:
+                    article.returned_quantity == null
+                      ? ""
+                      : formatNumberInput(article.returned_quantity, {
+                          maxDecimals: 3,
+                          padAmbiguous: false,
+                        }),
+                })
+              }
+            />
+          </>
+        ) : null}
+        {view === "budget"
+          ? data.postes.map((poste, index) => (
+              <View key={poste.id} className="mb-4">
+                <View className="flex-row items-center justify-between border-b border-border py-2">
+                  <Pressable
+                    className="flex-1"
+                    onPress={
+                      canManage
+                        ? () =>
+                            open("poste", poste.id, null, {
+                              name: poste.name,
+                              note: poste.note ?? "",
+                            })
+                        : undefined
+                    }
+                  >
+                    <Text className="text-lg font-semibold text-primary">
+                      {poste.name}
+                    </Text>
+                    {poste.note ? (
+                      <Text className="text-xs text-muted-foreground">
+                        {poste.note}
+                      </Text>
+                    ) : null}
+                  </Pressable>
+                  <Text className="text-sm font-medium text-primary">
+                    {formatMoney(poste.subtotal_ttc)}
+                  </Text>
+                </View>
+                {canManage ? (
+                  <View className="my-1 flex-row flex-wrap items-center gap-x-1">
+                    <RowAction
+                      testID={`poste-add-article-${poste.id}`}
+                      label={t("chiffrage.addArticle")}
+                      onPress={() =>
+                        open("article", null, poste.id, { quantity: "1" })
+                      }
+                    />
+                    <RowAction
+                      label="↑"
+                      accessibilityLabel={t("chiffrage.moveUp", {
+                        name: poste.name,
+                      })}
+                      disabled={index === 0}
+                      onPress={() => {
+                        const move = stepMove(data.postes, index, "up");
+                        if (move)
+                          actions.reorderPoste.mutate({
+                            posteId: poste.id,
+                            ...move,
+                          });
+                      }}
+                    />
+                    <RowAction
+                      label="↓"
+                      accessibilityLabel={t("chiffrage.moveDown", {
+                        name: poste.name,
+                      })}
+                      disabled={index === data.postes.length - 1}
+                      onPress={() => {
+                        const move = stepMove(data.postes, index, "down");
+                        if (move)
+                          actions.reorderPoste.mutate({
+                            posteId: poste.id,
+                            ...move,
+                          });
+                      }}
+                    />
+                    {/* Delete sits apart from the arrows so a missed ↓ never lands on it. */}
+                    <View className="flex-1" />
+                    <RowAction
+                      tone="danger"
+                      label={t("common.delete")}
+                      onPress={() =>
+                        setConfirm({
+                          title: t("chiffrage.deletePoste", {
+                            name: poste.name,
+                          }),
+                          run: () =>
+                            actions.deletePoste.mutate({ posteId: poste.id }),
                         })
-                    : undefined
-                }
-              >
-                <Text className="text-lg font-semibold text-primary">
-                  {poste.name}
-                </Text>
-                {poste.note ? (
-                  <Text className="text-xs text-muted-foreground">
-                    {poste.note}
+                      }
+                    />
+                  </View>
+                ) : null}
+                {poste.articles.map((article) => renderArticle(poste, article))}
+                {pricedBaskets(poste.store_baskets).length > 0 ? (
+                  <Text
+                    testID={`poste-baskets-${poste.id}`}
+                    className="text-xs text-muted-foreground"
+                  >
+                    {pricedBaskets(poste.store_baskets)
+                      .map(
+                        (b) =>
+                          `${storeName.get(b.store_id) ?? ""} ${formatMoney(b.basket_ttc)}${
+                            b.covers_all
+                              ? " ✓"
+                              : ` (${t("chiffrage.basketPartial", {
+                                  priced: b.priced_article_count,
+                                  total: b.total_article_count,
+                                })})`
+                          }`,
+                      )
+                      .join(" · ")}
                   </Text>
                 ) : null}
-              </Pressable>
-              <Text className="text-sm font-medium text-primary">
-                {formatMoney(poste.subtotal_ttc)}
-              </Text>
-            </View>
-            {canManage ? (
-              <View className="my-1 flex-row flex-wrap items-center gap-x-1">
-                <RowAction
-                  testID={`poste-add-article-${poste.id}`}
-                  label={t("chiffrage.addArticle")}
-                  onPress={() =>
-                    open("article", null, poste.id, { quantity: "1" })
-                  }
-                />
-                <RowAction
-                  label="↑"
-                  accessibilityLabel={t("chiffrage.moveUp", {
-                    name: poste.name,
-                  })}
-                  disabled={index === 0}
-                  onPress={() => {
-                    const move = stepMove(data.postes, index, "up");
-                    if (move)
-                      actions.reorderPoste.mutate({
-                        posteId: poste.id,
-                        ...move,
-                      });
-                  }}
-                />
-                <RowAction
-                  label="↓"
-                  accessibilityLabel={t("chiffrage.moveDown", {
-                    name: poste.name,
-                  })}
-                  disabled={index === data.postes.length - 1}
-                  onPress={() => {
-                    const move = stepMove(data.postes, index, "down");
-                    if (move)
-                      actions.reorderPoste.mutate({
-                        posteId: poste.id,
-                        ...move,
-                      });
-                  }}
-                />
-                {/* Delete sits apart from the arrows so a missed ↓ never lands on it. */}
-                <View className="flex-1" />
-                <RowAction
-                  tone="danger"
-                  label={t("common.delete")}
-                  onPress={() =>
-                    setConfirm({
-                      title: t("chiffrage.deletePoste", { name: poste.name }),
-                      run: () =>
-                        actions.deletePoste.mutate({ posteId: poste.id }),
-                    })
-                  }
-                />
               </View>
-            ) : null}
-            {poste.articles.map((article) => renderArticle(poste, article))}
-            {pricedBaskets(poste.store_baskets).length > 0 ? (
-              <Text
-                testID={`poste-baskets-${poste.id}`}
-                className="text-xs text-muted-foreground"
-              >
-                {pricedBaskets(poste.store_baskets)
-                  .map(
-                    (b) =>
-                      `${storeName.get(b.store_id) ?? ""} ${formatMoney(b.basket_ttc)}${
-                        b.covers_all
-                          ? " ✓"
-                          : ` (${t("chiffrage.basketPartial", {
-                              priced: b.priced_article_count,
-                              total: b.total_article_count,
-                            })})`
-                      }`,
-                  )
-                  .join(" · ")}
-              </Text>
-            ) : null}
-          </View>
-        ))}
+            ))
+          : null}
       </ScrollView>
 
       {canManage ? (
@@ -712,7 +844,53 @@ export default function ProjectChiffrageSection() {
               contentContainerClassName="p-4"
               keyboardShouldPersistTaps="handled"
             >
-              {kind === "quote" ? (
+              {kind === "templates" ? (
+                <>
+                  <Text className="mb-3 text-sm text-muted-foreground">
+                    {t("chiffrage.templatesHint")}
+                  </Text>
+                  {POSTE_TEMPLATES.map((tpl) => {
+                    const exists = data.postes.some(
+                      (p) => normalizeName(p.name) === normalizeName(tpl.name),
+                    );
+                    return (
+                      <Checkbox
+                        key={tpl.key}
+                        testID={`template-${tpl.key}`}
+                        label={`${tpl.name} · ${exists ? t("chiffrage.templateExists") : t(`chiffrage.template.${tpl.key}`)}`}
+                        value={exists || pickedTemplates.has(tpl.name)}
+                        onChange={(next) => {
+                          if (exists) return;
+                          setPickedTemplates((prev) => {
+                            const copy = new Set(prev);
+                            if (next) copy.add(tpl.name);
+                            else copy.delete(tpl.name);
+                            return copy;
+                          });
+                        }}
+                      />
+                    );
+                  })}
+                </>
+              ) : kind === "actual" ? (
+                <>
+                  <Input
+                    testID="article-bought"
+                    label={t("chiffrage.boughtQuantity")}
+                    value={draft.bought ?? ""}
+                    onChangeText={set("bought")}
+                    keyboardType="decimal-pad"
+                    autoFocus
+                  />
+                  <Input
+                    testID="article-returned"
+                    label={t("chiffrage.returnedQuantity")}
+                    value={draft.returned ?? ""}
+                    onChangeText={set("returned")}
+                    keyboardType="decimal-pad"
+                  />
+                </>
+              ) : kind === "quote" ? (
                 <>
                   <Button
                     testID="quote-pick-library"
@@ -848,8 +1026,15 @@ export default function ProjectChiffrageSection() {
               )}
               <Button
                 testID="chiffrage-submit"
-                label={t("common.save")}
+                label={
+                  kind === "templates"
+                    ? t("chiffrage.templatesCreate", {
+                        count: pickedTemplates.size,
+                      })
+                    : t("common.save")
+                }
                 loading={busy}
+                disabled={kind === "templates" && pickedTemplates.size === 0}
                 onPress={submit}
               />
               {editingId && (kind === "store" || kind === "room") ? (
