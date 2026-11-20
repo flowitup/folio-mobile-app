@@ -14,7 +14,7 @@ const REDIRECT_ON_ARRIVAL_PATHS = [
   "/onboarding",
   "/onboarding-create",
 ] as const;
-/** Reached once a company exists but the caller has no project assignment anywhere. */
+/** Reached once a company exists but the caller can see no project and cannot create one. */
 export const WAITING_PATH = "/onboarding-waiting";
 
 /** Strips a `?query` suffix so callers can pass either a bare pathname or one with a search string. */
@@ -39,8 +39,10 @@ export type OnboardingRedirectInput = {
 
 /**
  * Where to send a signed-in user given their onboarding state, or `null` to leave them where
- * they are. Two gates: no company at all → the onboarding hub; a member (never admin/manager)
- * of every attached company with no project assignment → the waiting screen. Also bounces back
+ * they are. Two gates: no company at all → the onboarding hub; no project to see and no way to
+ * create one → the waiting screen. Only a company admin can create a project (`project:create`
+ * is admin-only and never granted per person), so a manager or member with no assignment waits
+ * there: an empty Overview only offered them a "New project" they cannot use. Also bounces back
  * out of any onboarding screen once its condition stops holding (e.g. a foreground refresh
  * picks up a fresh assignment while the waiting screen is showing).
  */
@@ -65,9 +67,9 @@ export function resolveOnboardingRedirect(
       : "/onboarding";
   }
 
-  const memberEverywhere = companyRoles.every((role) => role === "member");
+  const canCreateProjects = companyRoles.includes("admin");
   const noAssignment = projectsReady && !hasProjects;
-  if (memberEverywhere && noAssignment) {
+  if (!canCreateProjects && noAssignment) {
     // Joining (another) company stays reachable from the waiting screen: a wrong code or the
     // wrong company must not be a dead end.
     return pathname === WAITING_PATH || pathname === "/join-company"
