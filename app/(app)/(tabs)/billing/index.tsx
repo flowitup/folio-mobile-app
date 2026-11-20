@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -63,8 +63,22 @@ export default function BillingHub() {
   const router = useRouter();
   const tokens = useTokens();
   const access = useBillingAccess();
-  const [kind, setKind] = useState<BillingDocumentKind>("devis");
+  // `?kind=facture` (the overdue-factures reminder) opens on the invoices segment.
+  const params = useLocalSearchParams<{ kind?: string }>();
+  const [kind, setKind] = useState<BillingDocumentKind>(
+    params.kind === "facture" ? "facture" : "devis",
+  );
   const [status, setStatus] = useState<BillingDocumentStatus | null>(null);
+  // The screen may already be mounted when a push asks for a segment: apply it, then drop it
+  // from the route so a later manual switch is not undone.
+  useEffect(() => {
+    if (params.kind !== "devis" && params.kind !== "facture") return;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setKind(params.kind);
+    setStatus(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    router.setParams({ kind: undefined });
+  }, [params.kind, router]);
   const [search, setSearch] = useState("");
   // Two companies can both have a FAC-2026-001: with several, each row names its issuer and the
   // list can be narrowed to one company.

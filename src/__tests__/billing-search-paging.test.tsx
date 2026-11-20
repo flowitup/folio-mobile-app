@@ -22,6 +22,7 @@ let mockCurrent: Persona = persona("admin");
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   useFocusEffect: () => undefined,
+  useLocalSearchParams: () => ({}),
 }));
 
 jest.mock("@/auth/auth-context", () => ({
