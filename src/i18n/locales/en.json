@@ -788,7 +788,10 @@
       "body": "Folio lets you know when a task is assigned to you, a document arrives or someone messages you. You can change this later in your phone settings.",
       "enable": "Turn on",
       "later": "Not now"
-    }
+    },
+    "overdue_one": "Overdue by {{count}} day",
+    "overdue_other": "Overdue by {{count}} days",
+    "dueToday": "Today"
   },
   "tasks": {
     "create": "New task",

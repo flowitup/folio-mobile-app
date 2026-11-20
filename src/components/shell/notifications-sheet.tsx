@@ -14,7 +14,7 @@ import {
   type ActivityEvent,
 } from "@/features/notes/notes-api";
 import { useSelectedProject } from "@/features/projects/selected-project";
-import { formatDate } from "@/lib/format/date";
+import { businessToday, formatDate } from "@/lib/format/date";
 import { unreadActivityCount } from "@/lib/notifications/bell-count";
 import { eventTime } from "@/lib/notifications/event-time";
 import { projectDisplayName } from "@/lib/projects/project-display-name";
@@ -168,11 +168,7 @@ export function NotificationsSheet() {
                 <View className="mt-1 flex-row items-center gap-2">
                   <Badge label={t(`notes.categories.${note.category}`)} />
                   {note.due_date ? (
-                    <Text className="font-mono text-[11.5px] text-muted">
-                      {t("notifications.due", {
-                        date: formatDate(note.due_date),
-                      })}
-                    </Text>
+                    <DueLabel noteId={note.id} due={note.due_date} />
                   ) : null}
                 </View>
               </Pressable>
@@ -283,5 +279,40 @@ export function NotificationsSheet() {
         </View>
       ) : null}
     </ShellSheet>
+  );
+}
+
+/**
+ * Where a due date stands against today (Paris, the business's day): days overdue, today, or
+ * still ahead. Compared as calendar days, so the time of day never shifts it.
+ */
+export function dueStatus(
+  due: string,
+  today: string = businessToday(),
+):
+  { kind: "overdue"; days: number } | { kind: "today" } | { kind: "upcoming" } {
+  const dayNumber = (iso: string) =>
+    Date.parse(`${iso.slice(0, 10)}T00:00:00Z`);
+  const days = Math.round((dayNumber(today) - dayNumber(due)) / 86_400_000);
+  if (days > 0) return { kind: "overdue", days };
+  if (days === 0) return { kind: "today" };
+  return { kind: "upcoming" };
+}
+
+/** "Quá hạn 3 ngày" in red, "Hôm nay", or "Đến hạn 27/09" as before (TM-14). */
+function DueLabel({ noteId, due }: { noteId: string; due: string }) {
+  const { t } = useTranslation();
+  const status = dueStatus(due);
+  return (
+    <Text
+      testID={`notification-due-${noteId}`}
+      className={`font-mono text-[11.5px] ${status.kind === "overdue" ? "text-negative" : status.kind === "today" ? "text-ink" : "text-muted"}`}
+    >
+      {status.kind === "overdue"
+        ? t("notifications.overdue", { count: status.days })
+        : status.kind === "today"
+          ? t("notifications.dueToday")
+          : t("notifications.due", { date: formatDate(due) })}
+    </Text>
   );
 }

@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
-import "@/i18n";
-import { NotificationsSheet } from "@/components/shell/notifications-sheet";
+import i18n from "@/i18n";
+import {
+  NotificationsSheet,
+  dueStatus,
+} from "@/components/shell/notifications-sheet";
 
 /**
  * A reminder can belong to a project other than the one the shell shows: opening it must
@@ -75,6 +78,42 @@ describe("notifications sheet · reminder", () => {
 
     expect(screen.getByTestId("notification-project-n1")).toHaveTextContent(
       "Villa Ngoc",
+    );
+  });
+});
+
+describe("notifications sheet · due date (TM-14)", () => {
+  it("counts the days a reminder is overdue, by calendar day", () => {
+    expect(dueStatus("2026-11-17", "2026-11-20")).toEqual({
+      kind: "overdue",
+      days: 3,
+    });
+    expect(dueStatus("2026-11-20", "2026-11-20")).toEqual({ kind: "today" });
+    expect(dueStatus("2026-11-21", "2026-11-20")).toEqual({
+      kind: "upcoming",
+    });
+    // Across a DST change (25 Oct) still whole days.
+    expect(dueStatus("2026-10-20", "2026-11-20")).toEqual({
+      kind: "overdue",
+      days: 31,
+    });
+  });
+
+  it("shows a past due date as overdue, in red", async () => {
+    // The fixture's reminder is due 2026-09-27, before any day this test runs on.
+    await render(<NotificationsSheet />);
+    const label = screen.getByTestId("notification-due-n1");
+    expect(label).toHaveTextContent(
+      i18n.t("notifications.overdue", {
+        count:
+          dueStatus("2026-09-27").kind === "overdue"
+            ? (dueStatus("2026-09-27") as { days: number }).days
+            : 0,
+      }),
+    );
+    expect(label).toHaveProp(
+      "className",
+      expect.stringContaining("text-negative"),
     );
   });
 });

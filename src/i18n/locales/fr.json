@@ -788,7 +788,10 @@
       "body": "Folio vous prévient quand on vous assigne une tâche, qu'un document arrive ou qu'un message vous est adressé. Vous pourrez changer d'avis dans les réglages du téléphone.",
       "enable": "Activer",
       "later": "Plus tard"
-    }
+    },
+    "overdue_one": "En retard de {{count}} jour",
+    "overdue_other": "En retard de {{count}} jours",
+    "dueToday": "Aujourd'hui"
   },
   "tasks": {
     "create": "Nouvelle tâche",

@@ -788,7 +788,10 @@
       "body": "Folio báo cho bạn khi bạn được giao việc, có tài liệu mới hoặc có người nhắn tin cho bạn. Bạn có thể đổi lại trong cài đặt của điện thoại.",
       "enable": "Bật",
       "later": "Để sau"
-    }
+    },
+    "overdue_one": "Quá hạn {{count}} ngày",
+    "overdue_other": "Quá hạn {{count}} ngày",
+    "dueToday": "Hôm nay"
   },
   "tasks": {
     "create": "Công việc mới",
