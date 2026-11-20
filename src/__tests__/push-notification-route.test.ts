@@ -282,6 +282,68 @@ describe("routeForNotification", () => {
   });
 });
 
+describe("routeForNotification — scheduled reminders", () => {
+  it("opens the day's log sheet on the project for the attendance reminder", () => {
+    expect(
+      routeForNotification({
+        kind: "reminder_attendance",
+        project_id: "p1",
+        date: "2026-11-23",
+      }),
+    ).toEqual({
+      projectId: "p1",
+      sheet: null,
+      path: "/(app)/(tabs)/labor?segment=calendar&day=2026-11-23&log=1",
+    });
+  });
+
+  it("opens the calendar without the sheet when the day is missing", () => {
+    expect(
+      routeForNotification({ kind: "reminder_attendance", project_id: "p1" }),
+    ).toEqual({
+      projectId: "p1",
+      sheet: null,
+      path: "/(app)/(tabs)/labor?segment=calendar",
+    });
+  });
+
+  it("opens nothing in particular without a project", () => {
+    expect(routeForNotification({ kind: "reminder_attendance" })).toEqual({
+      projectId: null,
+      sheet: null,
+      path: null,
+    });
+  });
+
+  it("opens the invoices list for overdue factures", () => {
+    expect(
+      routeForNotification({
+        kind: "reminder_overdue_factures",
+        company_id: "c1",
+      }),
+    ).toEqual({
+      projectId: null,
+      sheet: null,
+      path: "/(app)/(tabs)/billing?kind=facture",
+    });
+  });
+
+  it("opens the overview for the month summary", () => {
+    expect(
+      routeForNotification({
+        kind: "reminder_monthly_summary",
+        month: "2026-11",
+      }),
+    ).toEqual({ projectId: null, sheet: null, path: "/(app)/(tabs)" });
+  });
+
+  it("refreshes the bell like every push", () => {
+    expect(staleKeysForPush({ kind: "reminder_attendance" })).toEqual([
+      ["notifications"],
+    ]);
+  });
+});
+
 describe("staleKeysForPush", () => {
   it("refreshes the bell for every push", () => {
     expect(staleKeysForPush({ kind: "submitted" })).toEqual([
