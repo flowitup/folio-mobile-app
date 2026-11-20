@@ -33,6 +33,7 @@ import type {
 import { useProjectCan } from "@/features/projects/use-project-can";
 
 import { useInvoices, usePaymentMethods, useWorkers } from "./invoices-api";
+import { partyLabelKeys } from "./party-labels";
 import { workerRoleLabel } from "@/lib/labor/labor-role-label";
 
 export const INVOICE_TYPES: InvoiceType[] = [
@@ -214,6 +215,7 @@ export function InvoiceForm({
     return options;
   }, [paymentMethods.data, initial, t]);
 
+  const labels = partyLabelKeys(type);
   const selectedWorker = workers.data?.find((worker) => worker.id === workerId);
   const laborWithWorker = type === "labor" && Boolean(workerId);
   /** Types whose line items may be negative — the web form's `MIXED_SIGN_TYPES`. */
@@ -263,7 +265,7 @@ export function InvoiceForm({
       laborWithWorker && !recipientName.trim()
         ? (selectedWorker?.name ?? "")
         : recipientName.trim();
-    if (!recipient) errors.recipient = t("invoices.form.recipientRequired");
+    if (!recipient) errors.recipient = t(labels.required);
 
     // Each described line, checked field by field with the same limits as the backend: a
     // price below zero only on mixed-sign types, no amount past the API caps.
@@ -415,7 +417,7 @@ export function InvoiceForm({
       <View onLayout={trackY("issueDate")}>
         <DatePicker
           testID="invoice-issue-date"
-          label={t("invoices.form.issueDate")}
+          label={t(labels.date)}
           value={issueDate}
           onChange={(value) => {
             setIssueDate(value);
@@ -511,7 +513,7 @@ export function InvoiceForm({
       <View onLayout={trackY("recipient")}>
         <Input
           testID="invoice-recipient"
-          label={t("invoices.form.recipient")}
+          label={t(labels.name)}
           value={recipientName}
           onChangeText={(value) => {
             setRecipientName(value);
@@ -524,7 +526,7 @@ export function InvoiceForm({
       </View>
       <Input
         testID="invoice-recipient-address"
-        label={t("invoices.form.recipientAddress")}
+        label={t(labels.address)}
         value={recipientAddress}
         onChangeText={setRecipientAddress}
       />

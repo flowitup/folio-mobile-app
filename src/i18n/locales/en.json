@@ -266,10 +266,10 @@
   },
   "invoices": {
     "all": "All",
-    "none": "No invoices yet.",
-    "created": "Invoice created.",
-    "deleted": "Invoice deleted.",
-    "deleteConfirm": "Delete invoice {{number}}?",
+    "none": "No expenses yet.",
+    "created": "Expense saved.",
+    "deleted": "Expense deleted.",
+    "deleteConfirm": "Delete expense {{number}}?",
     "types": {
       "released_funds": "Released Funds",
       "labor": "Labor",
@@ -337,7 +337,7 @@
     },
     "form": {
       "type": "Type",
-      "issueDate": "Issue date",
+      "issueDate": "Expense date",
       "issueDateRequired": "Issue date is required.",
       "recipient": "Recipient",
       "recipientRequired": "Recipient is required.",
@@ -382,7 +382,11 @@
       "fixFields_one": "Fix the highlighted field.",
       "fixFields_other": "Fix the {{count}} highlighted fields.",
       "cashAdvance": "Company cash advance",
-      "cashAdvanceHint": "Money handed out by the company (e.g. cash to pay labor): not counted in released funds, counted as spent in the company purse."
+      "cashAdvanceHint": "Money handed out by the company (e.g. cash to pay labor): not counted in released funds, counted as spent in the company purse.",
+      "releaseDate": "Release date",
+      "supplier": "Supplier",
+      "supplierRequired": "Supplier is required.",
+      "supplierAddress": "Supplier address"
     },
     "summary": {
       "totalExpenses": "Total expenses",
@@ -434,7 +438,8 @@
       "highlightLockedAuto": "Generated from an invoice: the colour cannot be changed.",
       "highlightLockedRefunded": "Refunded expense: the colour cannot be changed.",
       "highlightReadOnly": "Only an admin or a manager can change the colour.",
-      "attachmentsEmpty": "No attachments yet"
+      "attachmentsEmpty": "No attachments yet",
+      "title": "Expense"
     },
     "highlightColors": {
       "red": "Red",
@@ -444,8 +449,8 @@
       "blue": "Blue",
       "purple": "Purple"
     },
-    "restricted": "Invoices are reserved for the project managers.",
-    "unavailable": "This invoice does not exist or is reserved for the project managers."
+    "restricted": "Expenses are reserved for the project managers.",
+    "unavailable": "This expense does not exist or is reserved for the project managers."
   },
   "labor": {
     "tabs": {
@@ -821,7 +826,7 @@
     "unpricedCount_one": "{{count}} item without price",
     "unpricedCount_other": "{{count}} items without price",
     "coversAll": "covers everything",
-    "none": "No sections yet. Add one to start pricing materials.",
+    "none": "No sections yet. Add one to start the estimate.",
     "nameRequired": "Name is required.",
     "priceRequired": "Enter a unit price.",
     "supplierRequired": "Pick a shop or enter a supplier name.",
@@ -1770,7 +1775,7 @@
       "noCreditHint": "Set the initial credit granted by your bank in the project settings.",
       "openSettings": "Open project settings",
       "noReleases": "No funds released yet",
-      "settingsCardTitle": "Bank credit (mortgage loan)",
+      "settingsCardTitle": "Project budget / credit",
       "settingsCardHint": "Initial amount granted by the bank. Funds releases are deducted from it."
     },
     "project": "Project",
@@ -1799,10 +1804,10 @@
       "budgetCredit": "Budget / credit",
       "bankRemaining": "Bank credit left",
       "pendingCompany": "Awaiting company refund ({{count}})",
-      "spentOfCredit": "Spent {{spent}} of {{total}} credit",
+      "spentOfCredit": "Spent {{spent}} of {{total}} budget",
       "spentOfReleased": "Spent {{spent}} of {{total}} released",
       "noBudgetNoFunds": "No budget and no funds released yet",
-      "addInvoice": "Invoice",
+      "addInvoice": "Expense",
       "addRelease": "Release funds",
       "payLabor": "Pay labor",
       "unpaid": "Unpaid",

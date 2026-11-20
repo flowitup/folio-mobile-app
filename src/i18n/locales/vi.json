@@ -266,10 +266,10 @@
   },
   "invoices": {
     "all": "Tất cả",
-    "none": "Chưa có hóa đơn.",
-    "created": "Đã tạo hóa đơn.",
-    "deleted": "Đã xóa hóa đơn.",
-    "deleteConfirm": "Xóa hóa đơn {{number}}?",
+    "none": "Chưa có khoản chi.",
+    "created": "Đã lưu chi phí.",
+    "deleted": "Đã xóa khoản chi.",
+    "deleteConfirm": "Xóa khoản chi {{number}}?",
     "types": {
       "released_funds": "Vốn giải ngân",
       "labor": "Nhân công",
@@ -337,7 +337,7 @@
     },
     "form": {
       "type": "Loại",
-      "issueDate": "Ngày phát hành",
+      "issueDate": "Ngày chi",
       "issueDateRequired": "Cần chọn ngày.",
       "recipient": "Người nhận",
       "recipientRequired": "Cần nhập người nhận.",
@@ -382,7 +382,11 @@
       "fixFields_one": "Hãy sửa trường được đánh dấu.",
       "fixFields_other": "Hãy sửa {{count}} trường được đánh dấu.",
       "cashAdvance": "Tiền mặt công ty ứng trước",
-      "cashAdvanceHint": "Tiền công ty giao (vd. tiền mặt trả nhân công): không tính vào vốn giải ngân, tính là đã chi trong quỹ công ty."
+      "cashAdvanceHint": "Tiền công ty giao (vd. tiền mặt trả nhân công): không tính vào vốn giải ngân, tính là đã chi trong quỹ công ty.",
+      "releaseDate": "Ngày giải ngân",
+      "supplier": "Nhà cung cấp",
+      "supplierRequired": "Cần nhập nhà cung cấp.",
+      "supplierAddress": "Địa chỉ nhà cung cấp"
     },
     "summary": {
       "totalExpenses": "Tổng chi phí",
@@ -434,7 +438,8 @@
       "highlightLockedAuto": "Tạo tự động từ hóa đơn: không thể đổi màu.",
       "highlightLockedRefunded": "Khoản chi đã hoàn: không thể đổi màu.",
       "highlightReadOnly": "Chỉ quản trị viên hoặc quản lý mới đổi được màu.",
-      "attachmentsEmpty": "Chưa có tệp đính kèm"
+      "attachmentsEmpty": "Chưa có tệp đính kèm",
+      "title": "Chi phí"
     },
     "highlightColors": {
       "red": "Đỏ",
@@ -444,8 +449,8 @@
       "blue": "Xanh dương",
       "purple": "Tím"
     },
-    "restricted": "Hóa đơn chỉ dành cho người quản lý công trình.",
-    "unavailable": "Hóa đơn này không tồn tại hoặc chỉ dành cho người quản lý công trình."
+    "restricted": "Chi phí chỉ dành cho người quản lý công trình.",
+    "unavailable": "Khoản chi này không tồn tại hoặc chỉ dành cho người quản lý công trình."
   },
   "labor": {
     "tabs": {
@@ -821,7 +826,7 @@
     "unpricedCount_one": "{{count}} mục chưa có giá",
     "unpricedCount_other": "{{count}} mục chưa có giá",
     "coversAll": "đủ tất cả",
-    "none": "Chưa có hạng mục. Thêm để bắt đầu báo giá.",
+    "none": "Chưa có hạng mục. Thêm để bắt đầu dự toán.",
     "nameRequired": "Cần nhập tên.",
     "priceRequired": "Nhập đơn giá.",
     "supplierRequired": "Chọn cửa hàng hoặc nhập tên nhà cung cấp.",
@@ -1770,7 +1775,7 @@
       "noCreditHint": "Đặt hạn mức tín dụng ban đầu ngân hàng cấp trong cài đặt dự án.",
       "openSettings": "Mở cài đặt dự án",
       "noReleases": "Chưa có khoản giải ngân nào",
-      "settingsCardTitle": "Tín dụng ngân hàng (vay mua nhà)",
+      "settingsCardTitle": "Ngân sách / tín dụng của dự án",
       "settingsCardHint": "Số tiền ban đầu ngân hàng cấp. Các khoản giải ngân sẽ được trừ vào số này."
     },
     "project": "Công trình",
@@ -1799,10 +1804,10 @@
       "budgetCredit": "Ngân sách / tín dụng",
       "bankRemaining": "Tín dụng NH còn lại",
       "pendingCompany": "Chờ công ty hoàn ({{count}})",
-      "spentOfCredit": "Đã chi {{spent}} trên {{total}} tín dụng",
+      "spentOfCredit": "Đã chi {{spent}} trên {{total}} ngân sách",
       "spentOfReleased": "Đã chi {{spent}} trên {{total}} đã giải ngân",
       "noBudgetNoFunds": "Chưa có ngân sách và chưa giải ngân",
-      "addInvoice": "Hóa đơn",
+      "addInvoice": "Chi phí",
       "addRelease": "Giải ngân",
       "payLabor": "Trả lương",
       "unpaid": "Chưa trả",
