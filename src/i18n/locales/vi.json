@@ -1567,8 +1567,16 @@
         "submit": "Thêm thành viên",
         "conflictHint": "Có nhiều người trùng số điện thoại này — hãy chọn đúng người.",
         "conflict": "Có nhiều người trùng số điện thoại này.",
-        "successToast": "Đã thêm thành viên.",
-        "alreadyMember": "Người này đã là thành viên của công ty."
+        "alreadyMember": "Người này đã là thành viên của công ty.",
+        "added": {
+          "title": "Đã thêm {{name}}. Họ chưa nhận được tin nhắn nào. Gửi hướng dẫn này cho họ:",
+          "message": "{{company}} đã thêm bạn vào Folio.\n1) Cài app Folio trên điện thoại.\n2) Mở app, chọn “Tạo tài khoản” (không chọn “Đăng nhập”).\n3) Nhập số {{phone}}.",
+          "messageWithLink": "{{company}} đã thêm bạn vào Folio.\n1) Cài app Folio: {{url}}\n2) Mở app, chọn “Tạo tài khoản” (không chọn “Đăng nhập”).\n3) Nhập số {{phone}}.",
+          "share": "Chia sẻ",
+          "copy": "Sao chép",
+          "copied": "Đã sao chép",
+          "done": "Xong"
+        }
       },
       "import": {
         "title": "Nhập từ công ty khác",

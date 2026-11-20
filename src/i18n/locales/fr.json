@@ -1567,8 +1567,16 @@
         "submit": "Ajouter le membre",
         "conflictHint": "Plusieurs personnes correspondent à ce numéro — choisissez la bonne.",
         "conflict": "Plusieurs personnes correspondent à ce numéro.",
-        "successToast": "Membre ajouté.",
-        "alreadyMember": "Cette personne est déjà membre de l'entreprise."
+        "alreadyMember": "Cette personne est déjà membre de l'entreprise.",
+        "added": {
+          "title": "{{name}} a été ajouté. Cette personne n’a reçu aucun message. Envoyez-lui ces instructions :",
+          "message": "{{company}} vous a ajouté sur Folio.\n1) Installez l’application Folio sur votre téléphone.\n2) Ouvrez-la et choisissez « Créer un compte » (pas « Se connecter »).\n3) Saisissez le numéro {{phone}}.",
+          "messageWithLink": "{{company}} vous a ajouté sur Folio.\n1) Installez l’application Folio : {{url}}\n2) Ouvrez-la et choisissez « Créer un compte » (pas « Se connecter »).\n3) Saisissez le numéro {{phone}}.",
+          "share": "Partager",
+          "copy": "Copier",
+          "copied": "Copié",
+          "done": "Terminé"
+        }
       },
       "import": {
         "title": "Importer d'une autre entreprise",

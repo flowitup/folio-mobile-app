@@ -1567,8 +1567,16 @@
         "submit": "Add member",
         "conflictHint": "Several people match this phone number — pick the right one.",
         "conflict": "Several people match this phone number.",
-        "successToast": "Member added.",
-        "alreadyMember": "This person is already a member of the company."
+        "alreadyMember": "This person is already a member of the company.",
+        "added": {
+          "title": "{{name}} was added. They have not received any message. Send them these instructions:",
+          "message": "{{company}} added you to Folio.\n1) Install the Folio app on your phone.\n2) Open it and choose “Create an account” (not “Sign in”).\n3) Enter the number {{phone}}.",
+          "messageWithLink": "{{company}} added you to Folio.\n1) Install the Folio app: {{url}}\n2) Open it and choose “Create an account” (not “Sign in”).\n3) Enter the number {{phone}}.",
+          "share": "Share",
+          "copy": "Copy",
+          "copied": "Copied",
+          "done": "Done"
+        }
       },
       "import": {
         "title": "Import from another company",
