@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon } from "@/components/ui/icon";
 import { useTokens } from "@/theme/tokens";
+import { interceptLeave } from "@/lib/navigation/leave-guard";
 
 type Props = {
   title: string;
@@ -33,13 +34,15 @@ export function ScreenHeader({ title, back = false, onBack, right }: Props) {
         <Pressable
           testID="header-back"
           accessibilityRole="button"
-          onPress={
-            onBack ??
-            (() =>
-              router.canGoBack()
-                ? router.back()
-                : router.navigate("/(app)/(tabs)"))
-          }
+          onPress={() => {
+            const leave =
+              onBack ??
+              (() =>
+                router.canGoBack()
+                  ? router.back()
+                  : router.navigate("/(app)/(tabs)"));
+            if (!interceptLeave(leave)) leave();
+          }}
           hitSlop={8}
           className="-ml-1.5 h-10 w-10 items-center justify-center active:opacity-70"
         >
