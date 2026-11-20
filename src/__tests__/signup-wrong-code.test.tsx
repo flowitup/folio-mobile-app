@@ -34,6 +34,7 @@ jest.mock("@/auth/auth-context", () => ({
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ back: jest.fn(), push: jest.fn(), replace: jest.fn() }),
+  useLocalSearchParams: () => ({}),
 }));
 
 beforeEach(() => jest.clearAllMocks());
