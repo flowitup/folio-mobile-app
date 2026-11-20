@@ -10,7 +10,7 @@ import {
   monthRateLabel,
   monthSettlement,
   overviewMonths,
-  paidOutsideMonths,
+  laborOutsideTotal,
   rollupTotals,
   rowsInScope,
   scopeRange,
@@ -103,8 +103,12 @@ describe("labor overview helpers", () => {
     const [sept, dec] = overviewMonths(ROWS, PAYMENTS, TODAY);
     expect(sept.unpaidWarning).toBe(0);
     expect(sept.overpaidWarning).toBe(50);
-    expect(sept.paid).toBe(380);
+    // Paid = payments with a worker only (380 − 30 without one); the 30 is said apart.
+    expect(sept.paid).toBe(350);
+    expect(sept.unassignedPaid).toBe(30);
     expect(sept.unassignedCount).toBe(1);
+    // Its company / personal split covers the 30 too, so it is not shown as Paid's.
+    expect(sept.splitIsPaid).toBe(false);
     expect(dec.unpaidWarning).toBe(225);
     expect(dec.paid).toBe(0);
   });
@@ -115,9 +119,10 @@ describe("labor overview helpers", () => {
       cost: 675,
       days: 4.5,
       workerCount: 2,
-      paid: 380,
+      paid: 350,
       companyPaid: 300,
       personalPaid: 80,
+      splitIsPaid: false,
     });
   });
 
@@ -163,7 +168,7 @@ describe("labor overview helpers", () => {
     expect(detail.bonusCost).toBe(150);
   });
 
-  it("counts payments with no month or outside the visible months in the grand total", () => {
+  it("puts unassigned, no-month and outside-month payments on one line outside the total", () => {
     const withOrphan = {
       months: [
         ...PAYMENTS.months,
@@ -173,23 +178,30 @@ describe("labor overview helpers", () => {
           total_paid: 40,
           company_paid: 40,
           personal_paid: 0,
-          unassigned_count: 1,
-          unassigned_paid: 40,
-          workers: [],
+          unassigned_count: 0,
+          unassigned_paid: 0,
+          workers: [
+            { worker_id: "a", worker_name: "An", paid: 40, invoice_count: 2 },
+          ],
         },
       ],
     } as LaborPaymentsSummary;
-    expect(paidOutsideMonths(ROWS, withOrphan, { kind: "all" }).paid).toBe(50);
+    // Sept's 30 without a worker + the no-month 10 + May (no attendance) 40.
+    expect(laborOutsideTotal(ROWS, withOrphan, { kind: "all" })).toEqual({
+      paid: 80,
+      count: 4,
+    });
+    // One year: the no-month bucket belongs to no year.
     expect(
-      paidOutsideMonths(
+      laborOutsideTotal(
         rowsInScope(ROWS, { kind: "year", year: 2026 }),
         withOrphan,
-        {
-          kind: "year",
-          year: 2026,
-        },
+        { kind: "year", year: 2026 },
       ),
-    ).toEqual({ paid: 40, companyPaid: 40, personalPaid: 0 });
+    ).toEqual({ paid: 70, count: 3 });
+    expect(
+      laborOutsideTotal([], withOrphan, { kind: "month", month: "2026-09" }),
+    ).toEqual({ paid: 0, count: 0 });
   });
 
   it("labels a month with its own rate, or both when it changed mid-month", () => {
@@ -202,4 +214,3 @@ describe("labor overview helpers", () => {
     expect(monthRateLabel({}, null, fmt)).toBeNull();
   });
 });
-

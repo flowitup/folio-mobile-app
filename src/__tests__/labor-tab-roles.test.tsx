@@ -109,10 +109,20 @@ describe("labor tab · manager", () => {
     );
     // The Summary has its own period; the attendance month stepper is hidden.
     expect(screen.queryByTestId("labor-month")).toBeNull();
-    // Paid this month = every payment, assigned (100) or not (80).
+    // Paid = payments with a worker only (100); the 80 without one is a line of its own,
+    // outside the total, that leads to where it can be assigned (P-02).
     const monthKey = `${TODAY.slice(0, 7)}`;
     expect(screen.getByTestId(`overview-month-${monthKey}`)).toHaveTextContent(
-      containing(formatMoney(180)),
+      containing(formatMoney(100)),
+    );
+    expect(
+      screen.getByTestId(`overview-month-${monthKey}`),
+    ).not.toHaveTextContent(containing(formatMoney(180)));
+    expect(screen.getByTestId("labor-overview-total-paid")).toHaveTextContent(
+      containing(formatMoney(100)),
+    );
+    expect(screen.getByTestId("labor-overview-unassigned")).toHaveTextContent(
+      containing(formatMoney(80)),
     );
 
     await fireEvent.press(
@@ -129,6 +139,16 @@ describe("labor tab · manager", () => {
     expect(
       screen.getByTestId("labor-overview-month-balance"),
     ).toHaveTextContent(containing(formatMoney(230)));
+  });
+
+  it("leads the unassigned labor line to the payments segment", async () => {
+    await renderWithProviders(<LaborTab />);
+    await fireEvent.press(
+      await screen.findByTestId("labor-overview-unassigned"),
+    );
+    expect(
+      screen.getByTestId("labor-tab-payments").props.accessibilityState,
+    ).toMatchObject({ selected: true });
   });
 
   it("shows the month KPIs, the calendar day card and the log button", async () => {

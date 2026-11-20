@@ -6,6 +6,8 @@ import { formatMoney } from "@/lib/format/money";
 
 type Props = {
   laborUnpaid: number;
+  /** Labor spend recorded without a worker: settles nobody's pay, so it is said apart. */
+  laborUnassigned?: number;
   pendingRefundCount: number;
   pendingRefundTotal: number;
   onPayLabor: () => void;
@@ -19,6 +21,7 @@ type Props = {
  */
 export function OverviewDueTiles({
   laborUnpaid,
+  laborUnassigned = 0,
   pendingRefundCount,
   pendingRefundTotal,
   onPayLabor,
@@ -40,6 +43,16 @@ export function OverviewDueTiles({
         <Text className="mt-0.5 font-sans text-xs text-muted" numberOfLines={1}>
           {t("invoices.types.labor")}
         </Text>
+        {laborUnassigned > 0 ? (
+          <Text
+            testID="overview-labor-unassigned"
+            className="mt-0.5 font-sans text-xs text-muted"
+          >
+            {t("dashboard.overview.unassignedLabor", {
+              amount: formatMoney(laborUnassigned),
+            })}
+          </Text>
+        ) : null}
         {/* Nothing to pay or to chase: no "pay now" / "view" call to action over 0,00 €. */}
         {laborUnpaid > 0 ? (
           <Pressable

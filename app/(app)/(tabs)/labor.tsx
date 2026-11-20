@@ -456,6 +456,7 @@ function LaborTabContent() {
               payments={laborPayments.data}
               colorOf={colorOf}
               roleOf={roleOf}
+              onOpenUnassigned={() => setSegment("payments")}
             />
             {canExport ? (
               <Pressable

@@ -25,7 +25,7 @@ import {
   monthDetail,
   monthRateLabel,
   overviewMonths,
-  paidOutsideMonths,
+  laborOutsideTotal,
   rollupTotals,
   rowsInScope,
   scopeRange,
@@ -40,6 +40,8 @@ type Props = {
   payments: LaborPaymentsSummary | undefined;
   colorOf: (workerId: string) => string;
   roleOf: (workerId: string) => string | null;
+  /** Opens the payments segment, where labor payments without a worker are assigned. */
+  onOpenUnassigned?: () => void;
 };
 
 /** "Sept 2026" — short month for the ledger cards, capitalised like the web. */
@@ -165,6 +167,7 @@ export function LaborOverview({
   payments,
   colorOf,
   roleOf,
+  onOpenUnassigned,
 }: Props) {
   const { t } = useTranslation();
   const tokens = useTokens();
@@ -187,21 +190,15 @@ export function LaborOverview({
     () => overviewMonths(rowsInScope(allRows, scope), payments),
     [allRows, scope, payments],
   );
-  const rollup = useMemo(() => {
-    const totals = rollupTotals(months);
-    const outside = paidOutsideMonths(
-      rowsInScope(allRows, scope),
-      payments,
-      scope,
-    );
-    return {
-      ...totals,
-      paid: totals.paid + outside.paid,
-      companyPaid: totals.companyPaid + outside.companyPaid,
-      personalPaid: totals.personalPaid + outside.personalPaid,
-      paidOutside: outside.paid,
-    };
-  }, [months, allRows, scope, payments]);
+  // "Paid" adds up what the months' workers were paid; labor money with no worker, no month or
+  // no attendance month is one line of its own below, never mixed into it (P-02).
+  const rollup = useMemo(
+    () => ({
+      ...rollupTotals(months),
+      outside: laborOutsideTotal(rowsInScope(allRows, scope), payments, scope),
+    }),
+    [months, allRows, scope, payments],
+  );
   const maxCost = months.reduce((m, x) => Math.max(m, x.row.total_cost), 1);
   const workerById = useMemo(
     () => new Map(workers.map((w) => [w.id, w])),
@@ -411,27 +408,43 @@ export function LaborOverview({
                 <Text className="font-mono text-[15px] text-accent-ink">
                   {formatMoney(rollup.cost)}
                 </Text>
-                <Text className="mt-0.5 font-mono-regular text-[12px] text-ink">
+                <Text
+                  testID="labor-overview-total-paid"
+                  className="mt-0.5 font-mono-regular text-[12px] text-ink"
+                >
                   {t("labor.overview.paid")}{" "}
                   {rollup.paid > 0 ? formatMoney(rollup.paid) : "—"}
                 </Text>
               </View>
             </View>
-            {rollup.paidOutside > CENT ? (
-              <Text
-                testID="labor-overview-paid-outside"
-                className="mt-1 font-sans text-[11.5px] text-muted"
-              >
-                {t("labor.overview.paidOutsideMonths", {
-                  amount: formatMoney(rollup.paidOutside),
-                })}
-              </Text>
+            {rollup.splitIsPaid ? (
+              <PaidSplit
+                company={rollup.companyPaid}
+                personal={rollup.personalPaid}
+                testID="labor-overview-total-split"
+              />
             ) : null}
-            <PaidSplit
-              company={rollup.companyPaid}
-              personal={rollup.personalPaid}
-              testID="labor-overview-total-split"
-            />
+            {rollup.outside.paid > CENT ? (
+              <Pressable
+                testID="labor-overview-unassigned"
+                accessibilityRole={onOpenUnassigned ? "button" : undefined}
+                disabled={!onOpenUnassigned}
+                onPress={onOpenUnassigned}
+                className="mt-2 min-h-[44px] flex-row items-center gap-2 border-t border-line pt-2 active:opacity-70"
+              >
+                <Text className="min-w-0 flex-1 font-sans text-[12.5px] leading-[17px] text-ink">
+                  {t("labor.overview.unassignedLabor", {
+                    amount: formatMoney(rollup.outside.paid),
+                    count: rollup.outside.count,
+                  })}
+                </Text>
+                {onOpenUnassigned ? (
+                  <Text className="font-sans-semibold text-[12.5px] text-accent-ink">
+                    {t("labor.overview.assign")} ›
+                  </Text>
+                ) : null}
+              </Pressable>
+            ) : null}
           </Card>
         </View>
       )}
@@ -527,13 +540,15 @@ function MonthCard({
             ) : null}
           </View>
         ) : null}
-        <View className="mt-1">
-          <PaidSplit
-            company={month.companyPaid}
-            personal={month.personalPaid}
-            testID={`overview-split-${key}`}
-          />
-        </View>
+        {month.splitIsPaid ? (
+          <View className="mt-1">
+            <PaidSplit
+              company={month.companyPaid}
+              personal={month.personalPaid}
+              testID={`overview-split-${key}`}
+            />
+          </View>
+        ) : null}
       </Pressable>
       <Pressable
         testID={`overview-month-toggle-${key}`}

@@ -118,6 +118,12 @@ describe("overview tab · manager", () => {
     expect(
       screen.getByTestId("overview-labor-unpaid-amount"),
     ).toHaveTextContent(containing(formatMoney(230)));
+    // The 80 € labor invoice with no worker settles nobody: said apart under the tile (P-02).
+    expect(screen.getByTestId("overview-labor-unassigned")).toHaveTextContent(
+      i18n.t("dashboard.overview.unassignedLabor", {
+        amount: formatMoney(80),
+      }),
+    );
     expect(screen.getByTestId("overview-agenda")).toBeTruthy();
     expect(screen.getByText("Livraison carrelage")).toBeTruthy();
     expect(screen.getByTestId("overview-today-on-site")).toBeTruthy();

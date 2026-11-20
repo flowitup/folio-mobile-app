@@ -107,6 +107,10 @@ function OverviewTabContent() {
         deltaPct: computeMonthToDateDelta(rows, referenceDate).deltaPct,
       },
       pendingCompany: computePendingRefunds(rows),
+      // Labor paid without a worker settles nobody's pay: the unpaid tile says it apart.
+      laborUnassigned: rows
+        .filter((row) => row.type === "labor" && !row.worker_id)
+        .reduce((sum, row) => sum + row.total_amount, 0),
       // A client's payment on a facture is booked as a release but draws nothing on the bank
       // credit: only the releases the bank made count against it.
       clientPaid,
@@ -219,6 +223,7 @@ function OverviewTabContent() {
             <>
               <OverviewDueTiles
                 laborUnpaid={project.labor_unpaid ?? 0}
+                laborUnassigned={metrics.laborUnassigned}
                 pendingRefundCount={metrics.pendingCompany.count}
                 pendingRefundTotal={metrics.pendingCompany.total}
                 onPayLabor={payLabor}

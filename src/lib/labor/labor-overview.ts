@@ -108,11 +108,18 @@ export function isPastMonth(
 export type OverviewMonth = {
   key: string;
   row: MonthlySummaryRow;
-  /** Every payment of the month, assigned or not (the money that actually left). */
+  /**
+   * Payments of the month made to one of its workers — the one rule for "Paid" (P-02, as on
+   * the web): money with no worker is shown apart, never mixed into what the crew was paid.
+   */
   paid: number;
+  /** Company / personal split of ALL the month's payments, worker or not. */
   companyPaid: number;
   personalPaid: number;
+  /** True when every payment of the month has a worker, so the split above is `paid`'s. */
+  splitIsPaid: boolean;
   unassignedCount: number;
+  unassignedPaid: number;
   /** Shown on closed months only; mid-month unpaid is normal. */
   unpaidWarning: number;
   /** Shown on any month, current included: paying more than the charges is never normal. */
@@ -134,10 +141,12 @@ export function overviewMonths(
     return {
       key,
       row,
-      paid: bucket?.total_paid ?? 0,
+      paid: (bucket?.total_paid ?? 0) - (bucket?.unassigned_paid ?? 0),
       companyPaid: bucket?.company_paid ?? 0,
       personalPaid: bucket?.personal_paid ?? 0,
+      splitIsPaid: (bucket?.unassigned_paid ?? 0) < CENT,
       unassignedCount: bucket?.unassigned_count ?? 0,
+      unassignedPaid: bucket?.unassigned_paid ?? 0,
       unpaidWarning:
         isPastMonth(row.year, row.month, today) && shortfall > CENT
           ? shortfall
@@ -154,12 +163,15 @@ export type RollupTotals = {
   cost: number;
   days: number;
   workerCount: number;
+  /** What the visible months' workers were paid: the sum of the month cards. */
   paid: number;
   companyPaid: number;
   personalPaid: number;
+  /** Whether the split adds up to `paid` (no month mixes in money without a worker). */
+  splitIsPaid: boolean;
 };
 
-/** Grand total of the visible months: distinct workers, and every payment of those months. */
+/** Grand total of the visible months: distinct workers, and what their workers were paid. */
 export function rollupTotals(months: readonly OverviewMonth[]): RollupTotals {
   const workers = new Set<string>();
   const totals = months.reduce(
@@ -170,9 +182,17 @@ export function rollupTotals(months: readonly OverviewMonth[]): RollupTotals {
       acc.paid += m.paid;
       acc.companyPaid += m.companyPaid;
       acc.personalPaid += m.personalPaid;
+      acc.splitIsPaid &&= m.splitIsPaid;
       return acc;
     },
-    { cost: 0, days: 0, paid: 0, companyPaid: 0, personalPaid: 0 },
+    {
+      cost: 0,
+      days: 0,
+      paid: 0,
+      companyPaid: 0,
+      personalPaid: 0,
+      splitIsPaid: true,
+    },
   );
   return { ...totals, workerCount: workers.size };
 }
@@ -243,27 +263,35 @@ export function monthDetail(
 }
 
 /**
- * Labor payments no visible month card shows: the no-month bucket (all history only) and
- * months paid without any attendance. Counted in the grand total so it matches labor_paid.
+ * Labor money outside the grand total (P-02, A4 on the web): payments with no worker, the
+ * no-month bucket (all history only), and payments for months with no attendance in scope.
+ * Shown as one line of its own under the total, with the number of payments, to assign.
  */
-export function paidOutsideMonths(
+export function laborOutsideTotal(
   visibleRows: readonly MonthlySummaryRow[],
   payments: LaborPaymentsSummary | null | undefined,
   scope: OverviewScope,
-): { paid: number; companyPaid: number; personalPaid: number } {
+): { paid: number; count: number } {
   const visible = new Set(visibleRows.map((r) => monthKey(r.year, r.month)));
-  const acc = { paid: 0, companyPaid: 0, personalPaid: 0 };
+  const acc = { paid: 0, count: 0 };
   if (scope.kind === "month") return acc;
+  const everything = (b: PaymentsBucket) => {
+    acc.paid += b.total_paid;
+    acc.count +=
+      b.unassigned_count +
+      b.workers.reduce((sum, w) => sum + w.invoice_count, 0);
+  };
   for (const b of payments?.months ?? []) {
     if (b.year == null || b.month == null) {
-      if (scope.kind !== "all") continue;
-    } else {
-      if (scope.kind === "year" && b.year !== scope.year) continue;
-      if (visible.has(monthKey(b.year, b.month))) continue;
+      if (scope.kind === "all") everything(b);
+      continue;
     }
-    acc.paid += b.total_paid;
-    acc.companyPaid += b.company_paid ?? 0;
-    acc.personalPaid += b.personal_paid ?? 0;
+    if (scope.kind === "year" && b.year !== scope.year) continue;
+    if (!visible.has(monthKey(b.year, b.month))) everything(b);
+    else {
+      acc.paid += b.unassigned_paid;
+      acc.count += b.unassigned_count;
+    }
   }
   return acc;
 }
