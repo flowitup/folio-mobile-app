@@ -69,14 +69,10 @@ export function useApiMutation<TVariables = void, TData = unknown>(
       if (__DEV__ && !(error instanceof ApiError))
         console.error("[useApiMutation]", error);
       if (options.onError?.(error, variables) === true) return;
+      const message = apiErrorMessage(error, t, i18n.language);
       // No answer at all is the network: that message tells what to do, so it stays longer.
-      showToast(
-        apiErrorMessage(error, t, i18n.language),
-        "error",
-        error instanceof ApiError
-          ? undefined
-          : { durationMs: NETWORK_TOAST_MS },
-      );
+      if (error instanceof ApiError) showToast(message, "error");
+      else showToast(message, "error", { durationMs: NETWORK_TOAST_MS });
     },
   });
 }
