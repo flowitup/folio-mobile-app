@@ -14,33 +14,12 @@ type NavigationAction = Parameters<
 /** What happens once the user agrees to throw the typed expense away. */
 type Pending = { action: NavigationAction } | { proceed: () => void };
 
-type NavLike = {
-  getParent?: () => NavLike | undefined;
-  getState?: () =>
-    { type?: string; routes: { key: string; name: string }[] } | undefined;
-  addListener?: (
-    event: "tabPress",
-    cb: (e: { target?: string; preventDefault: () => void }) => void,
-  ) => () => void;
-  navigate?: (name: string) => void;
-};
-
-/** The bottom-tab navigator this screen lives in, if any. */
-function findTabNavigator(navigation: NavLike): NavLike | undefined {
-  let nav: NavLike | undefined = navigation.getParent?.();
-  while (nav) {
-    if (nav.getState?.()?.type === "tab") return nav;
-    nav = nav.getParent?.();
-  }
-  return undefined;
-}
-
 /**
  * Asks before an expense being typed is thrown away (P-12): the header back arrow, back swipe,
  * Android back, another tab, or a link out of the screen. The new-expense screen can be the first
  * screen of its stack, so going back moves to another tab instead of removing the screen; the
- * header arrow, Android back and tab presses are therefore guarded directly, on top of
- * `usePreventRemove`. `allowLeave()` lets the screen's own navigation through, e.g. right after a
+ * header arrow, Android back and the tab bar (through `interceptLeave`) are therefore guarded
+ * directly, on top of `usePreventRemove`. `allowLeave()` lets the screen's own navigation through, e.g. right after a
  * successful save. The dialog has to be rendered by the screen.
  */
 export function useDiscardGuard(dirty: boolean) {
@@ -72,20 +51,6 @@ export function useDiscardGuard(dirty: boolean) {
       offGuard();
       sub.remove();
     };
-  }, [dirty, navigation]);
-
-  // Another tab in the bottom bar.
-  useEffect(() => {
-    if (!dirty) return;
-    const tabs = findTabNavigator(navigation as unknown as NavLike);
-    if (!tabs?.addListener) return;
-    return tabs.addListener("tabPress", (e) => {
-      if (leaving.current) return;
-      const route = tabs.getState?.()?.routes.find((r) => r.key === e.target);
-      if (!route) return;
-      e.preventDefault();
-      setPending({ proceed: () => tabs.navigate?.(route.name) });
-    });
   }, [dirty, navigation]);
 
   const dialog = (

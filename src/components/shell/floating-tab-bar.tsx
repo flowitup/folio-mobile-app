@@ -10,6 +10,7 @@ import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { Icon } from "@/components/ui/icon";
 import type { IconName } from "@/components/ui/icon";
 import { useTokens } from "@/theme/tokens";
+import { interceptLeave } from "@/lib/navigation/leave-guard";
 
 /** The four project tabs, in tab-bar order; every other route in the navigator is a hidden Menu screen. */
 export const PROJECT_TABS = ["index", "expenses", "labor", "planning"] as const;
@@ -100,12 +101,16 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
         closeSheet();
         const route = state.routes.find((r) => r.name === name);
         if (!route) return;
-        const event = navigation.emit({
-          type: "tabPress",
-          target: route.key,
-          canPreventDefault: true,
-        });
-        if (!event.defaultPrevented) navigation.navigate(name);
+        const go = () => {
+          const event = navigation.emit({
+            type: "tabPress",
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!event.defaultPrevented) navigation.navigate(name);
+        };
+        // A screen holding unsaved input (new expense) may ask first.
+        if (!interceptLeave(go)) go();
       },
     })),
     // Workers have nothing behind the Menu (no library, no project sections).
