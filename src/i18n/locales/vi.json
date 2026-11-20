@@ -923,7 +923,8 @@
     "actualShort": "Thực chi",
     "boughtQuantity": "Đã mua",
     "returnedQuantity": "Trả lại",
-    "returnTooMuch": "Số lượng trả lại không được lớn hơn số đã mua."
+    "returnTooMuch": "Số lượng trả lại không được lớn hơn số đã mua.",
+    "onlyManagersTick": "Chỉ quản lý đánh dấu đã mua."
   },
   "analyses": {
     "upload": "Thêm phân tích",

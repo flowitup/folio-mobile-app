@@ -923,7 +923,8 @@
     "actualShort": "Réel",
     "boughtQuantity": "Acheté",
     "returnedQuantity": "Rendu",
-    "returnTooMuch": "On ne peut pas rendre plus que ce qui a été acheté."
+    "returnTooMuch": "On ne peut pas rendre plus que ce qui a été acheté.",
+    "onlyManagersTick": "Seuls les responsables cochent les achats."
   },
   "analyses": {
     "upload": "Ajouter une analyse",
