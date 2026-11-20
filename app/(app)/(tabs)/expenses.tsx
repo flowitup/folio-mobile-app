@@ -5,18 +5,16 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import { ProjectTopBar } from "@/components/shell/project-top-bar";
-import { useShell } from "@/components/shell/shell-context";
+import { useChatFabReserve } from "@/components/shell/chat-fab";
 import { ChipRow } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { InkFigure, InkSheetScreen } from "@/components/ui/ink-sheet-screen";
 import { MonthPicker, shortMonthLabel } from "@/components/ui/month-picker";
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
-import { useChatEnabled } from "@/features/chat/chat-api";
 import { useBillingAccess } from "@/features/companies/companies-api";
 import { deltaColor, formatDelta } from "@/features/dashboard/overview-cards";
 import {
   ExpenseMonthCard,
-  INK_FAB_SHADOW,
   MonthSectionHeader,
   PendingRefundBanner,
   PurseCard,
@@ -51,8 +49,6 @@ import { useInkStatusBar } from "@/theme/use-ink-status-bar";
 import { refreshKeys, usePullToRefresh } from "@/lib/query/use-pull-to-refresh";
 
 type Filter = "all" | Exclude<InvoiceType, "return">;
-/** Diameter of the floating add button below — keep in step with its `h-14 w-14`. */
-const FAB_SIZE = 56;
 
 const FILTERS: Filter[] = [
   "all",
@@ -70,7 +66,8 @@ const SPEND_ONLY_FILTERS: Filter[] = FILTERS.filter(
  * Chi phí (design 1b): ink header — project ▾, Fraunces title, month stepper — and hero with the
  * selected month's total, count + delta, outlined purse cards; then the paper sheet: type chips,
  * refund banner, the selected month's rows (headless) and older months under section headers,
- * export button. Accent "+" FAB creates an invoice.
+ * export button. An accent "+ Chi phí" button beside the month total creates an expense — no
+ * floating button over the rows, so no amount ever sits under it (P-11).
  */
 function ExpensesTabContent() {
   const { t } = useTranslation();
@@ -78,7 +75,6 @@ function ExpensesTabContent() {
   const tokens = useTokens();
   // This screen builds its own ink header, so it owns the bar over it.
   useInkStatusBar(true);
-  const { tabBarHeight } = useShell();
   const { projectId, project } = useSelectedProject();
   const [filter, setFilter] = useState<Filter>("all");
   // Opens on the business's (Paris) month, the one the overview calls "this month".
@@ -112,10 +108,8 @@ function ExpensesTabContent() {
   const canViewPay = useProjectCan(projectId, "project:view_pay");
   const canExport = canManageLabor || canViewPay;
   const billing = useBillingAccess();
-  const chatEnabled = useChatEnabled();
-  // The add button floats over the sheet, so the sheet has to end above it — otherwise the
-  // last row (the export button) sits under it and its right end cannot be tapped.
-  const fabOffset = tabBarHeight + 12 + (chatEnabled ? 64 : 0);
+  // The last row (the export button) must clear the floating chat button.
+  const bottomPadding = useChatFabReserve();
   useRefetchOnFocus(invoices.refetch);
   const pullToRefresh = usePullToRefresh([refreshKeys.projects], {
     onInk: true,
@@ -209,7 +203,7 @@ function ExpensesTabContent() {
       <InkSheetScreen
         refreshControl={pullToRefresh}
         gap={14}
-        bottomPadding={fabOffset + FAB_SIZE + 12}
+        bottomPadding={bottomPadding}
         header={
           <View className="bg-ink-block">
             <ProjectTopBar tone="ink" />
@@ -241,15 +235,39 @@ function ExpensesTabContent() {
             ) : null}
             {meta ? (
               <>
-                <InkFigure
-                  amount={
-                    filter === "released_funds"
-                      ? headline.released
-                      : headline.total
-                  }
-                  size={36}
-                  testID="expenses-total"
-                />
+                <View className="flex-row items-center gap-3">
+                  <View className="min-w-0 flex-1">
+                    <InkFigure
+                      amount={
+                        filter === "released_funds"
+                          ? headline.released
+                          : headline.total
+                      }
+                      size={36}
+                      testID="expenses-total"
+                    />
+                  </View>
+                  {project && canManageInvoices ? (
+                    <Pressable
+                      testID="invoices-create"
+                      accessibilityRole="button"
+                      accessibilityLabel={t("invoices.addExpenseA11y")}
+                      onPress={() =>
+                        router.push(`/projects/${projectId}/invoices/new`)
+                      }
+                      className="h-11 flex-row items-center gap-1.5 rounded-full bg-ink-block-accent pl-3 pr-4 active:opacity-80"
+                    >
+                      <Icon name="plus" size={18} color={INK_BLOCK.bg} />
+                      <Text
+                        className="font-sans-semibold text-[14px]"
+                        style={{ color: INK_BLOCK.bg }}
+                        numberOfLines={1}
+                      >
+                        {t("invoices.addExpense")}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </View>
                 {filter === "released_funds" ? (
                   <Text
                     testID="expenses-total-caption"
@@ -393,22 +411,6 @@ function ExpensesTabContent() {
           </Pressable>
         ) : null}
       </InkSheetScreen>
-
-      {project && canManageInvoices ? (
-        <Pressable
-          testID="invoices-create"
-          accessibilityRole="button"
-          accessibilityLabel={t("expenses.add")}
-          onPress={() => router.push(`/projects/${projectId}/invoices/new`)}
-          className="absolute right-5 h-14 w-14 items-center justify-center rounded-full bg-ink-block-accent active:opacity-80"
-          style={{
-            bottom: fabOffset,
-            boxShadow: INK_FAB_SHADOW,
-          }}
-        >
-          <Icon name="plus" size={24} color={INK_BLOCK.bg} />
-        </Pressable>
-      ) : null}
 
       <InvoiceExportSheet
         ref={exportSheet}

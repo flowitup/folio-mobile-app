@@ -450,7 +450,9 @@
       "purple": "Purple"
     },
     "restricted": "Expenses are reserved for the project managers.",
-    "unavailable": "This expense does not exist or is reserved for the project managers."
+    "unavailable": "This expense does not exist or is reserved for the project managers.",
+    "addExpense": "Expense",
+    "addExpenseA11y": "Add an expense"
   },
   "labor": {
     "tabs": {

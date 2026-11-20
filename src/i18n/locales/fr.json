@@ -450,7 +450,9 @@
       "purple": "Violet"
     },
     "restricted": "Les dépenses sont réservées aux responsables du chantier.",
-    "unavailable": "Cette dépense n'existe pas ou est réservée aux responsables du chantier."
+    "unavailable": "Cette dépense n'existe pas ou est réservée aux responsables du chantier.",
+    "addExpense": "Dépense",
+    "addExpenseA11y": "Ajouter une dépense"
   },
   "labor": {
     "tabs": {

@@ -7,12 +7,15 @@ import { ChipRow } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Badge, Card, ErrorState } from "@/components/ui/primitives";
+import { FitFigure } from "@/features/dashboard/fit-figure";
 import type { LaborPaymentsSummary } from "@/features/invoices/invoices-api";
 import {
   useLaborMonthlySummary,
   useLaborSummary,
 } from "@/features/labor/labor-api";
+import { KpiRow } from "@/features/labor/kpi-row";
 import type { Worker } from "@/features/labor/labor-types";
+import { kpiCardWidth } from "@/lib/dashboard/fit-figure";
 import { formatMonth, localeTag, toIsoDate } from "@/lib/format/date";
 import { formatMoney, formatNumber } from "@/lib/format/money";
 import { dayCount } from "@/lib/labor/day-count";
@@ -114,6 +117,8 @@ function PaidSplit({
   );
 }
 
+const KPI_FIGURE_SIZE = 18;
+
 function Kpi({
   label,
   value,
@@ -136,15 +141,12 @@ function Kpi({
       >
         {label}
       </Text>
-      <Text
+      <FitFigure
         testID={testID}
-        className={`mt-1 font-mono text-[18px] ${accent ? "text-accent-ink" : "text-ink"}`}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.7}
-      >
-        {value}
-      </Text>
+        text={value}
+        size={KPI_FIGURE_SIZE}
+        className={`mt-1 font-mono ${accent ? "text-accent-ink" : "text-ink"}`}
+      />
       <Text className="mt-1 font-sans text-[11px] text-muted" numberOfLines={2}>
         {caption}
       </Text>
@@ -300,19 +302,23 @@ export function LaborOverview({
         <Text className="font-sans text-[11px] uppercase tracking-[0.8px] text-muted">
           {t("labor.overview.totalCost")}
         </Text>
-        <Text
+        <FitFigure
           testID="labor-overview-total"
-          className="mt-1.5 font-mono text-[28px] text-ink"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {formatMoney(totalCost)}
-        </Text>
+          text={formatMoney(totalCost)}
+          size={28}
+          className="mt-1.5 font-mono text-ink"
+        />
         <Text className="mt-1.5 font-sans text-[11.5px] text-positive">
           {periodLabel}
         </Text>
       </Card>
-      <View className="flex-row gap-2">
+      <KpiRow
+        testID="labor-overview-kpis"
+        minCardWidth={kpiCardWidth(
+          [days(totalDays), String(onSiteToday), formatMoney(bonusCost)],
+          KPI_FIGURE_SIZE,
+        )}
+      >
         <Kpi
           testID="labor-overview-days"
           label={t("labor.overview.workerDays")}
@@ -335,7 +341,7 @@ export function LaborOverview({
             days: formatNumber(bonusDays, 1) || "0",
           })}
         />
-      </View>
+      </KpiRow>
 
       <View className="gap-2.5">
         <Text className="font-sans-semibold text-[16px] text-ink">{title}</Text>

@@ -450,7 +450,9 @@
       "purple": "Tím"
     },
     "restricted": "Chi phí chỉ dành cho người quản lý công trình.",
-    "unavailable": "Khoản chi này không tồn tại hoặc chỉ dành cho người quản lý công trình."
+    "unavailable": "Khoản chi này không tồn tại hoặc chỉ dành cho người quản lý công trình.",
+    "addExpense": "Chi phí",
+    "addExpenseA11y": "Thêm chi phí"
   },
   "labor": {
     "tabs": {

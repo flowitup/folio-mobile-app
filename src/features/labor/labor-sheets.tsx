@@ -679,11 +679,13 @@ export const LogDaySheet = forwardRef<SheetHandle, LogDayProps>(
                 </View>
                 {state.checked ? (
                   <View className="mt-2 flex-row items-center">
-                    <Text className="mr-2 text-xs text-muted-foreground">
+                    <Text className="mr-2 min-w-0 flex-1 text-xs text-muted-foreground">
                       {t("labor.log.supplement")}
                     </Text>
                     <Pressable
                       testID={`log-supp-minus-${worker.id}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${t("labor.log.supplement")} −1`}
                       onPress={() =>
                         update(worker.id, {
                           supplement_hours: Math.max(
@@ -692,15 +694,23 @@ export const LogDaySheet = forwardRef<SheetHandle, LogDayProps>(
                           ),
                         })
                       }
-                      className="rounded border border-border px-3 py-1"
+                      className="h-11 w-11 items-center justify-center rounded-lg border border-border"
                     >
-                      <Text>−</Text>
+                      <Text className="text-lg text-primary">−</Text>
                     </Pressable>
-                    <Text className="mx-3 text-sm text-primary">
-                      {state.supplement_hours} h
+                    {/* Wide enough for "12 h" so the value never breaks onto two lines. */}
+                    <Text
+                      testID={`log-supp-value-${worker.id}`}
+                      className="mx-1 min-w-[48px] text-center text-sm text-primary"
+                      numberOfLines={1}
+                    >
+                      {state.supplement_hours}
+                      {"\u00a0"}h
                     </Text>
                     <Pressable
                       testID={`log-supp-plus-${worker.id}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${t("labor.log.supplement")} +1`}
                       onPress={() =>
                         update(worker.id, {
                           supplement_hours: Math.min(
@@ -709,9 +719,9 @@ export const LogDaySheet = forwardRef<SheetHandle, LogDayProps>(
                           ),
                         })
                       }
-                      className="rounded border border-border px-3 py-1"
+                      className="h-11 w-11 items-center justify-center rounded-lg border border-border"
                     >
-                      <Text>+</Text>
+                      <Text className="text-lg text-primary">+</Text>
                     </Pressable>
                   </View>
                 ) : null}

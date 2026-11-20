@@ -4,6 +4,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { shortMonthLabel } from "@/components/ui/month-picker";
 import { Card } from "@/components/ui/primitives";
+import { FitFigure } from "@/features/dashboard/fit-figure";
 import { localeTag } from "@/lib/format/date";
 import { SectionLink } from "@/components/ui/typography";
 import type { AgendaGroup } from "@/lib/dashboard/overview-agenda";
@@ -99,7 +100,7 @@ export function MonthSpendCard({
       className="active:opacity-80"
     >
       <Card radius={20} elevated>
-        <View className="flex-row items-baseline justify-between">
+        <View className="flex-row flex-wrap items-baseline justify-between gap-x-2">
           <Text className="font-sans-semibold text-[15px] leading-[18px] text-ink">
             {t("dashboard.overview.monthSpend", {
               month: shortMonthLabel(currentMonthKey),
@@ -157,14 +158,12 @@ export function MonthSpendCard({
                   {t(`expenses.filters.${bucket.type}`)}
                 </Text>
               </View>
-              <Text
-                className="mt-0.5 font-mono text-[14px] text-ink"
-                numberOfLines={1}
-                adjustsFontSizeToFit
+              <FitFigure
+                className="mt-0.5 font-mono text-ink"
                 testID={`overview-type-${bucket.type}`}
-              >
-                {formatMoney(bucket.value)}
-              </Text>
+                text={formatMoney(bucket.value)}
+                size={14}
+              />
               <Text
                 className="font-mono-regular text-[11px]"
                 style={{ color: deltaColor(bucket.deltaPct, tokens) }}
@@ -216,7 +215,7 @@ export function TypeTrendsCard({
       className="active:opacity-80"
     >
       <Card radius={20} elevated>
-        <View className="flex-row items-baseline justify-between">
+        <View className="flex-row flex-wrap items-baseline justify-between gap-x-2">
           <Text className="font-sans-semibold text-[15px] leading-[18px] text-ink">
             {t("dashboard.overview.spendByType")}
           </Text>

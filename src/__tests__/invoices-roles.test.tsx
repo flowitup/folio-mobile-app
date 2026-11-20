@@ -129,6 +129,11 @@ describe("expenses tab · manager", () => {
     ).toBeNull();
     expect(screen.queryByTestId("worker-salary-title")).toBeNull();
 
+    // A labelled button in the header, not a floating "+" over the amounts (P-11).
+    expect(screen.getByTestId("invoices-create")).toHaveTextContent(
+      i18n.t("invoices.addExpense"),
+      { exact: false },
+    );
     await fireEvent.press(screen.getByTestId("invoices-create"));
     expect(mockRouter.push).toHaveBeenCalledWith(
       `/projects/${PROJECT_ID}/invoices/new`,

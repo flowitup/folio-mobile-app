@@ -12,7 +12,7 @@ import { capitalizeFirst } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { ledgerTypeOf } from "@/lib/invoices/group-invoices-by-month";
 import { highlightRowTint, invoiceTotals } from "@/lib/invoices/invoice-totals";
-import { INK_BLOCK, useTokens } from "@/theme/tokens";
+import { useTokens } from "@/theme/tokens";
 
 /**
  * 1b purse card on the ink hero: outlined r14, muted label + "71 %", 16px mono remaining,
@@ -300,6 +300,3 @@ export function ExpenseMonthCard({
     </Card>
   );
 }
-
-/** Colors the 1b FAB / accent buttons draw on the ink block. */
-export const INK_FAB_SHADOW = `0 12px 24px -8px ${INK_BLOCK.accent}99`;
