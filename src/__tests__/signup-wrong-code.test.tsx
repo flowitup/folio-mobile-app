@@ -52,10 +52,34 @@ async function reachNameStep() {
   );
   await fireEvent.press(screen.getByTestId("signup-send-code"));
   await waitFor(() => screen.getByTestId("signup-code"));
-  await fireEvent.changeText(screen.getByTestId("signup-code"), "000000");
-  await fireEvent.press(screen.getByTestId("signup-code-next"));
+  // The six boxes move on to the name step by themselves once full (D4).
+  await fireEvent.changeText(screen.getByTestId("signup-code-0"), "000000");
   await fireEvent.changeText(screen.getByTestId("signup-name"), "Chef");
 }
+
+describe("the sign-up code step (D4)", () => {
+  it("uses the sign-in screen's six boxes and moves on without a button press", async () => {
+    await render(
+      <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
+        <SignupScreen />
+      </SafeAreaProvider>,
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("signup-phone"),
+      "06 12 34 56 78",
+    );
+    await fireEvent.press(screen.getByTestId("signup-send-code"));
+    await waitFor(() => screen.getByTestId("signup-code-0"));
+    expect(screen.getByTestId("signup-code-5")).toBeTruthy();
+
+    await fireEvent.changeText(screen.getByTestId("signup-code-0"), "4242");
+    expect(screen.queryByTestId("signup-name")).toBeNull();
+    await fireEvent.changeText(screen.getByTestId("signup-code-4"), "42");
+
+    expect(await screen.findByTestId("signup-name")).toBeTruthy();
+    expect(mockSignUpWithOtp).not.toHaveBeenCalled();
+  });
+});
 
 describe("signing up with a wrong code", () => {
   it("returns to the code step on a 401, whatever the language", async () => {
@@ -71,6 +95,10 @@ describe("signing up with a wrong code", () => {
     expect(screen.getByTestId("signup-error")).toHaveTextContent(
       i18n.t("login.errors.invalidCode"),
     );
+    // Emptied, so typing the right code moves on again by itself.
+    expect(screen.getByTestId("signup-code-5")).toHaveDisplayValue("");
+    await fireEvent.changeText(screen.getByTestId("signup-code-0"), "424242");
+    expect(screen.getByTestId("signup-name")).toHaveDisplayValue("Chef");
   });
 
   it("keeps the user on the name step when the failure is not the code", async () => {

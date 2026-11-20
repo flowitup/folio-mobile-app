@@ -4,10 +4,12 @@ import type { RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
+import { FrenchPhoneField } from "@/components/auth/french-phone-field";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
 import { Input } from "@/components/ui/input";
 import { Sheet } from "@/components/ui/sheet";
+import { Eyebrow } from "@/components/ui/typography";
 import {
   AddMemberConflictError,
   useAddMemberByPhone,
@@ -122,15 +124,18 @@ export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
             />
           ) : !candidates ? (
             <>
-              <Input
-                testID="add-member-phone"
-                label={t("companies.members.addByPhone.phoneLabel")}
-                placeholder="06 12 34 56 78"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                autoComplete="tel"
-              />
+              {/* The sign-in screen's own field (FR +33, "6 12 34 56 78"): the number is
+                  written here the way its owner will type it to sign up. */}
+              <Eyebrow className="mb-1.5">
+                {t("companies.members.addByPhone.phoneLabel")}
+              </Eyebrow>
+              <View className="mb-2">
+                <FrenchPhoneField
+                  testID="add-member-phone"
+                  value={phone}
+                  onChangeText={setPhone}
+                />
+              </View>
               <Input
                 testID="add-member-name"
                 label={t("companies.members.addByPhone.nameLabel")}

@@ -62,6 +62,16 @@ describe("adding a member by phone", () => {
     expect(screen.getByText(i18n.t("login.invalidPhone"))).toBeTruthy();
   });
 
+  it("shows the number the way the sign-in screen does (FR +33)", async () => {
+    await renderSheet();
+
+    expect(screen.getByText("+33")).toBeTruthy();
+    expect(screen.getByTestId("add-member-phone")).toHaveProp(
+      "placeholder",
+      "6 12 34 56 78",
+    );
+  });
+
   it("sends a French number in E.164, however the user spaced it", async () => {
     await renderSheet();
 

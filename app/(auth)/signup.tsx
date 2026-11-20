@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/auth/auth-context";
 import { FrenchPhoneField } from "@/components/auth/french-phone-field";
+import { CODE_LENGTH, OtpCodeBoxes } from "@/components/auth/otp-code-boxes";
 import { LegalLinks } from "@/components/legal-links";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/typography";
@@ -112,6 +113,13 @@ export default function SignupScreen() {
     }
   }
 
+  /** The code goes to the backend with the name, so a full row moves on to the name step. */
+  function codeComplete(completed: string) {
+    if (!new RegExp(`^\\d{${CODE_LENGTH}}$`).test(completed)) return;
+    setError(null);
+    setStep("name");
+  }
+
   async function create() {
     if (!phone || !/^\d{6}$/.test(code) || !name.trim()) return;
     setSubmitting(true);
@@ -123,8 +131,11 @@ export default function SignupScreen() {
       // A wrong or expired code is a 401 — send the user back to the code step. The status
       // is what decides it: the message is translated, so matching words in it left a
       // Vietnamese (the default locale) user stranded on the name step.
-      if (caught instanceof AuthRequestError && caught.status === 401)
+      // The boxes are emptied so that typing the right code moves on again by itself.
+      if (caught instanceof AuthRequestError && caught.status === 401) {
+        setCode("");
         setStep("code");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -198,20 +209,17 @@ export default function SignupScreen() {
               />
             </Text>
             <Eyebrow className="mb-1.5">{t("login.code")}</Eyebrow>
-            <View className={`${FIELD} mb-6`}>
-              <TextInput
+            {/* The sign-in screen's six boxes: a full row moves on by itself. */}
+            <View className="mb-6">
+              <OtpCodeBoxes
                 testID="signup-code"
-                className="flex-1 font-mono text-[22px] tracking-[6px] text-ink"
-                autoComplete="sms-otp"
-                keyboardType="number-pad"
-                textContentType="oneTimeCode"
-                maxLength={6}
-                placeholder="••••••"
-                placeholderTextColor={tokens.muted2}
                 value={code}
-                onChangeText={(text) => setCode(text.replace(/\D/g, ""))}
-                onSubmitEditing={() => /^\d{6}$/.test(code) && setStep("name")}
-                autoFocus
+                onChange={setCode}
+                onComplete={codeComplete}
+                invalid={error !== null}
+                positionLabel={(position) =>
+                  t("login.codeDigit", { position, total: CODE_LENGTH })
+                }
               />
             </View>
             <ErrorLine error={error} />
