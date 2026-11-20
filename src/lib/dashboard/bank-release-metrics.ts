@@ -27,6 +27,21 @@ export function computeBankReleaseMetrics(
   };
 }
 
+/**
+ * Money the client paid on a facture, booked as a release generated from it
+ * (`source_billing_document_id`). It funds the project but is not a draw on the bank
+ * credit, so the credit still to draw leaves it out (P-05).
+ */
+export function computeClientPaid(invoices: Invoice[]): number {
+  return invoices
+    .filter(
+      (inv) =>
+        inv.type === "released_funds" &&
+        Boolean(inv.source_billing_document_id),
+    )
+    .reduce((sum, inv) => sum + inv.total_amount, 0);
+}
+
 export interface BankDraw {
   id: string;
   number: string;

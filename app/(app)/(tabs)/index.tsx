@@ -25,7 +25,10 @@ import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useTasks } from "@/features/tasks/tasks-api";
-import { computeBankReleaseMetrics } from "@/lib/dashboard/bank-release-metrics";
+import {
+  computeBankReleaseMetrics,
+  computeClientPaid,
+} from "@/lib/dashboard/bank-release-metrics";
 import { countWorkersOnSite } from "@/lib/dashboard/weather";
 import { groupAgendaTasks } from "@/lib/dashboard/overview-agenda";
 import {
@@ -93,6 +96,7 @@ function OverviewTabContent() {
   const budgetValue = project?.budget == null ? null : Number(project.budget);
   const metrics = useMemo(() => {
     const spentTotal = computeSpentTotal(rows);
+    const clientPaid = computeClientPaid(rows);
     const series = buildMonthlySpendSeries(rows, 6, referenceDate);
     return {
       spentTotal,
@@ -103,7 +107,10 @@ function OverviewTabContent() {
         deltaPct: computeMonthToDateDelta(rows, referenceDate).deltaPct,
       },
       pendingCompany: computePendingRefunds(rows),
-      bank: computeBankReleaseMetrics(budgetValue, fundsReleased),
+      // A client's payment on a facture is booked as a release but draws nothing on the bank
+      // credit: only the releases the bank made count against it.
+      clientPaid,
+      bank: computeBankReleaseMetrics(budgetValue, fundsReleased - clientPaid),
       buckets: buildTypeMonthlyBuckets(rows, 6, referenceDate),
     };
   }, [rows, budgetValue, fundsReleased, referenceDate]);
@@ -166,6 +173,7 @@ function OverviewTabContent() {
                 ? metrics.bank.remaining
                 : null
             }
+            clientPaid={canViewBudget ? metrics.clientPaid : 0}
             onAddInvoice={() =>
               router.push(`/projects/${projectId}/invoices/new`)
             }

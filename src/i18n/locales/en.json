@@ -1823,7 +1823,8 @@
       "refundItems_other": "{{count}} items · company",
       "monthSpend": "Spend {{month}}",
       "taskCount_one": "{{count}} task",
-      "taskCount_other": "{{count}} tasks"
+      "taskCount_other": "{{count}} tasks",
+      "clientPaid": "Paid by the client"
     },
     "today": {
       "title": "Today on site",

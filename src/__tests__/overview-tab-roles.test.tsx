@@ -281,6 +281,48 @@ describe("overview tab · admin", () => {
     });
   });
 
+  it("does not count a client's facture payment against the bank credit", async () => {
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) => {
+      const result = await answer(path, options as never);
+      if (path !== "/api/v1/projects/{project_id}/invoices") return result;
+      const data = result.data as {
+        invoices: Invoice[];
+        funds_released_total: number;
+      };
+      return {
+        ...result,
+        data: {
+          ...data,
+          invoices: [
+            ...data.invoices,
+            {
+              ...INVOICE_MATERIALS,
+              id: "rel-client",
+              type: "released_funds",
+              total_amount: 8169,
+              source_billing_document_id: "bd-1",
+              is_auto_generated: true,
+            },
+          ],
+          funds_released_total: data.funds_released_total + 8169,
+        },
+      };
+    });
+    await renderWithProviders(<OverviewTab />);
+    await screen.findByTestId("overview-headline");
+
+    // Still 60 000 − 20 000 drawn from the bank: the client's 8 169 is no draw.
+    await waitFor(() =>
+      expect(screen.getByTestId("overview-figure-bank")).toHaveTextContent(
+        containing(formatMoney(40000)),
+      ),
+    );
+    expect(screen.getByTestId("overview-figure-client-paid")).toHaveTextContent(
+      containing(formatMoney(8169)),
+    );
+  });
+
   it("opens the refund list of the project's company for pending refunds", async () => {
     withPendingRefund();
     await renderWithProviders(<OverviewTab />);

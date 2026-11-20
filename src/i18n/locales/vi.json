@@ -1823,7 +1823,8 @@
       "refundItems_other": "{{count}} khoản · công ty",
       "monthSpend": "Chi {{month}}",
       "taskCount_one": "{{count}} việc",
-      "taskCount_other": "{{count}} việc"
+      "taskCount_other": "{{count}} việc",
+      "clientPaid": "Khách đã trả"
     },
     "today": {
       "title": "Hôm nay tại công trường",

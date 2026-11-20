@@ -3,6 +3,7 @@ import type { Task } from "@/features/tasks/tasks-api";
 import {
   buildDrawSeries,
   computeBankReleaseMetrics,
+  computeClientPaid,
 } from "@/lib/dashboard/bank-release-metrics";
 import { groupAgendaTasks } from "@/lib/dashboard/overview-agenda";
 import {
@@ -162,5 +163,40 @@ describe("agenda grouping", () => {
       ["today", ["2"]],
       ["thisWeek", ["3"]],
     ]);
+  });
+});
+
+describe("computeClientPaid (P-05)", () => {
+  it("adds up only the releases generated from a facture", () => {
+    const rows = [
+      inv({
+        id: "r-client",
+        type: "released_funds",
+        total_amount: 8169,
+        issue_date: "2026-10-07",
+        source_billing_document_id: "bd-1",
+      }),
+      inv({
+        id: "r-bank",
+        type: "released_funds",
+        total_amount: 5000,
+        issue_date: "2026-10-01",
+      }),
+      inv({
+        id: "m-1",
+        type: "materials_services",
+        total_amount: 300,
+        issue_date: "2026-10-02",
+        source_billing_document_id: "bd-2",
+      }),
+    ];
+    expect(computeClientPaid(rows)).toBe(8169);
+  });
+
+  it("leaves the bank credit whole when only the client paid", () => {
+    const released = 8169;
+    const clientPaid = 8169;
+    const bank = computeBankReleaseMetrics(25000, released - clientPaid);
+    expect(bank.remaining).toBe(25000);
   });
 });
