@@ -85,6 +85,22 @@ export function formatDate(iso: string | null | undefined): string {
 }
 
 /**
+ * Date of an API timestamp: naive UTC (`2026-10-09T18:04:43.480832`), `…+00:00` or RFC-1123. No
+ * offset means UTC; fractional seconds are cut to milliseconds, which every JS engine parses.
+ */
+function parseInstant(iso: string): Date {
+  const match =
+    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?)(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})?$/.exec(
+      iso,
+    );
+  return new Date(
+    match
+      ? `${match[1]}${match[2] ? `.${match[2].slice(0, 3).padEnd(3, "0")}` : ""}${match[3] ?? "Z"}`
+      : iso,
+  );
+}
+
+/**
  * Human date of an API timestamp in the device time zone (`timeZone` only for tests). Takes naive UTC
  * (`2026-10-09T18:04:43.480832`), `…+00:00` and `Fri, 09 Oct 2026 18:04:43 GMT`; formatDate would show
  * the UTC day, a day early for an evening upload in Vietnam. A bare `YYYY-MM-DD` stays a calendar day.
@@ -94,21 +110,34 @@ export function formatInstant(
   timeZone?: string,
 ): string {
   if (!iso || /^\d{4}-\d{2}-\d{2}$/.test(iso)) return formatDate(iso);
-  const match =
-    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?)(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})?$/.exec(
-      iso,
-    );
-  // No offset means UTC; fractional seconds are cut to milliseconds, which every JS engine parses.
-  const date = new Date(
-    match
-      ? `${match[1]}${match[2] ? `.${match[2].slice(0, 3).padEnd(3, "0")}` : ""}${match[3] ?? "Z"}`
-      : iso,
-  );
+  const date = parseInstant(iso);
   if (Number.isNaN(date.getTime())) return formatDate(iso);
   return new Intl.DateTimeFormat(localeTag(), {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone,
+  }).format(date);
+}
+
+/**
+ * Day and time of an API timestamp in the device time zone (`timeZone` only for tests), for "who
+ * changed it, when" lines: `20 thg 11, 2026, 14:32`. Same inputs as formatInstant; a bare
+ * `YYYY-MM-DD` stays a calendar day.
+ */
+export function formatInstantDateTime(
+  iso: string | null | undefined,
+  timeZone?: string,
+): string {
+  if (!iso || /^\d{4}-\d{2}-\d{2}$/.test(iso)) return formatDate(iso);
+  const date = parseInstant(iso);
+  if (Number.isNaN(date.getTime())) return formatDate(iso);
+  return new Intl.DateTimeFormat(localeTag(), {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     timeZone,
   }).format(date);
 }
