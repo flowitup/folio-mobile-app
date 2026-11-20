@@ -1455,7 +1455,7 @@
       "fields": {
         "legalName": {
           "label": "Tên pháp lý",
-          "placeholder": "vd. Công ty TNHH Lavandou"
+          "placeholder": "vd. Lavandou Bâtiment SARL"
         },
         "address": {
           "label": "Địa chỉ",
