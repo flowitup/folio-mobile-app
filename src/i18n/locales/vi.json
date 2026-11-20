@@ -1831,7 +1831,10 @@
         "snow": "tuyết",
         "showers": "mưa rào",
         "thunderstorm": "dông"
-      }
+      },
+      "logToday": "Chấm công hôm nay",
+      "editToday_one": "{{count}} thợ hôm nay · Sửa",
+      "editToday_other": "{{count}} thợ hôm nay · Sửa"
     }
   },
   "salaries": {

@@ -129,6 +129,19 @@ function OverviewTabContent() {
       pathname: "/(app)/(tabs)/labor",
       params: { segment: "payments", focus: Date.now().toString() },
     });
+  // "Today on site" opens today's (Paris) attendance: `log=1` asks the labor tab to present the
+  // log sheet once the day is selected; once someone is logged, `log=edit` shows the day's card
+  // with the entries to correct instead.
+  const logToday = () =>
+    router.navigate({
+      pathname: "/(app)/(tabs)/labor",
+      params: {
+        segment: "calendar",
+        day: businessToday(),
+        log: workersOnSite ? "edit" : "1",
+        focus: Date.now().toString(),
+      },
+    });
 
   return (
     <InkSheetScreen
@@ -239,6 +252,7 @@ function OverviewTabContent() {
             // Attendance is scoped to the caller's own worker without labor or pay access, so
             // a head count would read "no worker on site" on a busy site.
             workersOnSite={canPayLabor ? workersOnSite : undefined}
+            onLog={canManageLabor ? logToday : undefined}
           />
         </>
       ) : null}

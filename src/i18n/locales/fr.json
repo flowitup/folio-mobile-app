@@ -1831,7 +1831,10 @@
         "snow": "neige",
         "showers": "averses",
         "thunderstorm": "orage"
-      }
+      },
+      "logToday": "Pointer aujourd'hui",
+      "editToday_one": "{{count}} ouvrier aujourd'hui · Modifier",
+      "editToday_other": "{{count}} ouvriers aujourd'hui · Modifier"
     }
   },
   "salaries": {

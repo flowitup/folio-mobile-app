@@ -1831,7 +1831,10 @@
         "snow": "snow",
         "showers": "showers",
         "thunderstorm": "thunderstorm"
-      }
+      },
+      "logToday": "Log today's attendance",
+      "editToday_one": "{{count}} worker today · Edit",
+      "editToday_other": "{{count}} workers today · Edit"
     }
   },
   "salaries": {

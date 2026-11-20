@@ -1,6 +1,6 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -121,6 +121,11 @@ function LaborTabContent() {
     focus?: string;
     /** A bell entry or push about one day (YYYY-MM-DD): the calendar opens on it. */
     day?: string;
+    /**
+     * With `day` (the overview's "today on site"): "1" also opens that day's log sheet, "edit"
+     * brings the calendar and that day's card into view to correct what is logged.
+     */
+    log?: string;
   }>();
   const { projectId, project: selected } = useSelectedProject();
   const id = projectId;
@@ -158,6 +163,19 @@ function LaborTabContent() {
       setSegment(params.segment as Segment);
   }, [params.segment, params.focus]);
 
+  // Set by `log=1`; the sheet opens once the roster and the permission to log are known.
+  const pendingLog = useRef(false);
+  // Set by `log=edit`; the calendar scrolls to the top once it has been laid out (or right
+  // away when it already was and does not lay out again).
+  const pendingScroll = useRef(false);
+  const scrollToCalendar = useCallback(() => {
+    if (!pendingScroll.current) return;
+    pendingScroll.current = false;
+    scrollRef.current?.scrollTo({
+      y: Math.max(0, calendarTop.current - CALENDAR_SCROLL_MARGIN),
+      animated: true,
+    });
+  }, []);
   // Applied once, then dropped from the route, so tapping the same entry again re-applies it.
   useEffect(() => {
     if (!params.day || !/^\d{4}-\d{2}-\d{2}$/.test(params.day)) return;
@@ -165,8 +183,15 @@ function LaborTabContent() {
     setMonth(params.day.slice(0, 7));
     setPickedDay(params.day);
     /* eslint-enable react-hooks/set-state-in-effect */
-    router.setParams({ day: undefined });
-  }, [params.day, router]);
+    if (params.log === "1") pendingLog.current = true;
+    if (params.log === "edit") {
+      pendingScroll.current = true;
+      setTimeout(() => {
+        if (calendarTop.current > 0) scrollToCalendar();
+      }, 50);
+    }
+    router.setParams({ day: undefined, log: undefined });
+  }, [params.day, params.log, router, scrollToCalendar]);
 
   const project = useProject(id);
   // Inactive workers included: their unpaid days stay payable and the roster can
@@ -320,6 +345,15 @@ function LaborTabContent() {
       ? pickedSegment
       : segments[0];
   const canExport = fullLaborView || (workers.data ?? []).length > 0;
+  const workersLoaded = workers.data !== undefined;
+
+  // `log=1`: present the log sheet for the day just selected. Deferred a tick so the sheet
+  // renders with that day (its `date` prop) before it opens, as the other sheets do.
+  useEffect(() => {
+    if (!pendingLog.current || !canManageLabor || !workersLoaded) return;
+    pendingLog.current = false;
+    setTimeout(() => logDaySheet.current?.open(), 0);
+  }, [canManageLabor, workersLoaded, params.log]);
 
   async function submitBulk(bulkEntries: BulkLogEntry[], acknowledge = false) {
     if (!acknowledge) {
@@ -479,6 +513,7 @@ function LaborTabContent() {
                 testID="attendance-calendar-block"
                 onLayout={(event) => {
                   calendarTop.current = event.nativeEvent.layout.y;
+                  scrollToCalendar();
                 }}
               >
                 <AttendanceCalendar

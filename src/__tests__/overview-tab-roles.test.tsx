@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import i18n from "@/i18n";
 import OverviewTab from "../../app/(app)/(tabs)/index";
+import { businessToday } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import type { Invoice } from "@/features/invoices/invoice-types";
 import {
@@ -96,7 +97,6 @@ function withPendingRefund() {
   });
 }
 
-
 describe("overview tab · manager", () => {
   beforeEach(() => {
     mockPersona = persona("manager");
@@ -155,6 +155,41 @@ describe("overview tab · manager", () => {
     jest.restoreAllMocks();
   });
 
+  it("turns today on site into one button straight into today's attendance", async () => {
+    await renderWithProviders(<OverviewTab />);
+    const card = await screen.findByTestId("overview-today-on-site");
+    // The fixture has one worker logged today, so the card offers to correct it.
+    await waitFor(() =>
+      expect(screen.getByTestId("overview-today-action")).toHaveTextContent(
+        i18n.t("dashboard.today.editToday", { count: 1 }),
+      ),
+    );
+    await fireEvent.press(card);
+    expect(mockRouter.navigate).toHaveBeenCalledWith({
+      pathname: "/(app)/(tabs)/labor",
+      params: {
+        segment: "calendar",
+        day: businessToday(),
+        log: "edit",
+        focus: expect.any(String),
+      },
+    });
+  });
+
+  it("asks to log today while nobody is logged yet", async () => {
+    mockGet.mockImplementation(answerGet(() => mockPersona, { entries: [] }));
+    await renderWithProviders(<OverviewTab />);
+    const card = await screen.findByTestId("overview-today-on-site");
+    expect(screen.getByTestId("overview-today-action")).toHaveTextContent(
+      i18n.t("dashboard.today.logToday"),
+    );
+    await fireEvent.press(card);
+    expect(mockRouter.navigate).toHaveBeenCalledWith({
+      pathname: "/(app)/(tabs)/labor",
+      params: expect.objectContaining({ log: "1", day: businessToday() }),
+    });
+  });
+
   it("drops both invoice actions when the project denies project:manage_invoices", async () => {
     mockPersona = persona("manager", { deny: ["project:manage_invoices"] });
     await renderWithProviders(<OverviewTab />);
@@ -167,6 +202,16 @@ describe("overview tab · manager", () => {
     expect(screen.queryByTestId("overview-add-release")).toBeNull();
     // Paying labor is a different permission and stays.
     expect(screen.getByTestId("overview-pay-labor")).toBeTruthy();
+  });
+
+  it("keeps today on site a plain line for a caller who may not log attendance", async () => {
+    mockPersona = persona("manager", { deny: ["project:manage_labor"] });
+    await renderWithProviders(<OverviewTab />);
+    await screen.findByTestId("overview-today-on-site");
+    expect(screen.queryByTestId("overview-today-action")).toBeNull();
+    expect(
+      screen.getByTestId("overview-today-on-site").props.accessibilityRole,
+    ).toBeUndefined();
   });
 
   it("drops the pay-labor action for a caller who can neither manage labor nor view pay", async () => {
