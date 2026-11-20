@@ -22,6 +22,7 @@ import type {
   LaborDayDescription,
   LaborEntry,
   LaborExportFormat,
+  LaborMonthClosure,
   LaborMonthlySummaryResponse,
   LaborSummaryResponse,
   LogAttendancePayload,
@@ -60,6 +61,7 @@ export const laborKeys = {
     ["projects", p, "labor-summary", from ?? "", to ?? ""] as const,
   summaryAll: (p: string) => ["projects", p, "labor-summary"] as const,
   monthly: (p: string) => ["projects", p, "labor-monthly-summary"] as const,
+  closures: (p: string) => ["projects", p, "labor-month-closures"] as const,
 };
 
 /**
@@ -556,6 +558,72 @@ export function useSetDayDescription(projectId: string) {
         }),
       ),
     invalidates: [laborKeys.dayDescriptions(projectId)],
+  });
+}
+
+// ---- closed months ("Chốt tháng", QĐ-10) ------------------------------------------
+
+/**
+ * The month-closure endpoints are newer than the generated schema snapshot, so they go through
+ * the same client (auth, refresh, errors) without its path typing; callers assert the shape.
+ */
+type UntypedResult = {
+  data?: unknown;
+  error?: unknown;
+  response: Response;
+};
+type UntypedInit = {
+  params: { path: Record<string, string> };
+  body?: unknown;
+};
+const untypedApi = api as unknown as {
+  GET: (path: string, init: UntypedInit) => Promise<UntypedResult>;
+  POST: (path: string, init: UntypedInit) => Promise<UntypedResult>;
+  DELETE: (path: string, init: UntypedInit) => Promise<UntypedResult>;
+};
+const CLOSURES_PATH = "/api/v1/projects/{project_id}/labor-month-closures";
+
+/**
+ * The project's closed months, newest first. `enabled`: the caller sees the whole project's
+ * labor (manage_labor or view_pay); anyone else gets 403, and nothing counts as closed.
+ */
+export function useLaborMonthClosures(projectId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: laborKeys.closures(projectId),
+    enabled: Boolean(projectId) && enabled,
+    queryFn: async () =>
+      unwrapAs<{ closures?: LaborMonthClosure[] }>(
+        await untypedApi.GET(CLOSURES_PATH, {
+          params: { path: { project_id: projectId } },
+        }),
+      ).closures ?? [],
+  });
+}
+
+/** Close `month` (`YYYY-MM`). Locks nothing: later changes still save and are recorded. */
+export function useCloseLaborMonth(projectId: string) {
+  return useApiMutation<{ month: string }, LaborMonthClosure>({
+    mutationFn: async ({ month }) =>
+      unwrapAs<LaborMonthClosure>(
+        await untypedApi.POST(CLOSURES_PATH, {
+          params: { path: { project_id: projectId } },
+          body: { month },
+        }),
+      ),
+    invalidates: [laborKeys.closures(projectId)],
+  });
+}
+
+/** Undo a close: the month is open again and its list of later changes is dropped. */
+export function useReopenLaborMonth(projectId: string) {
+  return useApiMutation<{ month: string }>({
+    mutationFn: async ({ month }) =>
+      unwrapVoid(
+        await untypedApi.DELETE(`${CLOSURES_PATH}/{month}`, {
+          params: { path: { project_id: projectId, month } },
+        }),
+      ),
+    invalidates: [laborKeys.closures(projectId)],
   });
 }
 

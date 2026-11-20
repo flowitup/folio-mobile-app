@@ -392,3 +392,49 @@ export interface SelfEditInput {
   supplement_hours?: number;
   note?: string | null;
 }
+
+/** What a change made after a month was closed did ("Chốt tháng", QĐ-10). */
+export type LaborMonthClosureEditKind =
+  | "entry_created"
+  | "entry_updated"
+  | "entry_deleted"
+  | "entry_self_logged"
+  | "entry_self_edited"
+  | "entry_validated"
+  | "entry_rejected"
+  | "change_approved"
+  | "payment_created"
+  | "payment_updated"
+  | "payment_deleted"
+  | "rate_changed"
+  | "rate_change_deleted";
+
+export interface LaborMonthClosureEdit {
+  kind: LaborMonthClosureEditKind | string;
+  edited_at: string | null;
+  user_id: string | null;
+  user_name: string | null;
+  entry_id: string | null;
+  worker_id: string | null;
+  worker_name: string | null;
+  /** The day the change touched, when it was a day (`YYYY-MM-DD`). */
+  entry_date: string | null;
+}
+
+/**
+ * A closed labor month (GET /projects/{id}/labor-month-closures). Closing locks nothing: a
+ * later change still saves, and is listed in `edits` (newest first).
+ */
+export interface LaborMonthClosure {
+  project_id: string;
+  /** `YYYY-MM`. */
+  month: string;
+  closed_at: string | null;
+  closed_by_user_id: string | null;
+  closed_by_name: string | null;
+  edited_after_close: number;
+  last_edited_at: string | null;
+  last_edited_by_user_id: string | null;
+  last_edited_by_name: string | null;
+  edits: LaborMonthClosureEdit[];
+}

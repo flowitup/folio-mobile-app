@@ -19,6 +19,8 @@ export type PushData = {
   worker_id?: string;
   /** billing_status: `devis` (quote) or `facture` (invoice). */
   document_kind?: string;
+  /** reminder_monthly_summary: the month summed up (YYYY-MM). */
+  month?: string;
 };
 
 export type NotificationRoute = {
@@ -120,7 +122,9 @@ function projectFromChannelKey(key: string | null): string | null {
  * workers list; a reminder or an accepted invitation the project section that shows it; a
  * chat push that channel; a task push the planning tab with that task open; a refund or an
  * expense the expense itself; a billing push the document; a company team change the company
- * members; being added to a project its overview. Access removed, a deleted project or an
+ * members; being added to a project its overview. Scheduled reminders: "no attendance today"
+ * opens that day's log sheet on the project, overdue factures the invoices list, the month
+ * summary the overview. Access removed, a deleted project or an
  * unknown payload open nothing (`path` and `projectId` null).
  */
 export function routeForNotification(
@@ -156,6 +160,34 @@ export function routeForNotification(
   }
   if (kind && COMPANY_MEMBER_KINDS.has(kind)) {
     return { projectId: null, sheet: null, path: "/company/members" };
+  }
+  // Scheduled reminders (QĐ-9). "No attendance today": the project's labor calendar on that
+  // day with the log sheet open, as the overview's "today on site" does when nobody is logged.
+  if (kind === "reminder_attendance") {
+    const projectId = asId(data?.project_id);
+    return {
+      projectId,
+      sheet: null,
+      path: projectId
+        ? withQuery("/(app)/(tabs)/labor", {
+            segment: "calendar",
+            day: asId(data?.date),
+            log: asId(data?.date) ? "1" : null,
+          })
+        : null,
+    };
+  }
+  // Overdue factures: the billing list on its invoices segment.
+  if (kind === "reminder_overdue_factures") {
+    return {
+      projectId: null,
+      sheet: null,
+      path: "/(app)/(tabs)/billing?kind=facture",
+    };
+  }
+  // The month summary: the overview (the app has no company view yet).
+  if (kind === "reminder_monthly_summary") {
+    return { projectId: null, sheet: null, path: "/(app)/(tabs)" };
   }
   if (kind === "billing_status") {
     const documentId = asId(data?.document_id);

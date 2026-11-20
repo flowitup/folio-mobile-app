@@ -32,6 +32,7 @@ import type {
   LaborEntry,
   Worker,
 } from "@/features/labor/labor-types";
+import { useClosedMonths } from "@/features/labor/month-closure";
 import { currentMonth, formatMonth, toIsoDate } from "@/lib/format/date";
 import { MAX_EXPORT_MONTHS, isValidMonthRange } from "@/lib/labor/month-range";
 import {
@@ -282,6 +283,7 @@ export const PaymentSheet = forwardRef<
   const paymentMethods = usePaymentMethods(companyId ?? undefined);
   // A payment, not an invoice: one "Payment recorded." toast, as on Salaries.
   const createInvoice = useCreateInvoice(projectId, { silent: true });
+  const { confirmWrite } = useClosedMonths();
   const [workerId, setWorkerId] = useState<string | null>(
     initial?.worker.id ?? null,
   );
@@ -293,7 +295,7 @@ export const PaymentSheet = forwardRef<
   }, [initial]);
   const row = rows.find((r) => r.worker.id === workerId) ?? null;
 
-  function record() {
+  async function record() {
     // Cents, as the server stores them: no float noise in the saved unit price.
     const value = parseCentsInput(amount);
     if (!row || !value || value <= 0)
@@ -305,6 +307,8 @@ export const PaymentSheet = forwardRef<
         }),
         "error",
       );
+    // A payment for a closed month still saves, after "Tháng X đã chốt. Vẫn lưu?".
+    if (!(await confirmWrite([month]))) return;
     createInvoice.mutate(
       {
         type: "labor",

@@ -38,6 +38,7 @@ import {
   useDeleteAttendance,
   useDeleteWorker,
   useLaborEntries,
+  useLaborMonthClosures,
   useLaborSummary,
   useRejectAttendance,
   useUpdateAttendance,
@@ -76,6 +77,11 @@ import type {
 } from "@/features/labor/labor-types";
 import { projectCan, useProject } from "@/features/projects/projects-api";
 import { LaborOverview } from "@/features/labor/labor-overview";
+import {
+  LaborMonthClosureContext,
+  MonthClosedBadge,
+  useMonthClosureGuard,
+} from "@/features/labor/month-closure";
 import { WorkerProfileTab } from "@/features/labor/worker-profile-tab";
 import { RestrictedArea } from "@/features/labor/restricted-area";
 import {
@@ -346,6 +352,16 @@ function LaborTabContent() {
       : segments[0];
   const canExport = fullLaborView || (workers.data ?? []).length > 0;
   const workersLoaded = workers.data !== undefined;
+  // Closed months ("Chốt tháng", QĐ-10): readable by whoever sees the whole project's labor.
+  // Every save below into a closed month asks "Tháng X đã chốt. Vẫn lưu?" first.
+  const closuresQuery = useLaborMonthClosures(id, fullLaborView);
+  const closures = useMemo(
+    () => (fullLaborView ? (closuresQuery.data ?? []) : []),
+    [fullLaborView, closuresQuery.data],
+  );
+  useRefetchOnFocus(closuresQuery.refetch);
+  const closureGuard = useMonthClosureGuard(closures);
+  const { confirmWrite } = closureGuard.api;
 
   // `log=1`: present the log sheet for the day just selected. Deferred a tick so the sheet
   // renders with that day (its `date` prop) before it opens, as the other sheets do.
@@ -356,6 +372,8 @@ function LaborTabContent() {
   }, [canManageLabor, workersLoaded, params.log]);
 
   async function submitBulk(bulkEntries: BulkLogEntry[], acknowledge = false) {
+    // Asked once: the conflict confirmation re-enters with `acknowledge`.
+    if (!acknowledge && !(await confirmWrite([selectedDay]))) return;
     if (!acknowledge) {
       const personIds = bulkEntries
         .map((e) => workers.data?.find((w) => w.id === e.worker_id)?.person_id)
@@ -403,466 +421,479 @@ function LaborTabContent() {
     );
 
   return (
-    <View className="flex-1 bg-paper">
-      <ProjectTopBar />
-      <ScrollView
-        refreshControl={pullToRefresh}
-        ref={scrollRef}
-        testID="labor-scroll"
-        className="flex-1"
-        contentContainerClassName="px-4 pt-3.5"
-        // The chat button floats over this tab, and the last row — the export button —
-        // is tall enough to reach under it, where it cannot be tapped.
-        contentContainerStyle={{
-          gap: 16,
-          paddingBottom: chatEnabled ? CHAT_FAB_RESERVE : 24,
-        }}
-      >
-        <View className="flex-row items-end justify-between">
-          <View>
-            <ScreenTitle testID="labor-title">{t("tabs.labor")}</ScreenTitle>
-            <Text className="mt-1 font-sans text-[12.5px] text-muted">
-              {t("labor.headerSub", {
-                count: activeCount,
-                month: formatMonth(month),
-              })}
-            </Text>
-          </View>
-          {/* The Summary has its own period (all history, a year, a month). */}
-          {segment !== "overview" ? (
-            <MonthPicker
-              testID="labor-month"
-              value={month}
-              onChange={setMonth}
-              compact
-            />
-          ) : null}
-        </View>
-        <Segmented<Segment>
-          testID="labor-tab"
-          value={segment}
-          onChange={setSegment}
-          options={segments.map((value) => ({
-            value,
-            label: t(`labor.segments.${value}`),
-          }))}
-        />
-
-        {segment === "overview" ? (
-          <>
-            <LaborOverview
-              projectId={id}
-              workers={workers.data ?? []}
-              payments={laborPayments.data}
-              colorOf={colorOf}
-              roleOf={roleOf}
-              onOpenUnassigned={() => setSegment("payments")}
-            />
-            {canExport ? (
-              <Pressable
-                testID="labor-overview-export"
-                accessibilityRole="button"
-                onPress={() => exportSheet.current?.present()}
-                className="h-11 flex-row items-center justify-center gap-2 rounded-xl border border-line-2 active:opacity-70"
-              >
-                <Icon name="download" size={15} color={tokens.ink} />
-                <Text className="font-sans-medium text-[13px] text-ink">
-                  {t("expenses.export")}
-                </Text>
-              </Pressable>
+    <LaborMonthClosureContext.Provider value={closureGuard.api}>
+      <View className="flex-1 bg-paper">
+        <ProjectTopBar />
+        <ScrollView
+          refreshControl={pullToRefresh}
+          ref={scrollRef}
+          testID="labor-scroll"
+          className="flex-1"
+          contentContainerClassName="px-4 pt-3.5"
+          // The chat button floats over this tab, and the last row — the export button —
+          // is tall enough to reach under it, where it cannot be tapped.
+          contentContainerStyle={{
+            gap: 16,
+            paddingBottom: chatEnabled ? CHAT_FAB_RESERVE : 24,
+          }}
+        >
+          <View className="flex-row items-end justify-between">
+            <View>
+              <ScreenTitle testID="labor-title">{t("tabs.labor")}</ScreenTitle>
+              <Text className="mt-1 font-sans text-[12.5px] text-muted">
+                {t("labor.headerSub", {
+                  count: activeCount,
+                  month: formatMonth(month),
+                })}
+              </Text>
+            </View>
+            {/* The Summary has its own period (all history, a year, a month). */}
+            {segment !== "overview" ? (
+              <MonthPicker
+                testID="labor-month"
+                value={month}
+                onChange={setMonth}
+                compact
+              />
             ) : null}
-          </>
-        ) : null}
+          </View>
+          <Segmented<Segment>
+            testID="labor-tab"
+            value={segment}
+            onChange={setSegment}
+            options={segments.map((value) => ({
+              value,
+              label: t(`labor.segments.${value}`),
+            }))}
+          />
 
-        {segment === "calendar" ? (
-          <>
-            <LaborKpis
-              days={summary.data?.total_days ?? 0}
-              cost={summary.data?.total_cost ?? 0}
-              unpaid={unpaid}
-              showPay={canViewPay}
-            />
-            <Segmented<AttendanceView>
-              testID="attendance-view"
-              size="sm"
-              value={attendanceView}
-              onChange={setAttendanceView}
-              options={ATTENDANCE_VIEWS.map((value) => ({
-                value,
-                label: t(`labor.view.${value}`),
-              }))}
-            />
-            {entries.isPending ? (
-              <ActivityIndicator className="my-6" color={tokens.ink} />
-            ) : attendanceView === "list" ? (
-              <AttendanceList
-                entries={entries.data ?? []}
+          {segment === "overview" ? (
+            <>
+              <LaborOverview
+                projectId={id}
+                workers={workers.data ?? []}
+                payments={laborPayments.data}
+                canManage={canManageLabor}
                 colorOf={colorOf}
                 roleOf={roleOf}
-                // Editing an entry needs project:manage_labor, as on the day card.
-                onEntry={
-                  canManageLabor
-                    ? (entry) => {
-                        setEditingEntry(entry);
-                        setTimeout(() => entrySheet.current?.open(), 0);
-                      }
-                    : undefined
-                }
+                onOpenUnassigned={() => setSegment("payments")}
               />
-            ) : (
-              <View
-                testID="attendance-calendar-block"
-                onLayout={(event) => {
-                  calendarTop.current = event.nativeEvent.layout.y;
-                  scrollToCalendar();
-                }}
-              >
-                <AttendanceCalendar
-                  month={month}
+              {canExport ? (
+                <Pressable
+                  testID="labor-overview-export"
+                  accessibilityRole="button"
+                  onPress={() => exportSheet.current?.present()}
+                  className="h-11 flex-row items-center justify-center gap-2 rounded-xl border border-line-2 active:opacity-70"
+                >
+                  <Icon name="download" size={15} color={tokens.ink} />
+                  <Text className="font-sans-medium text-[13px] text-ink">
+                    {t("expenses.export")}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </>
+          ) : null}
+
+          {segment === "calendar" ? (
+            <>
+              <LaborKpis
+                days={summary.data?.total_days ?? 0}
+                cost={summary.data?.total_cost ?? 0}
+                unpaid={unpaid}
+                showPay={canViewPay}
+              />
+              <MonthClosedBadge month={month} />
+              <Segmented<AttendanceView>
+                testID="attendance-view"
+                size="sm"
+                value={attendanceView}
+                onChange={setAttendanceView}
+                options={ATTENDANCE_VIEWS.map((value) => ({
+                  value,
+                  label: t(`labor.view.${value}`),
+                }))}
+              />
+              {entries.isPending ? (
+                <ActivityIndicator className="my-6" color={tokens.ink} />
+              ) : attendanceView === "list" ? (
+                <AttendanceList
                   entries={entries.data ?? []}
                   colorOf={colorOf}
-                  selected={selectedDay}
-                  onSelectDay={selectDay}
+                  roleOf={roleOf}
+                  // Editing an entry needs project:manage_labor, as on the day card.
+                  onEntry={
+                    canManageLabor
+                      ? (entry) => {
+                          setEditingEntry(entry);
+                          setTimeout(() => entrySheet.current?.open(), 0);
+                        }
+                      : undefined
+                  }
                 />
-              </View>
-            )}
-            <LaborDayCard
+              ) : (
+                <View
+                  testID="attendance-calendar-block"
+                  onLayout={(event) => {
+                    calendarTop.current = event.nativeEvent.layout.y;
+                    scrollToCalendar();
+                  }}
+                >
+                  <AttendanceCalendar
+                    month={month}
+                    entries={entries.data ?? []}
+                    colorOf={colorOf}
+                    selected={selectedDay}
+                    onSelectDay={selectDay}
+                  />
+                </View>
+              )}
+              <LaborDayCard
+                canManage={canManageLabor}
+                title={dayCardTitle(selectedDay, localeTag())}
+                subtitle={
+                  selectedHoliday
+                    ? `${t(`labor.holidays.${selectedHoliday}`)} · ${t("labor.holidays.publicHoliday")}`
+                    : null
+                }
+                entries={dayEntries}
+                colorOf={colorOf}
+                roleOf={roleOf}
+                onEntry={(entry) => {
+                  setEditingEntry(entry);
+                  setTimeout(() => entrySheet.current?.open(), 0);
+                }}
+                onLog={() => logDaySheet.current?.open()}
+                onDetails={() => detailsSheet.current?.present()}
+              />
+              {canExport ? (
+                <Pressable
+                  testID="labor-export"
+                  accessibilityRole="button"
+                  onPress={() => exportSheet.current?.present()}
+                  className="h-11 flex-row items-center justify-center gap-2 rounded-xl border border-line-2 active:opacity-70"
+                >
+                  <Icon name="download" size={15} color={tokens.ink} />
+                  <Text className="font-sans-medium text-[13px] text-ink">
+                    {t("expenses.export")}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </>
+          ) : null}
+
+          {segment === "workers" ? (
+            <WorkersPanel
               canManage={canManageLabor}
-              title={dayCardTitle(selectedDay, localeTag())}
-              subtitle={
-                selectedHoliday
-                  ? `${t(`labor.holidays.${selectedHoliday}`)} · ${t("labor.holidays.publicHoliday")}`
-                  : null
-              }
-              entries={dayEntries}
-              colorOf={colorOf}
-              roleOf={roleOf}
-              onEntry={(entry) => {
-                setEditingEntry(entry);
-                setTimeout(() => entrySheet.current?.open(), 0);
+              workers={coloredWorkers}
+              daysOf={(workerId) => daysByWorker.get(workerId) ?? 0}
+              onWorker={(worker) => {
+                setActionWorker(worker);
+                actionsSheet.current?.present();
               }}
-              onLog={() => logDaySheet.current?.open()}
-              onDetails={() => detailsSheet.current?.present()}
-            />
-            {canExport ? (
-              <Pressable
-                testID="labor-export"
-                accessibilityRole="button"
-                onPress={() => exportSheet.current?.present()}
-                className="h-11 flex-row items-center justify-center gap-2 rounded-xl border border-line-2 active:opacity-70"
-              >
-                <Icon name="download" size={15} color={tokens.ink} />
-                <Text className="font-sans-medium text-[13px] text-ink">
-                  {t("expenses.export")}
-                </Text>
-              </Pressable>
-            ) : null}
-          </>
-        ) : null}
-
-        {segment === "workers" ? (
-          <WorkersPanel
-            canManage={canManageLabor}
-            workers={coloredWorkers}
-            daysOf={(workerId) => daysByWorker.get(workerId) ?? 0}
-            onWorker={(worker) => {
-              setActionWorker(worker);
-              actionsSheet.current?.present();
-            }}
-            onAdd={() => {
-              setEditingWorker(undefined);
-              workerForm.current?.open();
-            }}
-          />
-        ) : null}
-
-        {segment === "payments" ? (
-          <>
-            {summary.isPending ? (
-              <ActivityIndicator className="my-6" color={tokens.ink} />
-            ) : null}
-            <PaymentsPanel
-              rows={paymentRows}
-              canRecord={canManageInvoices}
-              onRow={(row) => {
-                setPaymentRow(row);
-                paymentSheet.current?.present();
-              }}
-              onRecord={() => {
-                setPaymentRow(
-                  paymentRows.find((row) => rowDue(row) > 0) ??
-                    paymentRows[0] ??
-                    null,
-                );
-                paymentSheet.current?.present();
+              onAdd={() => {
+                setEditingWorker(undefined);
+                workerForm.current?.open();
               }}
             />
-            {unassignedLabor.length > 0 ? (
-              <View className="gap-2">
-                <Text className="font-sans-medium text-[11px] uppercase tracking-[1.1px] text-muted">
-                  {t("labor.payments.unassigned")}
-                </Text>
-                {unassignedLabor.map((invoice) => (
-                  <Pressable
-                    key={invoice.id}
-                    testID={`unassigned-invoice-${invoice.id}`}
-                    accessibilityRole="button"
-                    onPress={() =>
-                      router.push(`/projects/${id}/invoices/${invoice.id}`)
-                    }
-                    className="flex-row items-center justify-between rounded-[14px] border border-line bg-card px-3.5 py-3 active:opacity-70"
-                  >
-                    <View className="min-w-0 flex-1">
-                      <Text
-                        className="font-sans-medium text-[14px] text-ink"
-                        numberOfLines={1}
-                      >
-                        {invoice.recipient_name}
-                      </Text>
-                      <Text className="font-sans text-[11.5px] text-muted">
-                        {invoice.invoice_number}
-                      </Text>
-                    </View>
-                    <Text className="font-mono text-[14px] text-ink">
-                      {formatMoney(invoice.total_amount)}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            ) : null}
-          </>
-        ) : null}
-      </ScrollView>
+          ) : null}
 
-      <LogDaySheet
-        ref={logDaySheet}
-        date={selectedDay}
-        workers={workers.data ?? []}
-        loggedWorkerIds={new Set(dayEntries.map((e) => e.worker_id))}
-        lastDayEntries={lastDayEntries}
-        submitting={bulkLog.isPending}
-        onSubmit={(bulkEntries) => void submitBulk(bulkEntries)}
-      />
-      <EditEntrySheet
-        ref={entrySheet}
-        entry={editingEntry}
-        submitting={updateEntry.isPending}
-        onSubmit={(values) =>
-          editingEntry &&
-          updateEntry.mutate(
-            { entryId: editingEntry.id, ...values },
-            { onSuccess: () => entrySheet.current?.close() },
-          )
-        }
-        onDelete={() => editingEntry && setDeletingEntry(editingEntry)}
-        deciding={validateEntry.isPending || decideChange.isPending}
-        onDecide={(approve) => {
-          if (!editingEntry) return;
-          if (!approve) return setRejectingEntry(editingEntry);
-          const done = (key: string) => () => {
-            entrySheet.current?.close();
-            showToast(t(key), "success");
-          };
-          const ids = { projectId: id, entryId: editingEntry.id };
-          if (editingEntry.status === "pending")
-            validateEntry.mutate(ids, {
-              onSuccess: done("notifications.attendance.validatedToast"),
-            });
-          else
-            decideChange.mutate(
-              { ...ids, approve: true },
-              {
-                onSuccess: done(
-                  "notifications.attendance.validatedChangeToast",
-                ),
-              },
+          {segment === "payments" ? (
+            <>
+              {summary.isPending ? (
+                <ActivityIndicator className="my-6" color={tokens.ink} />
+              ) : null}
+              <PaymentsPanel
+                rows={paymentRows}
+                canRecord={canManageInvoices}
+                onRow={(row) => {
+                  setPaymentRow(row);
+                  paymentSheet.current?.present();
+                }}
+                onRecord={() => {
+                  setPaymentRow(
+                    paymentRows.find((row) => rowDue(row) > 0) ??
+                      paymentRows[0] ??
+                      null,
+                  );
+                  paymentSheet.current?.present();
+                }}
+              />
+              {unassignedLabor.length > 0 ? (
+                <View className="gap-2">
+                  <Text className="font-sans-medium text-[11px] uppercase tracking-[1.1px] text-muted">
+                    {t("labor.payments.unassigned")}
+                  </Text>
+                  {unassignedLabor.map((invoice) => (
+                    <Pressable
+                      key={invoice.id}
+                      testID={`unassigned-invoice-${invoice.id}`}
+                      accessibilityRole="button"
+                      onPress={() =>
+                        router.push(`/projects/${id}/invoices/${invoice.id}`)
+                      }
+                      className="flex-row items-center justify-between rounded-[14px] border border-line bg-card px-3.5 py-3 active:opacity-70"
+                    >
+                      <View className="min-w-0 flex-1">
+                        <Text
+                          className="font-sans-medium text-[14px] text-ink"
+                          numberOfLines={1}
+                        >
+                          {invoice.recipient_name}
+                        </Text>
+                        <Text className="font-sans text-[11.5px] text-muted">
+                          {invoice.invoice_number}
+                        </Text>
+                      </View>
+                      <Text className="font-mono text-[14px] text-ink">
+                        {formatMoney(invoice.total_amount)}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : null}
+            </>
+          ) : null}
+        </ScrollView>
+
+        <LogDaySheet
+          ref={logDaySheet}
+          date={selectedDay}
+          workers={workers.data ?? []}
+          loggedWorkerIds={new Set(dayEntries.map((e) => e.worker_id))}
+          lastDayEntries={lastDayEntries}
+          submitting={bulkLog.isPending}
+          onSubmit={(bulkEntries) => void submitBulk(bulkEntries)}
+        />
+        <EditEntrySheet
+          ref={entrySheet}
+          entry={editingEntry}
+          submitting={updateEntry.isPending}
+          onSubmit={async (values) => {
+            if (!editingEntry || !(await confirmWrite([editingEntry.date])))
+              return;
+            updateEntry.mutate(
+              { entryId: editingEntry.id, ...values },
+              { onSuccess: () => entrySheet.current?.close() },
             );
-        }}
-      />
-      <ConfirmDialog
-        visible={rejectingEntry !== null}
-        title={t("notifications.attendance.reject")}
-        message={
-          rejectingEntry
-            ? t(
-                rejectingEntry.status === "pending"
-                  ? "notifications.attendance.rejectConfirm"
-                  : "notifications.attendance.rejectChangeConfirm",
-                {
-                  worker: rejectingEntry.worker_name,
-                  date: formatDate(rejectingEntry.date),
-                },
-              )
-            : undefined
-        }
-        confirmLabel={t("notifications.attendance.reject")}
-        cancelLabel={t("common.cancel")}
-        destructive
-        loading={rejectEntry.isPending || decideChange.isPending}
-        onCancel={() => setRejectingEntry(null)}
-        onConfirm={() => {
-          if (!rejectingEntry) return;
-          const ids = { projectId: id, entryId: rejectingEntry.id };
-          const settle = {
-            onSuccess: () => {
+          }}
+          onDelete={async () => {
+            if (editingEntry && (await confirmWrite([editingEntry.date])))
+              setDeletingEntry(editingEntry);
+          }}
+          deciding={validateEntry.isPending || decideChange.isPending}
+          onDecide={async (approve) => {
+            if (!editingEntry) return;
+            // Refusing a worker's change request leaves the day as it was: nothing to ask.
+            const changesDay = approve || editingEntry.status === "pending";
+            if (changesDay && !(await confirmWrite([editingEntry.date])))
+              return;
+            if (!approve) return setRejectingEntry(editingEntry);
+            const done = (key: string) => () => {
               entrySheet.current?.close();
-              showToast(
-                t(
-                  rejectingEntry.status === "pending"
-                    ? "notifications.attendance.rejectedToast"
-                    : "notifications.attendance.rejectedChangeToast",
-                ),
-                "success",
+              showToast(t(key), "success");
+            };
+            const ids = { projectId: id, entryId: editingEntry.id };
+            if (editingEntry.status === "pending")
+              validateEntry.mutate(ids, {
+                onSuccess: done("notifications.attendance.validatedToast"),
+              });
+            else
+              decideChange.mutate(
+                { ...ids, approve: true },
+                {
+                  onSuccess: done(
+                    "notifications.attendance.validatedChangeToast",
+                  ),
+                },
               );
-            },
-            onSettled: () => setRejectingEntry(null),
-          };
-          if (rejectingEntry.status === "pending")
-            rejectEntry.mutate(ids, settle);
-          else decideChange.mutate({ ...ids, approve: false }, settle);
-        }}
-      />
-      <DayDetailsSheet
-        ref={detailsSheet}
-        projectId={id}
-        readOnly={!canManageLabor}
-        date={selectedDay}
-        entries={dayEntries}
-        activities={(activities.data ?? []).filter(
-          (a) => a.date === selectedDay,
-        )}
-        description={
-          dayDescriptions.data?.find((d) => d.date === selectedDay)
-            ?.description ?? ""
-        }
-      />
-      <WorkerFormSheet
-        ref={workerForm}
-        projectId={id}
-        companyId={project.data?.company_id ?? null}
-        worker={editingWorker}
-        submitting={createWorker.isPending || updateWorker.isPending}
-        onSubmit={(values) =>
-          editingWorker
-            ? updateWorker.mutate(
-                { workerId: editingWorker.id, ...values },
-                {
-                  onSuccess: () => workerForm.current?.close(),
-                  onError: (error) => {
-                    if (isInvalidLaborRoleError(error))
-                      workerForm.current?.rejectRole();
+          }}
+        />
+        <ConfirmDialog
+          visible={rejectingEntry !== null}
+          title={t("notifications.attendance.reject")}
+          message={
+            rejectingEntry
+              ? t(
+                  rejectingEntry.status === "pending"
+                    ? "notifications.attendance.rejectConfirm"
+                    : "notifications.attendance.rejectChangeConfirm",
+                  {
+                    worker: rejectingEntry.worker_name,
+                    date: formatDate(rejectingEntry.date),
                   },
-                },
-              )
-            : createWorker.mutate(
-                values as Parameters<typeof createWorker.mutate>[0],
-                {
-                  onSuccess: () => workerForm.current?.close(),
-                  onError: (error) => {
-                    if (isInvalidLaborRoleError(error))
-                      workerForm.current?.rejectRole();
+                )
+              : undefined
+          }
+          confirmLabel={t("notifications.attendance.reject")}
+          cancelLabel={t("common.cancel")}
+          destructive
+          loading={rejectEntry.isPending || decideChange.isPending}
+          onCancel={() => setRejectingEntry(null)}
+          onConfirm={() => {
+            if (!rejectingEntry) return;
+            const ids = { projectId: id, entryId: rejectingEntry.id };
+            const settle = {
+              onSuccess: () => {
+                entrySheet.current?.close();
+                showToast(
+                  t(
+                    rejectingEntry.status === "pending"
+                      ? "notifications.attendance.rejectedToast"
+                      : "notifications.attendance.rejectedChangeToast",
+                  ),
+                  "success",
+                );
+              },
+              onSettled: () => setRejectingEntry(null),
+            };
+            if (rejectingEntry.status === "pending")
+              rejectEntry.mutate(ids, settle);
+            else decideChange.mutate({ ...ids, approve: false }, settle);
+          }}
+        />
+        <DayDetailsSheet
+          ref={detailsSheet}
+          projectId={id}
+          readOnly={!canManageLabor}
+          date={selectedDay}
+          entries={dayEntries}
+          activities={(activities.data ?? []).filter(
+            (a) => a.date === selectedDay,
+          )}
+          description={
+            dayDescriptions.data?.find((d) => d.date === selectedDay)
+              ?.description ?? ""
+          }
+        />
+        <WorkerFormSheet
+          ref={workerForm}
+          projectId={id}
+          companyId={project.data?.company_id ?? null}
+          worker={editingWorker}
+          submitting={createWorker.isPending || updateWorker.isPending}
+          onSubmit={(values) =>
+            editingWorker
+              ? updateWorker.mutate(
+                  { workerId: editingWorker.id, ...values },
+                  {
+                    onSuccess: () => workerForm.current?.close(),
+                    onError: (error) => {
+                      if (isInvalidLaborRoleError(error))
+                        workerForm.current?.rejectRole();
+                    },
                   },
-                },
-              )
-        }
-      />
-      <WorkerActionsSheet
-        ref={actionsSheet}
-        worker={actionWorker}
-        onEdit={(worker) => {
-          setEditingWorker(worker);
-          setTimeout(() => workerForm.current?.open(), 0);
-        }}
-        onRates={(worker) => {
-          setRateWorker(worker);
-          setTimeout(() => rateSheet.current?.open(), 0);
-        }}
-        onDelete={(worker) => setDeletingWorker(worker)}
-        onReactivate={(worker) =>
-          updateWorker.mutate({ workerId: worker.id, is_active: true })
-        }
-      />
-      <RateChangesSheet ref={rateSheet} projectId={id} worker={rateWorker} />
-      <PaymentSheet
-        ref={paymentSheet}
-        projectId={id}
-        companyId={project.data?.company_id ?? null}
-        month={month}
-        rows={paymentRows}
-        initial={paymentRow}
-      />
-      <LaborExportSheet
-        ref={exportSheet}
-        projectId={id}
-        workers={workers.data ?? []}
-        allowAllWorkers={fullLaborView}
-        onExport={exportLabor}
-      />
+                )
+              : createWorker.mutate(
+                  values as Parameters<typeof createWorker.mutate>[0],
+                  {
+                    onSuccess: () => workerForm.current?.close(),
+                    onError: (error) => {
+                      if (isInvalidLaborRoleError(error))
+                        workerForm.current?.rejectRole();
+                    },
+                  },
+                )
+          }
+        />
+        <WorkerActionsSheet
+          ref={actionsSheet}
+          worker={actionWorker}
+          onEdit={(worker) => {
+            setEditingWorker(worker);
+            setTimeout(() => workerForm.current?.open(), 0);
+          }}
+          onRates={(worker) => {
+            setRateWorker(worker);
+            setTimeout(() => rateSheet.current?.open(), 0);
+          }}
+          onDelete={(worker) => setDeletingWorker(worker)}
+          onReactivate={(worker) =>
+            updateWorker.mutate({ workerId: worker.id, is_active: true })
+          }
+        />
+        <RateChangesSheet ref={rateSheet} projectId={id} worker={rateWorker} />
+        <PaymentSheet
+          ref={paymentSheet}
+          projectId={id}
+          companyId={project.data?.company_id ?? null}
+          month={month}
+          rows={paymentRows}
+          initial={paymentRow}
+        />
+        <LaborExportSheet
+          ref={exportSheet}
+          projectId={id}
+          workers={workers.data ?? []}
+          allowAllWorkers={fullLaborView}
+          onExport={exportLabor}
+        />
 
-      <ConfirmDialog
-        visible={deletingEntry !== null}
-        title={t("labor.entry.deleteConfirm")}
-        message={
-          deletingEntry
-            ? `${deletingEntry.worker_name} · ${formatDate(deletingEntry.date)}`
-            : undefined
-        }
-        confirmLabel={t("common.delete")}
-        cancelLabel={t("common.cancel")}
-        destructive
-        loading={deleteEntry.isPending}
-        onCancel={() => setDeletingEntry(null)}
-        onConfirm={() =>
-          deletingEntry &&
-          deleteEntry.mutate(
-            { entryId: deletingEntry.id },
-            {
-              onSuccess: () => entrySheet.current?.close(),
-              onSettled: () => setDeletingEntry(null),
-            },
-          )
-        }
-      />
-      <ConfirmDialog
-        visible={deletingWorker !== null}
-        title={t("labor.workers.deleteConfirm", {
-          name: deletingWorker?.name ?? "",
-        })}
-        message={t("labor.workers.deactivateCompanyHint")}
-        confirmLabel={t("labor.workers.deactivate")}
-        cancelLabel={t("common.cancel")}
-        destructive
-        loading={deleteWorker.isPending}
-        onCancel={() => setDeletingWorker(null)}
-        onConfirm={() =>
-          deletingWorker &&
-          deleteWorker.mutate(
-            { workerId: deletingWorker.id },
-            { onSettled: () => setDeletingWorker(null) },
-          )
-        }
-      />
-      <ConfirmDialog
-        visible={conflicts !== null}
-        title={t("labor.log.conflictTitle")}
-        message={
-          (conflicts ?? [])
-            .map(
-              (group) =>
-                `${group.person_name}: ${group.entries.map((e) => `${e.project_name} (${e.shift_type ? t(`labor.shift.${e.shift_type}`) : `+${e.supplement_hours} h`})`).join(", ")}`,
+        <ConfirmDialog
+          visible={deletingEntry !== null}
+          title={t("labor.entry.deleteConfirm")}
+          message={
+            deletingEntry
+              ? `${deletingEntry.worker_name} · ${formatDate(deletingEntry.date)}`
+              : undefined
+          }
+          confirmLabel={t("common.delete")}
+          cancelLabel={t("common.cancel")}
+          destructive
+          loading={deleteEntry.isPending}
+          onCancel={() => setDeletingEntry(null)}
+          onConfirm={() =>
+            deletingEntry &&
+            deleteEntry.mutate(
+              { entryId: deletingEntry.id },
+              {
+                onSuccess: () => entrySheet.current?.close(),
+                onSettled: () => setDeletingEntry(null),
+              },
             )
-            .join("\n") || t("labor.log.conflictGeneric")
-        }
-        confirmLabel={t("labor.log.conflictConfirm")}
-        cancelLabel={t("common.cancel")}
-        loading={bulkLog.isPending}
-        onCancel={() => {
-          setConflicts(null);
-          setPendingBulk(null);
-        }}
-        onConfirm={() => pendingBulk && void submitBulk(pendingBulk, true)}
-      />
-    </View>
+          }
+        />
+        <ConfirmDialog
+          visible={deletingWorker !== null}
+          title={t("labor.workers.deleteConfirm", {
+            name: deletingWorker?.name ?? "",
+          })}
+          message={t("labor.workers.deactivateCompanyHint")}
+          confirmLabel={t("labor.workers.deactivate")}
+          cancelLabel={t("common.cancel")}
+          destructive
+          loading={deleteWorker.isPending}
+          onCancel={() => setDeletingWorker(null)}
+          onConfirm={() =>
+            deletingWorker &&
+            deleteWorker.mutate(
+              { workerId: deletingWorker.id },
+              { onSettled: () => setDeletingWorker(null) },
+            )
+          }
+        />
+        <ConfirmDialog
+          visible={conflicts !== null}
+          title={t("labor.log.conflictTitle")}
+          message={
+            (conflicts ?? [])
+              .map(
+                (group) =>
+                  `${group.person_name}: ${group.entries.map((e) => `${e.project_name} (${e.shift_type ? t(`labor.shift.${e.shift_type}`) : `+${e.supplement_hours} h`})`).join(", ")}`,
+              )
+              .join("\n") || t("labor.log.conflictGeneric")
+          }
+          confirmLabel={t("labor.log.conflictConfirm")}
+          cancelLabel={t("common.cancel")}
+          loading={bulkLog.isPending}
+          onCancel={() => {
+            setConflicts(null);
+            setPendingBulk(null);
+          }}
+          onConfirm={() => pendingBulk && void submitBulk(pendingBulk, true)}
+        />
+        {closureGuard.dialog}
+      </View>
+    </LaborMonthClosureContext.Provider>
   );
 }
 

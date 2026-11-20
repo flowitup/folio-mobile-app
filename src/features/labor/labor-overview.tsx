@@ -14,6 +14,7 @@ import {
   useLaborSummary,
 } from "@/features/labor/labor-api";
 import { KpiRow } from "@/features/labor/kpi-row";
+import { MonthClosurePanel } from "@/features/labor/month-closure";
 import type { Worker } from "@/features/labor/labor-types";
 import { kpiCardWidth } from "@/lib/dashboard/fit-figure";
 import { formatMonth, localeTag, toIsoDate } from "@/lib/format/date";
@@ -38,6 +39,8 @@ type Props = {
   projectId: string;
   workers: Worker[];
   payments: LaborPaymentsSummary | undefined;
+  /** project:manage_labor: may close / reopen the month shown ("Chốt tháng"). */
+  canManage?: boolean;
   colorOf: (workerId: string) => string;
   roleOf: (workerId: string) => string | null;
   /** Opens the payments segment, where labor payments without a worker are assigned. */
@@ -165,6 +168,7 @@ export function LaborOverview({
   projectId,
   workers,
   payments,
+  canManage = false,
   colorOf,
   roleOf,
   onOpenUnassigned,
@@ -360,6 +364,16 @@ export function LaborOverview({
           />
         ) : null}
       </View>
+
+      {scope.kind === "month" && !loading && detail ? (
+        <MonthClosurePanel
+          projectId={projectId}
+          month={scope.month}
+          canManage={canManage}
+          owed={detail.balance}
+          payments={payments}
+        />
+      ) : null}
 
       {loading ? (
         <ActivityIndicator className="my-6" color={tokens.ink} />

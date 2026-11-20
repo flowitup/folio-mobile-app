@@ -62,6 +62,7 @@ import type {
   Worker,
   WorkerRateChange,
 } from "./labor-types";
+import { useClosedMonths } from "./month-closure";
 
 export type SheetHandle = { open: () => void; close: () => void };
 
@@ -363,6 +364,7 @@ export const RateChangesSheet = forwardRef<
   const changes = useRateChanges(projectId, worker?.id ?? null);
   const create = useCreateRateChange(projectId);
   const remove = useDeleteRateChange(projectId);
+  const { closures, confirmWrite } = useClosedMonths();
   const [date, setDate] = useState<string | null>(toIsoDate(new Date()));
   const [rate, setRate] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -404,7 +406,7 @@ export const RateChangesSheet = forwardRef<
     close: () => sheet.current?.dismiss(),
   }));
 
-  function submit() {
+  async function submit() {
     // Rounded as the server stores it: "0,004" is a rate of 0, refused like 0.
     const dailyRate = parseCentsInput(rate);
     if (!dailyRate || dailyRate <= 0)
@@ -415,6 +417,11 @@ export const RateChangesSheet = forwardRef<
       );
     if (!worker || !date) return;
     setError(null);
+    // The worker's days this change re-prices: asked first when any is in a closed month.
+    const repriced = (logged.data ?? []).filter(
+      (entry) => entry.worker_id === worker.id && entry.date >= date,
+    );
+    if (!(await confirmWrite(repriced.map((entry) => entry.date)))) return;
     create.mutate(
       { workerId: worker.id, effective_date: date, daily_rate: dailyRate },
       { onSuccess: () => setRate("") },
@@ -447,7 +454,15 @@ export const RateChangesSheet = forwardRef<
               </Text>
               <Pressable
                 testID={`rate-change-delete-${change.id}`}
-                onPress={() => setRemoving(change)}
+                onPress={async () => {
+                  // Its days go back to the previous rate: asked first when a closed month
+                  // may be among them.
+                  const from = change.effective_date.slice(0, 7);
+                  const months = closures
+                    .map((closure) => closure.month)
+                    .filter((month) => month >= from);
+                  if (await confirmWrite(months)) setRemoving(change);
+                }}
               >
                 <Text className="text-sm text-danger">
                   {t("common.delete")}
