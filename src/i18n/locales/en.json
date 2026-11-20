@@ -9,7 +9,7 @@
     "retry": "Retry",
     "loadError": "Could not load this content.",
     "comingSoon": "Coming soon.",
-    "networkError": "Network error",
+    "networkError": "Not saved: no network. Your data is still on screen; try again when you have signal.",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "save": "Save",
@@ -386,7 +386,11 @@
       "releaseDate": "Release date",
       "supplier": "Supplier",
       "supplierRequired": "Supplier is required.",
-      "supplierAddress": "Supplier address"
+      "supplierAddress": "Supplier address",
+      "discardTitle": "Discard this expense?",
+      "discardMessage": "What you have typed will be lost.",
+      "discard": "Discard",
+      "stay": "Stay"
     },
     "summary": {
       "totalExpenses": "Total expenses",

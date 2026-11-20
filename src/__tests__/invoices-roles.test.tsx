@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import i18n from "@/i18n";
 import { formatMoney } from "@/lib/format/money";
@@ -41,10 +41,31 @@ const mockRouter = {
   canGoBack: () => true,
 };
 
+const mockNavigation = { dispatch: jest.fn() };
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
   useLocalSearchParams: () => mockParams,
   useFocusEffect: () => undefined,
+  useNavigation: () => mockNavigation,
+}));
+
+// The unsaved-expense guard: the latest `usePreventRemove` call, to fire a back gesture by hand.
+let mockPreventRemove: {
+  prevent: boolean;
+  callback: (event: { data: { action: unknown } }) => void;
+} | null = null;
+jest.mock("expo-router/react-navigation", () => ({
+  usePreventRemove: (
+    prevent: boolean,
+    callback: (event: { data: { action: unknown } }) => void,
+  ) => {
+    mockPreventRemove = { prevent, callback };
+  },
+}));
+const mockShowToast = jest.fn();
+jest.mock("@/components/ui/toast", () => ({
+  ...jest.requireActual("@/components/ui/toast"),
+  showToast: (...args: unknown[]) => mockShowToast(...args),
 }));
 
 // Native pickers / share sheets are not what these tests assert on.
@@ -802,5 +823,114 @@ describe("expenses tab · opened from an overview chart", () => {
     expect(
       screen.queryByTestId(`invoice-row-${INVOICE_MATERIALS.id}`),
     ).toBeNull();
+  });
+});
+
+describe("new expense · unsaved changes (P-12)", () => {
+  const BACK = { type: "GO_BACK" };
+
+  beforeEach(() => {
+    mockPersona = persona("manager");
+    mockParams = { id: PROJECT_ID };
+    mockPreventRemove = null;
+  });
+
+  async function typeSupplier() {
+    await fireEvent.changeText(
+      await screen.findByTestId("invoice-recipient"),
+      "Brico Dépôt",
+    );
+  }
+
+  it("lets an untouched form go, and guards it once something is typed", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+    await screen.findByTestId("invoice-recipient");
+    expect(mockPreventRemove?.prevent).toBe(false);
+
+    await typeSupplier();
+    await waitFor(() => expect(mockPreventRemove?.prevent).toBe(true));
+  });
+
+  it("asks before leaving; Stay keeps the data, Discard leaves", async () => {
+    await renderWithProviders(<NewInvoiceScreen />);
+    await typeSupplier();
+    await waitFor(() => expect(mockPreventRemove?.prevent).toBe(true));
+
+    await act(async () =>
+      mockPreventRemove?.callback({ data: { action: BACK } }),
+    );
+    expect(screen.getByText(i18n.t("invoices.form.discardTitle"))).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("confirm-cancel"));
+    expect(mockNavigation.dispatch).not.toHaveBeenCalled();
+    expect(screen.getByTestId("invoice-recipient").props.value).toBe(
+      "Brico Dépôt",
+    );
+
+    await act(async () =>
+      mockPreventRemove?.callback({ data: { action: BACK } }),
+    );
+    await fireEvent.press(screen.getByTestId("confirm-ok"));
+    expect(mockNavigation.dispatch).toHaveBeenCalledWith(BACK);
+  });
+
+  it("keeps the form and says so when the save never reaches the server", async () => {
+    mockPost.mockRejectedValue(new TypeError("Network request failed"));
+    await renderWithProviders(<NewInvoiceScreen />);
+    await typeSupplier();
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-description"),
+      "Plâtre",
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-price"),
+      "12",
+    );
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+
+    await waitFor(() =>
+      expect(mockShowToast).toHaveBeenCalledWith(
+        i18n.t("common.networkError"),
+        "error",
+        { durationMs: expect.any(Number) },
+      ),
+    );
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+    expect(screen.getByTestId("invoice-recipient").props.value).toBe(
+      "Brico Dépôt",
+    );
+    expect(mockPreventRemove?.prevent).toBe(true);
+  });
+
+  it("lets the screen leave for the new expense once it is saved", async () => {
+    mockPost.mockImplementation(async (_path: string, options: unknown) => ({
+      data: {
+        ...INVOICE_MATERIALS,
+        id: "created-2",
+        ...(options as { body: Record<string, unknown> }).body,
+      },
+      response: { status: 201, statusText: "Created" },
+    }));
+    await renderWithProviders(<NewInvoiceScreen />);
+    await typeSupplier();
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-description"),
+      "Plâtre",
+    );
+    await fireEvent.changeText(
+      screen.getByTestId("invoice-item-0-price"),
+      "12",
+    );
+    await fireEvent.press(screen.getByTestId("invoice-submit"));
+    await waitFor(() =>
+      expect(mockRouter.replace).toHaveBeenCalledWith(
+        `/projects/${PROJECT_ID}/invoices/created-2`,
+      ),
+    );
+    // The replace is let through without a question.
+    await act(async () =>
+      mockPreventRemove?.callback({ data: { action: BACK } }),
+    );
+    expect(mockNavigation.dispatch).toHaveBeenCalledWith(BACK);
+    expect(screen.queryByText(i18n.t("invoices.form.discardTitle"))).toBeNull();
   });
 });

@@ -141,6 +141,8 @@ export function useCreateInvoice(
       ),
     invalidates: [invoiceKeys.all(projectId), projectKeys.all],
     successMessage: silent ? undefined : t("invoices.created"),
+    // Offline, fail now with the network message; the form keeps what was typed (P-12).
+    networkMode: "always",
   });
 }
 
@@ -160,6 +162,7 @@ export function useUpdateInvoice(projectId: string, invoiceId: string) {
       projectKeys.all,
     ],
     successMessage: t("common.saved"),
+    networkMode: "always",
   });
 }
 

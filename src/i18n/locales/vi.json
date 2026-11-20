@@ -9,7 +9,7 @@
     "retry": "Thử lại",
     "loadError": "Không tải được nội dung này.",
     "comingSoon": "Sắp ra mắt.",
-    "networkError": "Lỗi mạng",
+    "networkError": "Chưa lưu được vì mất mạng. Dữ liệu vẫn còn trên màn hình, hãy thử lại khi có sóng.",
     "cancel": "Hủy",
     "confirm": "Xác nhận",
     "save": "Lưu",
@@ -386,7 +386,11 @@
       "releaseDate": "Ngày giải ngân",
       "supplier": "Nhà cung cấp",
       "supplierRequired": "Cần nhập nhà cung cấp.",
-      "supplierAddress": "Địa chỉ nhà cung cấp"
+      "supplierAddress": "Địa chỉ nhà cung cấp",
+      "discardTitle": "Bỏ khoản chi đang nhập?",
+      "discardMessage": "Những gì bạn đã nhập sẽ bị mất.",
+      "discard": "Bỏ",
+      "stay": "Ở lại"
     },
     "summary": {
       "totalExpenses": "Tổng chi phí",

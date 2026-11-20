@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 
@@ -93,6 +93,8 @@ type Props = {
   initialType?: InvoiceType;
   submitting: boolean;
   onSubmit: (payload: CreateInvoicePayload) => void;
+  /** Whether anything differs from what the form opened with (the screen guards leaving). */
+  onDirtyChange?: (dirty: boolean) => void;
 };
 
 /**
@@ -106,6 +108,7 @@ export function InvoiceForm({
   initialType,
   submitting,
   onSubmit,
+  onDirtyChange,
 }: Props) {
   const { t } = useTranslation();
   const editing = Boolean(initial);
@@ -174,6 +177,28 @@ export function InvoiceForm({
       delete next[key];
       return next;
     });
+
+  // Everything the user can change, as one string: compared with how the form opened, it says
+  // whether leaving would lose something.
+  const snapshot = JSON.stringify([
+    type,
+    issueDate,
+    recipientName,
+    recipientAddress,
+    notes,
+    paymentMethodId,
+    serviceMonth,
+    workerId,
+    refundsInvoiceId,
+    settledVia,
+    appliedToInvoiceId,
+    highlight,
+    lines,
+    isCashAdvance,
+  ]);
+  const [openedWith] = useState(snapshot);
+  const dirty = snapshot !== openedWith;
+  useEffect(() => onDirtyChange?.(dirty), [dirty, onDirtyChange]);
 
   const paymentMethods = usePaymentMethods(companyId);
   const workers = useWorkers(projectId);

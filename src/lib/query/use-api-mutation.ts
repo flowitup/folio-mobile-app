@@ -6,7 +6,7 @@ import {
 import type { QueryKey } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { showToast } from "@/components/ui/toast";
+import { NETWORK_TOAST_MS, showToast } from "@/components/ui/toast";
 import { ApiError } from "@/lib/query/api-error";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 
@@ -27,6 +27,11 @@ type Options<TVariables, TData> = {
   onSuccess?: (data: TData, variables: TVariables) => void;
   /** Custom error handling; return true to suppress the default error toast. */
   onError?: (error: unknown, variables: TVariables) => boolean | void;
+  /**
+   * "always" sends the write even when the device reports no network, so it fails at once
+   * with the network message instead of waiting, spinner turning, for the signal to return.
+   */
+  networkMode?: "online" | "always" | "offlineFirst";
 };
 
 /**
@@ -46,6 +51,7 @@ export function useApiMutation<TVariables = void, TData = unknown>(
 
   return useMutation({
     mutationFn: options.mutationFn,
+    networkMode: options.networkMode,
     onSuccess: async (data, variables) => {
       const awaited = options.invalidates ?? [];
       if (options.refreshAll !== false)
@@ -63,7 +69,14 @@ export function useApiMutation<TVariables = void, TData = unknown>(
       if (__DEV__ && !(error instanceof ApiError))
         console.error("[useApiMutation]", error);
       if (options.onError?.(error, variables) === true) return;
-      showToast(apiErrorMessage(error, t, i18n.language), "error");
+      // No answer at all is the network: that message tells what to do, so it stays longer.
+      showToast(
+        apiErrorMessage(error, t, i18n.language),
+        "error",
+        error instanceof ApiError
+          ? undefined
+          : { durationMs: NETWORK_TOAST_MS },
+      );
     },
   });
 }

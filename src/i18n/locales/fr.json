@@ -9,7 +9,7 @@
     "retry": "Réessayer",
     "loadError": "Impossible de charger ce contenu.",
     "comingSoon": "Bientôt disponible.",
-    "networkError": "Erreur réseau",
+    "networkError": "Pas enregistré : pas de réseau. Vos données restent à l'écran, réessayez quand vous aurez du signal.",
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "save": "Enregistrer",
@@ -386,7 +386,11 @@
       "releaseDate": "Date du déblocage",
       "supplier": "Fournisseur",
       "supplierRequired": "Le fournisseur est obligatoire.",
-      "supplierAddress": "Adresse du fournisseur"
+      "supplierAddress": "Adresse du fournisseur",
+      "discardTitle": "Abandonner la dépense en cours ?",
+      "discardMessage": "Ce que vous avez saisi sera perdu.",
+      "discard": "Abandonner",
+      "stay": "Rester"
     },
     "summary": {
       "totalExpenses": "Total dépenses",
