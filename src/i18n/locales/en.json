@@ -84,7 +84,12 @@
     },
     "codeHelp": "No SMS? Check the number. Only Folio accounts receive a code: they are created in the app or through your company’s invitation. Access deactivated? Contact your company’s administrator.",
     "codeStillValid": "The code already sent to this number is still valid: type it in.",
-    "invalidPhoneHint": "This is not a French number (e.g. 06 12 34 56 78)."
+    "invalidPhoneHint": "This is not a French number (e.g. 06 12 34 56 78).",
+    "codeHelpNeverSignedIn": "Never signed in? Tap Create an account.",
+    "firstTime": {
+      "body": "First time on Folio? Even if your company added your number, you need to create an account first.",
+      "action": "Create an account with this number"
+    }
   },
   "updateRequired": {
     "title": "Update required",
@@ -1579,8 +1584,16 @@
         "submit": "Add member",
         "conflictHint": "Several people match this phone number — pick the right one.",
         "conflict": "Several people match this phone number.",
-        "successToast": "Member added.",
-        "alreadyMember": "This person is already a member of the company."
+        "alreadyMember": "This person is already a member of the company.",
+        "added": {
+          "title": "{{name}} was added. They have not received any message. Send them these instructions:",
+          "message": "{{company}} added you to Folio.\n1) Install the Folio app on your phone.\n2) Open it and choose “Create an account” (not “Sign in”).\n3) Enter the number {{phone}}.",
+          "messageWithLink": "{{company}} added you to Folio.\n1) Install the Folio app: {{url}}\n2) Open it and choose “Create an account” (not “Sign in”).\n3) Enter the number {{phone}}.",
+          "share": "Share",
+          "copy": "Copy",
+          "copied": "Copied",
+          "done": "Done"
+        }
       },
       "import": {
         "title": "Import from another company",
@@ -2027,7 +2040,8 @@
     "namePlaceholder": "e.g. Nguyen Van A",
     "nameHint": "Shown to your company and on the sites you work on.",
     "create": "Create my profile",
-    "haveAccount": "Already have an account? Sign in"
+    "haveAccount": "Already have an account? Sign in",
+    "waitBeforeCode": "A code was just requested for this number. You can ask for your sign-up code in {{seconds}} s."
   },
   "worker": {
     "attendanceTitle": "My attendance",

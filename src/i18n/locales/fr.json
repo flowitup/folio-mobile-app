@@ -84,7 +84,12 @@
     },
     "codeHelp": "Pas reçu de SMS ? Vérifiez le numéro. Seuls les comptes Folio reçoivent un code : ils se créent dans l’application ou via l’invitation de votre entreprise. Accès désactivé ? Contactez l’administrateur de votre entreprise.",
     "codeStillValid": "Le code déjà envoyé à ce numéro reste valable : saisissez-le.",
-    "invalidPhoneHint": "Ce numéro n’est pas un numéro français (ex. 06 12 34 56 78)."
+    "invalidPhoneHint": "Ce numéro n’est pas un numéro français (ex. 06 12 34 56 78).",
+    "codeHelpNeverSignedIn": "Jamais connecté ? Appuyez sur Créer un compte.",
+    "firstTime": {
+      "body": "Première fois sur Folio ? Même si votre entreprise a ajouté votre numéro, vous devez d’abord créer un compte.",
+      "action": "Créer un compte avec ce numéro"
+    }
   },
   "updateRequired": {
     "title": "Mise à jour requise",
@@ -1579,8 +1584,16 @@
         "submit": "Ajouter le membre",
         "conflictHint": "Plusieurs personnes correspondent à ce numéro — choisissez la bonne.",
         "conflict": "Plusieurs personnes correspondent à ce numéro.",
-        "successToast": "Membre ajouté.",
-        "alreadyMember": "Cette personne est déjà membre de l'entreprise."
+        "alreadyMember": "Cette personne est déjà membre de l'entreprise.",
+        "added": {
+          "title": "{{name}} a été ajouté. Cette personne n’a reçu aucun message. Envoyez-lui ces instructions :",
+          "message": "{{company}} vous a ajouté sur Folio.\n1) Installez l’application Folio sur votre téléphone.\n2) Ouvrez-la et choisissez « Créer un compte » (pas « Se connecter »).\n3) Saisissez le numéro {{phone}}.",
+          "messageWithLink": "{{company}} vous a ajouté sur Folio.\n1) Installez l’application Folio : {{url}}\n2) Ouvrez-la et choisissez « Créer un compte » (pas « Se connecter »).\n3) Saisissez le numéro {{phone}}.",
+          "share": "Partager",
+          "copy": "Copier",
+          "copied": "Copié",
+          "done": "Terminé"
+        }
       },
       "import": {
         "title": "Importer d'une autre entreprise",
@@ -2027,7 +2040,8 @@
     "namePlaceholder": "ex. Nguyen Van A",
     "nameHint": "Affiché à votre entreprise et sur les chantiers où vous travaillez.",
     "create": "Créer mon profil",
-    "haveAccount": "Déjà un compte ? Se connecter"
+    "haveAccount": "Déjà un compte ? Se connecter",
+    "waitBeforeCode": "Un code vient d’être demandé pour ce numéro. Vous pourrez demander votre code d’inscription dans {{seconds}} s."
   },
   "worker": {
     "attendanceTitle": "Ma présence",

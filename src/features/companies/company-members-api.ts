@@ -194,9 +194,9 @@ export function useAddMemberByPhone() {
     },
     invalidates: [companyKeys.all],
     // The sheet renders every error inline (the candidate picker included), so no toast:
-    // a second, differently worded message would sit next to it.
+    // a second, differently worded message would sit next to it. Success has no toast either:
+    // the sheet's last step says who was added and what to send them.
     onError: () => true,
-    successMessage: t("companies.members.addByPhone.successToast"),
   });
 }
 

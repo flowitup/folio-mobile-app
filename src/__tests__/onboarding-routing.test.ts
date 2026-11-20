@@ -70,11 +70,35 @@ describe("resolveOnboardingRedirect", () => {
     ).toBeNull();
   });
 
-  it("does not wait when the caller is admin or manager somewhere", () => {
+  it("sends a manager with no project assignment to the waiting screen (TB-15)", () => {
+    // A manager cannot create a project: an empty Overview was a dead end.
+    for (const companyRoles of [["manager"], ["member", "manager"]]) {
+      expect(
+        resolveOnboardingRedirect({
+          ...BASE,
+          companyRoles,
+          hasProjects: false,
+        }),
+      ).toBe("/onboarding-waiting");
+    }
+  });
+
+  it("lets a manager in once a project is assigned", () => {
     expect(
       resolveOnboardingRedirect({
         ...BASE,
-        companyRoles: ["member", "manager"],
+        companyRoles: ["manager"],
+        hasProjects: true,
+        pathname: "/onboarding-waiting",
+      }),
+    ).toBe("/");
+  });
+
+  it("does not wait when the caller is admin somewhere (they can create a project)", () => {
+    expect(
+      resolveOnboardingRedirect({
+        ...BASE,
+        companyRoles: ["manager", "admin"],
         hasProjects: false,
       }),
     ).toBeNull();

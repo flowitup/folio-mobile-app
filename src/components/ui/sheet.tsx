@@ -16,6 +16,8 @@ const DEFAULT_SNAP_POINTS = ["50%", "90%"];
 type Props = PropsWithChildren<{
   title?: string;
   snapPoints?: (string | number)[];
+  /** Called once the sheet has closed, however it was closed (swipe, backdrop, dismiss()). */
+  onDismiss?: () => void;
 }>;
 
 /**
@@ -46,7 +48,7 @@ function useKeyboardOverlap(): number {
 
 /** Bottom sheet modal wrapper (paper panel, r20, line-2 grabber). Open with `ref.current?.present()`. */
 export const Sheet = forwardRef<BottomSheetModal, Props>(function Sheet(
-  { title, snapPoints = DEFAULT_SNAP_POINTS, children },
+  { title, snapPoints = DEFAULT_SNAP_POINTS, onDismiss, children },
   ref,
 ) {
   const insets = useSafeAreaInsets();
@@ -70,6 +72,7 @@ export const Sheet = forwardRef<BottomSheetModal, Props>(function Sheet(
     <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
+      onDismiss={onDismiss}
       backdropComponent={renderBackdrop}
       enableDynamicSizing={false}
       backgroundStyle={{ backgroundColor: tokens.paper, borderRadius: 20 }}

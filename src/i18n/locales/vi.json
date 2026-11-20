@@ -84,7 +84,12 @@
     },
     "codeHelp": "Không nhận được SMS? Hãy kiểm tra số điện thoại. Chỉ tài khoản Folio mới nhận được mã: tài khoản được tạo trong ứng dụng hoặc qua lời mời của công ty. Quyền truy cập bị vô hiệu hóa? Hãy liên hệ quản trị viên của công ty.",
     "codeStillValid": "Mã đã gửi tới số này vẫn còn hiệu lực: hãy nhập mã đó.",
-    "invalidPhoneHint": "Đây không phải số điện thoại Pháp (ví dụ 06 12 34 56 78)."
+    "invalidPhoneHint": "Đây không phải số điện thoại Pháp (ví dụ 06 12 34 56 78).",
+    "codeHelpNeverSignedIn": "Chưa từng đăng nhập? Bấm Tạo tài khoản.",
+    "firstTime": {
+      "body": "Lần đầu dùng Folio? Kể cả khi công ty đã thêm số của bạn, bạn cần tạo tài khoản trước.",
+      "action": "Tạo tài khoản với số này"
+    }
   },
   "updateRequired": {
     "title": "Cần cập nhật",
@@ -1467,7 +1472,7 @@
       "fields": {
         "legalName": {
           "label": "Tên pháp lý",
-          "placeholder": "vd. Công ty TNHH Lavandou"
+          "placeholder": "vd. Lavandou Bâtiment SARL"
         },
         "address": {
           "label": "Địa chỉ",
@@ -1579,8 +1584,16 @@
         "submit": "Thêm thành viên",
         "conflictHint": "Có nhiều người trùng số điện thoại này — hãy chọn đúng người.",
         "conflict": "Có nhiều người trùng số điện thoại này.",
-        "successToast": "Đã thêm thành viên.",
-        "alreadyMember": "Người này đã là thành viên của công ty."
+        "alreadyMember": "Người này đã là thành viên của công ty.",
+        "added": {
+          "title": "Đã thêm {{name}}. Họ chưa nhận được tin nhắn nào. Gửi hướng dẫn này cho họ:",
+          "message": "{{company}} đã thêm bạn vào Folio.\n1) Cài app Folio trên điện thoại.\n2) Mở app, chọn “Tạo tài khoản” (không chọn “Đăng nhập”).\n3) Nhập số {{phone}}.",
+          "messageWithLink": "{{company}} đã thêm bạn vào Folio.\n1) Cài app Folio: {{url}}\n2) Mở app, chọn “Tạo tài khoản” (không chọn “Đăng nhập”).\n3) Nhập số {{phone}}.",
+          "share": "Chia sẻ",
+          "copy": "Sao chép",
+          "copied": "Đã sao chép",
+          "done": "Xong"
+        }
       },
       "import": {
         "title": "Nhập từ công ty khác",
@@ -2027,7 +2040,8 @@
     "namePlaceholder": "VD: Nguyễn Văn A",
     "nameHint": "Hiển thị cho công ty và trên các công trình bạn làm.",
     "create": "Tạo hồ sơ",
-    "haveAccount": "Đã có tài khoản? Đăng nhập"
+    "haveAccount": "Đã có tài khoản? Đăng nhập",
+    "waitBeforeCode": "Một mã vừa được yêu cầu cho số này. Bạn có thể xin mã đăng ký sau {{seconds}} giây."
   },
   "worker": {
     "attendanceTitle": "Chấm công của tôi",

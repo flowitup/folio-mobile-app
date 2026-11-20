@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Eyebrow } from "@/components/ui/typography";
 import { LegalLinks } from "@/components/legal-links";
-import { AuthRequestError } from "@/lib/auth/auth-error-message";
+import { AuthRequestError, isResendGap } from "@/lib/auth/auth-error-message";
 import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { useCodeExpiry } from "@/lib/auth/use-code-expiry";
 import { INK_BLOCK } from "@/theme/tokens";
@@ -53,6 +53,10 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
   const [notice, setNotice] = useState<string | null>(null);
   // Wrong codes refused for the code now in use.
   const [failedAttempts, setFailedAttempts] = useState(0);
+  // The backend refused the last code typed. It also refuses every code for a number that has no
+  // account yet — the case of someone a company added by phone who never created one — so this
+  // is where the screen points first-time users to sign-up (it says the same to everyone).
+  const [codeRefused, setCodeRefused] = useState(false);
   const codeLocked = failedAttempts >= MAX_CODE_ATTEMPTS;
 
   // Tick once a second while the resend timer runs, and stop when it expires —
@@ -105,6 +109,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     setSubmitting(true);
     setError(null);
     setNotice(null);
+    setCodeRefused(false);
     try {
       const expiresIn = await requestOtp(phone);
       const sentAt = Date.now();
@@ -118,10 +123,34 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
       setResendAt(sentAt + RESEND_SECONDS * 1000);
       setNow(sentAt);
     } catch (caught) {
+      if (isResendGap(caught)) {
+        // A code went to this number moments ago, and the app lost track of it (it was closed,
+        // or reloaded): that code is still good, so open the code step for it instead of
+        // calling the refusal a failed sign-in.
+        const at = Date.now();
+        if (phone !== codeSentTo) {
+          setCodeExpiresAt(null);
+          setCode("");
+          setLastSubmitted(null);
+          setFailedAttempts(0);
+        }
+        setSentTo(phone);
+        setCodeSentTo(phone);
+        setNotice(t("login.codeStillValid"));
+        setResendAt(at + (caught.retryAfter ?? RESEND_SECONDS) * 1000);
+        setNow(at);
+        return;
+      }
       setError((caught as Error).message);
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function openSignup(number: string | null) {
+    router.push(
+      number ? { pathname: "/signup", params: { phone: number } } : "/signup",
+    );
   }
 
   async function verify(explicitCode?: string) {
@@ -138,6 +167,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     setSubmitting(true);
     setError(null);
     setNotice(null);
+    setCodeRefused(false);
     try {
       await signInWithOtp(sentTo, submitted);
     } catch (caught) {
@@ -146,6 +176,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
         // right code signs in again (the full, red row used to swallow taps until a resend).
         const failed = failedAttempts + 1;
         setFailedAttempts(failed);
+        setCodeRefused(true);
         setCode("");
         setLastSubmitted(null);
         setError(
@@ -168,6 +199,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
     setLastSubmitted(null);
     setError(null);
     setNotice(null);
+    setCodeRefused(false);
   }
 
   if (sentTo === null) {
@@ -219,7 +251,7 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
           <Pressable
             testID="login-signup"
             accessibilityRole="button"
-            onPress={() => router.push("/signup")}
+            onPress={() => openSignup(phone)}
             className="mt-4 items-center"
             hitSlop={8}
           >
@@ -303,18 +335,24 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
                 : t("login.resend")}
             </Text>
           </Pressable>
-          <Text
-            testID="login-code-expiry"
-            className={`font-sans text-[12.5px] ${codeExpired ? "text-negative" : "text-muted"}`}
-          >
-            {codeExpired
-              ? t("login.codeExpired")
-              : t("login.codeExpires", { count: minutesLeft })}
-          </Text>
+          {/* Unknown for a code texted before the app lost track of it (D3). */}
+          {codeExpiresAt !== null ? (
+            <Text
+              testID="login-code-expiry"
+              className={`font-sans text-[12.5px] ${codeExpired ? "text-negative" : "text-muted"}`}
+            >
+              {codeExpired
+                ? t("login.codeExpired")
+                : t("login.codeExpires", { count: minutesLeft })}
+            </Text>
+          ) : null}
         </View>
       ) : (
         <View className="mb-[18px] mt-3">
           <SignInErrorLine error={error} />
+          {signup && codeRefused ? (
+            <FirstTimeSignupHint onPress={() => openSignup(sentTo)} />
+          ) : null}
           {/* The retry stays off once the code has expired: say why. */}
           {codeExpired ? (
             <Text
@@ -358,13 +396,15 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
         testID="login-code-help"
         className="mt-3 text-center font-sans text-[12px] leading-[17px] text-muted"
       >
-        {t("login.codeHelp")}
+        {signup
+          ? `${t("login.codeHelpNeverSignedIn")} ${t("login.codeHelp")}`
+          : t("login.codeHelp")}
       </Text>
       {signup ? (
         <Pressable
           testID="login-code-signup"
           accessibilityRole="button"
-          onPress={() => router.push("/signup")}
+          onPress={() => openSignup(sentTo)}
           className="mt-2 items-center"
           hitSlop={8}
         >
@@ -378,4 +418,25 @@ export function PhoneSignIn({ signup }: { signup: boolean }) {
   );
 }
 
-/** Email + password on the same ink board, unchanged behaviour. */
+/**
+ * Shown under a refused code (D1): a number a company added by phone still has no account, so its
+ * codes are always refused until its owner signs up. Said to everyone, so it reveals nothing.
+ */
+function FirstTimeSignupHint({ onPress }: { onPress: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <View
+      testID="login-first-time"
+      className="mb-4 rounded-[12px] border border-line-2 bg-paper-2 p-3.5"
+    >
+      <Text className="mb-3 font-sans text-[13.5px] leading-[19px] text-ink">
+        {t("login.firstTime.body")}
+      </Text>
+      <Button
+        testID="login-first-time-signup"
+        label={t("login.firstTime.action")}
+        onPress={onPress}
+      />
+    </View>
+  );
+}

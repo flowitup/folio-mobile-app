@@ -19,7 +19,7 @@ import { useProjects } from "@/features/projects/projects-api";
 import { useTokens } from "@/theme/tokens";
 
 /**
- * Onboarding · waiting: a member of at least one company but assigned to no project yet (D1
+ * Onboarding · waiting: a member or manager of a company, admin of none, assigned to no project yet (D1
  * onboarding leaves this gap between "admin added me" and "admin assigned me"). Pull to refresh
  * — the app also re-checks on every foreground: `AuthProvider`'s `AppState` listener refreshes
  * the access token, re-fetches `/auth/me`, and flips TanStack Query's `focusManager`, which

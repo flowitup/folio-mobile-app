@@ -208,7 +208,11 @@ export default function CompanyMembersScreen() {
 
       {activeCompanyId ? (
         <>
-          <AddMemberByPhoneSheet ref={addSheet} companyId={activeCompanyId} />
+          <AddMemberByPhoneSheet
+            ref={addSheet}
+            companyId={activeCompanyId}
+            companyName={company.data?.legal_name ?? ""}
+          />
           <ImportMembersSheet ref={importSheet} companyId={activeCompanyId} />
           <MemberGrantsSheet
             ref={grantsSheet}

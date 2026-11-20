@@ -154,7 +154,10 @@ function authError(
     ? i18n.t(key, minutes === null ? { wait } : { count: minutes, wait })
     : ((error as { message?: string } | undefined)?.message ??
       `HTTP ${response?.status ?? "?"}`);
-  return new AuthRequestError(message, response?.status);
+  return new AuthRequestError(message, response?.status, {
+    errorCode,
+    retryAfter: retryAfter ?? undefined,
+  });
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
