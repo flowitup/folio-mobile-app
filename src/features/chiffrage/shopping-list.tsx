@@ -1,8 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
-import { Card, Checkbox } from "@/components/ui/primitives";
+import { Icon } from "@/components/ui/icon";
+import { Card } from "@/components/ui/primitives";
 import { formatMoney, formatNumber } from "@/lib/format/money";
+import { useTokens } from "@/theme/tokens";
 
 import type {
   ChiffrageArticle,
@@ -92,6 +94,14 @@ export function ShoppingList({
           }
         />
       </Card>
+      {canManage ? null : (
+        <Text
+          testID="shopping-readonly-hint"
+          className="mb-3 font-sans text-[13px] text-muted"
+        >
+          {t("chiffrage.onlyManagersTick")}
+        </Text>
+      )}
       {tree.postes.map((poste) => {
         const list = rows(poste);
         if (list.length === 0) return null;
@@ -125,56 +135,108 @@ export function ShoppingList({
               </View>
             </View>
             {list.map((article) => (
-              <View key={article.id} className="pt-3">
-                <Checkbox
-                  testID={`shopping-check-${article.id}`}
+              <View key={article.id} className="border-b border-line">
+                <ArticleRow
+                  article={article}
+                  canManage={canManage}
                   label={`${article.name} · ${formatNumber(article.quantity)}${article.unit ? ` ${article.unit}` : ""}${article.room_id && roomName.get(article.room_id) ? ` · ${roomName.get(article.room_id)}` : ""}`}
-                  value={Boolean(article.purchased)}
-                  onChange={(next) => {
-                    if (canManage && !busy) onToggle(article, next);
+                  estimate={`${t("chiffrage.estimateShort")} ${
+                    article.effective_source === "none"
+                      ? t("chiffrage.unpriced")
+                      : formatMoney(article.total_ttc)
+                  }`}
+                  onToggle={() => {
+                    if (canManage && !busy)
+                      onToggle(article, !article.purchased);
                   }}
                 />
-                <View className="-mt-1 mb-1 ml-8 flex-row items-center justify-between">
-                  <Text className="text-xs text-muted-foreground">
-                    {t("chiffrage.estimateShort")}{" "}
-                    {article.effective_source === "none"
-                      ? t("chiffrage.unpriced")
-                      : formatMoney(article.total_ttc)}
-                  </Text>
-                  {article.purchased ? (
-                    <View className="items-end">
-                      <Gap
-                        testID={`shopping-gap-${article.id}`}
-                        value={lineGap(article) ?? 0}
-                      />
-                      <Pressable
-                        testID={`shopping-actual-${article.id}`}
-                        disabled={!canManage}
-                        onPress={() => onEditActual(article)}
-                        className="min-h-[44px] justify-center"
-                      >
-                        <Text className="text-sm text-primary">
-                          {t("chiffrage.boughtQuantity")}{" "}
-                          {formatNumber(article.purchased_quantity ?? 0)}
-                          {article.returned_quantity
-                            ? ` · ${t("chiffrage.returnedQuantity")} ${formatNumber(article.returned_quantity)}`
-                            : ""}
-                          {canManage ? " ✎" : ""}
-                        </Text>
-                        <Text className="text-xs text-muted-foreground">
-                          {t("chiffrage.actualShort")}{" "}
-                          {formatMoney(article.actual_ttc ?? 0)}
-                        </Text>
-                      </Pressable>
-                    </View>
-                  ) : null}
-                </View>
+                {article.purchased ? (
+                  <View className="mb-1 ml-10 flex-row items-center justify-between">
+                    <Pressable
+                      testID={`shopping-actual-${article.id}`}
+                      disabled={!canManage}
+                      onPress={() => onEditActual(article)}
+                      className="min-h-[44px] justify-center"
+                    >
+                      <Text className="text-sm text-primary">
+                        {t("chiffrage.boughtQuantity")}{" "}
+                        {formatNumber(article.purchased_quantity ?? 0)}
+                        {article.returned_quantity
+                          ? ` · ${t("chiffrage.returnedQuantity")} ${formatNumber(article.returned_quantity)}`
+                          : ""}
+                        {canManage ? " ✎" : ""}
+                      </Text>
+                      <Text className="text-xs text-muted-foreground">
+                        {t("chiffrage.actualShort")}{" "}
+                        {formatMoney(article.actual_ttc ?? 0)}
+                      </Text>
+                    </Pressable>
+                    <Gap
+                      testID={`shopping-gap-${article.id}`}
+                      value={lineGap(article) ?? 0}
+                    />
+                  </View>
+                ) : null}
               </View>
             ))}
           </View>
         );
       })}
     </View>
+  );
+}
+
+/**
+ * One article: the whole row (≥ 48 pt) ticks it for whoever may, with a 28 pt box. For a
+ * read-only caller the box is drawn disabled — grey, no strong border — and the row is inert.
+ */
+function ArticleRow({
+  article,
+  canManage,
+  label,
+  estimate,
+  onToggle,
+}: {
+  article: ChiffrageArticle;
+  canManage: boolean;
+  label: string;
+  estimate: string;
+  onToggle: () => void;
+}) {
+  const tokens = useTokens();
+  const checked = Boolean(article.purchased);
+  const box = !canManage
+    ? "border border-line bg-paper-2"
+    : checked
+      ? "border-[1.5px] border-ink bg-ink"
+      : "border-[1.5px] border-line-2 bg-card";
+  return (
+    <Pressable
+      testID={`shopping-check-${article.id}`}
+      accessibilityRole="checkbox"
+      accessibilityLabel={label}
+      accessibilityState={{ checked, disabled: !canManage }}
+      disabled={!canManage}
+      onPress={onToggle}
+      className="min-h-[48px] flex-row items-center gap-3 py-2 active:opacity-70"
+    >
+      <View
+        testID={`shopping-box-${article.id}`}
+        className={`h-7 w-7 items-center justify-center rounded-md ${box}`}
+      >
+        {checked ? (
+          <Icon
+            name="check"
+            size={16}
+            color={canManage ? tokens.onInk : tokens.muted}
+          />
+        ) : null}
+      </View>
+      <View className="min-w-0 flex-1">
+        <Text className="font-sans text-base text-ink">{label}</Text>
+        <Text className="text-xs text-muted-foreground">{estimate}</Text>
+      </View>
+    </Pressable>
   );
 }
 

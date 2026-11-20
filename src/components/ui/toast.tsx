@@ -15,8 +15,16 @@ export type ToastKind = "info" | "success" | "error";
 
 type ToastItem = { id: number; kind: ToastKind; message: string };
 
+export type ToastOptions = {
+  /** How long it stays before fading out by itself; a tap always dismisses it. */
+  durationMs?: number;
+};
+
+/** A save lost to the network says what to do next; long enough to be read on site. */
+export const NETWORK_TOAST_MS = 10_000;
+
 type ToastContextValue = {
-  show: (message: string, kind?: ToastKind) => void;
+  show: (message: string, kind?: ToastKind, options?: ToastOptions) => void;
   dismiss: (id: number) => void;
   items: ToastItem[];
 };
@@ -25,8 +33,12 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 // Module-level hook so non-React code (query helpers) can raise a toast.
 let externalShow: ToastContextValue["show"] | null = null;
-export function showToast(message: string, kind: ToastKind = "info"): void {
-  externalShow?.(message, kind);
+export function showToast(
+  message: string,
+  kind: ToastKind = "info",
+  options?: ToastOptions,
+): void {
+  externalShow?.(message, kind, options);
 }
 
 const KIND_CLASS: Record<ToastKind, string> = {
@@ -48,12 +60,15 @@ export function ToastProvider({ children }: PropsWithChildren) {
   }, []);
 
   const show = useCallback(
-    (message: string, kind: ToastKind = "info") => {
+    (message: string, kind: ToastKind = "info", options?: ToastOptions) => {
       const id = ++counter.current;
       setItems((current) => [...current, { id, kind, message }]);
       timers.current.set(
         id,
-        setTimeout(() => dismiss(id), kind === "error" ? 6000 : 3000),
+        setTimeout(
+          () => dismiss(id),
+          options?.durationMs ?? (kind === "error" ? 6000 : 3000),
+        ),
       );
     },
     [dismiss],

@@ -4,7 +4,10 @@ import { Pressable, Text, View } from "react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { Badge, Card, EmptyState } from "@/components/ui/primitives";
+import { FitFigure } from "@/features/dashboard/fit-figure";
+import { KpiRow } from "@/features/labor/kpi-row";
 import type { LaborEntry, Worker } from "@/features/labor/labor-types";
+import { kpiCardWidth } from "@/lib/dashboard/fit-figure";
 import { formatMoney, formatNumber } from "@/lib/format/money";
 import { dayCount } from "@/lib/labor/day-count";
 import { useTokens } from "@/theme/tokens";
@@ -53,55 +56,59 @@ type KpiProps = {
   showPay?: boolean;
 };
 
-/** Three KPI cards: Ngày công · Chi phí · Chưa trả (warning tint). */
+/** `text-xl`, the size the attendance KPI figures are set in. */
+const LABOR_KPI_SIZE = 20;
+
+/** Three KPI cards: Ngày công · Chi phí · Chưa trả (warning tint); two columns when narrow. */
 export function LaborKpis({ days, cost, unpaid, showPay = true }: KpiProps) {
   const { t } = useTranslation();
+  const daysText = formatNumber(days, 2) || "0";
+  const figures = showPay
+    ? [daysText, formatMoney(cost), formatMoney(unpaid)]
+    : [daysText];
   return (
-    <View className="flex-row gap-2">
+    <KpiRow
+      testID="labor-kpis"
+      minCardWidth={kpiCardWidth(figures, LABOR_KPI_SIZE)}
+    >
       <Card radius={14} elevated className="flex-1 p-3">
         <Text className="font-sans text-[11.5px] text-muted">
           {t("labor.summary.days")}
         </Text>
-        <Text
-          className="mt-0.5 font-mono text-xl text-ink"
+        <FitFigure
+          className="mt-0.5 font-mono text-ink"
           testID="labor-kpi-days"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {formatNumber(days, 2) || "0"}
-        </Text>
+          text={daysText}
+          size={LABOR_KPI_SIZE}
+        />
       </Card>
       {showPay ? (
-        <>
-          <Card radius={14} elevated className="flex-1 p-3">
-            <Text className="font-sans text-[11.5px] text-muted">
-              {t("labor.kpi.cost")}
-            </Text>
-            <Text
-              className="mt-0.5 font-mono text-xl text-ink"
-              testID="labor-kpi-cost"
-              numberOfLines={1}
-              adjustsFontSizeToFit
-            >
-              {formatMoney(cost)}
-            </Text>
-          </Card>
-          <View className="flex-1 rounded-[14px] border border-line bg-warning-tint p-3">
-            <Text className="font-sans text-[11.5px] text-warning">
-              {t("labor.kpi.unpaid")}
-            </Text>
-            <Text
-              className="mt-0.5 font-mono text-xl text-warning"
-              testID="labor-kpi-unpaid"
-              numberOfLines={1}
-              adjustsFontSizeToFit
-            >
-              {formatMoney(unpaid)}
-            </Text>
-          </View>
-        </>
+        <Card radius={14} elevated className="flex-1 p-3">
+          <Text className="font-sans text-[11.5px] text-muted">
+            {t("labor.kpi.cost")}
+          </Text>
+          <FitFigure
+            className="mt-0.5 font-mono text-ink"
+            testID="labor-kpi-cost"
+            text={formatMoney(cost)}
+            size={LABOR_KPI_SIZE}
+          />
+        </Card>
       ) : null}
-    </View>
+      {showPay ? (
+        <View className="flex-1 rounded-[14px] border border-line bg-warning-tint p-3">
+          <Text className="font-sans text-[11.5px] text-warning">
+            {t("labor.kpi.unpaid")}
+          </Text>
+          <FitFigure
+            className="mt-0.5 font-mono text-warning"
+            testID="labor-kpi-unpaid"
+            text={formatMoney(unpaid)}
+            size={LABOR_KPI_SIZE}
+          />
+        </View>
+      ) : null}
+    </KpiRow>
   );
 }
 
@@ -402,7 +409,7 @@ export function PaymentsPanel({
       ) : null}
       {rows.map((row) => {
         const due = rowDue(row);
-                const pct =
+        const pct =
           row.owed > 0
             ? Math.min(100, Math.round((row.paid / row.owed) * 100))
             : 100;

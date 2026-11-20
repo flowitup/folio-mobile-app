@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { Clipboard, Share } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import type { Metrics } from "react-native-safe-area-context";
 
@@ -40,7 +41,7 @@ async function renderSheet() {
   await render(
     <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
       <QueryClientProvider client={queryClient}>
-        <AddMemberByPhoneSheet companyId="c1" />
+        <AddMemberByPhoneSheet companyId="c1" companyName="Lavandou Bâtiment" />
       </QueryClientProvider>
     </SafeAreaProvider>,
   );
@@ -59,6 +60,16 @@ describe("adding a member by phone", () => {
 
     expect(mockPost).not.toHaveBeenCalled();
     expect(screen.getByText(i18n.t("login.invalidPhone"))).toBeTruthy();
+  });
+
+  it("shows the number the way the sign-in screen does (FR +33)", async () => {
+    await renderSheet();
+
+    expect(screen.getByText("+33")).toBeTruthy();
+    expect(screen.getByTestId("add-member-phone")).toHaveProp(
+      "placeholder",
+      "6 12 34 56 78",
+    );
   });
 
   it("sends a French number in E.164, however the user spaced it", async () => {
@@ -174,5 +185,83 @@ describe("adding someone who is already a member", () => {
       await screen.findByText(i18n.t("common.errors.conflict")),
     ).toBeTruthy();
     expect(mockShowToast).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * D2: adding someone by phone texts them nothing, and they must create an account before signing
+ * in works. The sheet's last step hands the admin the message to send, instead of a toast.
+ */
+describe("after adding someone by phone", () => {
+  afterAll(async () => {
+    await i18n.changeLanguage("vi");
+  });
+
+  async function addSomeone() {
+    mockPost.mockResolvedValue({
+      data: { person_id: "p9", name: "Minh", phone: "+33699887766" },
+    });
+    await renderSheet();
+    await fireEvent.changeText(
+      screen.getByTestId("add-member-phone"),
+      "06 99 88 77 66",
+    );
+    await fireEvent.press(screen.getByTestId("add-member-submit"));
+    return screen.findByTestId("add-member-added");
+  }
+
+  it("says who was added and what to send them, with no toast", async () => {
+    await i18n.changeLanguage("vi");
+    await addSomeone();
+
+    expect(
+      screen.getByText(
+        i18n.t("companies.members.addByPhone.added.title", { name: "Minh" }),
+      ),
+    ).toBeTruthy();
+    const message = screen.getByTestId("add-member-message");
+    expect(message).toHaveTextContent("Lavandou Bâtiment", { exact: false });
+    expect(message).toHaveTextContent("06 99 88 77 66", { exact: false });
+    expect(message).toHaveTextContent(i18n.t("login.createAccount"), {
+      exact: false,
+    });
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("add-member-submit")).toBeNull();
+  });
+
+  it("copies the message and opens the share sheet with it", async () => {
+    await i18n.changeLanguage("fr");
+    const share = jest.spyOn(Share, "share").mockResolvedValue({
+      action: "sharedAction",
+    } as never);
+    const copy = jest
+      .spyOn(Clipboard, "setString")
+      .mockImplementation(() => {});
+    await addSomeone();
+    const text = i18n.t("companies.members.addByPhone.added.message", {
+      company: "Lavandou Bâtiment",
+      phone: "06 99 88 77 66",
+    });
+
+    await fireEvent.press(screen.getByTestId("add-member-copy"));
+    expect(copy).toHaveBeenCalledWith(text);
+    expect(screen.getByTestId("add-member-copy")).toHaveTextContent(
+      i18n.t("companies.members.addByPhone.added.copied"),
+    );
+
+    await fireEvent.press(screen.getByTestId("add-member-share"));
+    expect(share).toHaveBeenCalledWith({ message: text });
+    share.mockRestore();
+    copy.mockRestore();
+  });
+
+  it("starts over for the next person once done", async () => {
+    await i18n.changeLanguage("vi");
+    await addSomeone();
+
+    await fireEvent.press(screen.getByTestId("add-member-done"));
+
+    expect(screen.getByTestId("add-member-phone")).toHaveDisplayValue("");
+    expect(screen.queryByTestId("add-member-added")).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import i18n from "@/i18n";
 import OverviewTab from "../../app/(app)/(tabs)/index";
+import { businessToday } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import type { Invoice } from "@/features/invoices/invoice-types";
 import {
@@ -96,7 +97,6 @@ function withPendingRefund() {
   });
 }
 
-
 describe("overview tab · manager", () => {
   beforeEach(() => {
     mockPersona = persona("manager");
@@ -118,6 +118,12 @@ describe("overview tab · manager", () => {
     expect(
       screen.getByTestId("overview-labor-unpaid-amount"),
     ).toHaveTextContent(containing(formatMoney(230)));
+    // The 80 € labor invoice with no worker settles nobody: said apart under the tile (P-02).
+    expect(screen.getByTestId("overview-labor-unassigned")).toHaveTextContent(
+      i18n.t("dashboard.overview.unassignedLabor", {
+        amount: formatMoney(80),
+      }),
+    );
     expect(screen.getByTestId("overview-agenda")).toBeTruthy();
     expect(screen.getByText("Livraison carrelage")).toBeTruthy();
     expect(screen.getByTestId("overview-today-on-site")).toBeTruthy();
@@ -155,6 +161,41 @@ describe("overview tab · manager", () => {
     jest.restoreAllMocks();
   });
 
+  it("turns today on site into one button straight into today's attendance", async () => {
+    await renderWithProviders(<OverviewTab />);
+    const card = await screen.findByTestId("overview-today-on-site");
+    // The fixture has one worker logged today, so the card offers to correct it.
+    await waitFor(() =>
+      expect(screen.getByTestId("overview-today-action")).toHaveTextContent(
+        i18n.t("dashboard.today.editToday", { count: 1 }),
+      ),
+    );
+    await fireEvent.press(card);
+    expect(mockRouter.navigate).toHaveBeenCalledWith({
+      pathname: "/(app)/(tabs)/labor",
+      params: {
+        segment: "calendar",
+        day: businessToday(),
+        log: "edit",
+        focus: expect.any(String),
+      },
+    });
+  });
+
+  it("asks to log today while nobody is logged yet", async () => {
+    mockGet.mockImplementation(answerGet(() => mockPersona, { entries: [] }));
+    await renderWithProviders(<OverviewTab />);
+    const card = await screen.findByTestId("overview-today-on-site");
+    expect(screen.getByTestId("overview-today-action")).toHaveTextContent(
+      i18n.t("dashboard.today.logToday"),
+    );
+    await fireEvent.press(card);
+    expect(mockRouter.navigate).toHaveBeenCalledWith({
+      pathname: "/(app)/(tabs)/labor",
+      params: expect.objectContaining({ log: "1", day: businessToday() }),
+    });
+  });
+
   it("drops both invoice actions when the project denies project:manage_invoices", async () => {
     mockPersona = persona("manager", { deny: ["project:manage_invoices"] });
     await renderWithProviders(<OverviewTab />);
@@ -167,6 +208,16 @@ describe("overview tab · manager", () => {
     expect(screen.queryByTestId("overview-add-release")).toBeNull();
     // Paying labor is a different permission and stays.
     expect(screen.getByTestId("overview-pay-labor")).toBeTruthy();
+  });
+
+  it("keeps today on site a plain line for a caller who may not log attendance", async () => {
+    mockPersona = persona("manager", { deny: ["project:manage_labor"] });
+    await renderWithProviders(<OverviewTab />);
+    await screen.findByTestId("overview-today-on-site");
+    expect(screen.queryByTestId("overview-today-action")).toBeNull();
+    expect(
+      screen.getByTestId("overview-today-on-site").props.accessibilityRole,
+    ).toBeUndefined();
   });
 
   it("drops the pay-labor action for a caller who can neither manage labor nor view pay", async () => {
@@ -234,6 +285,48 @@ describe("overview tab · admin", () => {
       pathname: `/projects/${PROJECT_ID}/invoices/new`,
       params: { type: "released_funds" },
     });
+  });
+
+  it("does not count a client's facture payment against the bank credit", async () => {
+    const answer = answerGet(() => mockPersona);
+    mockGet.mockImplementation(async (path: string, options?: unknown) => {
+      const result = await answer(path, options as never);
+      if (path !== "/api/v1/projects/{project_id}/invoices") return result;
+      const data = result.data as {
+        invoices: Invoice[];
+        funds_released_total: number;
+      };
+      return {
+        ...result,
+        data: {
+          ...data,
+          invoices: [
+            ...data.invoices,
+            {
+              ...INVOICE_MATERIALS,
+              id: "rel-client",
+              type: "released_funds",
+              total_amount: 8169,
+              source_billing_document_id: "bd-1",
+              is_auto_generated: true,
+            },
+          ],
+          funds_released_total: data.funds_released_total + 8169,
+        },
+      };
+    });
+    await renderWithProviders(<OverviewTab />);
+    await screen.findByTestId("overview-headline");
+
+    // Still 60 000 − 20 000 drawn from the bank: the client's 8 169 is no draw.
+    await waitFor(() =>
+      expect(screen.getByTestId("overview-figure-bank")).toHaveTextContent(
+        containing(formatMoney(40000)),
+      ),
+    );
+    expect(screen.getByTestId("overview-figure-client-paid")).toHaveTextContent(
+      containing(formatMoney(8169)),
+    );
   });
 
   it("opens the refund list of the project's company for pending refunds", async () => {

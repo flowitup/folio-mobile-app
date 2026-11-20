@@ -1,10 +1,12 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
 
 import { EmptyState, ErrorState } from "@/components/ui/primitives";
 import { InvoiceForm } from "@/features/invoices/invoice-form";
 import { useInvoice, useUpdateInvoice } from "@/features/invoices/invoices-api";
+import { useDiscardGuard } from "@/features/invoices/use-discard-guard";
 import { useProject, useProjects } from "@/features/projects/projects-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 
@@ -24,6 +26,8 @@ export default function EditInvoiceScreen() {
   // The scoped permission comes from the projects list; on a cold deep link it is still
   // loading, and the JWT-wide fallback must not flash the restricted message meanwhile.
   const projects = useProjects();
+  const [dirty, setDirty] = useState(false);
+  const guard = useDiscardGuard(dirty);
 
   if (!canManage)
     return (
@@ -49,14 +53,23 @@ export default function EditInvoiceScreen() {
   if (!invoice.data) return <ActivityIndicator className="mt-8" />;
 
   return (
-    <InvoiceForm
-      projectId={id}
-      companyId={project.data?.company_id}
-      initial={invoice.data}
-      submitting={update.isPending}
-      onSubmit={(payload) =>
-        update.mutate(payload, { onSuccess: () => router.back() })
-      }
-    />
+    <>
+      <InvoiceForm
+        projectId={id}
+        companyId={project.data?.company_id}
+        initial={invoice.data}
+        submitting={update.isPending}
+        onDirtyChange={setDirty}
+        onSubmit={(payload) =>
+          update.mutate(payload, {
+            onSuccess: () => {
+              guard.allowLeave();
+              router.back();
+            },
+          })
+        }
+      />
+      {guard.dialog}
+    </>
   );
 }

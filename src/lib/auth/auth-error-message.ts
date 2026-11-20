@@ -22,12 +22,34 @@ export type AuthFlow = "otp" | "signup" | "phoneChange";
  */
 export class AuthRequestError extends Error {
   readonly status: number | undefined;
+  /** The backend's `error` code (`TooManyRequests`, `OtpHourlyLimit`…), when it gave one. */
+  readonly errorCode: string | undefined;
+  /** Seconds the backend asked to wait (Retry-After), when it said. */
+  readonly retryAfter: number | undefined;
 
-  constructor(message: string, status: number | undefined) {
+  constructor(
+    message: string,
+    status: number | undefined,
+    { errorCode, retryAfter }: { errorCode?: string; retryAfter?: number } = {},
+  ) {
     super(message);
     this.name = "AuthRequestError";
     this.status = status;
+    this.errorCode = errorCode;
+    this.retryAfter = retryAfter;
   }
+}
+
+/**
+ * The short gap between two codes for one number (`TooManyRequests`): the code already texted is
+ * still good. Not the hourly cap, a busy network or a busy SMS service, where no code is waiting.
+ */
+export function isResendGap(caught: unknown): caught is AuthRequestError {
+  return (
+    caught instanceof AuthRequestError &&
+    caught.status === 429 &&
+    caught.errorCode === "TooManyRequests"
+  );
 }
 
 /**

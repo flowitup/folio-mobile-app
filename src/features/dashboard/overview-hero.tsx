@@ -15,6 +15,8 @@ type Props = {
   spentPersonal: number;
   /** Bank credit not yet released (credit − draws); null when the project has no bank credit. */
   bankRemaining: number | null;
+  /** Paid by the client on factures (releases generated from them); 0 hides the line. */
+  clientPaid?: number;
   /**
    * Whether the caller holds `project:view_budget`. False swaps the headline
    * from "remaining to spend" (budget − spent) to plain total spent and drops
@@ -53,6 +55,7 @@ export function OverviewHero({
   spentByCredits,
   spentPersonal,
   bankRemaining,
+  clientPaid = 0,
   onAddInvoice,
   onAddRelease,
   onPayLabor,
@@ -115,6 +118,17 @@ export function OverviewHero({
                 {t("dashboard.overview.bankRemaining")}{" "}
                 <Text className="font-mono text-on-ink-block">
                   {formatMoney(bankRemaining)}
+                </Text>
+              </Text>
+            ) : null}
+            {clientPaid > 0 ? (
+              <Text
+                className="mt-0.5 font-sans text-[12.5px] leading-[17px] text-ink-block-muted"
+                testID="overview-figure-client-paid"
+              >
+                {t("dashboard.overview.clientPaid")}{" "}
+                <Text className="font-mono text-on-ink-block">
+                  {formatMoney(clientPaid)}
                 </Text>
               </Text>
             ) : null}

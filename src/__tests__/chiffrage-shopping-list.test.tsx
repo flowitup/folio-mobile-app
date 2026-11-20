@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
+import i18n from "@/i18n";
 import ProjectChiffrageSection from "../../app/(app)/(tabs)/projects/[id]/chiffrage";
 import {
   answerGet,
@@ -82,6 +83,12 @@ jest.mock("expo-router", () => ({
   }),
   useLocalSearchParams: () => ({ id: "p1" }),
   useFocusEffect: () => undefined,
+}));
+
+const mockShowToast = jest.fn();
+jest.mock("@/components/ui/toast", () => ({
+  ...jest.requireActual("@/components/ui/toast"),
+  showToast: (...args: unknown[]) => mockShowToast(...args),
 }));
 
 jest.mock("@/auth/auth-context", () => ({
@@ -190,5 +197,61 @@ describe("chiffrage shopping list", () => {
       purchased_quantity: 23,
       returned_quantity: 2,
     });
+  });
+
+  it("ticks by touching the item's name, on a 48 pt row with a 28 pt box (P-14)", async () => {
+    mockCurrent = persona("manager");
+    mockPatch.mockResolvedValue(ok({}));
+    await renderWithProviders(<ProjectChiffrageSection />);
+
+    await fireEvent.press(await screen.findByTestId("chiffrage-view-shopping"));
+    expect(screen.queryByTestId("shopping-readonly-hint")).toBeNull();
+    expect(screen.getByTestId("shopping-check-art-1")).toHaveProp(
+      "className",
+      expect.stringContaining("min-h-[48px]"),
+    );
+    expect(screen.getByTestId("shopping-box-art-1")).toHaveProp(
+      "className",
+      expect.stringContaining("h-7 w-7"),
+    );
+    await fireEvent.press(screen.getByText(/Carreaux 60x60/));
+    await waitFor(() => expect(mockPatch).toHaveBeenCalled());
+    expect(mockPatch.mock.calls[0][1].body).toEqual({ purchased: true });
+  });
+
+  it("draws a read-only box and says who may tick", async () => {
+    mockCurrent = persona("manager", { deny: ["project:manage_invoices"] });
+    await renderWithProviders(<ProjectChiffrageSection />);
+
+    await fireEvent.press(await screen.findByTestId("chiffrage-view-shopping"));
+    expect(screen.getByTestId("shopping-readonly-hint")).toHaveTextContent(
+      i18n.t("chiffrage.onlyManagersTick"),
+    );
+    expect(
+      screen.getByTestId("shopping-check-art-1").props.accessibilityState,
+    ).toMatchObject({ disabled: true });
+    expect(screen.getByTestId("shopping-box-art-1")).toHaveProp(
+      "className",
+      expect.stringContaining("bg-paper-2"),
+    );
+  });
+
+  it("leaves the box as it was and says why when the tick never reaches the server", async () => {
+    mockCurrent = persona("manager");
+    mockPatch.mockRejectedValue(new TypeError("Network request failed"));
+    await renderWithProviders(<ProjectChiffrageSection />);
+
+    await fireEvent.press(await screen.findByTestId("chiffrage-view-shopping"));
+    await fireEvent.press(screen.getByTestId("shopping-check-art-1"));
+    await waitFor(() =>
+      expect(mockShowToast).toHaveBeenCalledWith(
+        i18n.t("common.networkError"),
+        "error",
+        expect.anything(),
+      ),
+    );
+    expect(
+      screen.getByTestId("shopping-check-art-1").props.accessibilityState,
+    ).toMatchObject({ checked: false });
   });
 });

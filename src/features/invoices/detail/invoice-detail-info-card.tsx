@@ -6,6 +6,7 @@ import { Eyebrow } from "@/components/ui/typography";
 import type { Invoice } from "@/features/invoices/invoice-types";
 import { formatMonth } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
+import { partyLabelKeys } from "@/features/invoices/party-labels";
 
 /**
  * Secondary details the 1b hero does not carry (address, service month, linked returns, notes…),
@@ -15,7 +16,7 @@ export function InvoiceInfoCard({ invoice }: { invoice: Invoice }) {
   const { t } = useTranslation();
   const rows: { label: string; value: string | null | undefined }[] = [
     {
-      label: t("invoices.form.recipientAddress"),
+      label: t(partyLabelKeys(invoice.type).address),
       value: invoice.recipient_address,
     },
     {

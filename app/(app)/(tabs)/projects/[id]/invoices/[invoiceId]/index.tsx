@@ -24,6 +24,7 @@ import {
 import { InvoiceInfoCard } from "@/features/invoices/detail/invoice-detail-info-card";
 import { InvoiceLinesCard } from "@/features/invoices/detail/invoice-detail-lines-card";
 import { InvoiceHighlightRow } from "@/features/invoices/detail/invoice-highlight-row";
+import { partyLabelKeys } from "@/features/invoices/party-labels";
 import {
   useDeleteInvoice,
   useInvoice,
@@ -90,8 +91,8 @@ export default function InvoiceDetailScreen() {
         project.data ? projectDisplayName(project.data) : "",
         {
           title: t("invoices.print.title"),
-          issueDate: t("invoices.form.issueDate"),
-          recipient: t("invoices.form.recipient"),
+          issueDate: t(partyLabelKeys(invoice.data.type).date),
+          recipient: t(partyLabelKeys(invoice.data.type).name),
           description: t("invoices.form.description"),
           quantity: t("invoices.form.quantity"),
           unitPrice: t("invoices.form.unitPrice"),
@@ -132,7 +133,7 @@ export default function InvoiceDetailScreen() {
   if (!invoice.data)
     return (
       <View className="flex-1 bg-paper">
-        <ScreenHeader title={t("invoices.print.title")} back onBack={goBack} />
+        <ScreenHeader title={t("invoices.detail.title")} back onBack={goBack} />
         {unavailable ? (
           <EmptyState message={t("invoices.unavailable")} />
         ) : (

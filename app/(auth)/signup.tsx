@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import {
@@ -13,13 +13,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/auth/auth-context";
 import { FrenchPhoneField } from "@/components/auth/french-phone-field";
+import { CODE_LENGTH, OtpCodeBoxes } from "@/components/auth/otp-code-boxes";
 import { LegalLinks } from "@/components/legal-links";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/typography";
-import { AuthRequestError } from "@/lib/auth/auth-error-message";
+import { AuthRequestError, isResendGap } from "@/lib/auth/auth-error-message";
 import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { useTokens } from "@/theme/tokens";
 import { LanguageChips } from "@/components/language-chips";
+
+/** "+33612345678" (the sign-in screen's `?phone=`) as the field shows it: "6 12 34 56 78". */
+function prefilledPhone(param: string | string[] | undefined): string {
+  const formatted = formatFrenchPhone(typeof param === "string" ? param : "");
+  return formatted.startsWith("+33 ") ? formatted.slice(4) : "";
+}
 
 type Step = "phone" | "code" | "name";
 
@@ -36,8 +43,12 @@ export default function SignupScreen() {
   const tokens = useTokens();
   const router = useRouter();
   const { requestSignupOtp, signUpWithOtp } = useAuth();
+  // Sent by the sign-in screen when a code was refused for a number with no account yet (D1).
+  const { phone: phoneParam } = useLocalSearchParams<{ phone?: string }>();
   const [step, setStep] = useState<Step>("phone");
-  const [phoneInput, setPhoneInput] = useState("");
+  const [phoneInput, setPhoneInput] = useState(() =>
+    prefilledPhone(phoneParam),
+  );
   const [phone, setPhone] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
@@ -45,16 +56,26 @@ export default function SignupScreen() {
   const [now, setNow] = useState(() => Date.now());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The backend's per-number gap is shared with sign-in: a sign-in code asked for this number a
+  // moment ago makes it refuse a sign-up code until then. A wait, not a failure.
+  const [gap, setGap] = useState<{ phone: string; until: number } | null>(null);
 
+  // Tick while a countdown runs, and stop when it ends: a live interval would re-render the
+  // code boxes under the user's typing.
+  const deadline = Math.max(resendAt ?? 0, gap?.until ?? 0);
   useEffect(() => {
-    if (resendAt === null) return;
+    if (deadline <= now) return;
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [resendAt]);
+  }, [deadline, now]);
 
   const normalized = normalizePhone(phoneInput);
   const secondsLeft =
     resendAt === null ? 0 : Math.max(0, Math.ceil((resendAt - now) / 1000));
+  const gapSeconds =
+    gap !== null && gap.phone === normalized
+      ? Math.max(0, Math.ceil((gap.until - now) / 1000))
+      : 0;
 
   async function sendCode() {
     if (!normalized) return setError(t("login.invalidPhone"));
@@ -74,12 +95,29 @@ export default function SignupScreen() {
       setCode("");
       setResendAt(Date.now() + RESEND_SECONDS * 1000);
       setNow(Date.now());
+      setGap(null);
       setStep("code");
     } catch (caught) {
+      if (isResendGap(caught)) {
+        const at = Date.now();
+        setGap({
+          phone: normalized,
+          until: at + (caught.retryAfter ?? RESEND_SECONDS) * 1000,
+        });
+        setNow(at);
+        return;
+      }
       setError((caught as Error).message);
     } finally {
       setSubmitting(false);
     }
+  }
+
+  /** The code goes to the backend with the name, so a full row moves on to the name step. */
+  function codeComplete(completed: string) {
+    if (!new RegExp(`^\\d{${CODE_LENGTH}}$`).test(completed)) return;
+    setError(null);
+    setStep("name");
   }
 
   async function create() {
@@ -93,8 +131,11 @@ export default function SignupScreen() {
       // A wrong or expired code is a 401 — send the user back to the code step. The status
       // is what decides it: the message is translated, so matching words in it left a
       // Vietnamese (the default locale) user stranded on the name step.
-      if (caught instanceof AuthRequestError && caught.status === 401)
+      // The boxes are emptied so that typing the right code moves on again by itself.
+      if (caught instanceof AuthRequestError && caught.status === 401) {
+        setCode("");
         setStep("code");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -130,13 +171,22 @@ export default function SignupScreen() {
             <Text className="mb-6 font-sans text-[12px] text-muted">
               {t("login.phoneHint")}
             </Text>
+            {gapSeconds > 0 ? (
+              <Text
+                testID="signup-wait"
+                accessibilityLiveRegion="polite"
+                className="mb-4 font-sans text-[13px] text-ink"
+              >
+                {t("signup.waitBeforeCode", { seconds: gapSeconds })}
+              </Text>
+            ) : null}
             <ErrorLine error={error} />
             <Button
               testID="signup-send-code"
               label={t("login.sendCode")}
               loading={submitting}
               // Live for any entry: pressing says what is wrong with a non-French number.
-              disabled={!phoneInput.trim() || submitting}
+              disabled={!phoneInput.trim() || submitting || gapSeconds > 0}
               onPress={() => void sendCode()}
             />
           </View>
@@ -159,20 +209,17 @@ export default function SignupScreen() {
               />
             </Text>
             <Eyebrow className="mb-1.5">{t("login.code")}</Eyebrow>
-            <View className={`${FIELD} mb-6`}>
-              <TextInput
+            {/* The sign-in screen's six boxes: a full row moves on by itself. */}
+            <View className="mb-6">
+              <OtpCodeBoxes
                 testID="signup-code"
-                className="flex-1 font-mono text-[22px] tracking-[6px] text-ink"
-                autoComplete="sms-otp"
-                keyboardType="number-pad"
-                textContentType="oneTimeCode"
-                maxLength={6}
-                placeholder="••••••"
-                placeholderTextColor={tokens.muted2}
                 value={code}
-                onChangeText={(text) => setCode(text.replace(/\D/g, ""))}
-                onSubmitEditing={() => /^\d{6}$/.test(code) && setStep("name")}
-                autoFocus
+                onChange={setCode}
+                onComplete={codeComplete}
+                invalid={error !== null}
+                positionLabel={(position) =>
+                  t("login.codeDigit", { position, total: CODE_LENGTH })
+                }
               />
             </View>
             <ErrorLine error={error} />

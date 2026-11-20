@@ -1,10 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
+import { FitFigure } from "@/features/dashboard/fit-figure";
 import { formatMoney } from "@/lib/format/money";
 
 type Props = {
   laborUnpaid: number;
+  /** Labor spend recorded without a worker: settles nobody's pay, so it is said apart. */
+  laborUnassigned?: number;
   pendingRefundCount: number;
   pendingRefundTotal: number;
   onPayLabor: () => void;
@@ -18,6 +21,7 @@ type Props = {
  */
 export function OverviewDueTiles({
   laborUnpaid,
+  laborUnassigned = 0,
   pendingRefundCount,
   pendingRefundTotal,
   onPayLabor,
@@ -30,17 +34,25 @@ export function OverviewDueTiles({
         <Text className="font-sans text-[11px] uppercase tracking-[1.1px] text-warning">
           {t("dashboard.overview.unpaid")}
         </Text>
-        <Text
-          className="mt-2 font-mono-semibold text-xl leading-6 text-ink"
+        <FitFigure
+          className="mt-2 font-mono-semibold text-ink"
           testID="overview-labor-unpaid-amount"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {formatMoney(laborUnpaid)}
-        </Text>
+          text={formatMoney(laborUnpaid)}
+          size={20}
+        />
         <Text className="mt-0.5 font-sans text-xs text-muted" numberOfLines={1}>
           {t("invoices.types.labor")}
         </Text>
+        {laborUnassigned > 0 ? (
+          <Text
+            testID="overview-labor-unassigned"
+            className="mt-0.5 font-sans text-xs text-muted"
+          >
+            {t("dashboard.overview.unassignedLabor", {
+              amount: formatMoney(laborUnassigned),
+            })}
+          </Text>
+        ) : null}
         {/* Nothing to pay or to chase: no "pay now" / "view" call to action over 0,00 €. */}
         {laborUnpaid > 0 ? (
           <Pressable
@@ -59,14 +71,12 @@ export function OverviewDueTiles({
         <Text className="font-sans text-[11px] uppercase tracking-[1.1px] text-accent-ink">
           {t("dashboard.overview.awaitingRefund")}
         </Text>
-        <Text
-          className="mt-2 font-mono-semibold text-xl leading-6 text-ink"
+        <FitFigure
+          className="mt-2 font-mono-semibold text-ink"
           testID="overview-figure-pending"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {formatMoney(pendingRefundTotal)}
-        </Text>
+          text={formatMoney(pendingRefundTotal)}
+          size={20}
+        />
         <Text className="mt-0.5 font-sans text-xs text-muted" numberOfLines={1}>
           {t("dashboard.overview.refundItems", { count: pendingRefundCount })}
         </Text>

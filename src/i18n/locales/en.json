@@ -9,7 +9,7 @@
     "retry": "Retry",
     "loadError": "Could not load this content.",
     "comingSoon": "Coming soon.",
-    "networkError": "Network error",
+    "networkError": "Not saved: no network. Your data is still on screen; try again when you have signal.",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "save": "Save",
@@ -84,7 +84,12 @@
     },
     "codeHelp": "No SMS? Check the number. Only Folio accounts receive a code: they are created in the app or through your company’s invitation. Access deactivated? Contact your company’s administrator.",
     "codeStillValid": "The code already sent to this number is still valid: type it in.",
-    "invalidPhoneHint": "This is not a French number (e.g. 06 12 34 56 78)."
+    "invalidPhoneHint": "This is not a French number (e.g. 06 12 34 56 78).",
+    "codeHelpNeverSignedIn": "Never signed in? Tap Create an account.",
+    "firstTime": {
+      "body": "First time on Folio? Even if your company added your number, you need to create an account first.",
+      "action": "Create an account with this number"
+    }
   },
   "updateRequired": {
     "title": "Update required",
@@ -266,10 +271,10 @@
   },
   "invoices": {
     "all": "All",
-    "none": "No invoices yet.",
-    "created": "Invoice created.",
-    "deleted": "Invoice deleted.",
-    "deleteConfirm": "Delete invoice {{number}}?",
+    "none": "No expenses yet.",
+    "created": "Expense saved.",
+    "deleted": "Expense deleted.",
+    "deleteConfirm": "Delete expense {{number}}?",
     "types": {
       "released_funds": "Released Funds",
       "labor": "Labor",
@@ -337,7 +342,7 @@
     },
     "form": {
       "type": "Type",
-      "issueDate": "Issue date",
+      "issueDate": "Expense date",
       "issueDateRequired": "Issue date is required.",
       "recipient": "Recipient",
       "recipientRequired": "Recipient is required.",
@@ -382,7 +387,15 @@
       "fixFields_one": "Fix the highlighted field.",
       "fixFields_other": "Fix the {{count}} highlighted fields.",
       "cashAdvance": "Company cash advance",
-      "cashAdvanceHint": "Money handed out by the company (e.g. cash to pay labor): not counted in released funds, counted as spent in the company purse."
+      "cashAdvanceHint": "Money handed out by the company (e.g. cash to pay labor): not counted in released funds, counted as spent in the company purse.",
+      "releaseDate": "Release date",
+      "supplier": "Supplier",
+      "supplierRequired": "Supplier is required.",
+      "supplierAddress": "Supplier address",
+      "discardTitle": "Discard this expense?",
+      "discardMessage": "What you have typed will be lost.",
+      "discard": "Discard",
+      "stay": "Stay"
     },
     "summary": {
       "totalExpenses": "Total expenses",
@@ -434,7 +447,8 @@
       "highlightLockedAuto": "Generated from an invoice: the colour cannot be changed.",
       "highlightLockedRefunded": "Refunded expense: the colour cannot be changed.",
       "highlightReadOnly": "Only an admin or a manager can change the colour.",
-      "attachmentsEmpty": "No attachments yet"
+      "attachmentsEmpty": "No attachments yet",
+      "title": "Expense"
     },
     "highlightColors": {
       "red": "Red",
@@ -444,8 +458,10 @@
       "blue": "Blue",
       "purple": "Purple"
     },
-    "restricted": "Invoices are reserved for the project managers.",
-    "unavailable": "This invoice does not exist or is reserved for the project managers."
+    "restricted": "Expenses are reserved for the project managers.",
+    "unavailable": "This expense does not exist or is reserved for the project managers.",
+    "addExpense": "Expense",
+    "addExpenseA11y": "Add an expense"
   },
   "labor": {
     "tabs": {
@@ -650,7 +666,9 @@
       "openMonth": "Open this month",
       "daysUnit_one": "day",
       "daysUnit_other": "days",
-      "paidOutsideMonths": "incl. {{amount}} paid with no month or outside logged months"
+      "unassignedLabor_one": "Labor spend not assigned to a worker: {{amount}} · {{count}} payment",
+      "unassignedLabor_other": "Labor spend not assigned to a worker: {{amount}} · {{count}} payments",
+      "assign": "Assign"
     },
     "errors": {
       "roleUnavailable": "This role is no longer available for this project's company. Pick another one."
@@ -775,7 +793,10 @@
       "body": "Folio lets you know when a task is assigned to you, a document arrives or someone messages you. You can change this later in your phone settings.",
       "enable": "Turn on",
       "later": "Not now"
-    }
+    },
+    "overdue_one": "Overdue by {{count}} day",
+    "overdue_other": "Overdue by {{count}} days",
+    "dueToday": "Today"
   },
   "tasks": {
     "create": "New task",
@@ -821,7 +842,7 @@
     "unpricedCount_one": "{{count}} item without price",
     "unpricedCount_other": "{{count}} items without price",
     "coversAll": "covers everything",
-    "none": "No sections yet. Add one to start pricing materials.",
+    "none": "No sections yet. Add one to start the estimate.",
     "nameRequired": "Name is required.",
     "priceRequired": "Enter a unit price.",
     "supplierRequired": "Pick a shop or enter a supplier name.",
@@ -912,7 +933,8 @@
     "actualShort": "Actual",
     "boughtQuantity": "Bought",
     "returnedQuantity": "Returned",
-    "returnTooMuch": "Cannot return more than was bought."
+    "returnTooMuch": "Cannot return more than was bought.",
+    "onlyManagersTick": "Only managers mark items as bought."
   },
   "analyses": {
     "upload": "Add analysis",
@@ -1562,8 +1584,16 @@
         "submit": "Add member",
         "conflictHint": "Several people match this phone number — pick the right one.",
         "conflict": "Several people match this phone number.",
-        "successToast": "Member added.",
-        "alreadyMember": "This person is already a member of the company."
+        "alreadyMember": "This person is already a member of the company.",
+        "added": {
+          "title": "{{name}} was added. They have not received any message. Send them these instructions:",
+          "message": "{{company}} added you to Folio.\n1) Install the Folio app on your phone.\n2) Open it and choose “Create an account” (not “Sign in”).\n3) Enter the number {{phone}}.",
+          "messageWithLink": "{{company}} added you to Folio.\n1) Install the Folio app: {{url}}\n2) Open it and choose “Create an account” (not “Sign in”).\n3) Enter the number {{phone}}.",
+          "share": "Share",
+          "copy": "Copy",
+          "copied": "Copied",
+          "done": "Done"
+        }
       },
       "import": {
         "title": "Import from another company",
@@ -1770,7 +1800,7 @@
       "noCreditHint": "Set the initial credit granted by your bank in the project settings.",
       "openSettings": "Open project settings",
       "noReleases": "No funds released yet",
-      "settingsCardTitle": "Bank credit (mortgage loan)",
+      "settingsCardTitle": "Project budget / credit",
       "settingsCardHint": "Initial amount granted by the bank. Funds releases are deducted from it."
     },
     "project": "Project",
@@ -1799,10 +1829,10 @@
       "budgetCredit": "Budget / credit",
       "bankRemaining": "Bank credit left",
       "pendingCompany": "Awaiting company refund ({{count}})",
-      "spentOfCredit": "Spent {{spent}} of {{total}} credit",
+      "spentOfCredit": "Spent {{spent}} of {{total}} budget",
       "spentOfReleased": "Spent {{spent}} of {{total}} released",
       "noBudgetNoFunds": "No budget and no funds released yet",
-      "addInvoice": "Invoice",
+      "addInvoice": "Expense",
       "addRelease": "Release funds",
       "payLabor": "Pay labor",
       "unpaid": "Unpaid",
@@ -1812,7 +1842,9 @@
       "refundItems_other": "{{count}} items · company",
       "monthSpend": "Spend {{month}}",
       "taskCount_one": "{{count}} task",
-      "taskCount_other": "{{count}} tasks"
+      "taskCount_other": "{{count}} tasks",
+      "clientPaid": "Paid by the client",
+      "unassignedLabor": "+ {{amount}} spent without a worker"
     },
     "today": {
       "title": "Today on site",
@@ -1831,7 +1863,10 @@
         "snow": "snow",
         "showers": "showers",
         "thunderstorm": "thunderstorm"
-      }
+      },
+      "logToday": "Log today's attendance",
+      "editToday_one": "{{count}} worker today · Edit",
+      "editToday_other": "{{count}} workers today · Edit"
     }
   },
   "salaries": {
@@ -2005,7 +2040,8 @@
     "namePlaceholder": "e.g. Nguyen Van A",
     "nameHint": "Shown to your company and on the sites you work on.",
     "create": "Create my profile",
-    "haveAccount": "Already have an account? Sign in"
+    "haveAccount": "Already have an account? Sign in",
+    "waitBeforeCode": "A code was just requested for this number. You can ask for your sign-up code in {{seconds}} s."
   },
   "worker": {
     "attendanceTitle": "My attendance",

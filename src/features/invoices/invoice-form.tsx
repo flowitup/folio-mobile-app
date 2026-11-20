@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 
@@ -33,6 +33,7 @@ import type {
 import { useProjectCan } from "@/features/projects/use-project-can";
 
 import { useInvoices, usePaymentMethods, useWorkers } from "./invoices-api";
+import { partyLabelKeys } from "./party-labels";
 import { workerRoleLabel } from "@/lib/labor/labor-role-label";
 
 export const INVOICE_TYPES: InvoiceType[] = [
@@ -92,6 +93,8 @@ type Props = {
   initialType?: InvoiceType;
   submitting: boolean;
   onSubmit: (payload: CreateInvoicePayload) => void;
+  /** Whether anything differs from what the form opened with (the screen guards leaving). */
+  onDirtyChange?: (dirty: boolean) => void;
 };
 
 /**
@@ -105,6 +108,7 @@ export function InvoiceForm({
   initialType,
   submitting,
   onSubmit,
+  onDirtyChange,
 }: Props) {
   const { t } = useTranslation();
   const editing = Boolean(initial);
@@ -174,6 +178,28 @@ export function InvoiceForm({
       return next;
     });
 
+  // Everything the user can change, as one string: compared with how the form opened, it says
+  // whether leaving would lose something.
+  const snapshot = JSON.stringify([
+    type,
+    issueDate,
+    recipientName,
+    recipientAddress,
+    notes,
+    paymentMethodId,
+    serviceMonth,
+    workerId,
+    refundsInvoiceId,
+    settledVia,
+    appliedToInvoiceId,
+    highlight,
+    lines,
+    isCashAdvance,
+  ]);
+  const [openedWith] = useState(snapshot);
+  const dirty = snapshot !== openedWith;
+  useEffect(() => onDirtyChange?.(dirty), [dirty, onDirtyChange]);
+
   const paymentMethods = usePaymentMethods(companyId);
   const workers = useWorkers(projectId);
   // Return links: refunds an M&S invoice; an avoir can be applied to any non-return, non-release invoice.
@@ -214,6 +240,7 @@ export function InvoiceForm({
     return options;
   }, [paymentMethods.data, initial, t]);
 
+  const labels = partyLabelKeys(type);
   const selectedWorker = workers.data?.find((worker) => worker.id === workerId);
   const laborWithWorker = type === "labor" && Boolean(workerId);
   /** Types whose line items may be negative — the web form's `MIXED_SIGN_TYPES`. */
@@ -263,7 +290,7 @@ export function InvoiceForm({
       laborWithWorker && !recipientName.trim()
         ? (selectedWorker?.name ?? "")
         : recipientName.trim();
-    if (!recipient) errors.recipient = t("invoices.form.recipientRequired");
+    if (!recipient) errors.recipient = t(labels.required);
 
     // Each described line, checked field by field with the same limits as the backend: a
     // price below zero only on mixed-sign types, no amount past the API caps.
@@ -415,7 +442,7 @@ export function InvoiceForm({
       <View onLayout={trackY("issueDate")}>
         <DatePicker
           testID="invoice-issue-date"
-          label={t("invoices.form.issueDate")}
+          label={t(labels.date)}
           value={issueDate}
           onChange={(value) => {
             setIssueDate(value);
@@ -511,7 +538,7 @@ export function InvoiceForm({
       <View onLayout={trackY("recipient")}>
         <Input
           testID="invoice-recipient"
-          label={t("invoices.form.recipient")}
+          label={t(labels.name)}
           value={recipientName}
           onChangeText={(value) => {
             setRecipientName(value);
@@ -524,7 +551,7 @@ export function InvoiceForm({
       </View>
       <Input
         testID="invoice-recipient-address"
-        label={t("invoices.form.recipientAddress")}
+        label={t(labels.address)}
         value={recipientAddress}
         onChangeText={setRecipientAddress}
       />

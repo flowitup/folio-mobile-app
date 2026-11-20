@@ -25,7 +25,10 @@ import { useWorkerMode } from "@/features/labor/use-worker-mode";
 import { useSelectedProject } from "@/features/projects/selected-project";
 import { useProjectCan } from "@/features/projects/use-project-can";
 import { useTasks } from "@/features/tasks/tasks-api";
-import { computeBankReleaseMetrics } from "@/lib/dashboard/bank-release-metrics";
+import {
+  computeBankReleaseMetrics,
+  computeClientPaid,
+} from "@/lib/dashboard/bank-release-metrics";
 import { countWorkersOnSite } from "@/lib/dashboard/weather";
 import { groupAgendaTasks } from "@/lib/dashboard/overview-agenda";
 import {
@@ -93,6 +96,7 @@ function OverviewTabContent() {
   const budgetValue = project?.budget == null ? null : Number(project.budget);
   const metrics = useMemo(() => {
     const spentTotal = computeSpentTotal(rows);
+    const clientPaid = computeClientPaid(rows);
     const series = buildMonthlySpendSeries(rows, 6, referenceDate);
     return {
       spentTotal,
@@ -103,7 +107,14 @@ function OverviewTabContent() {
         deltaPct: computeMonthToDateDelta(rows, referenceDate).deltaPct,
       },
       pendingCompany: computePendingRefunds(rows),
-      bank: computeBankReleaseMetrics(budgetValue, fundsReleased),
+      // Labor paid without a worker settles nobody's pay: the unpaid tile says it apart.
+      laborUnassigned: rows
+        .filter((row) => row.type === "labor" && !row.worker_id)
+        .reduce((sum, row) => sum + row.total_amount, 0),
+      // A client's payment on a facture is booked as a release but draws nothing on the bank
+      // credit: only the releases the bank made count against it.
+      clientPaid,
+      bank: computeBankReleaseMetrics(budgetValue, fundsReleased - clientPaid),
       buckets: buildTypeMonthlyBuckets(rows, 6, referenceDate),
     };
   }, [rows, budgetValue, fundsReleased, referenceDate]);
@@ -129,6 +140,19 @@ function OverviewTabContent() {
       pathname: "/(app)/(tabs)/labor",
       params: { segment: "payments", focus: Date.now().toString() },
     });
+  // "Today on site" opens today's (Paris) attendance: `log=1` asks the labor tab to present the
+  // log sheet once the day is selected; once someone is logged, `log=edit` shows the day's card
+  // with the entries to correct instead.
+  const logToday = () =>
+    router.navigate({
+      pathname: "/(app)/(tabs)/labor",
+      params: {
+        segment: "calendar",
+        day: businessToday(),
+        log: workersOnSite ? "edit" : "1",
+        focus: Date.now().toString(),
+      },
+    });
 
   return (
     <InkSheetScreen
@@ -153,6 +177,7 @@ function OverviewTabContent() {
                 ? metrics.bank.remaining
                 : null
             }
+            clientPaid={canViewBudget ? metrics.clientPaid : 0}
             onAddInvoice={() =>
               router.push(`/projects/${projectId}/invoices/new`)
             }
@@ -198,6 +223,7 @@ function OverviewTabContent() {
             <>
               <OverviewDueTiles
                 laborUnpaid={project.labor_unpaid ?? 0}
+                laborUnassigned={metrics.laborUnassigned}
                 pendingRefundCount={metrics.pendingCompany.count}
                 pendingRefundTotal={metrics.pendingCompany.total}
                 onPayLabor={payLabor}
@@ -239,6 +265,7 @@ function OverviewTabContent() {
             // Attendance is scoped to the caller's own worker without labor or pay access, so
             // a head count would read "no worker on site" on a busy site.
             workersOnSite={canPayLabor ? workersOnSite : undefined}
+            onLog={canManageLabor ? logToday : undefined}
           />
         </>
       ) : null}

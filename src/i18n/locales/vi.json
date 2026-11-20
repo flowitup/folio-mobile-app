@@ -9,7 +9,7 @@
     "retry": "Thử lại",
     "loadError": "Không tải được nội dung này.",
     "comingSoon": "Sắp ra mắt.",
-    "networkError": "Lỗi mạng",
+    "networkError": "Chưa lưu được vì mất mạng. Dữ liệu vẫn còn trên màn hình, hãy thử lại khi có sóng.",
     "cancel": "Hủy",
     "confirm": "Xác nhận",
     "save": "Lưu",
@@ -84,7 +84,12 @@
     },
     "codeHelp": "Không nhận được SMS? Hãy kiểm tra số điện thoại. Chỉ tài khoản Folio mới nhận được mã: tài khoản được tạo trong ứng dụng hoặc qua lời mời của công ty. Quyền truy cập bị vô hiệu hóa? Hãy liên hệ quản trị viên của công ty.",
     "codeStillValid": "Mã đã gửi tới số này vẫn còn hiệu lực: hãy nhập mã đó.",
-    "invalidPhoneHint": "Đây không phải số điện thoại Pháp (ví dụ 06 12 34 56 78)."
+    "invalidPhoneHint": "Đây không phải số điện thoại Pháp (ví dụ 06 12 34 56 78).",
+    "codeHelpNeverSignedIn": "Chưa từng đăng nhập? Bấm Tạo tài khoản.",
+    "firstTime": {
+      "body": "Lần đầu dùng Folio? Kể cả khi công ty đã thêm số của bạn, bạn cần tạo tài khoản trước.",
+      "action": "Tạo tài khoản với số này"
+    }
   },
   "updateRequired": {
     "title": "Cần cập nhật",
@@ -266,10 +271,10 @@
   },
   "invoices": {
     "all": "Tất cả",
-    "none": "Chưa có hóa đơn.",
-    "created": "Đã tạo hóa đơn.",
-    "deleted": "Đã xóa hóa đơn.",
-    "deleteConfirm": "Xóa hóa đơn {{number}}?",
+    "none": "Chưa có khoản chi.",
+    "created": "Đã lưu chi phí.",
+    "deleted": "Đã xóa khoản chi.",
+    "deleteConfirm": "Xóa khoản chi {{number}}?",
     "types": {
       "released_funds": "Vốn giải ngân",
       "labor": "Nhân công",
@@ -337,7 +342,7 @@
     },
     "form": {
       "type": "Loại",
-      "issueDate": "Ngày phát hành",
+      "issueDate": "Ngày chi",
       "issueDateRequired": "Cần chọn ngày.",
       "recipient": "Người nhận",
       "recipientRequired": "Cần nhập người nhận.",
@@ -382,7 +387,15 @@
       "fixFields_one": "Hãy sửa trường được đánh dấu.",
       "fixFields_other": "Hãy sửa {{count}} trường được đánh dấu.",
       "cashAdvance": "Tiền mặt công ty ứng trước",
-      "cashAdvanceHint": "Tiền công ty giao (vd. tiền mặt trả nhân công): không tính vào vốn giải ngân, tính là đã chi trong quỹ công ty."
+      "cashAdvanceHint": "Tiền công ty giao (vd. tiền mặt trả nhân công): không tính vào vốn giải ngân, tính là đã chi trong quỹ công ty.",
+      "releaseDate": "Ngày giải ngân",
+      "supplier": "Nhà cung cấp",
+      "supplierRequired": "Cần nhập nhà cung cấp.",
+      "supplierAddress": "Địa chỉ nhà cung cấp",
+      "discardTitle": "Bỏ khoản chi đang nhập?",
+      "discardMessage": "Những gì bạn đã nhập sẽ bị mất.",
+      "discard": "Bỏ",
+      "stay": "Ở lại"
     },
     "summary": {
       "totalExpenses": "Tổng chi phí",
@@ -434,7 +447,8 @@
       "highlightLockedAuto": "Tạo tự động từ hóa đơn: không thể đổi màu.",
       "highlightLockedRefunded": "Khoản chi đã hoàn: không thể đổi màu.",
       "highlightReadOnly": "Chỉ quản trị viên hoặc quản lý mới đổi được màu.",
-      "attachmentsEmpty": "Chưa có tệp đính kèm"
+      "attachmentsEmpty": "Chưa có tệp đính kèm",
+      "title": "Chi phí"
     },
     "highlightColors": {
       "red": "Đỏ",
@@ -444,8 +458,10 @@
       "blue": "Xanh dương",
       "purple": "Tím"
     },
-    "restricted": "Hóa đơn chỉ dành cho người quản lý công trình.",
-    "unavailable": "Hóa đơn này không tồn tại hoặc chỉ dành cho người quản lý công trình."
+    "restricted": "Chi phí chỉ dành cho người quản lý công trình.",
+    "unavailable": "Khoản chi này không tồn tại hoặc chỉ dành cho người quản lý công trình.",
+    "addExpense": "Chi phí",
+    "addExpenseA11y": "Thêm chi phí"
   },
   "labor": {
     "tabs": {
@@ -650,7 +666,9 @@
       "openMonth": "Mở tháng này",
       "daysUnit_one": "ngày",
       "daysUnit_other": "ngày",
-      "paidOutsideMonths": "gồm {{amount}} trả không có tháng hoặc ngoài các tháng chấm công"
+      "unassignedLabor_one": "Chi phí nhân công chưa gán thợ: {{amount}} · {{count}} khoản",
+      "unassignedLabor_other": "Chi phí nhân công chưa gán thợ: {{amount}} · {{count}} khoản",
+      "assign": "Gán"
     },
     "errors": {
       "roleUnavailable": "Vai trò này không còn dùng được cho công ty của công trình. Hãy chọn vai trò khác."
@@ -775,7 +793,10 @@
       "body": "Folio báo cho bạn khi bạn được giao việc, có tài liệu mới hoặc có người nhắn tin cho bạn. Bạn có thể đổi lại trong cài đặt của điện thoại.",
       "enable": "Bật",
       "later": "Để sau"
-    }
+    },
+    "overdue_one": "Quá hạn {{count}} ngày",
+    "overdue_other": "Quá hạn {{count}} ngày",
+    "dueToday": "Hôm nay"
   },
   "tasks": {
     "create": "Công việc mới",
@@ -821,7 +842,7 @@
     "unpricedCount_one": "{{count}} mục chưa có giá",
     "unpricedCount_other": "{{count}} mục chưa có giá",
     "coversAll": "đủ tất cả",
-    "none": "Chưa có hạng mục. Thêm để bắt đầu báo giá.",
+    "none": "Chưa có hạng mục. Thêm để bắt đầu dự toán.",
     "nameRequired": "Cần nhập tên.",
     "priceRequired": "Nhập đơn giá.",
     "supplierRequired": "Chọn cửa hàng hoặc nhập tên nhà cung cấp.",
@@ -912,7 +933,8 @@
     "actualShort": "Thực chi",
     "boughtQuantity": "Đã mua",
     "returnedQuantity": "Trả lại",
-    "returnTooMuch": "Số lượng trả lại không được lớn hơn số đã mua."
+    "returnTooMuch": "Số lượng trả lại không được lớn hơn số đã mua.",
+    "onlyManagersTick": "Chỉ quản lý đánh dấu đã mua."
   },
   "analyses": {
     "upload": "Thêm phân tích",
@@ -1450,7 +1472,7 @@
       "fields": {
         "legalName": {
           "label": "Tên pháp lý",
-          "placeholder": "vd. Công ty TNHH Lavandou"
+          "placeholder": "vd. Lavandou Bâtiment SARL"
         },
         "address": {
           "label": "Địa chỉ",
@@ -1562,8 +1584,16 @@
         "submit": "Thêm thành viên",
         "conflictHint": "Có nhiều người trùng số điện thoại này — hãy chọn đúng người.",
         "conflict": "Có nhiều người trùng số điện thoại này.",
-        "successToast": "Đã thêm thành viên.",
-        "alreadyMember": "Người này đã là thành viên của công ty."
+        "alreadyMember": "Người này đã là thành viên của công ty.",
+        "added": {
+          "title": "Đã thêm {{name}}. Họ chưa nhận được tin nhắn nào. Gửi hướng dẫn này cho họ:",
+          "message": "{{company}} đã thêm bạn vào Folio.\n1) Cài app Folio trên điện thoại.\n2) Mở app, chọn “Tạo tài khoản” (không chọn “Đăng nhập”).\n3) Nhập số {{phone}}.",
+          "messageWithLink": "{{company}} đã thêm bạn vào Folio.\n1) Cài app Folio: {{url}}\n2) Mở app, chọn “Tạo tài khoản” (không chọn “Đăng nhập”).\n3) Nhập số {{phone}}.",
+          "share": "Chia sẻ",
+          "copy": "Sao chép",
+          "copied": "Đã sao chép",
+          "done": "Xong"
+        }
       },
       "import": {
         "title": "Nhập từ công ty khác",
@@ -1770,7 +1800,7 @@
       "noCreditHint": "Đặt hạn mức tín dụng ban đầu ngân hàng cấp trong cài đặt dự án.",
       "openSettings": "Mở cài đặt dự án",
       "noReleases": "Chưa có khoản giải ngân nào",
-      "settingsCardTitle": "Tín dụng ngân hàng (vay mua nhà)",
+      "settingsCardTitle": "Ngân sách / tín dụng của dự án",
       "settingsCardHint": "Số tiền ban đầu ngân hàng cấp. Các khoản giải ngân sẽ được trừ vào số này."
     },
     "project": "Công trình",
@@ -1799,10 +1829,10 @@
       "budgetCredit": "Ngân sách / tín dụng",
       "bankRemaining": "Tín dụng NH còn lại",
       "pendingCompany": "Chờ công ty hoàn ({{count}})",
-      "spentOfCredit": "Đã chi {{spent}} trên {{total}} tín dụng",
+      "spentOfCredit": "Đã chi {{spent}} trên {{total}} ngân sách",
       "spentOfReleased": "Đã chi {{spent}} trên {{total}} đã giải ngân",
       "noBudgetNoFunds": "Chưa có ngân sách và chưa giải ngân",
-      "addInvoice": "Hóa đơn",
+      "addInvoice": "Chi phí",
       "addRelease": "Giải ngân",
       "payLabor": "Trả lương",
       "unpaid": "Chưa trả",
@@ -1812,7 +1842,9 @@
       "refundItems_other": "{{count}} khoản · công ty",
       "monthSpend": "Chi {{month}}",
       "taskCount_one": "{{count}} việc",
-      "taskCount_other": "{{count}} việc"
+      "taskCount_other": "{{count}} việc",
+      "clientPaid": "Khách đã trả",
+      "unassignedLabor": "+ {{amount}} đã chi chưa gán thợ"
     },
     "today": {
       "title": "Hôm nay tại công trường",
@@ -1831,7 +1863,10 @@
         "snow": "tuyết",
         "showers": "mưa rào",
         "thunderstorm": "dông"
-      }
+      },
+      "logToday": "Chấm công hôm nay",
+      "editToday_one": "{{count}} thợ hôm nay · Sửa",
+      "editToday_other": "{{count}} thợ hôm nay · Sửa"
     }
   },
   "salaries": {
@@ -2005,7 +2040,8 @@
     "namePlaceholder": "VD: Nguyễn Văn A",
     "nameHint": "Hiển thị cho công ty và trên các công trình bạn làm.",
     "create": "Tạo hồ sơ",
-    "haveAccount": "Đã có tài khoản? Đăng nhập"
+    "haveAccount": "Đã có tài khoản? Đăng nhập",
+    "waitBeforeCode": "Một mã vừa được yêu cầu cho số này. Bạn có thể xin mã đăng ký sau {{seconds}} giây."
   },
   "worker": {
     "attendanceTitle": "Chấm công của tôi",

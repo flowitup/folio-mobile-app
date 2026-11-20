@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
 
@@ -6,6 +7,7 @@ import { EmptyState } from "@/components/ui/primitives";
 import { InvoiceForm } from "@/features/invoices/invoice-form";
 import type { InvoiceType } from "@/features/invoices/invoice-types";
 import { useCreateInvoice } from "@/features/invoices/invoices-api";
+import { useDiscardGuard } from "@/features/invoices/use-discard-guard";
 import { useProject, useProjects } from "@/features/projects/projects-api";
 import { useProjectCan } from "@/features/projects/use-project-can";
 
@@ -32,6 +34,9 @@ export default function NewInvoiceScreen() {
   // The scoped permission comes from the projects list; on a cold deep link it is still
   // loading, and the JWT-wide fallback must not flash the restricted message meanwhile.
   const projects = useProjects();
+  // A failed save (no signal on site) keeps the form as typed; leaving it asks first.
+  const [dirty, setDirty] = useState(false);
+  const guard = useDiscardGuard(dirty);
 
   if (!canManage)
     return (
@@ -45,17 +50,23 @@ export default function NewInvoiceScreen() {
     );
 
   return (
-    <InvoiceForm
-      projectId={id}
-      companyId={project.data?.company_id}
-      initialType={isInvoiceType(type) ? type : undefined}
-      submitting={create.isPending}
-      onSubmit={(payload) =>
-        create.mutate(payload, {
-          onSuccess: (created) =>
-            router.replace(`/projects/${id}/invoices/${created.id}`),
-        })
-      }
-    />
+    <>
+      <InvoiceForm
+        projectId={id}
+        companyId={project.data?.company_id}
+        initialType={isInvoiceType(type) ? type : undefined}
+        submitting={create.isPending}
+        onDirtyChange={setDirty}
+        onSubmit={(payload) =>
+          create.mutate(payload, {
+            onSuccess: (created) => {
+              guard.allowLeave();
+              router.replace(`/projects/${id}/invoices/${created.id}`);
+            },
+          })
+        }
+      />
+      {guard.dialog}
+    </>
   );
 }

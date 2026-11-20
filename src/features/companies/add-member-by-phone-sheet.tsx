@@ -4,28 +4,36 @@ import type { RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
+import { FrenchPhoneField } from "@/components/auth/french-phone-field";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/chip";
 import { Input } from "@/components/ui/input";
 import { Sheet } from "@/components/ui/sheet";
+import { Eyebrow } from "@/components/ui/typography";
 import {
   AddMemberConflictError,
   useAddMemberByPhone,
 } from "@/features/companies/company-members-api";
 import type { AddMemberRole } from "@/features/companies/company-members-api";
-import { normalizePhone } from "@/lib/auth/phone-number";
+import { MemberAddedStep } from "@/features/companies/member-added-step";
+import { formatFrenchPhone, normalizePhone } from "@/lib/auth/phone-number";
 import { ApiError } from "@/lib/query/api-error";
 import { apiErrorMessage } from "@/lib/query/api-error-message";
 
-type Props = { companyId: string };
+type Props = {
+  companyId: string;
+  /** Named in the message the admin sends the person added. */
+  companyName: string;
+};
 
 /**
  * Add-by-phone sheet (D1 onboarding): admin types a phone (+ optional name/role); the backend
  * either attaches an existing account, links a pending profile, or creates a brand new one. A
- * 409 with several un-linked candidates is resolved here by picking one and resending.
+ * 409 with several un-linked candidates is resolved here by picking one and resending. Once added,
+ * the sheet hands the admin the message to send that person (nobody is texted by the backend).
  */
 export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
-  function AddMemberByPhoneSheet({ companyId }, ref) {
+  function AddMemberByPhoneSheet({ companyId, companyName }, ref) {
     const { t, i18n } = useTranslation();
     const add = useAddMemberByPhone();
     const [phone, setPhone] = useState("");
@@ -35,6 +43,9 @@ export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
       { person_id: string; name: string }[] | null
     >(null);
     const [error, setError] = useState<string | null>(null);
+    const [added, setAdded] = useState<{ name: string; phone: string } | null>(
+      null,
+    );
 
     function reset() {
       setPhone("");
@@ -42,6 +53,12 @@ export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
       setRole("member");
       setCandidates(null);
       setError(null);
+      setAdded(null);
+    }
+
+    function close() {
+      reset();
+      (ref as RefObject<BottomSheetModal | null> | null)?.current?.dismiss();
     }
 
     function submit(personId?: string) {
@@ -60,11 +77,14 @@ export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
           person_id: personId,
         },
         {
-          onSuccess: () => {
-            reset();
-            (
-              ref as RefObject<BottomSheetModal | null> | null
-            )?.current?.dismiss();
+          onSuccess: (result) => {
+            const addedPhone = result?.phone || normalized;
+            setCandidates(null);
+            setAdded({
+              name:
+                result?.name || name.trim() || formatFrenchPhone(addedPhone),
+              phone: addedPhone,
+            });
           },
           onError: (caught) => {
             if (caught instanceof AddMemberConflictError) {
@@ -91,19 +111,31 @@ export const AddMemberByPhoneSheet = forwardRef<BottomSheetModal, Props>(
         ref={ref}
         title={t("companies.members.addByPhone.title")}
         snapPoints={["65%"]}
+        // Swiped away on the last step: the next opening starts a new person.
+        onDismiss={reset}
       >
         <View className="p-4">
-          {!candidates ? (
+          {added ? (
+            <MemberAddedStep
+              name={added.name}
+              phone={added.phone}
+              company={companyName}
+              onDone={close}
+            />
+          ) : !candidates ? (
             <>
-              <Input
-                testID="add-member-phone"
-                label={t("companies.members.addByPhone.phoneLabel")}
-                placeholder="06 12 34 56 78"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                autoComplete="tel"
-              />
+              {/* The sign-in screen's own field (FR +33, "6 12 34 56 78"): the number is
+                  written here the way its owner will type it to sign up. */}
+              <Eyebrow className="mb-1.5">
+                {t("companies.members.addByPhone.phoneLabel")}
+              </Eyebrow>
+              <View className="mb-2">
+                <FrenchPhoneField
+                  testID="add-member-phone"
+                  value={phone}
+                  onChangeText={setPhone}
+                />
+              </View>
               <Input
                 testID="add-member-name"
                 label={t("companies.members.addByPhone.nameLabel")}

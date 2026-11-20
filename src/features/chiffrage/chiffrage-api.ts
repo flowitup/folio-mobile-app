@@ -90,6 +90,9 @@ function useChiffrageMutation<TVariables, TData = unknown>(
       ["projects", projectId],
     ],
     successMessage: message,
+    // Offline, a tick fails at once with the network message and the row keeps its state,
+    // instead of a mutation paused until the signal returns.
+    networkMode: "always",
   });
 }
 

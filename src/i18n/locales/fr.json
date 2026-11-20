@@ -9,7 +9,7 @@
     "retry": "Réessayer",
     "loadError": "Impossible de charger ce contenu.",
     "comingSoon": "Bientôt disponible.",
-    "networkError": "Erreur réseau",
+    "networkError": "Pas enregistré : pas de réseau. Vos données restent à l'écran, réessayez quand vous aurez du signal.",
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "save": "Enregistrer",
@@ -84,7 +84,12 @@
     },
     "codeHelp": "Pas reçu de SMS ? Vérifiez le numéro. Seuls les comptes Folio reçoivent un code : ils se créent dans l’application ou via l’invitation de votre entreprise. Accès désactivé ? Contactez l’administrateur de votre entreprise.",
     "codeStillValid": "Le code déjà envoyé à ce numéro reste valable : saisissez-le.",
-    "invalidPhoneHint": "Ce numéro n’est pas un numéro français (ex. 06 12 34 56 78)."
+    "invalidPhoneHint": "Ce numéro n’est pas un numéro français (ex. 06 12 34 56 78).",
+    "codeHelpNeverSignedIn": "Jamais connecté ? Appuyez sur Créer un compte.",
+    "firstTime": {
+      "body": "Première fois sur Folio ? Même si votre entreprise a ajouté votre numéro, vous devez d’abord créer un compte.",
+      "action": "Créer un compte avec ce numéro"
+    }
   },
   "updateRequired": {
     "title": "Mise à jour requise",
@@ -266,10 +271,10 @@
   },
   "invoices": {
     "all": "Tout",
-    "none": "Aucune facture.",
-    "created": "Facture créée.",
-    "deleted": "Facture supprimée.",
-    "deleteConfirm": "Supprimer la facture {{number}} ?",
+    "none": "Aucune dépense.",
+    "created": "Dépense enregistrée.",
+    "deleted": "Dépense supprimée.",
+    "deleteConfirm": "Supprimer la dépense {{number}} ?",
     "types": {
       "released_funds": "Fonds débloqués",
       "labor": "Main-d'œuvre",
@@ -337,7 +342,7 @@
     },
     "form": {
       "type": "Type",
-      "issueDate": "Date d'émission",
+      "issueDate": "Date de la dépense",
       "issueDateRequired": "La date est obligatoire.",
       "recipient": "Destinataire",
       "recipientRequired": "Le destinataire est obligatoire.",
@@ -382,7 +387,15 @@
       "fixFields_one": "Corrigez le champ signalé.",
       "fixFields_other": "Corrigez les {{count}} champs signalés.",
       "cashAdvance": "Avance en espèces de l'entreprise",
-      "cashAdvanceHint": "Argent remis par l'entreprise (ex. espèces pour payer la main-d'œuvre) : non compté dans les fonds débloqués, compté comme dépensé dans la caisse entreprise."
+      "cashAdvanceHint": "Argent remis par l'entreprise (ex. espèces pour payer la main-d'œuvre) : non compté dans les fonds débloqués, compté comme dépensé dans la caisse entreprise.",
+      "releaseDate": "Date du déblocage",
+      "supplier": "Fournisseur",
+      "supplierRequired": "Le fournisseur est obligatoire.",
+      "supplierAddress": "Adresse du fournisseur",
+      "discardTitle": "Abandonner la dépense en cours ?",
+      "discardMessage": "Ce que vous avez saisi sera perdu.",
+      "discard": "Abandonner",
+      "stay": "Rester"
     },
     "summary": {
       "totalExpenses": "Total dépenses",
@@ -434,7 +447,8 @@
       "highlightLockedAuto": "Générée automatiquement depuis une facture : couleur non modifiable.",
       "highlightLockedRefunded": "Dépense remboursée : couleur non modifiable.",
       "highlightReadOnly": "Seul un admin ou un manager peut changer la couleur.",
-      "attachmentsEmpty": "Aucune pièce jointe"
+      "attachmentsEmpty": "Aucune pièce jointe",
+      "title": "Dépense"
     },
     "highlightColors": {
       "red": "Rouge",
@@ -444,8 +458,10 @@
       "blue": "Bleu",
       "purple": "Violet"
     },
-    "restricted": "Les factures sont réservées aux responsables du chantier.",
-    "unavailable": "Cette facture n'existe pas ou est réservée aux responsables du chantier."
+    "restricted": "Les dépenses sont réservées aux responsables du chantier.",
+    "unavailable": "Cette dépense n'existe pas ou est réservée aux responsables du chantier.",
+    "addExpense": "Dépense",
+    "addExpenseA11y": "Ajouter une dépense"
   },
   "labor": {
     "tabs": {
@@ -650,7 +666,9 @@
       "openMonth": "Ouvrir ce mois",
       "daysUnit_one": "jour",
       "daysUnit_other": "jours",
-      "paidOutsideMonths": "dont {{amount}} payés sans mois ou hors des mois pointés"
+      "unassignedLabor_one": "Main-d'œuvre payée sans ouvrier attribué : {{amount}} · {{count}} paiement",
+      "unassignedLabor_other": "Main-d'œuvre payée sans ouvrier attribué : {{amount}} · {{count}} paiements",
+      "assign": "Attribuer"
     },
     "errors": {
       "roleUnavailable": "Ce rôle n'est plus disponible pour l'entreprise de ce chantier. Choisissez-en un autre."
@@ -775,7 +793,10 @@
       "body": "Folio vous prévient quand on vous assigne une tâche, qu'un document arrive ou qu'un message vous est adressé. Vous pourrez changer d'avis dans les réglages du téléphone.",
       "enable": "Activer",
       "later": "Plus tard"
-    }
+    },
+    "overdue_one": "En retard de {{count}} jour",
+    "overdue_other": "En retard de {{count}} jours",
+    "dueToday": "Aujourd'hui"
   },
   "tasks": {
     "create": "Nouvelle tâche",
@@ -821,7 +842,7 @@
     "unpricedCount_one": "{{count}} article sans prix",
     "unpricedCount_other": "{{count}} articles sans prix",
     "coversAll": "couvre tout",
-    "none": "Aucun poste. Ajoutez-en un pour chiffrer les matériaux.",
+    "none": "Aucun poste. Ajoutez-en un pour commencer le chiffrage.",
     "nameRequired": "Le nom est obligatoire.",
     "priceRequired": "Saisissez un prix unitaire.",
     "supplierRequired": "Choisissez un magasin ou saisissez un fournisseur.",
@@ -912,7 +933,8 @@
     "actualShort": "Réel",
     "boughtQuantity": "Acheté",
     "returnedQuantity": "Rendu",
-    "returnTooMuch": "On ne peut pas rendre plus que ce qui a été acheté."
+    "returnTooMuch": "On ne peut pas rendre plus que ce qui a été acheté.",
+    "onlyManagersTick": "Seuls les responsables cochent les achats."
   },
   "analyses": {
     "upload": "Ajouter une analyse",
@@ -1562,8 +1584,16 @@
         "submit": "Ajouter le membre",
         "conflictHint": "Plusieurs personnes correspondent à ce numéro — choisissez la bonne.",
         "conflict": "Plusieurs personnes correspondent à ce numéro.",
-        "successToast": "Membre ajouté.",
-        "alreadyMember": "Cette personne est déjà membre de l'entreprise."
+        "alreadyMember": "Cette personne est déjà membre de l'entreprise.",
+        "added": {
+          "title": "{{name}} a été ajouté. Cette personne n’a reçu aucun message. Envoyez-lui ces instructions :",
+          "message": "{{company}} vous a ajouté sur Folio.\n1) Installez l’application Folio sur votre téléphone.\n2) Ouvrez-la et choisissez « Créer un compte » (pas « Se connecter »).\n3) Saisissez le numéro {{phone}}.",
+          "messageWithLink": "{{company}} vous a ajouté sur Folio.\n1) Installez l’application Folio : {{url}}\n2) Ouvrez-la et choisissez « Créer un compte » (pas « Se connecter »).\n3) Saisissez le numéro {{phone}}.",
+          "share": "Partager",
+          "copy": "Copier",
+          "copied": "Copié",
+          "done": "Terminé"
+        }
       },
       "import": {
         "title": "Importer d'une autre entreprise",
@@ -1770,7 +1800,7 @@
       "noCreditHint": "Renseignez le crédit initial accordé par votre banque dans les paramètres du projet.",
       "openSettings": "Ouvrir les paramètres du projet",
       "noReleases": "Aucun fonds débloqué pour l'instant",
-      "settingsCardTitle": "Crédit bancaire (crédit immobilier)",
+      "settingsCardTitle": "Budget / crédit du chantier",
       "settingsCardHint": "Montant initial accordé par la banque. Les déblocages de fonds en sont déduits."
     },
     "project": "Chantier",
@@ -1799,10 +1829,10 @@
       "budgetCredit": "Budget / crédit",
       "bankRemaining": "Crédit bancaire restant",
       "pendingCompany": "En attente de remboursement entreprise ({{count}})",
-      "spentOfCredit": "Dépensé {{spent}} sur {{total}} de crédit",
+      "spentOfCredit": "Dépensé {{spent}} sur {{total}} de budget",
       "spentOfReleased": "Dépensé {{spent}} sur {{total}} débloqués",
       "noBudgetNoFunds": "Ni budget ni fonds débloqués pour l'instant",
-      "addInvoice": "Facture",
+      "addInvoice": "Dépense",
       "addRelease": "Débloquer",
       "payLabor": "Payer la MO",
       "unpaid": "Impayé",
@@ -1812,7 +1842,9 @@
       "refundItems_other": "{{count}} dépenses · entreprise",
       "monthSpend": "Dépenses {{month}}",
       "taskCount_one": "{{count}} tâche",
-      "taskCount_other": "{{count}} tâches"
+      "taskCount_other": "{{count}} tâches",
+      "clientPaid": "Payé par le client",
+      "unassignedLabor": "+ {{amount}} payés sans ouvrier attribué"
     },
     "today": {
       "title": "Aujourd'hui sur site",
@@ -1831,7 +1863,10 @@
         "snow": "neige",
         "showers": "averses",
         "thunderstorm": "orage"
-      }
+      },
+      "logToday": "Pointer aujourd'hui",
+      "editToday_one": "{{count}} ouvrier aujourd'hui · Modifier",
+      "editToday_other": "{{count}} ouvriers aujourd'hui · Modifier"
     }
   },
   "salaries": {
@@ -2005,7 +2040,8 @@
     "namePlaceholder": "ex. Nguyen Van A",
     "nameHint": "Affiché à votre entreprise et sur les chantiers où vous travaillez.",
     "create": "Créer mon profil",
-    "haveAccount": "Déjà un compte ? Se connecter"
+    "haveAccount": "Déjà un compte ? Se connecter",
+    "waitBeforeCode": "Un code vient d’être demandé pour ce numéro. Vous pourrez demander votre code d’inscription dans {{seconds}} s."
   },
   "worker": {
     "attendanceTitle": "Ma présence",
