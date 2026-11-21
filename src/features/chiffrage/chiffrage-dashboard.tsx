@@ -153,12 +153,18 @@ export function ChiffrageDashboard({ tree }: { tree: ChiffrageTree }) {
             );
           })}
           <View className="flex-row gap-4">
-            <Text className="text-xs text-muted-foreground">
-              {t("chiffrage.estimateShort")}
-            </Text>
-            <Text className="text-xs text-muted-foreground">
-              {t("chiffrage.actualShort")}
-            </Text>
+            <View className="flex-row items-center gap-1">
+              <View className="h-2 w-2 rounded-full bg-line-2" />
+              <Text className="text-xs text-muted-foreground">
+                {t("chiffrage.estimateShort")}
+              </Text>
+            </View>
+            <View className="flex-row items-center gap-1">
+              <View className="h-2 w-2 rounded-full bg-primary" />
+              <Text className="text-xs text-muted-foreground">
+                {t("chiffrage.actualShort")}
+              </Text>
+            </View>
           </View>
         </Card>
       ) : null}
