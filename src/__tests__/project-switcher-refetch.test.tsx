@@ -9,6 +9,8 @@ import { ProjectSwitcherSheet } from "@/components/shell/project-switcher-sheet"
  */
 let mockSheet: string | null = null;
 const mockRefetch = jest.fn();
+let mockProjects: unknown[] = [];
+let mockCompanies: unknown[] = [];
 
 jest.mock("@/components/shell/shell-context", () => ({
   useShell: () => ({
@@ -19,7 +21,7 @@ jest.mock("@/components/shell/shell-context", () => ({
 }));
 jest.mock("@/features/projects/selected-project", () => ({
   useSelectedProject: () => ({
-    projects: [],
+    projects: mockProjects,
     projectId: "",
     select: jest.fn(),
     refetch: mockRefetch,
@@ -29,7 +31,7 @@ jest.mock("@/auth/auth-context", () => ({
   useAuth: () => ({ user: null }),
 }));
 jest.mock("@/features/companies/companies-api", () => ({
-  useMyCompanies: () => ({ data: [] }),
+  useMyCompanies: () => ({ data: mockCompanies }),
 }));
 jest.mock("@/features/projects/project-form-sheet", () => ({
   ProjectFormSheet: () => null,
@@ -43,6 +45,8 @@ describe("project switcher sheet", () => {
   beforeEach(() => {
     mockSheet = null;
     mockRefetch.mockClear();
+    mockProjects = [];
+    mockCompanies = [];
   });
 
   it("refetches the project list each time it opens", async () => {
@@ -58,5 +62,23 @@ describe("project switcher sheet", () => {
     mockSheet = "switcher";
     await view.rerender(<ProjectSwitcherSheet />);
     expect(mockRefetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not repeat the company name under each project", async () => {
+    mockSheet = "switcher";
+    mockCompanies = [
+      { id: "c1", legal_name: "Alpha BTP", role: "admin" },
+      { id: "c2", legal_name: "Beta Rénovation", role: "admin" },
+    ];
+    mockProjects = [
+      { id: "p1", name: "Chantier A", company_id: "c1", budget: 100, spent: 10, user_count: 1 },
+      { id: "p2", name: "Chantier B", company_id: "c2", budget: 100, spent: 10, user_count: 1 },
+    ];
+    const view = await render(<ProjectSwitcherSheet />);
+
+    expect(view.getByText("Chantier A")).toBeTruthy();
+    expect(view.queryByTestId("switcher-company-p1")).toBeNull();
+    expect(view.queryByText("Alpha BTP")).toBeNull();
+    expect(view.queryByText("Beta Rénovation")).toBeNull();
   });
 });
