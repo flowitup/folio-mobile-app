@@ -36,6 +36,7 @@ import {
   normalizeName,
   POSTE_TEMPLATES,
 } from "@/features/chiffrage/poste-templates";
+import { ChiffrageDashboard } from "@/features/chiffrage/chiffrage-dashboard";
 import { ShoppingList } from "@/features/chiffrage/shopping-list";
 import { LibraryProductPickerSheet } from "@/features/chiffrage/library-product-picker-sheet";
 import type { PickedProduct } from "@/features/chiffrage/library-product-picker-sheet";
@@ -567,6 +568,7 @@ export default function ProjectChiffrageSection() {
             </Text>
           ))}
         </Card>
+        <ChiffrageDashboard tree={data} />
         <View className="mb-3 flex-row gap-2">
           <Button
             testID="chiffrage-view-budget"

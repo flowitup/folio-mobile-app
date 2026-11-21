@@ -140,7 +140,7 @@ describe("chiffrage write gating", () => {
     await renderWithProviders(<ProjectChiffrageSection />);
 
     // The figures still load — reading the estimate is `project:read`.
-    expect(await screen.findByText("Carrelage")).toBeTruthy();
+    expect(await screen.findAllByText("Carrelage")).not.toHaveLength(0);
     // Expand the article, so the per-quote controls would be on screen if they were rendered.
     await fireEvent.press(screen.getByText("Carreaux 60x60"));
     expect(screen.getByText(/Leroy Merlin/)).toBeTruthy();
